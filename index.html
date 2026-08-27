@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>R75 Test Minimal</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 25px;
+      background: #071426;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    .card {
+      max-width: 600px;
+      margin: auto;
+      padding: 25px;
+      border-radius: 20px;
+      background: #10233a;
+      border: 1px solid #315274;
+    }
+
+    h1 {
+      font-size: 30px;
+    }
+
+    .status {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 25px 0;
+    }
+
+    .label {
+      color: #9fb2c9;
+      font-size: 18px;
+      margin-top: 25px;
+    }
+
+    .value {
+      font-size: 32px;
+      font-weight: bold;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <h1>🤖 R75 — TEST MINIMAL</h1>
+
+  <div id="status" class="status">
+    🟠 Connexion…
+  </div>
+
+  <div class="label">Prix en direct</div>
+  <div id="price" class="value">—</div>
+
+  <div class="label">Dernier chiffre</div>
+  <div id="digit" class="value">—</div>
+
+  <div class="label">Ticks reçus</div>
+  <div id="ticks" class="value">0</div>
+
+</div>
+
+<script>
+
+const statusEl = document.getElementById("status");
+const priceEl = document.getElementById("price");
+const digitEl = document.getElementById("digit");
+const ticksEl = document.getElementById("ticks");
+
+let tickCount = 0;
+let ws = null;
+
+function connect() {
+
+  statusEl.textContent = "🟠 Connexion…";
+
+  ws = new WebSocket(
+    "wss://api.derivws.com/trading/v1/options/ws/public"
+  );
+
+  ws.onopen = function() {
+
+    statusEl.textContent = "🟢 Connecté";
+
+    ws.send(JSON.stringify({
+      ticks: "R_75",
+      subscribe: 1
+    }));
+
+  };
+
+  ws.onmessage = function(event) {
+
+    try {
+
+      const data = JSON.parse(event.data);
+
+      if (data.msg_type === "tick" && data.tick) {
+
+        const quote = Number(data.tick.quote);
+
+        priceEl.textContent = quote.toFixed(4);
+
+        const text = quote.toFixed(4);
+        const lastDigit = text.replace(/\D/g, "").slice(-1);
+
+        digitEl.textContent = lastDigit;
+
+        tickCount++;
+        ticksEl.textContent = tickCount;
+      }
+
+      if (data.error) {
+        statusEl.textContent =
+          "🔴 Erreur : " + data.error.message;
+      }
+
+    } catch (error) {
+
+      statusEl.textContent = "🔴 Erreur de lecture";
+
+    }
+
+  };
+
+  ws.onerror = function() {
+    statusEl.textContent = "🔴 Erreur de connexion";
+  };
+
+  ws.onclose = function() {
+    statusEl.textContent = "🔴 Déconnecté";
+  };
+
+}
+
+connect();
+
+</script>
+
+</body>
+</html>
