@@ -2,14 +2,11 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
-
-<title>Prediction R75 V2</title>
+<title>Prediction R75 V3</title>
 
 <style>
-
 *{
   box-sizing:border-box;
 }
@@ -24,11 +21,11 @@ body{
 }
 
 .card{
-  max-width:650px;
+  max-width:600px;
   margin:20px auto;
   padding:25px;
   background:#10233d;
-  border-radius:22px;
+  border-radius:20px;
   box-shadow:0 10px 30px rgba(0,0,0,.35);
 }
 
@@ -42,52 +39,55 @@ h1{
   text-align:center;
   padding:14px;
   margin-bottom:20px;
-  border-radius:14px;
+  border-radius:12px;
   background:#172f4d;
   font-weight:bold;
 }
 
-.status.ok{
-  background:#075d35;
+.connected{
+  background:#075c32;
 }
 
-.status.error{
-  background:#702020;
+.disconnected{
+  background:#642020;
 }
 
 .label{
-  color:#aebbd0;
-  font-size:16px;
-  margin-top:20px;
+  color:#9fb2c8;
+  margin-top:18px;
 }
 
-.value{
-  font-size:32px;
+.market{
+  font-size:28px;
   font-weight:bold;
-  margin-top:6px;
+  margin-top:5px;
 }
 
-.last{
-  width:120px;
-  height:120px;
-  margin:15px auto 25px;
+.price{
+  font-size:32px;
+  color:#4da3ff;
+  margin-top:8px;
+}
+
+.digit{
+  width:130px;
+  height:130px;
+  margin:20px auto;
   border:5px solid #4da3ff;
   border-radius:50%;
-
   display:flex;
   align-items:center;
   justify-content:center;
-
-  font-size:48px;
+  font-size:55px;
   font-weight:bold;
 }
 
 .prediction{
+  background:#1b385d;
   padding:25px;
-  margin-top:20px;
-  background:#19385e;
-  border-radius:18px;
+  border-radius:16px;
   text-align:center;
+  margin-top:25px;
 }
 
 .prediction-title{
@@ -95,46 +95,46 @@ h1{
 }
 
 .prediction-number{
-  margin-top:15px;
-  font-size:42px;
+  font-size:50px;
+  color:#ffd43b;
   font-weight:bold;
-  color:#ffd447;
+  margin:15px 0;
 }
 
-.info{
-  margin-top:20px;
+.stats{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:12px;
+  margin-top:20px;
 }
 
-.box{
-  background:#0b1b30;
+.stat{
+  background:#091b31;
   padding:18px;
-  border-radius:14px;
+  border-radius:12px;
   text-align:center;
 }
 
-.box-title{
-  color:#aebbd0;
+.stat-title{
+  color:#9fb2c8;
   font-size:14px;
 }
 
-.box-value{
-  margin-top:8px;
-  font-size:24px;
+.stat-value{
+  font-size:25px;
   font-weight:bold;
+  margin-top:8px;
 }
 
 button{
   width:100%;
+  border:0;
   padding:15px;
   margin-top:20px;
-  border:0;
   border-radius:12px;
   background:#1877f2;
   color:white;
-  font-size:16px;
+  font-size:17px;
   font-weight:bold;
 }
 
@@ -142,28 +142,25 @@ button:active{
   transform:scale(.98);
 }
 
-.log{
-  margin-top:20px;
-  padding:15px;
-  background:#050c16;
-  border-radius:12px;
-  font-family:monospace;
-  font-size:12px;
-  line-height:1.5;
-  color:#b9c7d9;
-  word-break:break-word;
-}
-
 .warning{
   margin-top:20px;
   padding:15px;
-  background:#513b05;
   border-radius:12px;
-  color:#ffe28a;
-  font-size:13px;
-  line-height:1.5;
+  background:#5a4100;
+  color:#ffe79a;
+  font-size:14px;
 }
 
+.diagnostic{
+  margin-top:20px;
+  padding:15px;
+  background:#06101f;
+  border-radius:12px;
+  font-family:monospace;
+  font-size:13px;
+  color:#b8c7d9;
+  word-break:break-word;
+}
 </style>
 </head>
 
@@ -171,33 +168,21 @@ button:active{
 
 <div class="card">
 
-<h1>Prediction R75 V2</h1>
+<h1>Prediction R75 V3</h1>
 
-<div id="status" class="status">
-🟠 Connexion à Deriv...
+<div id="status" class="status disconnected">
+🟠 Connexion en cours...
 </div>
 
-<div class="label">
-Marché
-</div>
+<div class="label">Marché</div>
+<div class="market">Volatility 75 (R_75)</div>
 
-<div class="value">
-Volatility 75 (R_75)
-</div>
+<div class="label">Prix en direct</div>
+<div id="price" class="price">—</div>
 
-<div class="label">
-Prix en direct
-</div>
+<div class="label">Dernier chiffre</div>
 
-<div id="price" class="value">
-—
-</div>
-
-<div class="label">
-Dernier chiffre
-</div>
-
-<div id="lastDigit" class="last">
+<div id="digit" class="digit">
 —
 </div>
 
@@ -212,94 +197,56 @@ PRÉDICTION DU PROCHAIN CHIFFRE
 </div>
 
 <div id="analysis">
-Analyse en cours...
+En attente des ticks...
 </div>
 
 </div>
 
-<div class="info">
+<div class="stats">
 
-<div class="box">
-
-<div class="box-title">
-Total ticks
+<div class="stat">
+<div class="stat-title">Total ticks</div>
+<div id="ticks" class="stat-value">0</div>
 </div>
 
-<div id="tickCount" class="box-value">
-0
+<div class="stat">
+<div class="stat-title">Chiffre dominant</div>
+<div id="dominant" class="stat-value">—</div>
 </div>
 
+<div class="stat">
+<div class="stat-title">Pair</div>
+<div id="even" class="stat-value">0</div>
 </div>
 
-<div class="box">
-
-<div class="box-title">
-Chiffre dominant
-</div>
-
-<div id="dominant" class="box-value">
-—
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="box-title">
-Pair
-</div>
-
-<div id="even" class="box-value">
-0
+<div class="stat">
+<div class="stat-title">Impair</div>
+<div id="odd" class="stat-value">0</div>
 </div>
 
 </div>
 
-<div class="box">
-
-<div class="box-title">
-Impair
-</div>
-
-<div id="odd" class="box-value">
-0
-</div>
-
-</div>
-
-</div>
-
-<button onclick="restartConnection()">
+<button onclick="connectDeriv()">
 🔄 Reconnecter à Deriv
 </button>
 
 <div class="warning">
-
-⚠️ TEST UNIQUEMENT.<br>
-Cette page ne passe aucun ordre et n'envoie aucun trade.
-La prédiction est expérimentale et ne garantit aucun résultat.
-
+⚠️ TEST UNIQUEMENT<br>
+Cette version lit uniquement les données publiques de R_75.
+Aucun ordre n'est envoyé à Deriv.
 </div>
 
-<div class="log">
-
-<strong>Diagnostic :</strong>
-
-<div id="log">
-Démarrage...
-</div>
-
+<div id="diagnostic" class="diagnostic">
+Diagnostic : démarrage...
 </div>
 
 </div>
 
 <script>
 
-const SYMBOL = "R_75";
-
 let ws = null;
 
-let tickCount = 0;
+let totalTicks = 0;
 
 let digits = [];
 
@@ -307,78 +254,12 @@ let evenCount = 0;
 
 let oddCount = 0;
 
-let reconnectTimer = null;
-
 
 /* =========================
-   ELEMENTS
+   CONNEXION DERIV
 ========================= */
 
-const statusEl =
-  document.getElementById("status");
-
-const priceEl =
-  document.getElementById("price");
-
-const lastDigitEl =
-  document.getElementById("lastDigit");
-
-const predictionEl =
-  document.getElementById("prediction");
-
-const analysisEl =
-  document.getElementById("analysis");
-
-const tickCountEl =
-  document.getElementById("tickCount");
-
-const dominantEl =
-  document.getElementById("dominant");
-
-const evenEl =
-  document.getElementById("even");
-
-const oddEl =
-  document.getElementById("odd");
-
-const logEl =
-  document.getElementById("log");
-
-
-/* =========================
-   LOG
-========================= */
-
-function log(message){
-
-  const time =
-    new Date().toLocaleTimeString();
-
-  logEl.innerHTML =
-    time + " — " + message;
-
-}
-
-
-/* =========================
-   STATUS
-========================= */
-
-function setStatus(message,type){
-
-  statusEl.textContent = message;
-
-  statusEl.className =
-    "status " + (type || "");
-
-}
-
-
-/* =========================
-   CONNEXION
-========================= */
-
-function connect(){
+function connectDeriv(){
 
   if(ws){
 
@@ -386,183 +267,94 @@ function connect(){
       ws.close();
     }catch(e){}
 
+    ws = null;
   }
 
-  setStatus(
+  updateStatus(
     "🟠 Connexion à Deriv...",
-    ""
+    false
   );
 
-  log(
+  diagnostic(
     "Ouverture du WebSocket..."
   );
 
-  /*
-    Endpoint public Deriv.
-    Aucun token n'est nécessaire
-    pour les données de marché.
-  */
+  try{
 
-  ws = new WebSocket(
-    "wss://ws.binaryws.com/websockets/v3"
-  );
+    ws = new WebSocket(
+      "wss://api.derivws.com/trading/v1/options/ws/public"
+    );
 
+  }catch(error){
 
-  /* =========================
-     OUVERTURE
-  ========================= */
+    diagnostic(
+      "Erreur création WebSocket : " +
+      error.message
+    );
+
+    updateStatus(
+      "🔴 Erreur WebSocket",
+      false
+    );
+
+    return;
+  }
+
 
   ws.onopen = function(){
 
-    setStatus(
-      "🟢 Connecté — demande des données...",
-      "ok"
+    updateStatus(
+      "🟢 Connecté — attente des ticks",
+      true
     );
 
-    log(
-      "WebSocket connecté. Demande des marchés..."
+    diagnostic(
+      "WebSocket connecté. Abonnement à R_75..."
     );
-
-
-    /*
-      Vérification des symboles disponibles.
-    */
 
     ws.send(
       JSON.stringify({
-
-        active_symbols:"brief",
-
-        product_type:"basic",
-
-        req_id:1
-
-      })
-    );
-
-
-    /*
-      Abonnement direct au flux R75.
-    */
-
-    ws.send(
-      JSON.stringify({
-
-        ticks:SYMBOL,
-
+        ticks:"R_75",
         subscribe:1,
-
-        req_id:2
-
+        req_id:1
       })
-    );
-
-    log(
-      "Abonnement envoyé pour R_75."
     );
 
   };
 
 
-  /* =========================
-     MESSAGE
-  ========================= */
-
   ws.onmessage = function(event){
-
-    let data;
 
     try{
 
-      data =
+      const data =
         JSON.parse(event.data);
 
-    }catch(error){
 
-      log(
-        "Erreur JSON reçue."
-      );
+      if(data.msg_type === "tick"){
 
-      return;
+        processTick(data.tick);
 
-    }
+      }
 
 
-    /*
-      MESSAGE D'ERREUR DERIV
-    */
+      else if(data.error){
 
-    if(data.error){
-
-      const message =
-        data.error.message ||
-        "Erreur inconnue Deriv";
-
-      setStatus(
-        "🔴 Erreur Deriv",
-        "error"
-      );
-
-      log(
-        "ERREUR DERIV : " +
-        message
-      );
-
-      return;
-
-    }
-
-
-    /*
-      ACTIVE SYMBOLS
-    */
-
-    if(
-      data.msg_type ===
-      "active_symbols"
-    ){
-
-      const symbols =
-        data.active_symbols || [];
-
-      const found =
-        symbols.some(
-          function(item){
-
-            return item.symbol === SYMBOL;
-
-          }
-        );
-
-
-      if(found){
-
-        log(
-          "R_75 trouvé dans les marchés disponibles."
-        );
-
-      }else{
-
-        log(
-          "⚠️ R_75 n'est pas trouvé dans active_symbols."
+        diagnostic(
+          "Erreur Deriv : " +
+          (
+            data.error.message ||
+            "Erreur inconnue"
+          )
         );
 
       }
 
-    }
+    }catch(error){
 
-
-    /*
-      TICK
-    */
-
-    if(
-      data.msg_type === "tick" &&
-      data.tick
-    ){
-
-      processTick(
-        data.tick
+      diagnostic(
+        "Erreur lecture réponse : " +
+        error.message
       );
 
     }
@@ -570,37 +362,29 @@ function connect(){
   };
 
 
-  /* =========================
-     ERREUR WEBSOCKET
-  ========================= */
-
   ws.onerror = function(){
 
-    setStatus(
-      "🔴 Erreur WebSocket",
-      "error"
+    updateStatus(
+      "🔴 Erreur de connexion",
+      false
     );
 
-    log(
-      "Le WebSocket a signalé une erreur."
+    diagnostic(
+      "WebSocket : erreur de connexion."
     );
 
   };
 
 
-  /* =========================
-     FERMETURE
-  ========================= */
-
   ws.onclose = function(){
 
-    setStatus(
+    updateStatus(
       "🟠 Connexion fermée",
-      ""
+      false
     );
 
-    log(
-      "Connexion fermée."
+    diagnostic(
+      "WebSocket fermé."
     );
 
   };
@@ -609,100 +393,40 @@ function connect(){
 
 
 /* =========================
-   TRAITEMENT DU TICK
+   TRAITEMENT DES TICKS
 ========================= */
 
 function processTick(tick){
 
-  if(
-    typeof tick.quote !==
-    "number"
-  ){
-
-    log(
-      "Tick reçu mais prix invalide."
-    );
-
+  if(!tick){
     return;
-
   }
-
 
   const quote =
-    tick.quote;
+    Number(tick.quote);
 
-
-  /*
-    pip_size peut être présent
-    ou absent dans la nouvelle API.
-  */
-
-  let pipSize =
-    Number.isInteger(
-      tick.pip_size
-    )
-    ? tick.pip_size
-    : 4;
-
-
-  /*
-    Conversion du prix
-    pour récupérer correctement
-    le dernier chiffre.
-  */
-
-  const fixedPrice =
-    quote.toFixed(pipSize);
-
-
-  const lastCharacter =
-    fixedPrice[
-      fixedPrice.length - 1
-    ];
-
-
-  const digit =
-    parseInt(
-      lastCharacter,
-      10
-    );
-
-
-  if(
-    Number.isNaN(digit)
-  ){
-
-    log(
-      "Impossible de déterminer le dernier chiffre."
-    );
-
+  if(!Number.isFinite(quote)){
     return;
-
   }
 
 
-  /* =========================
-     COMPTEURS
-  ========================= */
+  totalTicks++;
 
-  tickCount++;
+  digits.push(
+    getLastDigit(quote)
+  );
 
-  digits.push(digit);
-
-
-  /*
-    On garde seulement les
-    100 derniers chiffres.
-  */
 
   if(digits.length > 100){
-
     digits.shift();
-
   }
 
 
-  if(digit % 2 === 0){
+  const lastDigit =
+    digits[digits.length - 1];
+
+
+  if(lastDigit % 2 === 0){
 
     evenCount++;
 
@@ -713,106 +437,128 @@ function processTick(tick){
   }
 
 
-  /* =========================
-     AFFICHAGE
-  ========================= */
+  document.getElementById(
+    "price"
+  ).textContent =
+    quote.toFixed(
+      tick.pip_size !== undefined
+      ? tick.pip_size
+      : 4
+    );
 
-  priceEl.textContent =
-    fixedPrice;
 
-  lastDigitEl.textContent =
-    digit;
+  document.getElementById(
+    "digit"
+  ).textContent =
+    lastDigit;
 
-  tickCountEl.textContent =
-    tickCount;
 
-  evenEl.textContent =
+  document.getElementById(
+    "ticks"
+  ).textContent =
+    totalTicks;
+
+
+  document.getElementById(
+    "even"
+  ).textContent =
     evenCount;
 
-  oddEl.textContent =
+
+  document.getElementById(
+    "odd"
+  ).textContent =
     oddCount;
 
 
-  /*
-    Dès qu'un tick arrive,
-    la connexion fonctionne.
-  */
+  calculatePrediction();
 
-  setStatus(
-    "🟢 R_75 connecté — ticks reçus",
-    "ok"
+
+  diagnostic(
+    "Dernier tick reçu : " +
+    quote +
+    " | chiffre : " +
+    lastDigit
   );
-
-
-  log(
-    "Tick #" +
-    tickCount +
-    " | Prix : " +
-    fixedPrice +
-    " | Dernier chiffre : " +
-    digit
-  );
-
-
-  updatePrediction();
 
 }
 
 
 /* =========================
-   PREDICTION EXPERIMENTALE
+   DERNIER CHIFFRE
 ========================= */
 
-function updatePrediction(){
+function getLastDigit(price){
+
+  const text =
+    String(price);
+
+  const parts =
+    text.split(".");
+
+  if(parts.length < 2){
+
+    return Number(
+      text.slice(-1)
+    );
+
+  }
+
+  const decimals =
+    parts[1];
+
+  return Number(
+    decimals.slice(-1)
+  );
+
+}
+
+
+/* =========================
+   PREDICTION SIMPLE
+========================= */
+
+function calculatePrediction(){
 
   if(digits.length < 10){
 
-    predictionEl.textContent =
+    document.getElementById(
+      "prediction"
+    ).textContent =
       "—";
 
-    analysisEl.textContent =
-      "Collecte des données... " +
+    document.getElementById(
+      "analysis"
+    ).textContent =
+      "Collecte des données : " +
       digits.length +
       "/10 ticks";
 
-    dominantEl.textContent =
-      "—";
-
     return;
-
   }
 
 
   const counts =
-    [
-      0,0,0,0,0,
-      0,0,0,0,0
-    ];
+    [0,0,0,0,0,0,0,0,0,0];
 
 
-  digits.forEach(
-    function(digit){
+  digits.forEach(function(d){
 
-      counts[digit]++;
+    if(d >= 0 && d <= 9){
+
+      counts[d]++;
 
     }
-  );
+
+  });
 
 
-  let dominant =
-    0;
+  let dominant = 0;
 
 
-  for(
-    let i=1;
-    i<10;
-    i++
-  ){
+  for(let i=1;i<10;i++){
 
-    if(
-      counts[i] >
-      counts[dominant]
-    ){
+    if(counts[i] > counts[dominant]){
 
       dominant = i;
 
@@ -821,26 +567,27 @@ function updatePrediction(){
   }
 
 
-  dominantEl.textContent =
+  document.getElementById(
+    "dominant"
+  ).textContent =
     dominant;
 
 
   /*
-    IMPORTANT :
-    ceci n'est PAS une garantie
-    de prédiction du prochain tick.
-
-    Pour l'instant nous utilisons
-    simplement le chiffre dominant
-    des 100 derniers ticks.
+    TEST STATISTIQUE UNIQUEMENT.
+    Ce n'est PAS une garantie de prédiction.
   */
 
-  predictionEl.textContent =
+  document.getElementById(
+    "prediction"
+  ).textContent =
     dominant;
 
 
-  analysisEl.textContent =
-    "Basé sur les " +
+  document.getElementById(
+    "analysis"
+  ).textContent =
+    "Analyse de " +
     digits.length +
     " derniers ticks";
 
@@ -848,64 +595,53 @@ function updatePrediction(){
 
 
 /* =========================
-   RECONNEXION
+   INTERFACE
 ========================= */
 
-function restartConnection(){
+function updateStatus(
+  text,
+  connected
+){
 
-  clearTimeout(
-    reconnectTimer
-  );
+  const element =
+    document.getElementById(
+      "status"
+    );
 
-  tickCount = 0;
+  element.textContent =
+    text;
 
-  digits = [];
+  element.className =
+    connected
+    ? "status connected"
+    : "status disconnected";
 
-  evenCount = 0;
-
-  oddCount = 0;
-
-
-  priceEl.textContent =
-    "—";
-
-  lastDigitEl.textContent =
-    "—";
-
-  predictionEl.textContent =
-    "—";
-
-  analysisEl.textContent =
-    "Analyse en cours...";
-
-  tickCountEl.textContent =
-    "0";
-
-  dominantEl.textContent =
-    "—";
-
-  evenEl.textContent =
-    "0";
-
-  oddEl.textContent =
-    "0";
+}
 
 
-  log(
-    "Nouvelle tentative de connexion..."
-  );
+function diagnostic(text){
 
-
-  connect();
+  document.getElementById(
+    "diagnostic"
+  ).textContent =
+    "Diagnostic : " +
+    text;
 
 }
 
 
 /* =========================
-   DEMARRAGE
+   DÉMARRAGE
 ========================= */
 
-connect();
+window.addEventListener(
+  "load",
+  function(){
+
+    connectDeriv();
+
+  }
+);
 
 </script>
 
