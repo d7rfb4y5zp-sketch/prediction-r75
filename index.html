@@ -2,62 +2,190 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
 <title>Prediction R75</title>
 
 <style>
+
+*{
+    box-sizing:border-box;
+}
+
 body{
-  margin:0;
-  padding:20px;
-  background:#071426;
-  color:white;
-  font-family:Arial,sans-serif;
+    margin:0;
+    padding:20px;
+    min-height:100vh;
+    background:#071426;
+    color:white;
+    font-family:Arial,sans-serif;
 }
 
 .card{
-  max-width:600px;
-  margin:40px auto;
-  padding:25px;
-  background:#10233d;
-  border-radius:20px;
-  text-align:center;
-  box-shadow:0 10px 30px rgba(0,0,0,.35);
+    max-width:600px;
+    margin:30px auto;
+    padding:25px;
+    background:#10233d;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
 }
 
 h1{
-  margin-top:0;
-  color:#00ff88;
+    text-align:center;
+    margin-top:0;
+    color:#4da3ff;
 }
 
 .status{
-  margin:20px 0;
-  padding:15px;
-  border-radius:12px;
-  background:#172d49;
-  font-size:18px;
+    text-align:center;
+    padding:12px;
+    margin-bottom:20px;
+    border-radius:12px;
+    background:#172f4d;
+    font-weight:bold;
+}
+
+.status.ok{
+    background:#124d32;
+}
+
+.status.error{
+    background:#5a2020;
 }
 
 .label{
-  color:#9fb3c8;
-  margin-top:20px;
+    color:#9fb4cc;
+    font-size:14px;
+    margin-bottom:6px;
 }
 
 .value{
-  font-size:32px;
-  font-weight:bold;
-  margin-top:8px;
+    font-size:28px;
+    font-weight:bold;
+    margin-bottom:20px;
+}
+
+.price{
+    color:#4da3ff;
 }
 
 .digit{
-  font-size:70px;
-  color:#00ff88;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    width:120px;
+    height:120px;
+    margin:10px auto 25px;
+    border-radius:50%;
+    background:#173b63;
+    border:4px solid #4da3ff;
+    font-size:60px;
+    font-weight:bold;
+}
+
+.prediction{
+    padding:18px;
+    margin-top:20px;
+    text-align:center;
+    border-radius:15px;
+    background:#172f4d;
+}
+
+.prediction-number{
+    font-size:42px;
+    font-weight:bold;
+    color:#ffd54a;
+    margin-top:8px;
+}
+
+.confidence{
+    color:#9fb4cc;
+    margin-top:8px;
+}
+
+.history{
+    margin-top:25px;
+}
+
+.history-title{
+    font-size:18px;
+    font-weight:bold;
+    margin-bottom:12px;
+}
+
+.digits{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+
+.digit-small{
+    width:38px;
+    height:38px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#173b63;
+    border-radius:8px;
+    font-weight:bold;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:20px;
+}
+
+.stat{
+    background:#0b1b30;
+    padding:15px;
+    border-radius:12px;
+    text-align:center;
+}
+
+.stat-number{
+    display:block;
+    font-size:24px;
+    font-weight:bold;
+    margin-top:5px;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    margin-top:20px;
+    border:0;
+    border-radius:12px;
+    background:#1877f2;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+}
+
+button:active{
+    transform:scale(.98);
+}
+
+.footer{
+    text-align:center;
+    margin-top:25px;
+    color:#7188a3;
+    font-size:12px;
 }
 
 .warning{
-  margin-top:25px;
-  color:#ffcc00;
-  font-size:14px;
+    margin-top:20px;
+    padding:12px;
+    border-radius:10px;
+    background:#3b2d0b;
+    color:#ffd96a;
+    font-size:13px;
+    line-height:1.5;
 }
+
 </style>
 </head>
 
@@ -67,8 +195,8 @@ h1{
 
 <h1>Prediction R75</h1>
 
-<div class="status" id="status">
-🟠 Connexion...
+<div id="status" class="status">
+🟠 Connexion à Deriv...
 </div>
 
 <div class="label">
@@ -83,7 +211,7 @@ Volatility 75 (R_75)
 Prix en direct
 </div>
 
-<div class="value" id="price">
+<div id="price" class="value price">
 —
 </div>
 
@@ -91,94 +219,650 @@ Prix en direct
 Dernier chiffre
 </div>
 
-<div class="digit" id="digit">
+<div id="lastDigit" class="digit">
 —
 </div>
 
+<div class="prediction">
+
+<div>
+PRÉDICTION DU PROCHAIN CHIFFRE
+</div>
+
+<div id="prediction" class="prediction-number">
+—
+</div>
+
+<div id="confidence" class="confidence">
+Analyse en cours...
+</div>
+
+</div>
+
+<div class="history">
+
+<div class="history-title">
+Historique des chiffres
+</div>
+
+<div id="digits" class="digits">
+</div>
+
+</div>
+
+<div class="stats">
+
+<div class="stat">
+Total ticks
+<span id="totalTicks" class="stat-number">
+0
+</span>
+</div>
+
+<div class="stat">
+Chiffre dominant
+<span id="dominantDigit" class="stat-number">
+—
+</span>
+</div>
+
+<div class="stat">
+Pair
+<span id="evenCount" class="stat-number">
+0
+</span>
+</div>
+
+<div class="stat">
+Impair
+<span id="oddCount" class="stat-number">
+0
+</span>
+</div>
+
+</div>
+
+<button onclick="clearHistory()">
+Réinitialiser l'analyse
+</button>
+
 <div class="warning">
-Test de connexion et lecture des ticks uniquement.<br>
-Aucun trade n'est envoyé.
+⚠️ Cette prédiction est expérimentale. Les ticks d'un marché synthétique sont
+imprévisibles. Aucun résultat n'est garanti et cette page n'envoie aucun trade.
+</div>
+
+<div class="footer">
+Prediction R75 — V1
+<br>
+Connexion ticks uniquement
 </div>
 
 </div>
 
 <script>
 
-const statusEl = document.getElementById("status");
-const priceEl = document.getElementById("price");
-const digitEl = document.getElementById("digit");
+/* =========================================
+   CONFIGURATION
+========================================= */
 
-let ws;
+const SYMBOL = "R_75";
+
+/*
+   Application ID publique utilisée uniquement
+   pour recevoir les données de marché.
+*/
+const APP_ID = "1089";
+
+let socket = null;
+
+let history = [];
+
+const MAX_HISTORY = 100;
+
+
+/* =========================================
+   ELEMENTS HTML
+========================================= */
+
+const statusElement =
+    document.getElementById("status");
+
+const priceElement =
+    document.getElementById("price");
+
+const lastDigitElement =
+    document.getElementById("lastDigit");
+
+const predictionElement =
+    document.getElementById("prediction");
+
+const confidenceElement =
+    document.getElementById("confidence");
+
+const digitsElement =
+    document.getElementById("digits");
+
+const totalTicksElement =
+    document.getElementById("totalTicks");
+
+const dominantDigitElement =
+    document.getElementById("dominantDigit");
+
+const evenCountElement =
+    document.getElementById("evenCount");
+
+const oddCountElement =
+    document.getElementById("oddCount");
+
+
+/* =========================================
+   CONNEXION DERIV
+========================================= */
 
 function connect(){
 
-  statusEl.textContent = "🟠 Connexion...";
-
-  ws = new WebSocket(
-    "wss://ws.derivws.com/websockets/v3?app_id=1089"
-  );
-
-  ws.onopen = function(){
-
-    statusEl.textContent = "🟢 Connecté — attente du tick...";
-
-    ws.send(JSON.stringify({
-      ticks: "R_75",
-      subscribe: 1
-    }));
-  };
-
-  ws.onmessage = function(event){
+    setStatus(
+        "🟠 Connexion à Deriv...",
+        ""
+    );
 
     try{
 
-      const data = JSON.parse(event.data);
-
-      if(data.error){
-        statusEl.textContent =
-          "🔴 Erreur : " + data.error.message;
-        return;
-      }
-
-      if(data.msg_type === "tick"){
-
-        const quote = Number(data.tick.quote);
-
-        priceEl.textContent = quote.toFixed(
-          data.tick.pip_size
+        socket = new WebSocket(
+            "wss://ws.derivws.com/websockets/v3?app_id="
+            + APP_ID
         );
-
-        const formatted =
-          quote.toFixed(data.tick.pip_size);
-
-        const lastDigit =
-          formatted.charAt(formatted.length - 1);
-
-        digitEl.textContent = lastDigit;
-
-        statusEl.textContent =
-          "🟢 Connecté — tick reçu";
-      }
 
     }catch(error){
 
-      statusEl.textContent =
-        "🔴 Erreur de lecture";
+        setStatus(
+            "🔴 Erreur de connexion",
+            "error"
+        );
+
+        return;
     }
-  };
 
-  ws.onerror = function(){
 
-    statusEl.textContent =
-      "🔴 Erreur de connexion";
-  };
+    socket.onopen = function(){
 
-  ws.onclose = function(){
+        setStatus(
+            "🟢 Connecté — attente des ticks",
+            "ok"
+        );
 
-    statusEl.textContent =
-      "🔴 Déconnecté";
-  };
+        subscribeTicks();
+
+    };
+
+
+    socket.onmessage = function(event){
+
+        try{
+
+            const data =
+                JSON.parse(event.data);
+
+            handleMessage(data);
+
+        }catch(error){
+
+            console.log(
+                "Erreur message:",
+                error
+            );
+
+        }
+
+    };
+
+
+    socket.onerror = function(){
+
+        setStatus(
+            "🔴 Erreur Deriv",
+            "error"
+        );
+
+    };
+
+
+    socket.onclose = function(){
+
+        setStatus(
+            "🟠 Connexion fermée — reconnexion...",
+            ""
+        );
+
+        setTimeout(
+            connect,
+            5000
+        );
+
+    };
+
 }
+
+
+/* =========================================
+   SOUSCRIPTION AUX TICKS
+========================================= */
+
+function subscribeTicks(){
+
+    const request = {
+
+        ticks: SYMBOL,
+
+        subscribe: 1
+
+    };
+
+    socket.send(
+        JSON.stringify(request)
+    );
+
+}
+
+
+/* =========================================
+   RECEPTION DES DONNEES
+========================================= */
+
+function handleMessage(data){
+
+    if(data.msg_type === "tick"){
+
+        processTick(data.tick);
+
+    }
+
+}
+
+
+/* =========================================
+   TRAITEMENT DU TICK
+========================================= */
+
+function processTick(tick){
+
+    if(!tick){
+        return;
+    }
+
+
+    const quote =
+        Number(tick.quote);
+
+
+    if(!Number.isFinite(quote)){
+        return;
+    }
+
+
+    /*
+       Affichage du prix
+    */
+
+    priceElement.textContent =
+        quote.toFixed(
+            tick.pip_size || 4
+        );
+
+
+    /*
+       Extraction du dernier chiffre
+    */
+
+    const decimals =
+        tick.pip_size || 4;
+
+    const formatted =
+        quote.toFixed(decimals);
+
+    const lastCharacter =
+        formatted[
+            formatted.length - 1
+        ];
+
+
+    const digit =
+        Number(lastCharacter);
+
+
+    if(
+        !Number.isInteger(digit) ||
+        digit < 0 ||
+        digit > 9
+    ){
+
+        return;
+    }
+
+
+    /*
+       Ajouter à l'historique
+    */
+
+    history.push(digit);
+
+
+    if(history.length > MAX_HISTORY){
+
+        history.shift();
+
+    }
+
+
+    /*
+       Mise à jour interface
+    */
+
+    lastDigitElement.textContent =
+        digit;
+
+
+    updateHistory();
+
+    updateStats();
+
+    calculatePrediction();
+
+}
+
+
+/* =========================================
+   HISTORIQUE
+========================================= */
+
+function updateHistory(){
+
+    digitsElement.innerHTML = "";
+
+
+    const recent =
+        history.slice(-30);
+
+
+    recent.forEach(function(digit){
+
+        const element =
+            document.createElement("div");
+
+        element.className =
+            "digit-small";
+
+        element.textContent =
+            digit;
+
+        digitsElement.appendChild(
+            element
+        );
+
+    });
+
+
+    totalTicksElement.textContent =
+        history.length;
+
+}
+
+
+/* =========================================
+   STATISTIQUES
+========================================= */
+
+function updateStats(){
+
+    if(history.length === 0){
+
+        dominantDigitElement.textContent =
+            "—";
+
+        evenCountElement.textContent =
+            "0";
+
+        oddCountElement.textContent =
+            "0";
+
+        return;
+
+    }
+
+
+    const counts =
+        [
+            0,0,0,0,0,
+            0,0,0,0,0
+        ];
+
+
+    let even = 0;
+
+    let odd = 0;
+
+
+    history.forEach(function(digit){
+
+        counts[digit]++;
+
+
+        if(digit % 2 === 0){
+
+            even++;
+
+        }else{
+
+            odd++;
+
+        }
+
+    });
+
+
+    let dominant = 0;
+
+
+    for(
+        let i = 1;
+        i < 10;
+        i++
+    ){
+
+        if(
+            counts[i] >
+            counts[dominant]
+        ){
+
+            dominant = i;
+
+        }
+
+    }
+
+
+    dominantDigitElement.textContent =
+        dominant;
+
+
+    evenCountElement.textContent =
+        even;
+
+
+    oddCountElement.textContent =
+        odd;
+
+}
+
+
+/* =========================================
+   PREDICTION EXPERIMENTALE
+========================================= */
+
+function calculatePrediction(){
+
+    /*
+       On attend suffisamment de ticks
+       avant de produire une estimation.
+    */
+
+    if(history.length < 20){
+
+        predictionElement.textContent =
+            "—";
+
+        confidenceElement.textContent =
+            "Collecte des données : "
+            + history.length
+            + "/20 ticks";
+
+        return;
+
+    }
+
+
+    const counts =
+        [
+            0,0,0,0,0,
+            0,0,0,0,0
+        ];
+
+
+    /*
+       Analyse des 50 derniers chiffres
+    */
+
+    const sample =
+        history.slice(-50);
+
+
+    sample.forEach(function(digit){
+
+        counts[digit]++;
+
+    });
+
+
+    /*
+       Recherche du chiffre
+       le plus fréquent
+    */
+
+    let bestDigit = 0;
+
+
+    for(
+        let i = 1;
+        i < 10;
+        i++
+    ){
+
+        if(
+            counts[i] >
+            counts[bestDigit]
+        ){
+
+            bestDigit = i;
+
+        }
+
+    }
+
+
+    /*
+       Calcul d'une fréquence
+    */
+
+    const frequency =
+        counts[bestDigit]
+        / sample.length
+        * 100;
+
+
+    predictionElement.textContent =
+        bestDigit;
+
+
+    confidenceElement.textContent =
+        "Fréquence historique : "
+        + frequency.toFixed(1)
+        + "% — estimation statistique";
+
+
+}
+
+
+/* =========================================
+   STATUT
+========================================= */
+
+function setStatus(
+    message,
+    type
+){
+
+    statusElement.textContent =
+        message;
+
+    statusElement.className =
+        "status";
+
+    if(type){
+
+        statusElement.classList.add(
+            type
+        );
+
+    }
+
+}
+
+
+/* =========================================
+   RESET
+========================================= */
+
+function clearHistory(){
+
+    history = [];
+
+
+    digitsElement.innerHTML = "";
+
+
+    totalTicksElement.textContent =
+        "0";
+
+
+    dominantDigitElement.textContent =
+        "—";
+
+
+    evenCountElement.textContent =
+        "0";
+
+
+    oddCountElement.textContent =
+        "0";
+
+
+    lastDigitElement.textContent =
+        "—";
+
+
+    predictionElement.textContent =
+        "—";
+
+
+    confidenceElement.textContent =
+        "Analyse réinitialisée";
+
+}
+
+
+/* =========================================
+   DEMARRAGE
+========================================= */
 
 connect();
 
