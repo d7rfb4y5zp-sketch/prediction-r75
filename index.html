@@ -1,247 +1,195 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-
-<title>Prediction R75 V4.9</title>
+<title>Prediction R75 V5.0</title>
 
 <style>
 *{
   box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
-}
-
-html,body{
-  margin:0;
-  padding:0;
-  min-height:100%;
-  background:#020b18;
-  color:#fff;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
 }
 
 body{
-  padding:12px;
+  margin:0;
+  background:#061321;
+  color:#fff;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
 
 .app{
-  width:100%;
-  max-width:430px;
-  margin:0 auto;
-  background:#0b2a48;
-  border:1px solid #173d63;
-  border-radius:22px;
+  max-width:520px;
+  margin:auto;
   padding:14px;
-  box-shadow:0 15px 40px rgba(0,0,0,.45);
+}
+
+.card{
+  background:#0d2945;
+  border:1px solid #173f64;
+  border-radius:22px;
+  padding:16px;
 }
 
 h1{
-  margin:4px 0 16px;
   text-align:center;
-  color:#4da3ff;
-  font-size:27px;
-  font-weight:900;
+  color:#55a7ff;
+  font-size:29px;
+  margin:4px 0 16px;
 }
 
 .status{
-  min-height:52px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  padding:10px 14px;
   border-radius:14px;
-  background:#27384d;
-  font-size:16px;
+  padding:13px;
+  text-align:center;
   font-weight:800;
+  background:#263a51;
   margin-bottom:18px;
 }
 
-.status.connected{
-  background:#087a3d;
+.status.ok{
+  background:#08783b;
 }
 
-.status.error{
-  background:#8d2020;
-}
-
-.dot{
-  display:inline-block;
-  width:13px;
-  height:13px;
-  border-radius:50%;
-  margin-right:7px;
-  background:#ff9800;
-}
-
-.connected .dot{
-  background:#00ff66;
-  box-shadow:0 0 12px #00ff66;
-}
-
-.error .dot{
-  background:#ff3030;
-  box-shadow:0 0 12px #ff3030;
+.status.err{
+  background:#8c2025;
 }
 
 .label{
-  color:#9eb2c8;
-  font-size:14px;
+  color:#9db0c5;
   font-weight:700;
+  font-size:14px;
   margin-top:12px;
 }
 
-.value{
-  color:#fff;
+.market{
   font-size:25px;
   font-weight:900;
-  margin-top:3px;
+}
+
+.symbol{
+  font-size:24px;
+  font-weight:900;
 }
 
 .price{
-  color:#4da3ff;
   font-size:25px;
   font-weight:900;
+  color:#55a7ff;
 }
 
-.last-section{
+.last{
   text-align:center;
-  margin:20px 0;
-}
-
-.last-title{
-  color:#9eb2c8;
-  font-size:14px;
+  color:#9db0c5;
   font-weight:700;
+  margin-top:20px;
 }
 
-.last-digit{
-  width:110px;
-  height:110px;
-  margin:10px auto 0;
-  border:4px solid #4da3ff;
+.digit{
+  width:104px;
+  height:104px;
+  border:4px solid #4da2ff;
   border-radius:50%;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:48px;
+  font-size:52px;
   font-weight:900;
-  color:#fff;
+  margin:8px auto 18px;
 }
 
-.test-card{
-  background:#244f82;
-  border-radius:17px;
-  padding:20px 12px;
+.analysis{
+  background:#244e7f;
+  border-radius:18px;
+  padding:18px;
   text-align:center;
-  margin:16px 0;
 }
 
-.test-title{
+.analysis h2{
   font-size:17px;
+  margin:0 0 12px;
+}
+
+.pred{
+  font-size:42px;
+  color:#ffd33d;
   font-weight:900;
 }
 
-.tick-count{
-  color:#ffd43b;
-  font-size:34px;
+.score{
+  font-size:23px;
   font-weight:900;
   margin-top:8px;
-}
-
-.small{
-  color:#c6d3df;
-  font-size:14px;
-  margin-top:3px;
 }
 
 .grid{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:8px;
+  gap:9px;
   margin-top:12px;
 }
 
 .box{
   background:#062039;
-  border-radius:13px;
-  padding:14px 8px;
+  border-radius:14px;
+  padding:12px;
   text-align:center;
 }
 
-.box-title{
-  color:#9eb2c8;
-  font-size:12px;
+.box small{
+  display:block;
+  color:#9db0c5;
   font-weight:700;
 }
 
-.box-value{
-  margin-top:5px;
-  font-size:20px;
-  font-weight:900;
+.box strong{
+  display:block;
+  font-size:22px;
+  margin-top:4px;
 }
 
 .green{
-  color:#00e676;
+  color:#20df6b;
 }
 
 .red{
-  color:#ff4d5a;
+  color:#ff5353;
 }
 
 .section{
   background:#062039;
-  border-radius:15px;
+  border-radius:17px;
   padding:14px;
-  margin-top:14px;
+  margin-top:12px;
 }
 
-.section-title{
-  color:#4da3ff;
-  font-size:16px;
-  font-weight:900;
-  margin-bottom:12px;
+.section h3{
+  color:#55a7ff;
+  margin:0 0 12px;
+  font-size:17px;
 }
 
-.freq-grid{
+.freq{
   display:grid;
   grid-template-columns:repeat(5,1fr);
   gap:6px;
 }
 
-.freq{
-  background:#123858;
+.f{
+  background:#123a5e;
   border-radius:9px;
-  padding:8px 3px;
+  padding:8px 2px;
   text-align:center;
 }
 
-.freq-number{
-  font-size:16px;
-  font-weight:900;
+.f b{
+  display:block;
+  font-size:17px;
 }
 
-.freq-count{
-  color:#c5d1dd;
+.f span{
   font-size:10px;
-  margin-top:3px;
-}
-
-.log{
-  max-height:300px;
-  overflow-y:auto;
-  background:#02091a;
-  border-radius:12px;
-  padding:12px;
-  font-family:monospace;
-  font-size:11px;
-  line-height:1.55;
-  color:#d5e2ef;
-  white-space:pre-wrap;
-  word-break:break-word;
+  color:#b5c6d7;
 }
 
 button{
@@ -250,57 +198,60 @@ button{
   border-radius:13px;
   padding:14px;
   margin-top:10px;
-  color:white;
-  background:#2185f5;
-  font-size:15px;
+  color:#fff;
+  font-size:16px;
   font-weight:900;
-  cursor:pointer;
-}
-
-button:active{
-  transform:scale(.98);
+  background:#2387ef;
 }
 
 button.secondary{
-  background:#1267b8;
+  background:#176bbd;
 }
 
 .warning{
-  background:#664d00;
-  color:#ffe9a3;
-  border-radius:14px;
+  background:#695000;
+  border-radius:16px;
   padding:14px;
-  margin-top:14px;
-  font-size:12px;
-  line-height:1.55;
+  margin-top:12px;
+  color:#ffeeb0;
+  font-size:13px;
+  line-height:1.45;
 }
 
-.warning strong{
-  display:block;
-  margin-bottom:7px;
-  font-size:14px;
+.log{
+  background:#020a14;
+  border-radius:13px;
+  padding:12px;
+  font-family:monospace;
+  font-size:11px;
+  line-height:1.5;
+  max-height:250px;
+  overflow:auto;
+  white-space:pre-wrap;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:11px;
+}
+
+th,
+td{
+  padding:7px 3px;
+  border-bottom:1px solid #18344e;
+  text-align:center;
+}
+
+.muted{
+  color:#9db0c5;
 }
 
 .footer{
   text-align:center;
-  color:#71869b;
+  color:#6f8ba6;
   font-size:11px;
   margin-top:14px;
-}
-
-@media(max-width:350px){
-  h1{
-    font-size:23px;
-  }
-
-  .value{
-    font-size:22px;
-  }
-
-  .last-digit{
-    width:95px;
-    height:95px;
-  }
 }
 </style>
 </head>
@@ -309,902 +260,1151 @@ button.secondary{
 
 <div class="app">
 
-  <h1>Prediction R75 V4.9</h1>
+<div class="card">
 
-  <div id="status" class="status">
-    <span class="dot"></span>
-    <span id="statusText">Initialisation...</span>
-  </div>
+<h1>Prediction R75 V5.0</h1>
 
-  <div class="label">Marché</div>
-  <div class="value">Volatility 75</div>
+<div id="status" class="status">
+🟠 Connexion à Deriv…
+</div>
 
-  <div class="label">Symbole</div>
-  <div id="symbol" class="value">R_75</div>
+<div class="label">
+Marché
+</div>
 
-  <div class="label">Prix en direct</div>
-  <div id="price" class="price">—</div>
+<div class="market">
+Volatility 75
+</div>
 
-  <div class="last-section">
-    <div class="last-title">Dernier chiffre</div>
-    <div id="lastDigit" class="last-digit">—</div>
-  </div>
+<div class="label">
+Symbole
+</div>
 
-  <div class="test-card">
-    <div class="test-title">
-      TEST DE STABILITÉ DES TICKS
-    </div>
+<div class="symbol">
+R_75
+</div>
 
-    <div id="tickCount" class="tick-count">
-      0
-    </div>
+<div class="label">
+Prix en direct
+</div>
 
-    <div class="small">
-      ticks reçus
-    </div>
-  </div>
+<div id="price" class="price">
+—
+</div>
 
-  <div class="grid">
+<div class="last">
+Dernier chiffre
+</div>
 
-    <div class="box">
-      <div class="box-title">État WebSocket</div>
-      <div id="wsState" class="box-value">—</div>
-    </div>
+<div id="last" class="digit">
+—
+</div>
 
-    <div class="box">
-      <div class="box-title">Dernier tick</div>
-      <div id="lastTime" class="box-value">—</div>
-    </div>
 
-    <div class="box">
-      <div class="box-title">Symbole reçu</div>
-      <div id="receivedSymbol" class="box-value">—</div>
-    </div>
+<div class="analysis">
 
-    <div class="box">
-      <div class="box-title">Dernier chiffre</div>
-      <div id="receivedDigit" class="box-value">—</div>
-    </div>
+<h2>
+ANALYSE DU PROCHAIN CHIFFRE
+</h2>
 
-  </div>
+<div id="pred" class="pred">
+—
+</div>
 
-  <div class="section">
+<div id="txt" class="muted">
+Collecte de 100 ticks…
+</div>
 
-    <div class="section-title">
-      📊 Fréquence des chiffres
-    </div>
+<div id="score" class="score">
+Score : —/100
+</div>
 
-    <div id="frequency" class="freq-grid"></div>
-
-  </div>
-
-  <div class="section">
-
-    <div class="section-title">
-      🧠 Moteur V4.9
-    </div>
-
-    <div id="engineText">
-      Collecte des données publiques...
-    </div>
-
-  </div>
-
-  <button onclick="connectDeriv()">
-    🔄 Reconnecter à Deriv
-  </button>
-
-  <button class="secondary" onclick="resetData()">
-    ♻️ Réinitialiser les données
-  </button>
-
-  <div class="warning">
-
-    <strong>⚠️ MODE TEST UNIQUEMENT</strong>
-
-    Cette version reçoit uniquement les données publiques
-    du marché Deriv.
-
-    <br><br>
-
-    Aucun ordre de trading n'est envoyé à Deriv.
-
-    <br><br>
-
-    Le moteur V4.9 ne donne volontairement
-    <strong>aucune prédiction de trading</strong>.
-
-    <br><br>
-
-    Les statistiques servent uniquement à tester
-    la réception et la stabilité des données.
-
-  </div>
-
-  <div class="section">
-
-    <div class="section-title">
-      🧾 Journal technique
-    </div>
-
-    <div id="log" class="log">
-Démarrage V4.9...
-    </div>
-
-  </div>
-
-  <div class="footer">
-    Prediction R75 V4.9 — TEST STABLE
-  </div>
+<div id="signal">
+⚪ PAS DE SIGNAL
+</div>
 
 </div>
 
-<script>
 
-/* =========================================================
-   PREDICTION R75 V4.9
-   TEST STABLE DES TICKS
-   AUCUN TRADE
-   ========================================================= */
+<div class="grid">
+
+<div class="box">
+<small>Ticks analysés</small>
+<strong id="count">0</strong>
+</div>
+
+<div class="box">
+<small>Prédictions</small>
+<strong id="pc">0</strong>
+</div>
+
+<div class="box">
+<small>Validées</small>
+<strong id="vc">0</strong>
+</div>
+
+<div class="box">
+<small>WIN</small>
+<strong id="win" class="green">0</strong>
+</div>
+
+<div class="box">
+<small>LOSS</small>
+<strong id="loss" class="red">0</strong>
+</div>
+
+<div class="box">
+<small>Taux réel</small>
+<strong id="rate">—</strong>
+</div>
+
+<div class="box">
+<small>Dominant global</small>
+<strong id="gd">—</strong>
+</div>
+
+<div class="box">
+<small>Dominant récent</small>
+<strong id="rd">—</strong>
+</div>
+
+</div>
+
+
+<div class="section">
+
+<h3>
+📊 Fréquence des chiffres
+</h3>
+
+<div id="freq" class="freq">
+</div>
+
+</div>
+
+
+<div class="section">
+
+<h3>
+🧠 Moteur V5.0
+</h3>
+
+<div id="engine" class="muted">
+Initialisation…
+</div>
+
+</div>
+
+
+<button onclick="connect()">
+🔄 Reconnecter à Deriv
+</button>
+
+<button class="secondary" onclick="resetStats()">
+♻️ Réinitialiser les statistiques
+</button>
+
+
+<div class="warning">
+
+<b>⚠️ MODE TEST UNIQUEMENT</b>
+
+<br><br>
+
+Cette version reçoit les données publiques de marché.
+
+Aucun ordre de trading n'est envoyé à Deriv.
+
+<br><br>
+
+La prédiction est un test statistique.
+
+Les fréquences passées ne garantissent pas le prochain chiffre.
+
+</div>
+
+
+<div class="section">
+
+<h3>
+📋 Historique des validations
+</h3>
+
+<table>
+
+<thead>
+
+<tr>
+<th>#</th>
+<th>Prédit</th>
+<th>Réel</th>
+<th>Résultat</th>
+</tr>
+
+</thead>
+
+<tbody id="hist">
+</tbody>
+
+</table>
+
+</div>
+
+
+<div class="section">
+
+<h3>
+📝 Journal technique
+</h3>
+
+<div id="log" class="log">
+</div>
+
+</div>
+
+
+<div class="footer">
+
+Prediction R75 V5.0 —
+TEST STATISTIQUE —
+Aucun ordre envoyé
+
+</div>
+
+</div>
+</div>
+
+
+<script>
 
 const SYMBOL = "R_75";
 
-/*
-  Endpoint public Deriv.
-  Il ne nécessite pas de token pour les données
-  publiques du marché.
-*/
-const WS_URL =
-  "wss://api.derivws.com/trading/v1/options/ws/public";
+const APP_ID = "1089";
+
+const MAX_TICKS = 100;
+
+const RECENT_TICKS = 30;
 
 let ws = null;
 
-let tickCount = 0;
-
 let reconnectTimer = null;
 
-let reconnectDelay = 3000;
+let ticks = [];
 
-let reconnectAttempts = 0;
+let pendingPrediction = null;
 
-let manualClose = false;
+let predictionCount = 0;
 
-let lastTickTime = 0;
+let validated = 0;
 
-const digits = [
-  0,0,0,0,0,
-  0,0,0,0,0
-];
+let wins = 0;
 
+let losses = 0;
 
-/* =========================================================
-   ELEMENTS
-   ========================================================= */
-
-const statusEl =
-  document.getElementById("status");
-
-const statusTextEl =
-  document.getElementById("statusText");
-
-const wsStateEl =
-  document.getElementById("wsState");
-
-const priceEl =
-  document.getElementById("price");
-
-const lastDigitEl =
-  document.getElementById("lastDigit");
-
-const tickCountEl =
-  document.getElementById("tickCount");
-
-const lastTimeEl =
-  document.getElementById("lastTime");
-
-const symbolEl =
-  document.getElementById("symbol");
-
-const receivedSymbolEl =
-  document.getElementById("receivedSymbol");
-
-const receivedDigitEl =
-  document.getElementById("receivedDigit");
-
-const frequencyEl =
-  document.getElementById("frequency");
-
-const engineTextEl =
-  document.getElementById("engineText");
-
-const logEl =
-  document.getElementById("log");
+let historyRows = [];
 
 
-/* =========================================================
-   LOG
-   ========================================================= */
+const $ = id =>
+document.getElementById(id);
+
+
+function currentTime(){
+
+return new Date()
+.toLocaleTimeString(
+"fr-FR",
+{
+hour12:false
+}
+);
+
+}
+
 
 function log(message){
 
-  const now =
-    new Date().toLocaleTimeString("fr-FR");
+const box = $("log");
 
-  const line =
-    now + " — " + message;
-
-  if(
-    logEl.textContent ===
-    "Démarrage V4.9..."
-  ){
-    logEl.textContent = "";
-  }
-
-  logEl.textContent =
-    line + "\n" + logEl.textContent;
+box.textContent =
+currentTime() +
+" — " +
+message +
+"\n" +
+box.textContent;
 
 }
 
 
-/* =========================================================
-   STATUS
-   ========================================================= */
+function setStatus(text,className=""){
 
-function setStatus(type,text){
+const status =
+$("status");
 
-  statusEl.className =
-    "status " + (type || "");
+status.textContent =
+text;
 
-  statusTextEl.textContent = text;
-
-  if(type === "connected"){
-
-    wsStateEl.textContent = "OPEN";
-
-  }else if(type === "error"){
-
-    wsStateEl.textContent = "ERROR";
-
-  }else{
-
-    wsStateEl.textContent = "—";
-  }
+status.className =
+"status " +
+className;
 
 }
 
 
-/* =========================================================
-   FREQUENCE
-   ========================================================= */
+function getDigit(quote){
+
+const text =
+String(quote);
+
+return Number(
+text.replace(".","").slice(-1)
+);
+
+}
+
+
+function getCounts(array){
+
+const result =
+Array(10).fill(0);
+
+array.forEach(
+digit => {
+
+if(
+digit >= 0 &&
+digit <= 9
+){
+
+result[digit]++;
+
+}
+
+});
+
+return result;
+
+}
+
+
+function getDominant(counts){
+
+const maximum =
+Math.max(...counts);
+
+if(maximum === 0){
+
+return null;
+
+}
+
+return counts.indexOf(
+maximum
+);
+
+}
+
 
 function renderFrequency(){
 
-  let html = "";
+const counts =
+getCounts(ticks);
 
-  for(let i = 0; i <= 9; i++){
+$("freq").innerHTML =
+counts.map(
+(count,digit) => {
 
-    const percent =
-      tickCount > 0
-      ? ((digits[i] / tickCount) * 100).toFixed(1)
-      : "0.0";
+const percent =
+ticks.length
+?
+(count / ticks.length * 100)
+: 0;
 
-    html += `
-      <div class="freq">
-        <div class="freq-number">${i}</div>
-        <div class="freq-count">
-          ${digits[i]} (${percent}%)
-        </div>
-      </div>
-    `;
-  }
+return `
+<div class="f">
 
-  frequencyEl.innerHTML = html;
+<b>${digit}</b>
+
+<span>
+${count}
+(${percent.toFixed(1)}%)
+</span>
+
+</div>
+`;
+
 }
-
-
-/* =========================================================
-   MOTEUR STATISTIQUE
-   ========================================================= */
-
-function updateEngine(){
-
-  if(tickCount === 0){
-
-    engineTextEl.innerHTML =
-      "Collecte des données publiques...";
-
-    return;
-  }
-
-  let dominant = 0;
-
-  for(let i = 1; i <= 9; i++){
-
-    if(digits[i] > digits[dominant]){
-      dominant = i;
-    }
-
-  }
-
-  const frequency =
-    ((digits[dominant] / tickCount) * 100)
-    .toFixed(1);
-
-  engineTextEl.innerHTML = `
-    Ticks analysés : <strong>${tickCount}</strong><br>
-    Chiffre le plus fréquent :
-    <strong>${dominant}</strong><br>
-    Fréquence :
-    <strong>${frequency}%</strong><br>
-    Dernier chiffre :
-    <strong>${lastDigitEl.textContent}</strong>
-    <br><br>
-    <small>
-    Analyse statistique expérimentale.
-    Aucune décision de trading.
-    </small>
-  `;
-}
-
-
-/* =========================================================
-   EXTRACTION DU DERNIER CHIFFRE
-   ========================================================= */
-
-function getLastDigit(quote){
-
-  /*
-    Conversion en texte pour éviter
-    les problèmes d'arrondi JavaScript.
-  */
-
-  const text =
-    String(quote);
-
-  const parts =
-    text.split(".");
-
-  if(parts.length < 2){
-
-    const digitsOnly =
-      text.replace(/\D/g,"");
-
-    return Number(
-      digitsOnly.charAt(
-        digitsOnly.length - 1
-      )
-    );
-  }
-
-  const decimals =
-    parts[1];
-
-  return Number(
-    decimals.charAt(
-      decimals.length - 1
-    )
-  );
-}
-
-
-/* =========================================================
-   TRAITEMENT TICK
-   ========================================================= */
-
-function handleTick(tick){
-
-  if(!tick){
-    return;
-  }
-
-  const quote =
-    tick.quote;
-
-  const symbol =
-    tick.symbol || SYMBOL;
-
-  if(
-    quote === undefined ||
-    quote === null
-  ){
-    log("Tick reçu sans quote.");
-    return;
-  }
-
-  const digit =
-    getLastDigit(quote);
-
-  tickCount++;
-
-  digits[digit]++;
-
-  lastTickTime =
-    Date.now();
-
-  priceEl.textContent =
-    Number(quote).toFixed(4);
-
-  lastDigitEl.textContent =
-    digit;
-
-  receivedDigitEl.textContent =
-    digit;
-
-  receivedSymbolEl.textContent =
-    symbol;
-
-  tickCountEl.textContent =
-    tickCount;
-
-  lastTimeEl.textContent =
-    new Date(
-      (tick.epoch || Math.floor(Date.now()/1000))
-      * 1000
-    ).toLocaleTimeString("fr-FR");
-
-  renderFrequency();
-
-  updateEngine();
-
-  /*
-    On écrit seulement certains ticks
-    dans le journal pour éviter qu'il
-    devienne trop lourd sur iPhone.
-  */
-
-  if(
-    tickCount <= 5 ||
-    tickCount % 10 === 0
-  ){
-
-    log(
-      "Tick #" +
-      tickCount +
-      " | " +
-      Number(quote).toFixed(4) +
-      " | chiffre = " +
-      digit
-    );
-  }
+).join("");
 
 }
 
 
-/* =========================================================
-   CONNEXION
-   ========================================================= */
+function analyze(){
 
-function connectDeriv(){
+if(
+ticks.length < 30
+){
 
-  manualClose = false;
+$("pred").textContent =
+"—";
 
-  if(reconnectTimer){
+$("score").textContent =
+"Score : —/100";
 
-    clearTimeout(reconnectTimer);
+$("txt").textContent =
+"Collecte : " +
+ticks.length +
+"/100 ticks";
 
-    reconnectTimer = null;
-  }
-
-  if(ws){
-
-    try{
-
-      ws.onclose = null;
-      ws.onerror = null;
-      ws.onmessage = null;
-
-      if(
-        ws.readyState ===
-        WebSocket.OPEN ||
-        ws.readyState ===
-        WebSocket.CONNECTING
-      ){
-
-        ws.close();
-      }
-
-    }catch(e){}
-  }
-
-  setStatus(
-    "",
-    "Connexion à Deriv..."
-  );
-
-  wsStateEl.textContent =
-    "CONNECTING";
-
-  log(
-    "Tentative de connexion..."
-  );
-
-  try{
-
-    ws =
-      new WebSocket(WS_URL);
-
-  }catch(error){
-
-    handleConnectionError(
-      "Impossible de créer WebSocket."
-    );
-
-    return;
-  }
-
-
-  /* =======================================================
-     OUVERTURE
-     ======================================================= */
-
-  ws.onopen = function(){
-
-    reconnectAttempts = 0;
-
-    reconnectDelay = 3000;
-
-    setStatus(
-      "connected",
-      "Connecté — réception des ticks"
-    );
-
-    wsStateEl.textContent =
-      "OPEN";
-
-    log(
-      "WebSocket connecté."
-    );
-
-    /*
-      Demande du flux continu R_75.
-    */
-
-    const request = {
-
-      ticks: SYMBOL,
-
-      subscribe: 1,
-
-      req_id: 1001
-
-    };
-
-    try{
-
-      ws.send(
-        JSON.stringify(request)
-      );
-
-      log(
-        "Abonnement envoyé : " +
-        SYMBOL
-      );
-
-    }catch(error){
-
-      handleConnectionError(
-        "Erreur lors de l'abonnement."
-      );
-    }
-
-  };
-
-
-  /* =======================================================
-     MESSAGE
-     ======================================================= */
-
-  ws.onmessage = function(event){
-
-    let data;
-
-    try{
-
-      data =
-        JSON.parse(event.data);
-
-    }catch(error){
-
-      log(
-        "Réponse JSON invalide."
-      );
-
-      return;
-    }
-
-
-    /*
-      Message tick
-    */
-
-    if(
-      data.msg_type === "tick" &&
-      data.tick
-    ){
-
-      handleTick(
-        data.tick
-      );
-
-      return;
-    }
-
-
-    /*
-      Erreur Deriv
-    */
-
-    if(data.error){
-
-      const message =
-        data.error.message ||
-        "Erreur inconnue";
-
-      log(
-        "Erreur Deriv : " +
-        message
-      );
-
-      setStatus(
-        "error",
-        "Erreur Deriv"
-      );
-
-      return;
-    }
-
-
-    /*
-      Confirmation éventuelle
-      d'abonnement.
-    */
-
-    if(data.subscription){
-
-      log(
-        "Abonnement actif."
-      );
-
-      return;
-    }
-
-  };
-
-
-  /* =======================================================
-     ERREUR
-     ======================================================= */
-
-  ws.onerror = function(){
-
-    log(
-      "Erreur WebSocket."
-    );
-
-    setStatus(
-      "error",
-      "Erreur WebSocket"
-    );
-
-  };
-
-
-  /* =======================================================
-     FERMETURE
-     ======================================================= */
-
-  ws.onclose = function(event){
-
-    wsStateEl.textContent =
-      "CLOSED";
-
-    if(manualClose){
-
-      setStatus(
-        "",
-        "Connexion fermée"
-      );
-
-      log(
-        "Connexion fermée manuellement."
-      );
-
-      return;
-    }
-
-    setStatus(
-      "",
-      "Connexion fermée — reconnexion..."
-    );
-
-    log(
-      "WebSocket fermé. Code : " +
-      event.code
-    );
-
-    scheduleReconnect();
-
-  };
+return;
 
 }
 
 
-/* =========================================================
-   ERREUR CONNEXION
-   ========================================================= */
+const globalCounts =
+getCounts(ticks);
 
-function handleConnectionError(message){
+const recent =
+ticks.slice(
+-Math.min(
+RECENT_TICKS,
+ticks.length
+)
+);
 
-  setStatus(
-    "error",
-    "Erreur de connexion"
-  );
-
-  wsStateEl.textContent =
-    "ERROR";
-
-  log(message);
-
-  scheduleReconnect();
-
-}
+const recentCounts =
+getCounts(recent);
 
 
-/* =========================================================
-   RECONNEXION
-   ========================================================= */
+const globalDominant =
+getDominant(
+globalCounts
+);
 
-function scheduleReconnect(){
-
-  if(manualClose){
-    return;
-  }
-
-  if(reconnectTimer){
-    return;
-  }
-
-  reconnectAttempts++;
-
-  /*
-    Petit délai progressif.
-    Maximum 30 secondes.
-  */
-
-  const delay =
-    Math.min(
-      reconnectDelay *
-      Math.pow(
-        1.4,
-        Math.min(
-          reconnectAttempts - 1,
-          5
-        )
-      ),
-      30000
-    );
-
-  log(
-    "Nouvelle tentative dans " +
-    Math.round(delay / 1000) +
-    " secondes."
-  );
-
-  reconnectTimer =
-    setTimeout(
-      function(){
-
-        reconnectTimer = null;
-
-        connectDeriv();
-
-      },
-      delay
-    );
-
-}
-
-
-/* =========================================================
-   RESET
-   ========================================================= */
-
-function resetData(){
-
-  for(let i = 0; i <= 9; i++){
-    digits[i] = 0;
-  }
-
-  tickCount = 0;
-
-  priceEl.textContent =
-    "—";
-
-  lastDigitEl.textContent =
-    "—";
-
-  tickCountEl.textContent =
-    "0";
-
-  lastTimeEl.textContent =
-    "—";
-
-  receivedSymbolEl.textContent =
-    "—";
-
-  receivedDigitEl.textContent =
-    "—";
-
-  engineTextEl.innerHTML =
-    "Collecte des données publiques...";
-
-  renderFrequency();
-
-  log(
-    "Statistiques réinitialisées."
-  );
-
-}
-
-
-/* =========================================================
-   TEST DE VISIBILITE / PAGE
-   ========================================================= */
-
-document.addEventListener(
-  "visibilitychange",
-  function(){
-
-    if(
-      document.visibilityState ===
-      "visible"
-    ){
-
-      log(
-        "Page active."
-      );
-
-      /*
-        Si la connexion est perdue
-        lorsque l'utilisateur revient
-        sur Safari, on reconnecte.
-      */
-
-      if(
-        !ws ||
-        ws.readyState ===
-        WebSocket.CLOSED
-      ){
-
-        connectDeriv();
-      }
-
-    }
-
-  }
+const recentDominant =
+getDominant(
+recentCounts
 );
 
 
-/* =========================================================
-   DEMARRAGE
-   ========================================================= */
+const scores =
+Array(10).fill(0);
+
+
+for(
+let digit=0;
+digit<=9;
+digit++
+){
+
+const globalRate =
+globalCounts[digit] /
+ticks.length;
+
+const recentRate =
+recentCounts[digit] /
+recent.length;
+
+
+scores[digit] =
+(
+0.45 * globalRate
+) +
+(
+0.55 * recentRate
+);
+
+}
+
+
+const ranked =
+[...Array(10).keys()]
+.sort(
+(a,b) =>
+scores[b] -
+scores[a]
+);
+
+
+const best =
+ranked[0];
+
+const second =
+ranked[1];
+
+const gap =
+scores[best] -
+scores[second];
+
+
+const concentration =
+Math.min(
+1,
+Math.max(
+0,
+(scores[best] - 0.10) /
+0.12
+)
+);
+
+
+const gapScore =
+Math.min(
+1,
+gap / 0.06
+);
+
+
+const modelScore =
+Math.round(
+50 +
+25 * concentration +
+25 * gapScore
+);
+
+
+$("pred").textContent =
+best;
+
+$("score").textContent =
+"Score : " +
+modelScore +
+"/100";
+
+
+if(modelScore >= 70){
+
+$("signal").textContent =
+"🟢 SIGNAL STATISTIQUE FORT";
+
+}
+else if(modelScore >= 60){
+
+$("signal").textContent =
+"🟡 SIGNAL MODÉRÉ";
+
+}
+else{
+
+$("signal").textContent =
+"⚪ PAS DE SIGNAL";
+
+}
+
+
+$("txt").textContent =
+"Fenêtre : " +
+ticks.length +
+"/100 | récente : " +
+recent.length;
+
+
+$("gd").textContent =
+globalDominant === null
+? "—"
+: globalDominant;
+
+
+$("rd").textContent =
+recentDominant === null
+? "—"
+: recentDominant;
+
+
+$("engine").innerHTML =
+
+"Méthode : 45% global + 55% récent." +
+
+"<br>" +
+
+"Candidat : <b>" +
+best +
+"</b>" +
+
+" | score : <b>" +
+modelScore +
+"/100</b>" +
+
+"<br>" +
+
+"Aucune martingale, aucun ordre, aucune garantie.";
+
+
+if(
+!pendingPrediction &&
+ticks.length >= MAX_TICKS
+){
+
+pendingPrediction = {
+
+digit:best,
+
+score:modelScore
+
+};
+
+
+predictionCount++;
+
+$("pc").textContent =
+predictionCount;
+
+
+log(
+"Prédiction #" +
+predictionCount +
+" : chiffre " +
+best +
+" | score " +
+modelScore +
+"/100"
+);
+
+}
+
+}
+
+
+function validatePrediction(
+realDigit
+){
+
+if(
+!pendingPrediction
+){
+
+return;
+
+}
+
+
+const prediction =
+pendingPrediction;
+
+pendingPrediction =
+null;
+
+
+validated++;
+
+
+const win =
+prediction.digit ===
+realDigit;
+
+
+if(win){
+
+wins++;
+
+}
+else{
+
+losses++;
+
+}
+
+
+historyRows.unshift({
+
+number:validated,
+
+predicted:
+prediction.digit,
+
+real:
+realDigit,
+
+result:
+win
+?
+"WIN"
+:
+"LOSS"
+
+});
+
+
+historyRows =
+historyRows.slice(
+0,
+30
+);
+
+
+$("vc").textContent =
+validated;
+
+$("win").textContent =
+wins;
+
+$("loss").textContent =
+losses;
+
+
+$("rate").textContent =
+validated
+?
+(
+wins /
+validated *
+100
+).toFixed(1) +
+"%"
+:
+"—";
+
+
+$("hist").innerHTML =
+historyRows.map(
+row => `
+
+<tr>
+
+<td>
+${row.number}
+</td>
+
+<td>
+${row.predicted}
+</td>
+
+<td>
+${row.real}
+</td>
+
+<td class="${
+row.result === "WIN"
+?
+"green"
+:
+"red"
+}">
+
+${row.result}
+
+</td>
+
+</tr>
+
+`
+).join("");
+
+
+log(
+
+"Validation #" +
+validated +
+" : prédit " +
+prediction.digit +
+" | réel " +
+realDigit +
+" | " +
+(
+win
+?
+"WIN"
+:
+"LOSS"
+)
+
+);
+
+}
+
+
+function processTick(
+quote
+){
+
+const digit =
+getDigit(quote);
+
+
+$("price").textContent =
+Number(quote)
+.toFixed(4);
+
+
+$("last").textContent =
+digit;
+
+
+validatePrediction(
+digit
+);
+
+
+ticks.push(
+digit
+);
+
+
+if(
+ticks.length >
+MAX_TICKS
+){
+
+ticks.shift();
+
+}
+
+
+$("count").textContent =
+ticks.length;
+
+
+renderFrequency();
+
+analyze();
+
+}
+
+
+function handleMessage(
+data
+){
+
+if(
+data.msg_type ===
+"history"
+){
+
+const prices =
+data.history &&
+data.history.prices
+?
+data.history.prices
+:
+[];
+
+
+ticks =
+prices
+.map(Number)
+.filter(
+Number.isFinite
+)
+.map(getDigit)
+.slice(
+-MAX_TICKS
+);
+
+
+$("count").textContent =
+ticks.length;
+
+
+renderFrequency();
+
+analyze();
+
+
+if(
+ws &&
+ws.readyState ===
+WebSocket.OPEN
+){
+
+ws.send(
+JSON.stringify({
+
+ticks:
+SYMBOL,
+
+subscribe:
+1
+
+})
+);
+
+}
+
+
+log(
+"Historique reçu : " +
+ticks.length +
+" ticks."
+);
+
+return;
+
+}
+
+
+if(
+data.msg_type ===
+"tick"
+&&
+data.tick
+&&
+data.tick.quote !==
+undefined
+){
+
+processTick(
+data.tick.quote
+);
+
+setStatus(
+"🟢 Connecté — réception des ticks",
+"ok"
+);
+
+return;
+
+}
+
+
+if(data.error){
+
+log(
+"Erreur Deriv : " +
+(
+data.error.code ||
+"?"
+) +
+" — " +
+(
+data.error.message ||
+"Erreur inconnue"
+)
+);
+
+setStatus(
+"🔴 Erreur Deriv",
+"err"
+);
+
+return;
+
+}
+
+}
+
+
+function connect(){
+
+clearTimeout(
+reconnectTimer
+);
+
+
+try{
+
+if(ws){
+
+ws.close();
+
+}
+
+}
+catch(error){}
+
+
+setStatus(
+"🟠 Connexion à Deriv…"
+);
+
+
+log(
+"Ouverture WebSocket public..."
+);
+
+
+try{
+
+ws =
+new WebSocket(
+"wss://ws.derivws.com/websockets/v3?app_id=" +
+APP_ID
+);
+
+}
+catch(error){
+
+log(
+"Impossible de créer WebSocket."
+);
+
+scheduleReconnect();
+
+return;
+
+}
+
+
+ws.onopen =
+function(){
+
+setStatus(
+"🟢 Connecté — chargement des 100 ticks",
+"ok"
+);
+
+
+log(
+"WebSocket OPEN."
+);
+
+
+ws.send(
+JSON.stringify({
+
+ticks_history:
+SYMBOL,
+
+count:
+MAX_TICKS,
+
+end:
+"latest",
+
+style:
+"ticks"
+
+})
+);
+
+};
+
+
+ws.onmessage =
+function(event){
+
+try{
+
+const data =
+JSON.parse(
+event.data
+);
+
+handleMessage(
+data
+);
+
+}
+catch(error){
+
+log(
+"Message WebSocket illisible."
+);
+
+}
+
+};
+
+
+ws.onerror =
+function(){
+
+log(
+"Erreur WebSocket."
+);
+
+};
+
+
+ws.onclose =
+function(){
+
+setStatus(
+"🟠 Connexion fermée — reconnexion…"
+);
+
+log(
+"WebSocket CLOSED."
+);
+
+scheduleReconnect();
+
+};
+
+}
+
+
+function scheduleReconnect(){
+
+clearTimeout(
+reconnectTimer
+);
+
+
+reconnectTimer =
+setTimeout(
+function(){
+
+connect();
+
+},
+5000
+);
+
+}
+
+
+function resetStats(){
+
+pendingPrediction =
+null;
+
+predictionCount =
+0;
+
+validated =
+0;
+
+wins =
+0;
+
+losses =
+0;
+
+historyRows =
+[];
+
+
+$("pc").textContent =
+"0";
+
+$("vc").textContent =
+"0";
+
+$("win").textContent =
+"0";
+
+$("loss").textContent =
+"0";
+
+$("rate").textContent =
+"—";
+
+$("hist").innerHTML =
+"";
+
+
+log(
+"Statistiques réinitialisées."
+);
+
+}
+
+
+window.onload =
+function(){
 
 renderFrequency();
 
 log(
-  "Prediction R75 V4.9 démarrée."
+"Prediction R75 V5.0 démarrée."
 );
 
 log(
-  "Symbole cible : " +
-  SYMBOL
+"Mode test — aucun ordre."
 );
 
-log(
-  "Mode : données publiques uniquement."
-);
+connect();
 
-connectDeriv();
+};
 
 </script>
 
