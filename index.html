@@ -1018,47 +1018,50 @@ analyze();
 /* =========================================================
    RECHERCHE DU SYMBOLE
 ========================================================= */
-
 function findR75Symbol(list){
 
 if(!Array.isArray(list)){
-
 return null;
-
 }
 
-
-/*
-   Recherche exacte.
-*/
-
+/* Nouvelle API Deriv */
 const exact =
 list.find(
 item =>
-String(item.symbol || "")
-.toUpperCase()
-=== REQUESTED_SYMBOL
+String(
+item.underlying_symbol || ""
+).toUpperCase()
+===
+REQUESTED_SYMBOL
 );
 
-
 if(exact){
-
 return exact;
-
 }
 
+/* Sécurité : ancienne API */
+const legacy =
+list.find(
+item =>
+String(
+item.symbol || ""
+).toUpperCase()
+===
+REQUESTED_SYMBOL
+);
 
-/*
-   Recherche alternative :
-   Volatility 75.
-*/
+if(legacy){
+return legacy;
+}
 
+/* Recherche par nom */
 const volatility75 =
 list.find(
 item => {
 
 const name =
 String(
+item.underlying_symbol_name ||
 item.display_name ||
 item.name ||
 ""
@@ -1072,11 +1075,9 @@ name.includes("volatility 75") &&
 }
 );
 
-
 return volatility75 || null;
 
 }
-
 
 /* =========================================================
    TRAITEMENT ACTIVE SYMBOLS
