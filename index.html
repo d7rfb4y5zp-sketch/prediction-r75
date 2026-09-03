@@ -2,8 +2,9 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Prediction R75 V5.6</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>Prediction R75 V5.7</title>
 
 <style>
 *{
@@ -12,102 +13,53 @@
 
 body{
   margin:0;
-  background:#061b2e;
+  padding:10px;
+  background:#020b14;
   color:#fff;
-  font-family:Arial,sans-serif;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
   font-size:13px;
-}
-
-.container{
-  max-width:430px;
-  margin:auto;
-  padding:14px 10px 30px;
 }
 
 h1{
   text-align:center;
-  color:#4aa8ff;
+  color:#21a9ff;
   font-size:20px;
-  margin:0 0 10px;
-}
-
-.status{
-  text-align:center;
-  padding:10px;
-  border-radius:10px;
-  background:#087a3d;
-  font-weight:bold;
-  margin-bottom:12px;
+  margin:4px 0 10px;
 }
 
 .card{
-  background:#092844;
+  background:#07304b;
+  border:1px solid #0d5277;
   border-radius:12px;
-  padding:12px;
+  padding:10px;
   margin-bottom:10px;
-  box-shadow:0 2px 7px #0005;
+  box-shadow:0 2px 8px rgba(0,0,0,.25);
 }
 
 .title{
-  color:#4aa8ff;
-  font-weight:bold;
-  margin-bottom:9px;
+  font-size:16px;
+  font-weight:800;
+  margin-bottom:8px;
 }
 
-.label{
-  color:#a9bfd2;
-  font-size:10px;
-}
-
-.value{
-  font-weight:bold;
-  font-size:15px;
-  margin-bottom:6px;
-}
-
-.price{
-  color:#4aa8ff;
-  font-size:17px;
-}
-
-.bigDigit{
-  font-size:32px;
-  color:#ffd600;
-  font-weight:bold;
+.connection{
   text-align:center;
-  margin:5px;
-}
-
-.prediction{
-  background:#24558a;
-  border-radius:12px;
-  padding:14px;
-  text-align:center;
-}
-
-.score{
-  font-size:18px;
-  font-weight:bold;
-  margin:5px 0;
-}
-
-.signal{
-  margin-top:7px;
-  padding:8px;
+  padding:9px;
   border-radius:8px;
-  font-weight:bold;
+  font-weight:800;
+  margin-bottom:10px;
 }
 
-.signal.strong{
-  background:#087a3d;
+.red{
+  background:#a91414;
 }
 
-.signal.medium{
-  background:#806500;
+.green{
+  background:#008c42;
 }
 
-.signal.none{
-  background:#6d2222;
+.orange{
+  background:#a85b00;
 }
 
 .grid{
@@ -116,932 +68,534 @@ h1{
   gap:6px;
 }
 
-.stat{
-  background:#061d34;
-  border-radius:8px;
+.grid3{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:6px;
+}
+
+.box{
+  background:#031f33;
+  border:1px solid #0a4564;
+  border-radius:7px;
   padding:8px 5px;
   text-align:center;
+  min-height:58px;
 }
 
-.stat .n{
-  font-size:15px;
-  font-weight:bold;
-  margin-top:3px;
+.label{
+  color:#8eafc4;
+  font-size:11px;
+  margin-bottom:4px;
 }
 
-.green{
-  color:#00e676;
+.value{
+  font-size:17px;
+  font-weight:800;
 }
 
-.red{
-  color:#ff5252;
+.big{
+  font-size:26px;
 }
 
 .yellow{
-  color:#ffd600;
+  color:#ffd21c;
 }
 
-.blue{
-  color:#4aa8ff;
+.greenText{
+  color:#16e878;
 }
 
-.orange{
-  color:#ffab00;
+.redText{
+  color:#ff4c55;
 }
 
-.digits{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:5px;
+.blueText{
+  color:#27b2ff;
 }
 
-.digit{
-  background:#061d34;
-  border-radius:6px;
-  padding:7px 2px;
+.signal{
   text-align:center;
-}
-
-.digit strong{
-  display:block;
-  font-size:14px;
-}
-
-.small{
-  font-size:9px;
-  color:#9eb4c7;
-  line-height:1.45;
-}
-
-.model{
-  background:#061d34;
+  padding:10px;
   border-radius:8px;
-  padding:8px 5px;
-  text-align:center;
-}
-
-.modelName{
-  color:#9ec5e8;
-  font-size:9px;
-}
-
-.modelPrediction{
-  color:#ffd600;
-  font-size:20px;
-  font-weight:bold;
-  margin:3px;
-}
-
-.modelWeight{
-  color:#4aa8ff;
+  margin:8px 0;
   font-size:15px;
-  font-weight:bold;
+  font-weight:900;
+  background:#a91414;
+}
+
+.signal.good{
+  background:#087c42;
+}
+
+.signal.wait{
+  background:#a85b00;
+}
+
+.note{
+  color:#9db5c6;
+  font-size:11px;
+  line-height:1.45;
+  margin-top:7px;
+}
+
+.bar{
+  height:8px;
+  background:#031521;
+  border-radius:10px;
+  overflow:hidden;
+  margin-top:5px;
+}
+
+.barFill{
+  height:100%;
+  background:#18a9ff;
+  width:0%;
 }
 
 table{
   width:100%;
   border-collapse:collapse;
-  font-size:9px;
+  font-size:10px;
 }
 
-th,
-td{
-  padding:5px 2px;
+th,td{
+  border-bottom:1px solid #0a3851;
+  padding:4px 2px;
   text-align:center;
-  border-bottom:1px solid #183b57;
 }
 
 th{
-  color:#9ec5e8;
+  color:#7fb6d4;
 }
 
-.log{
-  background:#020d17;
-  color:#b7d2e5;
-  border-radius:7px;
-  padding:8px;
-  font-family:monospace;
-  font-size:9px;
-  max-height:210px;
-  overflow:auto;
-  white-space:pre-wrap;
+.win{
+  color:#15ed77;
+  font-weight:800;
 }
 
-.note{
-  background:#735900;
-  padding:10px;
-  border-radius:9px;
-  color:#fff4bd;
-  font-size:10px;
-  line-height:1.45;
-}
-
-.goodBox{
-  background:#073d29;
-  border:1px solid #087a3d;
-  border-radius:8px;
-  padding:8px;
-  margin-top:8px;
-  font-size:10px;
-}
-
-.warnBox{
-  background:#452d00;
-  border:1px solid #806500;
-  border-radius:8px;
-  padding:8px;
-  margin-top:8px;
-  font-size:10px;
+.loss{
+  color:#ff4c55;
+  font-weight:800;
 }
 
 button{
   width:100%;
   border:0;
-  border-radius:10px;
-  padding:11px;
-  margin-top:7px;
-  font-weight:bold;
-  color:white;
-  background:#1689e8;
+  border-radius:7px;
+  padding:10px;
+  margin-top:6px;
+  background:#087fc1;
+  color:#fff;
+  font-weight:800;
+  font-size:13px;
 }
 
-button.secondary{
-  background:#087a3d;
+button:active{
+  opacity:.7;
+}
+
+.warning{
+  background:#573b00;
+  border:1px solid #a87b00;
+  color:#ffe49a;
+  padding:9px;
+  border-radius:8px;
+  font-size:11px;
+  line-height:1.4;
+}
+
+.success{
+  background:#063d2a;
+  border:1px solid #00a85a;
+  color:#9fffc7;
+  padding:8px;
+  border-radius:8px;
+  font-size:11px;
+  margin-top:8px;
+}
+
+.small{
+  font-size:10px;
+}
+
+.digit{
+  font-size:27px;
+  color:#ffd21c;
+  font-weight:900;
+}
+
+hr{
+  border:0;
+  border-top:1px solid #0b4562;
+  margin:8px 0;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<h1>Prediction R75 V5.7</h1>
 
-<h1>Prediction R75 V5.6</h1>
-
-<div id="status" class="status">
-🟠 Connexion…
+<div id="connection" class="connection red">
+  🟠 Connexion…
 </div>
 
-
-<!-- =========================
-     MARCHE
-========================= -->
-
+<!-- MARCHE -->
 <div class="card">
 
-<div class="title">
-Marché
+  <div class="title">📡 Marché</div>
+
+  <div class="grid">
+
+    <div class="box">
+      <div class="label">Marché</div>
+      <div class="value">Volatility 75</div>
+      <div class="small">R_75</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Prix en direct</div>
+      <div id="price" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Dernier chiffre</div>
+      <div id="lastDigit" class="digit">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Ticks</div>
+      <div id="tickCount" class="value">0</div>
+    </div>
+
+  </div>
 </div>
 
-<div class="label">
-Marché
-</div>
-
-<div class="value">
-Volatility 75
-</div>
-
-<div class="label">
-Symbole demandé
-</div>
-
-<div class="value">
-R_75
-</div>
-
-<div class="label">
-Symbole utilisé
-</div>
-
-<div class="value" id="usedSymbol">
-—
-</div>
-
-<div class="label">
-Prix en direct
-</div>
-
-<div class="value price" id="price">
-—
-</div>
-
-<div style="text-align:center">
-
-<div class="label">
-Dernier chiffre
-</div>
-
-<div id="lastDigit" class="bigDigit">
-—
-</div>
-
-</div>
-
-</div>
-
-
-<!-- =========================
-     ANALYSE V5.6
-========================= -->
-
-<div class="card prediction">
-
-<div class="title">
-🧠 ANALYSE V5.6
-</div>
-
-<div class="label">
-Candidat final
-</div>
-
-<div id="candidate" class="bigDigit">
-—
-</div>
-
-<div class="score">
-Score calibré :
-<span id="score">—</span>/100
-</div>
-
-<div id="signal" class="signal none">
-⏳ COLLECTE DES DONNÉES
-</div>
-
-<div class="grid" style="margin-top:8px">
-
-<div class="stat">
-<div class="label">
-Accord modèles
-</div>
-<div class="n" id="agreement">
-—
-</div>
-</div>
-
-<div class="stat">
-<div class="label">
-Score brut
-</div>
-<div class="n" id="rawScore">
-—
-</div>
-</div>
-
-<div class="stat">
-<div class="label">
-Performance finale
-</div>
-<div class="n" id="empirical">
-—
-</div>
-</div>
-
-<div class="stat">
-<div class="label">
-Échantillon
-</div>
-<div class="n" id="sample">
-—
-</div>
-</div>
-
-<div class="stat">
-<div class="label">
-Stabilité
-</div>
-<div class="n" id="stability">
-—
-</div>
-</div>
-
-<div class="stat">
-<div class="label">
-Edge vs 10%
-</div>
-<div class="n" id="edge">
-—
-</div>
-</div>
-
-</div>
-
-<div id="analysisMessage"
-     class="warnBox">
-Collecte en cours.
-</div>
-
-</div>
-
-
-<!-- =========================
-     STATISTIQUES
-========================= -->
-
+<!-- ANALYSE -->
 <div class="card">
 
-<div class="title">
-📊 Statistiques
-</div>
+  <div class="title">🧠 ANALYSE V5.7 — WALK-FORWARD</div>
 
-<div class="grid">
+  <div class="box">
+    <div class="label">Candidat actuel</div>
+    <div id="candidate" class="digit">—</div>
+  </div>
 
-<div class="stat">
-<div class="label">
-Ticks
-</div>
-<div class="n" id="tickCount">
-0
-</div>
-</div>
+  <div id="signal" class="signal">
+    PAS ENCORE DE SIGNAL
+  </div>
 
-<div class="stat">
-<div class="label">
-Prédictions
-</div>
-<div class="n" id="predictions">
-0
-</div>
-</div>
+  <div class="grid3">
 
-<div class="stat">
-<div class="label">
-Validées
-</div>
-<div class="n" id="validated">
-0
-</div>
-</div>
+    <div class="box">
+      <div class="label">Score brut</div>
+      <div id="rawScore" class="value">—</div>
+    </div>
 
-<div class="stat">
-<div class="label">
-WIN
-</div>
-<div class="n green" id="wins">
-0
-</div>
-</div>
+    <div class="box">
+      <div class="label">Score calibré</div>
+      <div id="calibratedScore" class="value">—</div>
+    </div>
 
-<div class="stat">
-<div class="label">
-LOSS
-</div>
-<div class="n red" id="losses">
-0
-</div>
-</div>
+    <div class="box">
+      <div class="label">Accord</div>
+      <div id="agreement" class="value">—</div>
+    </div>
 
-<div class="stat">
-<div class="label">
-Taux réel
-</div>
-<div class="n" id="realRate">
-0%
-</div>
-</div>
+    <div class="box">
+      <div class="label">Edge estimée</div>
+      <div id="edge" class="value">—</div>
+    </div>
 
-<div class="stat">
-<div class="label">
-Dominant global
-</div>
-<div class="n" id="globalDigit">
-—
-</div>
-</div>
+    <div class="box">
+      <div class="label">Échantillon</div>
+      <div id="sample" class="value">—</div>
+    </div>
 
-<div class="stat">
-<div class="label">
-Dominant récent
-</div>
-<div class="n" id="recentDigit">
-—
-</div>
-</div>
+    <div class="box">
+      <div class="label">IC bas</div>
+      <div id="ciLow" class="value">—</div>
+    </div>
 
-<div class="stat">
-<div class="label">
-Streak
-</div>
-<div class="n" id="streak">
-—
-</div>
-</div>
+  </div>
 
-<div class="stat">
-<div class="label">
-Transition
-</div>
-<div class="n" id="transitionDigit">
-—
-</div>
-</div>
+  <div class="note">
+    Le score /100 est un indicateur interne. Ce n'est PAS une probabilité de gain.
+    Le moteur n'envoie aucun ordre.
+  </div>
 
 </div>
 
-</div>
-
-
-<!-- =========================
-     FREQUENCE
-========================= -->
-
+<!-- VALIDATION -->
 <div class="card">
 
-<div class="title">
-📊 Fréquence des chiffres
+  <div class="title">📊 Validation globale</div>
+
+  <div class="grid3">
+
+    <div class="box">
+      <div class="label">Prédictions</div>
+      <div id="predictions" class="value">0</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Validées</div>
+      <div id="validated" class="value">0</div>
+    </div>
+
+    <div class="box">
+      <div class="label">WIN</div>
+      <div id="wins" class="value greenText">0</div>
+    </div>
+
+    <div class="box">
+      <div class="label">LOSS</div>
+      <div id="losses" class="value redText">0</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Taux réel</div>
+      <div id="winRate" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Baseline</div>
+      <div class="value">10%</div>
+    </div>
+
+  </div>
+
+  <div class="note">
+    Référence théorique d'un choix unique parmi 10 chiffres : 10%.
+    Le modèle doit battre cette référence sur un échantillon sérieux.
+  </div>
+
 </div>
 
-<div id="frequency"
-     class="digits">
-</div>
-
-</div>
-
-
-<!-- =========================
-     PERFORMANCE DES MODELES
-========================= -->
-
+<!-- PERFORMANCE SIGNAL -->
 <div class="card">
 
-<div class="title">
-🧠 Performance réelle des 3 modèles
-</div>
+  <div class="title">🎯 Performance des signaux</div>
 
-<div class="grid">
+  <div class="grid">
 
-<div class="model">
+    <div class="box">
+      <div class="label">Signaux envoyés (TEST)</div>
+      <div id="signalTests" class="value">0</div>
+    </div>
 
-<div class="modelName">
-GLOBAL
-</div>
+    <div class="box">
+      <div class="label">WIN signaux</div>
+      <div id="signalWins" class="value greenText">0</div>
+    </div>
 
-<div class="modelPrediction"
-     id="predGlobal">
-—
-</div>
+    <div class="box">
+      <div class="label">LOSS signaux</div>
+      <div id="signalLosses" class="value redText">0</div>
+    </div>
 
-<div class="modelWeight"
-     id="weightGlobal">
-33%
-</div>
+    <div class="box">
+      <div class="label">Taux signaux</div>
+      <div id="signalRate" class="value">—</div>
+    </div>
 
-<div class="small">
-WIN :
-<span id="winGlobal">0</span>
-</div>
-
-<div class="small">
-TEST :
-<span id="testGlobal">0</span>
-</div>
-
-<div class="small">
-TAUX :
-<span id="rateGlobal">—</span>
-</div>
-
-<div class="small">
-STABLE :
-<span id="stableGlobal">—</span>
-</div>
+  </div>
 
 </div>
 
-
-<div class="model">
-
-<div class="modelName">
-RÉCENT
-</div>
-
-<div class="modelPrediction"
-     id="predRecent">
-—
-</div>
-
-<div class="modelWeight"
-     id="weightRecent">
-33%
-</div>
-
-<div class="small">
-WIN :
-<span id="winRecent">0</span>
-</div>
-
-<div class="small">
-TEST :
-<span id="testRecent">0</span>
-</div>
-
-<div class="small">
-TAUX :
-<span id="rateRecent">—</span>
-</div>
-
-<div class="small">
-STABLE :
-<span id="stableRecent">—</span>
-</div>
-
-</div>
-
-
-<div class="model">
-
-<div class="modelName">
-TRANSITION
-</div>
-
-<div class="modelPrediction"
-     id="predTransition">
-—
-</div>
-
-<div class="modelWeight"
-     id="weightTransition">
-34%
-</div>
-
-<div class="small">
-WIN :
-<span id="winTransition">0</span>
-</div>
-
-<div class="small">
-TEST :
-<span id="testTransition">0</span>
-</div>
-
-<div class="small">
-TAUX :
-<span id="rateTransition">—</span>
-</div>
-
-<div class="small">
-STABLE :
-<span id="stableTransition">—</span>
-</div>
-
-</div>
-
-</div>
-
-<div class="small"
-     style="margin-top:8px">
-
-Chaque modèle est maintenant validé
-individuellement sur le tick suivant.
-
-Les poids ne sont pas modifiés fortement
-avec quelques validations seulement.
-
-</div>
-
-</div>
-
-
-<!-- =========================
-     MODELES
-========================= -->
-
+<!-- STATISTIQUES -->
 <div class="card">
 
-<div class="title">
-🎯 Décision des modèles
-</div>
+  <div class="title">📈 Statistiques</div>
 
-<div class="grid">
+  <div class="grid3">
 
-<div class="stat">
-<div class="label">
-GLOBAL
-</div>
-<div class="n yellow"
-     id="modelGlobal">
-—
-</div>
-</div>
+    <div class="box">
+      <div class="label">Ticks fenêtre</div>
+      <div id="windowSize" class="value">0</div>
+    </div>
 
-<div class="stat">
-<div class="label">
-RÉCENT
-</div>
-<div class="n yellow"
-     id="modelRecent">
-—
-</div>
-</div>
+    <div class="box">
+      <div class="label">Prédictions</div>
+      <div id="statPred" class="value">0</div>
+    </div>
 
-<div class="stat">
-<div class="label">
-TRANSITION
-</div>
-<div class="n yellow"
-     id="modelTransition">
-—
-</div>
-</div>
+    <div class="box">
+      <div class="label">Validées</div>
+      <div id="statVal" class="value">0</div>
+    </div>
 
-<div class="stat">
-<div class="label">
-FINAL
-</div>
-<div class="n yellow"
-     id="modelFinal">
-—
-</div>
-</div>
+    <div class="box">
+      <div class="label">WIN</div>
+      <div id="statWin" class="value greenText">0</div>
+    </div>
+
+    <div class="box">
+      <div class="label">LOSS</div>
+      <div id="statLoss" class="value redText">0</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Taux</div>
+      <div id="statRate" class="value">—</div>
+    </div>
+
+  </div>
 
 </div>
 
-</div>
-
-
-<!-- =========================
-     TRANSITION
-========================= -->
-
+<!-- FREQUENCES -->
 <div class="card">
 
-<div class="title">
-🔄 Transition après le dernier chiffre
-</div>
+  <div class="title">📊 Fréquence des chiffres</div>
 
-<div id="transition"
-     class="digits">
-</div>
+  <div id="frequencyGrid" class="grid"></div>
 
 </div>
 
-
-<!-- =========================
-     CALIBRATION
-========================= -->
-
+<!-- PERFORMANCE MODELES -->
 <div class="card">
 
-<div class="title">
-📈 Calibration du score brut
-</div>
+  <div class="title">🎯 Performance réelle des 3 modèles</div>
 
-<div class="grid">
+  <div id="modelGrid" class="grid3"></div>
 
-<div class="stat">
-<div class="label">
-50–59
-</div>
-<div class="n"
-     id="b50">
-0/0
-</div>
-<div class="small"
-     id="r50">
-—
-</div>
-</div>
-
-<div class="stat">
-<div class="label">
-60–69
-</div>
-<div class="n"
-     id="b60">
-0/0
-</div>
-<div class="small"
-     id="r60">
-—
-</div>
-</div>
-
-<div class="stat">
-<div class="label">
-70–79
-</div>
-<div class="n"
-     id="b70">
-0/0
-</div>
-<div class="small"
-     id="r70">
-—
-</div>
-</div>
-
-<div class="stat">
-<div class="label">
-80–89
-</div>
-<div class="n"
-     id="b80">
-0/0
-</div>
-<div class="small"
-     id="r80">
-—
-</div>
-</div>
-
-<div class="stat">
-<div class="label">
-90–100
-</div>
-<div class="n"
-     id="b90">
-0/0
-</div>
-<div class="small"
-     id="r90">
-—
-</div>
-</div>
+  <div class="note">
+    Chaque modèle est validé indépendamment sur le tick suivant.
+    Les petits échantillons ne sont pas considérés comme fiables.
+  </div>
 
 </div>
 
-<div class="small"
-     style="margin-top:8px">
-
-Référence neutre :
-<strong>10%</strong>
-
-Le score brut mesure la force interne
-du modèle.
-
-La calibration mesure si cette force
-correspond réellement aux résultats.
-
-</div>
-
-</div>
-
-
-<!-- =========================
-     MOTEUR
-========================= -->
-
+<!-- DECISION -->
 <div class="card">
 
-<div class="title">
-⚙️ Moteur V5.6
-</div>
+  <div class="title">🎯 Décision des modèles</div>
 
-<div class="small">
-
-<b>Fenêtre :</b> 100 ticks<br>
-
-<b>Fenêtre récente :</b> 30 ticks<br>
-
-<b>Performance modèle :</b> 100 validations<br>
-
-<b>Validation :</b> tick suivant uniquement<br>
-
-<b>Référence :</b> 10%<br>
-
-<b>Poids :</b> adaptatifs avec stabilisation<br>
-
-<b>Statistique :</b> taux + stabilité + échantillon<br>
-
-<b>Ordres :</b> aucun<br>
-
-<b>Martingale :</b> aucune
+  <div id="decisionGrid" class="grid"></div>
 
 </div>
 
-<div class="goodBox">
-
-✅ V5.6 corrige la validation indépendante
-des trois modèles.
-
-</div>
-
-</div>
-
-
-<button onclick="reconnect()">
-🔄 Reconnecter à Deriv
-</button>
-
-<button class="secondary"
-        onclick="resetStats()">
-♻️ Réinitialiser les statistiques
-</button>
-
-
-<!-- =========================
-     NOTE
-========================= -->
-
-<div class="note">
-
-⚠️ MODE TEST UNIQUEMENT
-
-<br><br>
-
-Cette version analyse uniquement les données
-publiques du marché.
-
-Aucun ordre n'est envoyé à Deriv.
-
-<br><br>
-
-Le score n'est PAS une probabilité de gain.
-
-Un résultat supérieur à 10% dans un petit
-échantillon ne constitue pas une preuve
-d'avantage statistique.
-
-</div>
-
-
-<!-- =========================
-     HISTORIQUE
-========================= -->
-
+<!-- TRANSITION -->
 <div class="card">
 
-<div class="title">
-📋 Historique des validations
-</div>
+  <div class="title">🔄 Transition après le dernier chiffre</div>
 
-<table>
-
-<thead>
-
-<tr>
-<th>#</th>
-<th>Prédit</th>
-<th>Réel</th>
-<th>Brut</th>
-<th>Final</th>
-<th>Résultat</th>
-</tr>
-
-</thead>
-
-<tbody id="history">
-</tbody>
-
-</table>
+  <div id="transitionGrid" class="grid3"></div>
 
 </div>
 
-
-<!-- =========================
-     JOURNAL
-========================= -->
-
+<!-- CALIBRATION -->
 <div class="card">
 
-<div class="title">
-🧪 Journal technique
-</div>
+  <div class="title">🧪 Calibration du score brut</div>
 
-<div id="log"
-     class="log">
-</div>
+  <div id="calibrationGrid" class="grid"></div>
 
-</div>
-
-
-<div class="small"
-     style="text-align:center">
-
-Prediction R75 V5.6 —
-TEST STATISTIQUE —
-Aucun ordre
+  <div class="note">
+    La calibration utilise uniquement les résultats réellement observés
+    dans chaque tranche de score brut.
+  </div>
 
 </div>
+
+<!-- MOTEUR -->
+<div class="card">
+
+  <div class="title">⚙️ Moteur V5.7</div>
+
+  <div class="small">
+    • Walk-forward strict<br>
+    • Validation avant ajout du nouveau tick<br>
+    • Global : fréquence historique<br>
+    • Recent : fréquence des derniers ticks<br>
+    • Transition : comportement après le dernier chiffre<br>
+    • Pondération adaptative prudente<br>
+    • Baseline : 10%<br>
+    • Filtre statistique<br>
+    • Aucun ordre automatique
+  </div>
+
+  <div class="success">
+    ✅ Mode analyse / validation uniquement.
+    Aucun trade n'est envoyé à Deriv.
+  </div>
+
+</div>
+
+<button onclick="reconnect()">🔄 Reconnecter à Deriv</button>
+
+<button onclick="resetStats()">🧹 Réinitialiser les statistiques</button>
+
+<div class="warning">
+  ⚠️ AVERTISSEMENT<br>
+  Ce moteur expérimental ne garantit aucun résultat.
+  Une fréquence passée ne garantit pas le prochain chiffre.
+  Ne pas utiliser les résultats comme garantie de profit.
+</div>
+
+<!-- HISTORIQUE -->
+<div class="card">
+
+  <div class="title">📋 Historique des validations</div>
+
+  <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Préd.</th>
+          <th>Réel</th>
+          <th>Score</th>
+          <th>Modèles</th>
+          <th>Résultat</th>
+        </tr>
+      </thead>
+
+      <tbody id="historyBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- JOURNAL -->
+<div class="card">
+
+  <div class="title">🛠️ Journal technique</div>
+
+  <pre id="log"
+       style="white-space:pre-wrap;font-size:9px;color:#9fb8c8;max-height:250px;overflow:auto;"></pre>
 
 </div>
 
 
 <script>
 
-
 /* =========================================================
    CONFIGURATION
 ========================================================= */
 
-const PUBLIC_WS =
-"wss://api.derivws.com/trading/v1/options/ws/public";
+const WS_URL =
+  "wss://api.derivws.com/trading/v1/options/ws/public";
 
-const REQUESTED_SYMBOL =
-"R_75";
+const REQUEST_SYMBOL = "R_75";
 
-const WINDOW =
-100;
+const HISTORY_COUNT = 100;
 
-const RECENT_WINDOW =
-30;
+const RECENT_COUNT = 30;
 
-const MODEL_PERFORMANCE_WINDOW =
-100;
+const BASELINE = 0.10;
 
-const MIN_MODEL_TESTS =
-30;
+const MIN_MODEL_SAMPLE = 30;
 
-const BASELINE =
-0.10;
+const MIN_SIGNAL_SAMPLE = 80;
+
+const MIN_SIGNAL_RATE = 0.105;
+
+const MIN_SIGNAL_CI = 0.085;
+
+const MAX_HISTORY_ROWS = 80;
 
 
 /* =========================================================
@@ -1050,94 +604,52 @@ const BASELINE =
 
 let ws = null;
 
-let currentSymbol = null;
+let currentSymbol = REQUEST_SYMBOL;
 
 let ticks = [];
 
-let pendingPrediction = null;
+let predictions = [];
 
-let predictionCount = 0;
+let validationHistory = [];
 
-let validatedCount = 0;
+let logs = [];
 
-let wins = 0;
+let lastPrediction = null;
 
-let losses = 0;
+let reconnectTimer = null;
 
-let history = [];
+let isReady = false;
 
-
-/*
- Statistiques réelles des modèles.
-*/
+let requestId = 10;
 
 let modelStats = {
-
   global:{
-    wins:0,
-    total:0
+    test:0,
+    win:0
   },
 
   recent:{
-    wins:0,
-    total:0
+    test:0,
+    win:0
   },
 
   transition:{
-    wins:0,
-    total:0
+    test:0,
+    win:0
   }
-
 };
 
-
-/*
- Historique récent des modèles.
-
- 1 = WIN
- 0 = LOSS
-*/
-
-let modelHistory = {
-
-  global:[],
-  recent:[],
-  transition:[]
-
+let signalStats = {
+  test:0,
+  win:0
 };
 
-
-/*
- Calibration score brut.
-*/
-
-let buckets = {
-
-  "50-59":{
-    wins:0,
-    total:0
-  },
-
-  "60-69":{
-    wins:0,
-    total:0
-  },
-
-  "70-79":{
-    wins:0,
-    total:0
-  },
-
-  "80-89":{
-    wins:0,
-    total:0
-  },
-
-  "90-100":{
-    wins:0,
-    total:0
-  }
-
+let calibration = {
+  "50-59":{test:0,win:0},
+  "60-69":{test:0,win:0},
+  "70-79":{test:0,win:0},
+  "80-89":{test:0,win:0},
+  "90-100":{test:0,win:0}
 };
 
 
@@ -1145,876 +657,623 @@ let buckets = {
    UTILITAIRES
 ========================================================= */
 
-function $(id){
-  return document.getElementById(id);
-}
-
-
 function log(message){
 
   const time =
     new Date().toLocaleTimeString();
 
-  $("log").textContent =
-    time+" | "+message+
-    "\n"+
-    $("log").textContent;
+  logs.unshift(
+    time + " | " + message
+  );
 
+  logs = logs.slice(0,80);
+
+  document.getElementById("log").textContent =
+    logs.join("\n");
 }
 
 
-function setStatus(text,color){
+function clamp(value,min,max){
 
-  $("status").textContent =
-    text;
-
-  $("status").style.background =
-    color;
-
+  return Math.max(
+    min,
+    Math.min(max,value)
+  );
 }
 
 
-function digitOf(quote){
+function pct(value){
 
-  const s =
+  if(!Number.isFinite(value)){
+    return "—";
+  }
+
+  return (value * 100).toFixed(1) + "%";
+}
+
+
+function digitFromQuote(quote){
+
+  const text =
     String(quote);
 
   const clean =
-    s.replace(/\D/g,"");
+    text.replace(/[^0-9]/g,"");
 
-  if(!clean.length)
+  if(!clean.length){
     return null;
+  }
 
   return Number(
-    clean[clean.length-1]
+    clean.charAt(clean.length - 1)
   );
-
 }
 
 
-function counts(arr){
+function mean(arr){
 
-  const c =
+  if(!arr.length){
+    return 0;
+  }
+
+  return arr.reduce(
+    (a,b)=>a+b,
+    0
+  ) / arr.length;
+}
+
+
+/* =========================================================
+   WILSON LOWER CONFIDENCE BOUND
+========================================================= */
+
+function wilsonLower(
+  wins,
+  total
+){
+
+  if(total <= 0){
+    return 0;
+  }
+
+  const z = 1.96;
+
+  const p = wins / total;
+
+  const denominator =
+    1 + (z*z)/total;
+
+  const centre =
+    p + (z*z)/(2*total);
+
+  const spread =
+    z *
+    Math.sqrt(
+      (
+        p*(1-p) +
+        (z*z)/(4*total)
+      ) / total
+    );
+
+  return Math.max(
+    0,
+    (centre - spread) /
+    denominator
+  );
+}
+
+
+/* =========================================================
+   DIGIT COUNTS
+========================================================= */
+
+function countDigits(arr){
+
+  const counts =
     Array(10).fill(0);
 
-  arr.forEach(d=>{
+  for(const d of arr){
 
-    if(Number.isInteger(d))
-      c[d]++;
+    if(Number.isInteger(d) &&
+       d >= 0 &&
+       d <= 9){
 
-  });
+      counts[d]++;
+    }
+  }
 
-  return c;
-
+  return counts;
 }
 
 
-function normalizeCounts(c){
+/* =========================================================
+   GLOBAL MODEL
+========================================================= */
+
+function globalModel(){
+
+  const data =
+    ticks.map(t=>t.digit);
+
+  const counts =
+    countDigits(data);
 
   const total =
-    c.reduce(
+    data.length;
+
+  const scores =
+    Array(10).fill(0);
+
+  for(let d=0;d<10;d++){
+
+    /*
+      Laplace smoothing
+    */
+
+    scores[d] =
+      (counts[d] + 1) /
+      (total + 10);
+  }
+
+  return {
+    name:"GLOBAL",
+    scores,
+    candidate:
+      argMax(scores)
+  };
+}
+
+
+/* =========================================================
+   RECENT MODEL
+========================================================= */
+
+function recentModel(){
+
+  const data =
+    ticks
+      .slice(-RECENT_COUNT)
+      .map(t=>t.digit);
+
+  const counts =
+    countDigits(data);
+
+  const total =
+    data.length;
+
+  const scores =
+    Array(10).fill(0);
+
+  for(let d=0;d<10;d++){
+
+    scores[d] =
+      (counts[d] + 1) /
+      (total + 10);
+  }
+
+  return {
+    name:"RECENT",
+    scores,
+    candidate:
+      argMax(scores)
+  };
+}
+
+
+/* =========================================================
+   TRANSITION MODEL
+========================================================= */
+
+function transitionModel(){
+
+  const last =
+    ticks.length
+      ? ticks[ticks.length-1].digit
+      : null;
+
+  const counts =
+    Array(10).fill(1);
+
+  if(
+    last === null ||
+    !Number.isInteger(last)
+  ){
+
+    return {
+      name:"TRANSITION",
+      scores:
+        counts.map(
+          x=>x/10
+        ),
+      candidate:0
+    };
+  }
+
+  for(let i=1;i<ticks.length;i++){
+
+    const previous =
+      ticks[i-1].digit;
+
+    const current =
+      ticks[i].digit;
+
+    if(previous === last &&
+       Number.isInteger(current)){
+
+      counts[current]++;
+    }
+  }
+
+  const total =
+    counts.reduce(
       (a,b)=>a+b,
       0
     );
 
-  if(!total)
-    return Array(10).fill(
-      0.1
+  const scores =
+    counts.map(
+      x=>x/total
     );
 
-  /*
-   Laplace smoothing.
-  */
-
-  return c.map(
-    x=>
-      (x+1)/
-      (total+10)
-  );
-
+  return {
+    name:"TRANSITION",
+    scores,
+    candidate:
+      argMax(scores)
+  };
 }
 
 
-function argmax(arr){
+/* =========================================================
+   ARG MAX
+========================================================= */
+
+function argMax(arr){
 
   let best = 0;
 
-  for(
-    let i=1;
-    i<arr.length;
-    i++
-  ){
+  for(let i=1;i<arr.length;i++){
 
-    if(arr[i]>arr[best])
-      best=i;
-
+    if(arr[i] > arr[best]){
+      best = i;
+    }
   }
 
   return best;
-
-}
-
-
-function topTwo(arr){
-
-  const ids =
-    [...Array(10).keys()];
-
-  ids.sort(
-    (a,b)=>
-      arr[b]-arr[a]
-  );
-
-  return [
-    ids[0],
-    ids[1]
-  ];
-
-}
-
-
-function percent(x){
-
-  return (
-    x*100
-  ).toFixed(1)+"%";
-
 }
 
 
 /* =========================================================
-   MODELES BRUTS
+   MODEL PERFORMANCE
 ========================================================= */
-
-function getGlobalModel(){
-
-  return normalizeCounts(
-    counts(ticks)
-  );
-
-}
-
-
-function getRecentModel(){
-
-  const recent =
-    ticks.slice(
-      -RECENT_WINDOW
-    );
-
-  return normalizeCounts(
-    counts(recent)
-  );
-
-}
-
-
-function getTransitionModel(){
-
-  const matrix =
-    Array.from(
-      {length:10},
-      ()=>Array(10).fill(1)
-    );
-
-
-  for(
-    let i=1;
-    i<ticks.length;
-    i++
-  ){
-
-    const from =
-      ticks[i-1];
-
-    const to =
-      ticks[i];
-
-
-    if(
-      Number.isInteger(from)&&
-      Number.isInteger(to)
-    ){
-
-      matrix[from][to]++;
-
-    }
-
-  }
-
-
-  const last =
-    ticks[ticks.length-1];
-
-
-  if(!Number.isInteger(last))
-    return Array(10).fill(
-      0.1
-    );
-
-
-  const row =
-    matrix[last];
-
-
-  const total =
-    row.reduce(
-      (a,b)=>a+b,
-      0
-    );
-
-
-  return row.map(
-    x=>x/total
-  );
-
-}
-
-
-/* =========================================================
-   PREDICTION INDIVIDUELLE
-========================================================= */
-
-function getModelPredictions(){
-
-  const global =
-    getGlobalModel();
-
-  const recent =
-    getRecentModel();
-
-  const transition =
-    getTransitionModel();
-
-
-  return {
-
-    global:{
-      scores:global,
-      candidate:argmax(global)
-    },
-
-    recent:{
-      scores:recent,
-      candidate:argmax(recent)
-    },
-
-    transition:{
-      scores:transition,
-      candidate:argmax(transition)
-    }
-
-  };
-
-}
-
-
-/* =========================================================
-   STATISTIQUES MODELES
-========================================================= */
-
-
-/*
- Taux brut.
-*/
 
 function modelRate(name){
 
   const s =
     modelStats[name];
 
-  if(!s.total)
+  if(!s || s.test === 0){
     return BASELINE;
-
-  return (
-    s.wins/
-    s.total
-  );
-
-}
-
-
-/*
- Taux récent avec fenêtre.
-*/
-
-function recentModelRate(name){
-
-  const arr =
-    modelHistory[name];
-
-  if(!arr.length)
-    return BASELINE;
-
-
-  const sample =
-    arr.slice(
-      -MODEL_PERFORMANCE_WINDOW
-    );
-
-
-  const winsRecent =
-    sample.reduce(
-      (a,b)=>a+b,
-      0
-    );
-
+  }
 
   /*
-   Prior neutre :
-   10 wins / 100 tests.
+    Prior conservateur :
+    10 tests virtuels à 10%.
   */
 
   return (
-    winsRecent+10
-  )/
+    s.win + 10*BASELINE
+  ) /
   (
-    sample.length+100
+    s.test + 10
   );
-
 }
 
-
-/*
- Intervalle de Wilson.
-
- Sert à mesurer la stabilité.
-
- Plus la borne basse est proche
- du taux observé, plus l'estimation
- est stable.
-*/
-
-function wilsonLower(
-  winsCount,
-  totalCount
-){
-
-  if(totalCount<=0)
-    return 0;
-
-
-  const z = 1.96;
-
-  const p =
-    winsCount/
-    totalCount;
-
-
-  const denominator =
-    1+
-    (z*z)/
-    totalCount;
-
-
-  const centre =
-    p+
-    (z*z)/
-    (2*totalCount);
-
-
-  const spread =
-    z*
-    Math.sqrt(
-      (
-        p*(1-p)+
-        (z*z)/
-        (4*totalCount)
-      )/
-      totalCount
-    );
-
-
-  return Math.max(
-    0,
-    (
-      centre-spread
-    )/
-    denominator
-  );
-
-}
-
-
-/*
- Stabilité = borne basse
- de l'estimation récente.
-
- On ajoute le prior 10/100
- pour éviter des valeurs
- absurdes au début.
-*/
 
 function modelStability(name){
 
-  const arr =
-    modelHistory[name];
+  const s =
+    modelStats[name];
+
+  if(!s || s.test === 0){
+    return 0;
+  }
+
+  return wilsonLower(
+    s.win,
+    s.test
+  );
+}
 
 
-  if(!arr.length)
-    return BASELINE;
+function modelWeight(name){
 
+  const s =
+    modelStats[name];
 
-  const sample =
-    arr.slice(
-      -MODEL_PERFORMANCE_WINDOW
+  /*
+    Tant que le modèle n'a pas
+    suffisamment de tests,
+    poids neutre.
+  */
+
+  if(
+    !s ||
+    s.test < MIN_MODEL_SAMPLE
+  ){
+
+    return 1;
+  }
+
+  const rate =
+    modelRate(name);
+
+  const stability =
+    modelStability(name);
+
+  /*
+    Score de qualité prudent.
+  */
+
+  const rateFactor =
+    clamp(
+      rate / BASELINE,
+      0.70,
+      1.60
     );
 
+  const stabilityFactor =
+    clamp(
+      stability / BASELINE,
+      0.50,
+      1.40
+    );
 
-  const w =
-    sample.reduce(
+  return (
+    0.65 * rateFactor +
+    0.35 * stabilityFactor
+  );
+}
+
+
+/* =========================================================
+   ENSEMBLE
+========================================================= */
+
+function ensembleModels(){
+
+  const g =
+    globalModel();
+
+  const r =
+    recentModel();
+
+  const t =
+    transitionModel();
+
+  const models = {
+    global:g,
+    recent:r,
+    transition:t
+  };
+
+  const weights = {
+    global:
+      modelWeight("global"),
+
+    recent:
+      modelWeight("recent"),
+
+    transition:
+      modelWeight("transition")
+  };
+
+  /*
+    Aucun modèle ne peut prendre
+    plus de 55% du poids final.
+  */
+
+  const rawWeights = [
+    weights.global,
+    weights.recent,
+    weights.transition
+  ];
+
+  const totalWeight =
+    rawWeights.reduce(
       (a,b)=>a+b,
       0
     );
 
+  let normalized = {
+    global:
+      weights.global / totalWeight,
 
-  const total =
-    sample.length;
+    recent:
+      weights.recent / totalWeight,
 
+    transition:
+      weights.transition / totalWeight
+  };
 
-  return wilsonLower(
-    w+10,
-    total+100
-  );
+  /*
+    Plafond 55%.
+  */
 
-}
-
-
-/* =========================================================
-   POIDS ADAPTATIFS V5.6
-========================================================= */
-
-function getAdaptiveWeights(){
-
-  const names = [
+  for(const name of [
     "global",
     "recent",
     "transition"
-  ];
+  ]){
 
-
-  /*
-   Tant que les modèles ont
-   peu de tests, on reste
-   pratiquement égalitaire.
-  */
-
-  const raw = {};
-
-
-  names.forEach(name=>{
-
-    const total =
-      modelStats[name].total;
-
-
-    if(total<MIN_MODEL_TESTS){
-
-      raw[name]=1;
-
-      return;
-
+    if(normalized[name] > 0.55){
+      normalized[name] = 0.55;
     }
+  }
+
+  const total2 =
+    normalized.global +
+    normalized.recent +
+    normalized.transition;
+
+  normalized.global /= total2;
+  normalized.recent /= total2;
+  normalized.transition /= total2;
 
 
-    const rate =
-      recentModelRate(name);
-
-
-    const stability =
-      modelStability(name);
-
-
-    /*
-     On exige que la performance
-     récente et la borne basse
-     soient cohérentes.
-
-     Cela empêche un modèle de
-     gagner beaucoup de poids
-     sur une courte série chanceuse.
-    */
-
-    const conservativeRate =
-      (
-        rate+
-        stability
-      )/
-      2;
-
-
-    let factor =
-      conservativeRate/
-      BASELINE;
-
-
-    /*
-     Limitation volontaire.
-    */
-
-    factor =
-      Math.max(
-        0.70,
-        Math.min(
-          1.80,
-          factor
-        )
-      );
-
-
-    raw[name]=factor;
-
-  });
-
-
-  const totalRaw =
-    raw.global+
-    raw.recent+
-    raw.transition;
-
-
-  let weights={
-
-    global:
-      raw.global/
-      totalRaw,
-
-    recent:
-      raw.recent/
-      totalRaw,
-
-    transition:
-      raw.transition/
-      totalRaw
-
-  };
-
-
-  /*
-   Aucun modèle > 55%.
-  */
-
-  const maxWeight =
-    0.55;
-
-
-  names.forEach(name=>{
-
-    if(
-      weights[name]>
-      maxWeight
-    ){
-
-      weights[name]=
-        maxWeight;
-
-    }
-
-  });
-
-
-  /*
-   Renormalisation.
-  */
-
-  const sum =
-    weights.global+
-    weights.recent+
-    weights.transition;
-
-
-  weights.global /=
-    sum;
-
-  weights.recent /=
-    sum;
-
-  weights.transition /=
-    sum;
-
-
-  return weights;
-
-}
-
-
-/* =========================================================
-   ENSEMBLE FINAL
-========================================================= */
-
-function combineModels(){
-
-  const models =
-    getModelPredictions();
-
-
-  const weights =
-    getAdaptiveWeights();
-
-
-  const final =
+  const scores =
     Array(10).fill(0);
 
+  for(let d=0;d<10;d++){
 
-  for(
-    let d=0;
-    d<10;
-    d++
-  ){
-
-    final[d] =
-
-      weights.global*
-      models.global.scores[d]
+    scores[d] =
+      normalized.global *
+        g.scores[d]
 
       +
 
-      weights.recent*
-      models.recent.scores[d]
+      normalized.recent *
+        r.scores[d]
 
       +
 
-      weights.transition*
-      models.transition.scores[d];
-
+      normalized.transition *
+        t.scores[d];
   }
 
+  const candidate =
+    argMax(scores);
 
-  return {
-
-    models,
-
-    final,
-
-    weights
-
-  };
-
-}
-
-
-/* =========================================================
-   STREAK
-========================================================= */
-
-function currentStreak(){
-
-  if(!ticks.length)
-    return "—";
-
-
-  const last =
-    ticks[ticks.length-1];
-
-
-  let count=0;
-
-
-  for(
-    let i=ticks.length-1;
-    i>=0;
-    i--
-  ){
-
-    if(ticks[i]===last)
-      count++;
-
-    else
-      break;
-
-  }
-
-
-  return last+
-    " × "+
-    count;
-
-}
-
-
-/* =========================================================
-   SCORE BRUT
-========================================================= */
-
-function calculateRawPrediction(){
-
-  const ensemble =
-    combineModels();
-
-
-  const [candidate,second] =
-    topTwo(
-      ensemble.final
-    );
-
-
-  const top =
-    ensemble.final[candidate];
-
-
-  const secondScore =
-    ensemble.final[second];
-
-
-  const edge =
-    Math.max(
-      0,
-      top-BASELINE
-    );
-
+  const decisions = [
+    g.candidate,
+    r.candidate,
+    t.candidate
+  ];
 
   const agreement =
-    [
-
-      ensemble.models.global.candidate,
-
-      ensemble.models.recent.candidate,
-
-      ensemble.models.transition.candidate
-
-    ].filter(
-      x=>x===candidate
+    decisions.filter(
+      d=>d===candidate
     ).length;
 
 
-  const gap =
-    top-secondScore;
-
-
-  let agreementScore;
-
-
-  if(agreement===3)
-    agreementScore=1;
-
-  else if(agreement===2)
-    agreementScore=.65;
-
-  else
-    agreementScore=.25;
-
-
-  let edgeScore =
-    Math.max(
-      0,
-      Math.min(
-        1,
-        edge/.12
-      )
-    );
-
-
-  let raw =
-
-    45+
-
-    35*
-    edgeScore+
-
-    20*
-    agreementScore;
-
-
-  if(gap<.01)
-    raw-=8;
-
-  else if(gap<.02)
-    raw-=4;
-
-
-  raw =
-    Math.max(
-      50,
-      Math.min(
-        100,
-        raw
-      )
-    );
-
-
   return {
-
+    models,
+    scores,
     candidate,
-
-    second,
-
-    top,
-
-    secondScore,
-
-    edge,
-
-    gap,
-
     agreement,
-
-    raw,
-
-    ensemble
-
+    decisions,
+    weights:normalized
   };
-
 }
 
 
 /* =========================================================
-   CALIBRATION SCORE
+   RAW SCORE
 ========================================================= */
 
-function bucketForScore(score){
+function calculateRawScore(
+  ensemble
+){
 
-  if(score<60)
-    return "50-59";
+  const candidate =
+    ensemble.candidate;
 
-  if(score<70)
-    return "60-69";
+  const probability =
+    ensemble.scores[candidate];
 
-  if(score<80)
-    return "70-79";
+  const sorted =
+    [...ensemble.scores]
+      .sort((a,b)=>b-a);
 
-  if(score<90)
-    return "80-89";
+  const best =
+    sorted[0];
 
-  return "90-100";
+  const second =
+    sorted[1];
 
-}
+  /*
+    Edge théorique par rapport
+    à la baseline 10%.
+  */
+
+  const edge =
+    probability - BASELINE;
+
+  /*
+    Avantage relatif.
+  */
+
+  const edgeScore =
+    clamp(
+      edge / 0.08,
+      0,
+      1
+    );
+
+  /*
+    Écart entre premier
+    et deuxième candidat.
+  */
+
+  const gap =
+    best - second;
+
+  const gapScore =
+    clamp(
+      gap / 0.06,
+      0,
+      1
+    );
+
+  const agreementScore =
+    ensemble.agreement / 3;
+
+  let score =
+    35
+
+    +
+
+    30 * edgeScore
+
+    +
+
+    20 * agreementScore
+
+    +
+
+    15 * gapScore;
 
 
-function bucketObservedRate(bucket){
+  /*
+    Si les modèles sont
+    totalement divisés,
+    pénalité.
+  */
 
-  const b =
-    buckets[bucket];
+  if(ensemble.agreement === 1){
 
+    score -= 12;
+  }
 
-  if(!b.total)
-    return null;
+  if(ensemble.agreement === 2){
 
+    score -= 3;
+  }
 
-  return (
-    b.wins/
-    b.total
-  );
+  return {
+    score:
+      clamp(
+        score,
+        0,
+        100
+      ),
 
-}
+    probability,
 
+    edge,
 
-function bucketSmoothedRate(bucket){
-
-  const b =
-    buckets[bucket];
-
-
-  if(!b)
-    return BASELINE;
-
-
-  return (
-    b.wins+10
-  )/
-  (
-    b.total+100
-  );
-
+    gap
+  };
 }
 
 
@@ -2022,1102 +1281,440 @@ function bucketSmoothedRate(bucket){
    CALIBRATION
 ========================================================= */
 
-function calibrateScore(raw){
+function getBucket(score){
 
-  const bucket =
-    bucketForScore(raw);
+  if(score < 60)
+    return "50-59";
 
+  if(score < 70)
+    return "60-69";
 
-  const observed =
-    bucketObservedRate(
-      bucket
-    );
+  if(score < 80)
+    return "70-79";
 
+  if(score < 90)
+    return "80-89";
 
-  const smoothed =
-    bucketSmoothedRate(
-      bucket
-    );
-
-
-  const sample =
-    buckets[bucket].total;
-
-
-  /*
-   Confiance de l'échantillon.
-  */
-
-  const sampleConfidence =
-    Math.min(
-      1,
-      sample/50
-    );
-
-
-  /*
-   Edge de la tranche.
-  */
-
-  const bucketEdge =
-    smoothed-
-    BASELINE;
-
-
-  /*
-   Calibration conservatrice.
-  */
-
-  let calibrationFactor =
-
-    0.55+
-
-    Math.max(
-      -0.15,
-      Math.min(
-        0.25,
-        bucketEdge*2
-      )
-    );
-
-
-  calibrationFactor *=
-
-    (
-      .40+
-      .60*
-      sampleConfidence
-    );
-
-
-  let finalScore =
-
-    50+
-
-    (
-      raw-50
-    )*
-    calibrationFactor;
-
-
-  finalScore =
-    Math.max(
-      50,
-      Math.min(
-        100,
-        finalScore
-      )
-    );
-
-
-  return {
-
-    bucket,
-
-    observed,
-
-    smoothed,
-
-    sample,
-
-    finalScore:
-      Math.round(
-        finalScore
-      )
-
-  };
-
+  return "90-100";
 }
 
 
-/* =========================================================
-   STABILITE GLOBALE
-========================================================= */
-
-function calculateStability(prediction){
-
-  const names=[
-    "global",
-    "recent",
-    "transition"
-  ];
-
-
-  const stabilityValues =
-    names.map(
-      name=>
-        modelStability(name)
-    );
-
-
-  const average =
-    stabilityValues.reduce(
-      (a,b)=>a+b,
-      0
-    )/
-    stabilityValues.length;
-
-
-  /*
-   Accord des modèles.
-  */
-
-  let agreementFactor =
-    prediction.agreement/
-    3;
-
-
-  let stability =
-    average*
-    100*
-    agreementFactor;
-
-
-  /*
-   Ne pas afficher une stabilité
-   artificiellement énorme au début.
-  */
-
-  if(validatedCount<30)
-    stability =
-      Math.min(
-        stability,
-        50
-      );
-
-
-  return stability;
-
-}
-
-
-/* =========================================================
-   PREDICTION COMPLETE
-========================================================= */
-
-function calculatePrediction(){
-
-  const raw =
-    calculateRawPrediction();
-
-
-  const calibration =
-    calibrateScore(
-      raw.raw
-    );
-
-
-  const stability =
-    calculateStability(
-      raw
-    );
-
-
-  /*
-   Performance empirique
-   du candidat final via
-   la tranche de score.
-  */
-
-  const empirical =
-    calibration.smoothed;
-
-
-  let signal =
-    "NO SIGNAL";
-
-
-  let signalClass =
-    "none";
-
-
-  /*
-   Phase de collecte.
-  */
-
-  if(validatedCount<30){
-
-    if(
-      calibration.finalScore>=80 &&
-      raw.agreement>=2
-    ){
-
-      signal =
-        "SIGNAL EN OBSERVATION";
-
-      signalClass =
-        "medium";
-
-    }
-
-
-  }else{
-
-    /*
-     Pour un vrai signal,
-     on demande :
-
-     - score calibré élevé
-     - au moins 2 modèles
-     - échantillon raisonnable
-     - performance calibrée > référence
-    */
-
-    const enoughSample =
-      calibration.sample>=20;
-
-
-    const aboveBaseline =
-      empirical>
-      0.105;
-
-
-    if(
-
-      calibration.finalScore>=82 &&
-
-      raw.agreement>=2 &&
-
-      enoughSample &&
-
-      aboveBaseline
-
-    ){
-
-      signal =
-        "SIGNAL FORT";
-
-      signalClass =
-        "strong";
-
-
-    }else if(
-
-      calibration.finalScore>=70 &&
-
-      raw.agreement>=2 &&
-
-      aboveBaseline
-
-    ){
-
-      signal =
-        "SIGNAL MODÉRÉ";
-
-      signalClass =
-        "medium";
-
-    }
-
-  }
-
-
-  return {
-
-    ...raw,
-
-    ...calibration,
-
-    stability,
-
-    signal,
-
-    signalClass
-
-  };
-
-}
-
-
-/* =========================================================
-   AFFICHAGE ANALYSE
-========================================================= */
-
-function updateAnalysis(){
-
-  if(ticks.length<WINDOW){
-
-    $("candidate").textContent =
-      "—";
-
-    $("score").textContent =
-      "—";
-
-    $("signal").textContent =
-      "⏳ COLLECTE DES DONNÉES";
-
-    $("signal").className =
-      "signal none";
-
-    $("analysisMessage").textContent =
-      "Il faut 100 ticks avant l'analyse.";
-
-    return;
-
-  }
-
-
-  const p =
-    calculatePrediction();
-
-
-  $("candidate").textContent =
-    p.candidate;
-
-
-  $("score").textContent =
-    p.finalScore;
-
-
-  $("rawScore").textContent =
-    p.raw.toFixed(0);
-
-
-  $("agreement").textContent =
-    p.agreement+"/3";
-
-
-  $("empirical").textContent =
-    percent(
-      p.smoothed
-    );
-
-
-  $("sample").textContent =
-    p.sample;
-
-
-  $("stability").textContent =
-    p.stability.toFixed(1)+"%";
-
-
-  $("edge").textContent =
-    (
-      (
-        p.smoothed-
-        BASELINE
-      )*
-      100
-    ).toFixed(1)+"%";
-
-
-  $("signal").textContent =
-    p.signal;
-
-
-  $("signal").className =
-    "signal "+
-    p.signalClass;
-
-
-  $("globalDigit").textContent =
-    p.ensemble.models.global.candidate;
-
-
-  $("recentDigit").textContent =
-    p.ensemble.models.recent.candidate;
-
-
-  $("transitionDigit").textContent =
-    p.ensemble.models.transition.candidate;
-
-
-  $("streak").textContent =
-    currentStreak();
-
-
-  $("modelGlobal").textContent =
-    p.ensemble.models.global.candidate;
-
-
-  $("modelRecent").textContent =
-    p.ensemble.models.recent.candidate;
-
-
-  $("modelTransition").textContent =
-    p.ensemble.models.transition.candidate;
-
-
-  $("modelFinal").textContent =
-    p.candidate;
-
-
-  $("predGlobal").textContent =
-    p.ensemble.models.global.candidate;
-
-
-  $("predRecent").textContent =
-    p.ensemble.models.recent.candidate;
-
-
-  $("predTransition").textContent =
-    p.ensemble.models.transition.candidate;
-
-
-  $("weightGlobal").textContent =
-    Math.round(
-      p.ensemble.weights.global*
-      100
-    )+"%";
-
-
-  $("weightRecent").textContent =
-    Math.round(
-      p.ensemble.weights.recent*
-      100
-    )+"%";
-
-
-  $("weightTransition").textContent =
-    Math.round(
-      p.ensemble.weights.transition*
-      100
-    )+"%";
-
-
-  if(validatedCount<30){
-
-    $("analysisMessage").textContent =
-      "⚠️ Moins de 30 validations : le moteur reste volontairement prudent.";
-
-    $("analysisMessage").className =
-      "warnBox";
-
-  }else if(
-    p.smoothed<=BASELINE
-  ){
-
-    $("analysisMessage").textContent =
-      "🔴 La performance calibrée n'est pas supérieure à la référence de 10%.";
-
-    $("analysisMessage").className =
-      "warnBox";
-
-  }else{
-
-    $("analysisMessage").textContent =
-      "🟢 Performance au-dessus de 10%, mais elle doit rester stable sur un échantillon suffisant.";
-
-    $("analysisMessage").className =
-      "goodBox";
-
-  }
-
-
-  updateModelDisplay();
-
-  renderFrequency();
-
-  renderTransition();
-
-  renderBuckets();
-
-}
-
-
-/* =========================================================
-   AFFICHAGE MODELES
-========================================================= */
-
-function updateModelDisplay(){
-
-  const names=[
-    "global",
-    "recent",
-    "transition"
-  ];
-
-
-  names.forEach(name=>{
-
-    const cap =
-      name.charAt(0).toUpperCase()+
-      name.slice(1);
-
-
-    const stats =
-      modelStats[name];
-
-
-    const rate =
-      modelRate(name);
-
-
-    const stable =
-      modelStability(name);
-
-
-    $("win"+cap).textContent =
-      stats.wins;
-
-
-    $("test"+cap).textContent =
-      stats.total;
-
-
-    $("rate"+cap).textContent =
-      percent(rate);
-
-
-    $("stable"+cap).textContent =
-      percent(stable);
-
-  });
-
-}
-
-
-/* =========================================================
-   FREQUENCE
-========================================================= */
-
-function renderFrequency(){
+function calibrationRate(bucket){
 
   const c =
-    counts(ticks);
+    calibration[bucket];
 
+  if(!c || c.test < 10){
 
-  const total =
-    ticks.length;
-
-
-  $("frequency").innerHTML =
-    "";
-
-
-  for(
-    let d=0;
-    d<10;
-    d++
-  ){
-
-    const pct =
-      total
-      ?
-      c[d]/total*100
-      :
-      0;
-
-
-    const el =
-      document.createElement(
-        "div"
-      );
-
-
-    el.className =
-      "digit";
-
-
-    el.innerHTML =
-
-      "<strong>"+
-      d+
-      "</strong>"+
-
-      "<span class='small'>"+
-      c[d]+
-      " ("+
-      pct.toFixed(1)+
-      "%)"+
-      "</span>";
-
-
-    $("frequency")
-      .appendChild(el);
-
+    return BASELINE;
   }
-
-}
-
-
-/* =========================================================
-   TRANSITION
-========================================================= */
-
-function renderTransition(){
-
-  $("transition").innerHTML =
-    "";
-
-
-  if(!ticks.length)
-    return;
-
-
-  const model =
-    getTransitionModel();
-
-
-  for(
-    let d=0;
-    d<10;
-    d++
-  ){
-
-    const el =
-      document.createElement(
-        "div"
-      );
-
-
-    el.className =
-      "digit";
-
-
-    el.innerHTML =
-
-      "<strong>"+
-      d+
-      "</strong>"+
-
-      "<span class='small'>"+
-      percent(model[d])+
-      "</span>";
-
-
-    $("transition")
-      .appendChild(el);
-
-  }
-
-}
-
-
-/* =========================================================
-   STATS
-========================================================= */
-
-function updateStats(){
-
-  $("tickCount").textContent =
-    ticks.length;
-
-
-  $("predictions").textContent =
-    predictionCount;
-
-
-  $("validated").textContent =
-    validatedCount;
-
-
-  $("wins").textContent =
-    wins;
-
-
-  $("losses").textContent =
-    losses;
-
-
-  $("realRate").textContent =
-
-    validatedCount
-
-    ?
-
-    (
-      wins/
-      validatedCount*
-      100
-    ).toFixed(1)+"%"
-
-    :
-
-    "0%";
-
-}
-
-
-/* =========================================================
-   HISTORIQUE
-========================================================= */
-
-function renderHistory(){
-
-  $("history").innerHTML =
-    "";
-
-
-  history
-    .slice(0,50)
-    .forEach(h=>{
-
-      const tr =
-        document.createElement(
-          "tr"
-        );
-
-
-      tr.innerHTML =
-
-        "<td>"+
-        h.n+
-        "</td>"+
-
-        "<td>"+
-        h.pred+
-        "</td>"+
-
-        "<td>"+
-        h.real+
-        "</td>"+
-
-        "<td>"+
-        h.raw+
-        "</td>"+
-
-        "<td>"+
-        h.final+
-        "</td>"+
-
-        "<td class='"+
-        (
-          h.result==="WIN"
-          ?"green"
-          :"red"
-        )+
-        "'>"+
-        h.result+
-        "</td>";
-
-
-      $("history")
-        .appendChild(tr);
-
-    });
-
-}
-
-
-/* =========================================================
-   VALIDATION INDIVIDUELLE
-========================================================= */
-
-function validateModels(realDigit){
-
-  if(!pendingPrediction)
-    return;
-
-
-  const models =
-    pendingPrediction
-      .ensemble
-      .models;
-
-
-  const names=[
-    "global",
-    "recent",
-    "transition"
-  ];
-
-
-  names.forEach(name=>{
-
-    /*
-     IMPORTANT :
-
-     Chaque modèle possède
-     maintenant explicitement
-     son propre candidat.
-    */
-
-    const predicted =
-      models[name]
-        .candidate;
-
-
-    const win =
-      predicted===
-      realDigit;
-
-
-    modelStats[name]
-      .total++;
-
-
-    if(win)
-      modelStats[name]
-        .wins++;
-
-
-    modelHistory[name]
-      .push(
-        win?1:0
-      );
-
-
-    if(
-      modelHistory[name]
-        .length>
-      MODEL_PERFORMANCE_WINDOW
-    ){
-
-      modelHistory[name]
-        .shift();
-
-    }
-
-  });
-
-}
-
-
-/* =========================================================
-   VALIDATION FINALE
-========================================================= */
-
-function validatePrediction(realDigit){
-
-  if(!pendingPrediction)
-    return;
-
-
-  const p =
-    pendingPrediction;
-
 
   /*
-   1. Validation indépendante
-      des trois modèles.
+    Prior 20 tests à 10%.
   */
 
-  validateModels(
-    realDigit
+  return (
+    c.win + 20*BASELINE
+  ) /
+  (
+    c.test + 20
   );
+}
 
 
-  /*
-   2. Validation de la
-      prédiction finale.
-  */
-
-  const win =
-    p.candidate===
-    realDigit;
-
-
-  validatedCount++;
-
-
-  if(win)
-    wins++;
-
-  else
-    losses++;
-
+function calibratedScore(
+  rawScore
+){
 
   /*
-   3. Calibration du score brut.
+    Pour les premiers tests,
+    on reste proche du score brut.
   */
 
   const bucket =
-    bucketForScore(
-      p.raw
+    getBucket(rawScore);
+
+  const c =
+    calibration[bucket];
+
+  if(!c || c.test < 10){
+
+    return Math.round(
+      rawScore
     );
+  }
 
-
-  buckets[bucket]
-    .total++;
-
-
-  if(win)
-    buckets[bucket]
-      .wins++;
-
+  const empiricalRate =
+    calibrationRate(bucket);
 
   /*
-   4. Historique.
+    Mapping empirique.
+    10% = score neutre.
   */
 
-  history.unshift({
+  const empiricalFactor =
+    clamp(
+      empiricalRate /
+      BASELINE,
+      0.50,
+      1.50
+    );
 
-    n:
-      predictionCount,
-
-    pred:
-      p.candidate,
-
-    real:
-      realDigit,
-
-    raw:
-      Math.round(
-        p.raw
-      ),
-
-    final:
-      p.finalScore,
-
-    result:
-      win
-      ?
-      "WIN"
-      :
-      "LOSS"
-
-  });
-
-
-  if(history.length>100)
-    history.pop();
-
-
-  log(
-
-    "Validation #"+
-    predictionCount+
-
-    " | final "+
-    p.candidate+
-
-    " | réel "+
-    realDigit+
-
-    " | brut "+
-    p.raw.toFixed(0)+
-
-    " | final "+
-    p.finalScore+
-
-    " | accord "+
-    p.agreement+
-    "/3"+
-
-    " | G "+
-    p.ensemble
-      .models
-      .global
-      .candidate+
-
-    " | R "+
-    p.ensemble
-      .models
-      .recent
-      .candidate+
-
-    " | T "+
-    p.ensemble
-      .models
-      .transition
-      .candidate+
-
-    " | "+
+  const result =
+    rawScore *
     (
-      win
-      ?"WIN"
-      :"LOSS"
+      0.55 +
+      0.45 * empiricalFactor
+    );
+
+  return Math.round(
+    clamp(
+      result,
+      0,
+      100
     )
-
   );
-
-
-  pendingPrediction =
-    null;
-
-
-  updateStats();
-
-  renderHistory();
-
-  updateModelDisplay();
-
-  updateAnalysis();
-
 }
 
 
 /* =========================================================
-   NOUVELLE PREDICTION
+   ANALYSE
+========================================================= */
+
+function analyze(){
+
+  if(ticks.length < 20){
+    return null;
+  }
+
+  const ensemble =
+    ensembleModels();
+
+  const raw =
+    calculateRawScore(
+      ensemble
+    );
+
+  const calScore =
+    calibratedScore(
+      raw.score
+    );
+
+  const candidate =
+    ensemble.candidate;
+
+  /*
+    Performance empirique
+    globale du modèle.
+  */
+
+  const total =
+    predictions.filter(
+      p=>p.validated
+    ).length;
+
+  const wins =
+    predictions.filter(
+      p=>p.validated && p.win
+    ).length;
+
+  const empiricalRate =
+    total > 0
+      ? wins / total
+      : BASELINE;
+
+  const lower =
+    total >= 20
+      ? wilsonLower(
+          wins,
+          total
+        )
+      : 0;
+
+  /*
+    Edge réelle :
+    performance observée - baseline.
+  */
+
+  const empiricalEdge =
+    empiricalRate -
+    BASELINE;
+
+  /*
+    Signal strict.
+  */
+
+  let signal = false;
+
+  if(
+    calScore >= 70 &&
+
+    ensemble.agreement >= 2 &&
+
+    total >= MIN_SIGNAL_SAMPLE &&
+
+    empiricalRate >=
+      MIN_SIGNAL_RATE &&
+
+    lower >=
+      MIN_SIGNAL_CI
+  ){
+
+    signal = true;
+  }
+
+  return {
+
+    candidate,
+
+    ensemble,
+
+    rawScore:
+      raw.score,
+
+    calibratedScore:
+      calScore,
+
+    probability:
+      raw.probability,
+
+    edge:
+      raw.edge,
+
+    empiricalRate,
+
+    empiricalEdge,
+
+    ciLow:
+      lower,
+
+    gap:
+      raw.gap,
+
+    signal
+  };
+}
+
+
+/* =========================================================
+   CREATION PREDICTION
 ========================================================= */
 
 function createPrediction(){
 
-  if(ticks.length<WINDOW)
+  const analysis =
+    analyze();
+
+  if(!analysis){
     return;
+  }
+
+  /*
+    Chaque nouveau tick crée
+    une prédiction pour le tick suivant.
+  */
+
+  const p = {
+
+    id:
+      predictions.length + 1,
+
+    candidate:
+      analysis.candidate,
+
+    score:
+      analysis.calibratedScore,
+
+    rawScore:
+      analysis.rawScore,
+
+    agreement:
+      analysis.ensemble.agreement,
+
+    signal:
+      analysis.signal,
+
+    models:{
+      global:
+        analysis.ensemble.models.global.candidate,
+
+      recent:
+        analysis.ensemble.models.recent.candidate,
+
+      transition:
+        analysis.ensemble.models.transition.candidate
+    },
+
+    validated:false,
+
+    win:false,
+
+    actual:null,
+
+    time:
+      new Date().toLocaleTimeString()
+  };
+
+  predictions.push(p);
+
+  lastPrediction = p;
+
+  /*
+    Signal uniquement si les conditions
+    sont déjà réunies.
+  */
+
+  if(p.signal){
+
+    signalStats.test++;
+  }
+
+  /*
+    Limite mémoire.
+  */
+
+  if(predictions.length > 1000){
+
+    predictions =
+      predictions.slice(-1000);
+  }
+}
 
 
-  if(pendingPrediction)
+/* =========================================================
+   VALIDATION WALK-FORWARD
+========================================================= */
+
+function validatePrevious(
+  actualDigit
+){
+
+  if(!lastPrediction ||
+     lastPrediction.validated){
+
     return;
-
+  }
 
   const p =
-    calculatePrediction();
+    lastPrediction;
+
+  p.actual =
+    actualDigit;
+
+  p.validated = true;
+
+  p.win =
+    p.candidate === actualDigit;
 
 
-  predictionCount++;
+  /*
+    Validation globale
+  */
+
+  if(p.win){
+
+    if(
+      !Number.isInteger(
+        p.actual
+      )
+    ){
+      return;
+    }
+  }
 
 
-  pendingPrediction =
-    p;
+  /*
+    Performance des 3 modèles
+  */
 
+  const names = [
+    "global",
+    "recent",
+    "transition"
+  ];
+
+  for(const name of names){
+
+    const predicted =
+      p.models[name];
+
+    const stat =
+      modelStats[name];
+
+    stat.test++;
+
+    if(
+      predicted === actualDigit
+    ){
+
+      stat.win++;
+    }
+  }
+
+
+  /*
+    Calibration :
+    on utilise le SCORE BRUT
+    qui a réellement produit
+    cette prédiction.
+  */
+
+  const bucket =
+    getBucket(
+      p.rawScore
+    );
+
+  calibration[bucket].test++;
+
+  if(p.win){
+
+    calibration[bucket].win++;
+  }
+
+
+  /*
+    Performance globale
+  */
+
+  if(p.signal){
+
+    if(p.win){
+
+      signalStats.win++;
+    }
+  }
+
+
+  validationHistory.unshift({
+    id:p.id,
+    predicted:p.candidate,
+    actual:actualDigit,
+    score:p.score,
+    agreement:p.agreement,
+    win:p.win,
+    signal:p.signal
+  });
+
+  validationHistory =
+    validationHistory.slice(
+      0,
+      MAX_HISTORY_ROWS
+    );
+
+  renderHistory();
+
+  lastPrediction = null;
 
   log(
-
-    "Prediction #"+
-    predictionCount+
-
-    " | final "+
-    p.candidate+
-
-    " | G "+
-    p.ensemble
-      .models
-      .global
-      .candidate+
-
-    " | R "+
-    p.ensemble
-      .models
-      .recent
-      .candidate+
-
-    " | T "+
-    p.ensemble
-      .models
-      .transition
-      .candidate+
-
-    " | brut "+
-    p.raw.toFixed(0)+
-
-    " | calibré "+
-    p.finalScore+
-
-    " | accord "+
-    p.agreement+
-    "/3"+
-
-    " | poids "+
-    Math.round(
-      p.ensemble
-        .weights
-        .global*
-      100
-    )+
-    "/"+
-    Math.round(
-      p.ensemble
-        .weights
-        .recent*
-      100
-    )+
-    "/"+
-    Math.round(
-      p.ensemble
-        .weights
-        .transition*
-      100
-    )
-
+    "Validation #" +
+    p.id +
+    " | prédiction=" +
+    p.candidate +
+    " | réel=" +
+    actualDigit +
+    " | " +
+    (p.win ? "WIN" : "LOSS")
   );
-
-
-  updateStats();
-
-  updateAnalysis();
-
 }
 
 
@@ -3125,140 +1722,175 @@ function createPrediction(){
    TICK
 ========================================================= */
 
-function handleTick(data){
+function processTick(
+  tick
+){
 
-  if(!data.tick)
+  if(
+    !tick ||
+    typeof tick.quote === "undefined"
+  ){
+
     return;
+  }
 
+  const quote =
+    Number(tick.quote);
 
-  const tick =
-    data.tick;
-
+  if(!Number.isFinite(quote)){
+    return;
+  }
 
   const digit =
-    digitOf(
-      tick.quote
+    digitFromQuote(
+      quote
     );
 
+  if(
+    digit === null ||
+    !Number.isInteger(digit)
+  ){
 
-  if(digit===null)
     return;
-
-
-  $("price").textContent =
-    tick.quote;
-
-
-  $("lastDigit").textContent =
-    digit;
-
-
-  /*
-   IMPORTANT :
-
-   Le tick actuel valide
-   la prédiction précédente
-   AVANT d'être ajouté à
-   la fenêtre.
-
-   Donc aucune fuite de données.
-  */
-
-  if(pendingPrediction){
-
-    validatePrediction(
-      digit
-    );
-
   }
 
 
   /*
-   Ensuite seulement,
-   le tick rejoint les données.
+    IMPORTANT :
+    1. On valide d'abord
+       la prédiction précédente.
+    2. Ensuite seulement
+       on ajoute le nouveau tick.
+    3. Ensuite on crée une
+       nouvelle prédiction.
+
+    C'est le walk-forward strict.
   */
 
-  ticks.push(
+  if(ticks.length > 0){
+
+    validatePrevious(
+      digit
+    );
+  }
+
+
+  ticks.push({
+    quote,
+    digit,
+    epoch:
+      tick.epoch ||
+      Math.floor(
+        Date.now()/1000
+      )
+  });
+
+
+  /*
+    Fenêtre de travail.
+  */
+
+  if(ticks.length > HISTORY_COUNT){
+
+    ticks =
+      ticks.slice(
+        -HISTORY_COUNT
+      );
+  }
+
+
+  updateMarket(
+    quote,
     digit
   );
 
+  renderAll();
 
-  if(ticks.length>WINDOW)
-    ticks.shift();
+  /*
+    Une fois suffisamment
+    de données disponibles,
+    on produit la prédiction
+    du prochain tick.
+  */
 
+  if(ticks.length >= 20){
 
-  updateStats();
+    createPrediction();
 
-  updateAnalysis();
-
-  createPrediction();
-
+    renderAll();
+  }
 }
 
 
 /* =========================================================
-   RECHERCHE R75
+   HISTORIQUE INITIAL
 ========================================================= */
 
-function findR75(list){
+function loadHistory(
+  data
+){
 
-  if(!Array.isArray(list))
-    return null;
+  if(
+    !data ||
+    !Array.isArray(data.prices) ||
+    !Array.isArray(data.times)
+  ){
 
-
-  /*
-   Nouvelle API :
-   underlying_symbol.
-  */
-
-  let found =
-    list.find(
-      x=>
-        x.underlying_symbol===
-        REQUESTED_SYMBOL
+    log(
+      "Historique invalide."
     );
 
+    return;
+  }
 
-  if(found)
-    return found;
+  ticks = [];
 
-
-  /*
-   Compatibilité ancienne API.
-  */
-
-  found =
-    list.find(
-      x=>
-        x.symbol===
-        REQUESTED_SYMBOL
+  const length =
+    Math.min(
+      data.prices.length,
+      data.times.length
     );
 
+  for(let i=0;i<length;i++){
 
-  if(found)
-    return found;
+    const quote =
+      Number(
+        data.prices[i]
+      );
 
+    const digit =
+      digitFromQuote(
+        quote
+      );
 
-  /*
-   Recherche par nom.
-  */
+    if(
+      Number.isFinite(quote) &&
+      digit !== null
+    ){
 
-  found =
-    list.find(
-      x=>
-        String(
-          x.underlying_symbol_name||
-          ""
-        )
-        .toLowerCase()
-        .includes(
-          "volatility 75"
-        )
+      ticks.push({
+        quote,
+        digit,
+        epoch:
+          Number(
+            data.times[i]
+          )
+      });
+    }
+  }
+
+  ticks =
+    ticks.slice(
+      -HISTORY_COUNT
     );
 
+  log(
+    "Historique chargé : " +
+    ticks.length +
+    " ticks."
+  );
 
-  return found||null;
-
+  renderAll();
 }
 
 
@@ -3266,220 +1898,201 @@ function findR75(list){
    ACTIVE SYMBOLS
 ========================================================= */
 
-function requestMarketData(){
+function requestActiveSymbols(){
+
+  send({
+    active_symbols:
+      "brief",
+
+    req_id:1
+  });
+
+  log(
+    "Recherche du symbole R_75..."
+  );
+}
+
+
+function findR75(
+  list
+){
 
   if(
-    !ws||
-    ws.readyState!==WebSocket.OPEN
-  )
-    return;
+    !Array.isArray(list)
+  ){
 
+    return null;
+  }
 
-  log(
-    "Demande active_symbols"
-  );
+  /*
+    Nouvelle API :
+    underlying_symbol
+  */
 
-
-  ws.send(
-    JSON.stringify({
-
-      active_symbols:
-        "brief",
-
-      req_id:
-        1
-
-    })
-  );
-
-}
-
-
-/* =========================================================
-   ABONNEMENT
-========================================================= */
-
-function subscribe(){
-
-  if(!currentSymbol)
-    return;
-
-
-  log(
-    "Demande historique "+
-    currentSymbol
-  );
-
-
-  ws.send(
-    JSON.stringify({
-
-      ticks_history:
-        currentSymbol,
-
-      count:
-        WINDOW,
-
-      end:
-        "latest",
-
-      style:
-        "ticks",
-
-      subscribe:
-        0,
-
-      req_id:
-        2
-
-    })
-  );
-
-
-  setTimeout(
-    ()=>{
-
-      if(
-        !ws||
-        ws.readyState!==WebSocket.OPEN
-      )
-        return;
-
-
-      log(
-        "Abonnement ticks "+
-        currentSymbol
-      );
-
-
-      ws.send(
-        JSON.stringify({
-
-          ticks:
-            currentSymbol,
-
-          subscribe:
-            1,
-
-          req_id:
-            3
-
-        })
-      );
-
-
-    },
-    500
-  );
-
-}
-
-
-/* =========================================================
-   HISTORIQUE
-========================================================= */
-
-function handleHistory(data){
-
-  if(!data.history)
-    return;
-
-
-  const prices =
-    data.history.prices||[];
-
-
-  ticks=[];
-
-
-  prices.forEach(
-    q=>{
-
-      const d =
-        digitOf(q);
-
-
-      if(d!==null)
-        ticks.push(d);
-
-    }
-  );
-
-
-  ticks =
-    ticks.slice(
-      -WINDOW
+  let found =
+    list.find(
+      x =>
+        x &&
+        x.underlying_symbol ===
+        REQUEST_SYMBOL
     );
 
+  if(found){
 
-  log(
-    "Historique reçu : "+
-    ticks.length+
-    " ticks"
-  );
+    return found;
+  }
 
 
-  updateStats();
+  /*
+    Ancienne API :
+    symbol
+  */
 
-  updateAnalysis();
+  found =
+    list.find(
+      x =>
+        x &&
+        x.symbol ===
+        REQUEST_SYMBOL
+    );
 
-  createPrediction();
+  if(found){
 
+    return found;
+  }
+
+
+  /*
+    Recherche par nom.
+  */
+
+  found =
+    list.find(
+      x =>
+        x &&
+        (
+          x.underlying_symbol_name ===
+            "Volatility 75 Index"
+          ||
+          x.display_name ===
+            "Volatility 75 Index"
+        )
+    );
+
+  return found || null;
 }
 
 
 /* =========================================================
-   CONNEXION
+   HISTORIQUE DERIV
+========================================================= */
+
+function requestHistory(){
+
+  send({
+
+    ticks_history:
+      currentSymbol,
+
+    count:
+      HISTORY_COUNT,
+
+    end:"latest",
+
+    style:"ticks",
+
+    subscribe:0,
+
+    req_id:2
+  });
+
+  log(
+    "Demande de " +
+    HISTORY_COUNT +
+    " ticks historiques..."
+  );
+}
+
+
+/* =========================================================
+   SUBSCRIBE TICKS
+========================================================= */
+
+function subscribeTicks(){
+
+  send({
+
+    ticks:
+      currentSymbol,
+
+    subscribe:1,
+
+    req_id:3
+  });
+
+  log(
+    "Abonnement aux ticks " +
+    currentSymbol
+  );
+}
+
+
+/* =========================================================
+   WEBSOCKET
 ========================================================= */
 
 function connect(){
 
+  clearTimeout(
+    reconnectTimer
+  );
+
+  isReady = false;
+
+  setConnection(
+    "🟠 Connexion…",
+    "orange"
+  );
+
+  log(
+    "Ouverture WebSocket..."
+  );
+
+
   try{
 
-    if(ws)
+    if(ws){
+
+      ws.onclose = null;
       ws.close();
+    }
 
   }catch(e){}
 
 
-  setStatus(
-    "🟠 Connexion…",
-    "#735900"
-  );
-
-
-  log(
-    "Connexion WebSocket"
-  );
-
-
   ws =
     new WebSocket(
-      PUBLIC_WS
+      WS_URL
     );
 
 
-  ws.onopen =
-    ()=>{
+  ws.onopen = function(){
 
-      setStatus(
-        "🟢 Connecté — recherche de R_75",
-        "#087a3d"
-      );
+    log(
+      "WebSocket connecté."
+    );
 
+    setConnection(
+      "🟢 Connecté — réception des ticks",
+      "green"
+    );
 
-      log(
-        "WebSocket connecté"
-      );
-
-
-      requestMarketData();
-
-    };
+    requestActiveSymbols();
+  };
 
 
   ws.onmessage =
-    event=>{
+    function(event){
 
       try{
 
@@ -3488,174 +2101,975 @@ function connect(){
             event.data
           );
 
-
-        if(data.error){
-
-          log(
-            "ERREUR API : "+
-            (
-              data.error.message||
-              "Erreur"
-            )
-          );
-
-          return;
-
-        }
-
-
-        /*
-         ACTIVE SYMBOLS
-        */
-
-        if(
-          data.msg_type===
-          "active_symbols"
-        ){
-
-          const list =
-            data.active_symbols||
-            [];
-
-
-          const found =
-            findR75(
-              list
-            );
-
-
-          if(!found){
-
-            setStatus(
-              "🔴 R_75 indisponible",
-              "#8b3030"
-            );
-
-
-            log(
-              "R_75 introuvable parmi "+
-              list.length+
-              " symboles"
-            );
-
-
-            return;
-
-          }
-
-
-          currentSymbol =
-            found.underlying_symbol||
-            found.symbol||
-            REQUESTED_SYMBOL;
-
-
-          $("usedSymbol")
-            .textContent =
-            currentSymbol;
-
-
-          setStatus(
-            "🟢 R_75 trouvé — réception des ticks",
-            "#087a3d"
-          );
-
-
-          log(
-            "Symbole utilisé : "+
-            currentSymbol
-          );
-
-
-          subscribe();
-
-
-          return;
-
-        }
-
-
-        /*
-         HISTORIQUE
-        */
-
-        if(
-          data.msg_type===
-          "history"
-        ){
-
-          handleHistory(
-            data
-          );
-
-
-          return;
-
-        }
-
-
-        /*
-         TICK
-        */
-
-        if(
-          data.msg_type===
-          "tick"
-        ){
-
-          handleTick(
-            data
-          );
-
-
-          return;
-
-        }
-
+        handleMessage(
+          data
+        );
 
       }catch(error){
 
         log(
-          "Erreur parsing : "+
+          "Erreur JSON : " +
           error.message
         );
-
       }
-
     };
 
 
   ws.onerror =
-    ()=>{
-
-      setStatus(
-        "🔴 Erreur WebSocket",
-        "#8b3030"
-      );
-
+    function(){
 
       log(
-        "Erreur WebSocket"
+        "Erreur WebSocket."
       );
 
+      setConnection(
+        "🔴 Erreur de connexion",
+        "red"
+      );
     };
 
 
   ws.onclose =
-    ()=>{
+    function(){
 
-      setStatus(
-        "🟠 Connexion fermée",
-        "#735900"
-      );
-
+      isReady = false;
 
       log(
-        "WebSocket fermé"
+        "WebSocket fermé."
       );
 
-    };
+      setConnection(
+        "🔴 Connexion fermée",
+        "red"
+      );
 
+      reconnectTimer =
+        setTimeout(
+          connect,
+          5000
+        );
+    };
+}
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+function handleMessage(
+  data
+){
+
+  if(
+    data.error
+  ){
+
+    log(
+      "ERREUR API : " +
+      (
+        data.error.message ||
+        "Erreur inconnue"
+      )
+    );
+
+    return;
+  }
+
+
+  /*
+    ACTIVE SYMBOLS
+  */
+
+  if(
+    data.msg_type ===
+      "active_symbols"
+  ){
+
+    const found =
+      findR75(
+        data.active_symbols
+      );
+
+    if(!found){
+
+      log(
+        "R_75 introuvable dans active_symbols."
+      );
+
+      setConnection(
+        "🔴 R_75 indisponible",
+        "red"
+      );
+
+      return;
+    }
+
+    currentSymbol =
+      found.underlying_symbol ||
+      found.symbol ||
+      REQUEST_SYMBOL;
+
+    log(
+      "R_75 trouvé : " +
+      currentSymbol
+    );
+
+    requestHistory();
+
+    return;
+  }
+
+
+  /*
+    HISTORIQUE
+  */
+
+  if(
+    data.msg_type ===
+      "history"
+  ){
+
+    loadHistory(
+      data.history
+    );
+
+    isReady = true;
+
+    subscribeTicks();
+
+    return;
+  }
+
+
+  /*
+    TICK
+  */
+
+  if(
+    data.msg_type ===
+      "tick"
+  ){
+
+    if(
+      data.tick
+    ){
+
+      processTick(
+        data.tick
+      );
+    }
+
+    return;
+  }
+}
+
+
+/* =========================================================
+   SEND
+========================================================= */
+
+function send(
+  payload
+){
+
+  if(
+    !ws ||
+    ws.readyState !==
+      WebSocket.OPEN
+  ){
+
+    log(
+      "WebSocket non ouvert."
+    );
+
+    return;
+  }
+
+  try{
+
+    ws.send(
+      JSON.stringify(
+        payload
+      )
+    );
+
+  }catch(error){
+
+    log(
+      "Erreur envoi : " +
+      error.message
+    );
+  }
+}
+
+
+/* =========================================================
+   UI CONNECTION
+========================================================= */
+
+function setConnection(
+  text,
+  type
+){
+
+  const el =
+    document.getElementById(
+      "connection"
+    );
+
+  el.textContent =
+    text;
+
+  el.className =
+    "connection " +
+    type;
+}
+
+
+/* =========================================================
+   MARKET UI
+========================================================= */
+
+function updateMarket(
+  quote,
+  digit
+){
+
+  document.getElementById(
+    "price"
+  ).textContent =
+    quote.toFixed(4);
+
+  document.getElementById(
+    "lastDigit"
+  ).textContent =
+    digit;
+
+  document.getElementById(
+    "tickCount"
+  ).textContent =
+    ticks.length;
+}
+
+
+/* =========================================================
+   FREQUENCY UI
+========================================================= */
+
+function renderFrequency(){
+
+  const grid =
+    document.getElementById(
+      "frequencyGrid"
+    );
+
+  const counts =
+    countDigits(
+      ticks.map(
+        t=>t.digit
+      )
+    );
+
+  const total =
+    ticks.length;
+
+  let html = "";
+
+  for(let d=0;d<10;d++){
+
+    const rate =
+      total
+        ? counts[d]/total
+        : 0;
+
+    html += `
+      <div class="box">
+        <div class="label">Chiffre ${d}</div>
+        <div class="value">${counts[d]}</div>
+        <div class="small">${pct(rate)}</div>
+      </div>
+    `;
+  }
+
+  grid.innerHTML =
+    html;
+}
+
+
+/* =========================================================
+   MODEL UI
+========================================================= */
+
+function renderModels(){
+
+  const grid =
+    document.getElementById(
+      "modelGrid"
+    );
+
+  let html = "";
+
+  const names = [
+    ["global","GLOBAL"],
+    ["recent","RECENT"],
+    ["transition","TRANSITION"]
+  ];
+
+  for(const [key,label] of names){
+
+    const stat =
+      modelStats[key];
+
+    const rate =
+      stat.test
+        ? stat.win/stat.test
+        : 0;
+
+    const lower =
+      stat.test
+        ? wilsonLower(
+            stat.win,
+            stat.test
+          )
+        : 0;
+
+    const weight =
+      modelWeight(key);
+
+    html += `
+      <div class="box">
+
+        <div class="label">
+          ${label}
+        </div>
+
+        <div class="value yellow">
+          ${stat.win}
+        </div>
+
+        <div class="small">
+          WIN / ${stat.test} tests
+        </div>
+
+        <div class="small">
+          Taux : ${pct(rate)}
+        </div>
+
+        <div class="small">
+          IC bas : ${pct(lower)}
+        </div>
+
+        <div class="small">
+          Poids : ${(weight*100).toFixed(0)}%
+        </div>
+
+      </div>
+    `;
+  }
+
+  grid.innerHTML =
+    html;
+}
+
+
+/* =========================================================
+   DECISION UI
+========================================================= */
+
+function renderDecision(){
+
+  const grid =
+    document.getElementById(
+      "decisionGrid"
+    );
+
+  const a =
+    analyze();
+
+  if(!a){
+
+    grid.innerHTML =
+      `
+      <div class="box">
+        <div class="label">GLOBAL</div>
+        <div class="value">—</div>
+      </div>
+
+      <div class="box">
+        <div class="label">RECENT</div>
+        <div class="value">—</div>
+      </div>
+
+      <div class="box">
+        <div class="label">TRANSITION</div>
+        <div class="value">—</div>
+      </div>
+      `;
+
+    return;
+  }
+
+  const names = [
+    ["GLOBAL",a.ensemble.models.global.candidate],
+    ["RECENT",a.ensemble.models.recent.candidate],
+    ["TRANSITION",a.ensemble.models.transition.candidate]
+  ];
+
+  let html = "";
+
+  for(
+    const [name,candidate]
+    of names
+  ){
+
+    html += `
+      <div class="box">
+
+        <div class="label">
+          ${name}
+        </div>
+
+        <div class="digit">
+          ${candidate}
+        </div>
+
+      </div>
+    `;
+  }
+
+  grid.innerHTML =
+    html;
+}
+
+
+/* =========================================================
+   TRANSITION UI
+========================================================= */
+
+function renderTransitions(){
+
+  const grid =
+    document.getElementById(
+      "transitionGrid"
+    );
+
+  if(!ticks.length){
+
+    grid.innerHTML = "";
+
+    return;
+  }
+
+  const last =
+    ticks[ticks.length-1].digit;
+
+  const counts =
+    Array(10).fill(1);
+
+  for(let i=1;i<ticks.length;i++){
+
+    if(
+      ticks[i-1].digit === last
+    ){
+
+      counts[
+        ticks[i].digit
+      ]++;
+    }
+  }
+
+  const total =
+    counts.reduce(
+      (a,b)=>a+b,
+      0
+    );
+
+  let html = "";
+
+  for(let d=0;d<10;d++){
+
+    html += `
+      <div class="box">
+
+        <div class="label">
+          ${d}
+        </div>
+
+        <div class="value">
+          ${pct(
+            counts[d]/total
+          )}
+        </div>
+
+      </div>
+    `;
+  }
+
+  grid.innerHTML =
+    html;
+}
+
+
+/* =========================================================
+   CALIBRATION UI
+========================================================= */
+
+function renderCalibration(){
+
+  const grid =
+    document.getElementById(
+      "calibrationGrid"
+    );
+
+  let html = "";
+
+  for(
+    const bucket of Object.keys(
+      calibration
+    )
+  ){
+
+    const c =
+      calibration[bucket];
+
+    const rate =
+      c.test
+        ? c.win/c.test
+        : 0;
+
+    html += `
+      <div class="box">
+
+        <div class="label">
+          ${bucket}
+        </div>
+
+        <div class="value">
+          ${c.win}/${c.test}
+        </div>
+
+        <div class="small">
+          ${pct(rate)}
+        </div>
+
+      </div>
+    `;
+  }
+
+  grid.innerHTML =
+    html;
+}
+
+
+/* =========================================================
+   ANALYSE UI
+========================================================= */
+
+function renderAnalysis(){
+
+  const a =
+    analyze();
+
+  if(!a){
+
+    document.getElementById(
+      "candidate"
+    ).textContent = "—";
+
+    document.getElementById(
+      "rawScore"
+    ).textContent = "—";
+
+    document.getElementById(
+      "calibratedScore"
+    ).textContent = "—";
+
+    document.getElementById(
+      "agreement"
+    ).textContent = "—";
+
+    document.getElementById(
+      "edge"
+    ).textContent = "—";
+
+    document.getElementById(
+      "sample"
+    ).textContent = "—";
+
+    document.getElementById(
+      "ciLow"
+    ).textContent = "—";
+
+    document.getElementById(
+      "signal"
+    ).textContent =
+      "PAS ENCORE DE SIGNAL";
+
+    document.getElementById(
+      "signal"
+    ).className =
+      "signal";
+
+    return;
+  }
+
+
+  document.getElementById(
+    "candidate"
+  ).textContent =
+    a.candidate;
+
+
+  document.getElementById(
+    "rawScore"
+  ).textContent =
+    Math.round(
+      a.rawScore
+    ) + "/100";
+
+
+  document.getElementById(
+    "calibratedScore"
+  ).textContent =
+    a.calibratedScore +
+    "/100";
+
+
+  document.getElementById(
+    "agreement"
+  ).textContent =
+    a.ensemble.agreement +
+    "/3";
+
+
+  /*
+    Edge empirique.
+  */
+
+  document.getElementById(
+    "edge"
+  ).textContent =
+    (
+      a.empiricalEdge >= 0
+        ? "+"
+        : ""
+    ) +
+    (
+      a.empiricalEdge * 100
+    ).toFixed(1) +
+    "%";
+
+
+  const validated =
+    predictions.filter(
+      p=>p.validated
+    ).length;
+
+
+  document.getElementById(
+    "sample"
+  ).textContent =
+    validated;
+
+
+  document.getElementById(
+    "ciLow"
+  ).textContent =
+    pct(
+      a.ciLow
+    );
+
+
+  const signalEl =
+    document.getElementById(
+      "signal"
+    );
+
+
+  if(a.signal){
+
+    signalEl.textContent =
+      "🟢 SIGNAL VALIDÉ — TEST UNIQUEMENT";
+
+    signalEl.className =
+      "signal good";
+
+  }else{
+
+    signalEl.textContent =
+      "🔴 PAS DE SIGNAL";
+
+    signalEl.className =
+      "signal";
+  }
+}
+
+
+/* =========================================================
+   GLOBAL UI
+========================================================= */
+
+function renderGlobal(){
+
+  const validated =
+    predictions.filter(
+      p=>p.validated
+    ).length;
+
+  const wins =
+    predictions.filter(
+      p=>
+        p.validated &&
+        p.win
+    ).length;
+
+  const losses =
+    validated -
+    wins;
+
+  const rate =
+    validated
+      ? wins/validated
+      : 0;
+
+
+  document.getElementById(
+    "predictions"
+  ).textContent =
+    predictions.length;
+
+  document.getElementById(
+    "validated"
+  ).textContent =
+    validated;
+
+  document.getElementById(
+    "wins"
+  ).textContent =
+    wins;
+
+  document.getElementById(
+    "losses"
+  ).textContent =
+    losses;
+
+  document.getElementById(
+    "winRate"
+  ).textContent =
+    validated
+      ? pct(rate)
+      : "—";
+
+
+  document.getElementById(
+    "statPred"
+  ).textContent =
+    predictions.length;
+
+  document.getElementById(
+    "statVal"
+  ).textContent =
+    validated;
+
+  document.getElementById(
+    "statWin"
+  ).textContent =
+    wins;
+
+  document.getElementById(
+    "statLoss"
+  ).textContent =
+    losses;
+
+  document.getElementById(
+    "statRate"
+  ).textContent =
+    validated
+      ? pct(rate)
+      : "—";
+
+
+  document.getElementById(
+    "windowSize"
+  ).textContent =
+    ticks.length;
+
+
+  /*
+    Signaux
+  */
+
+  document.getElementById(
+    "signalTests"
+  ).textContent =
+    signalStats.test;
+
+  document.getElementById(
+    "signalWins"
+  ).textContent =
+    signalStats.win;
+
+  document.getElementById(
+    "signalLosses"
+  ).textContent =
+    signalStats.test -
+    signalStats.win;
+
+  document.getElementById(
+    "signalRate"
+  ).textContent =
+    signalStats.test
+      ? pct(
+          signalStats.win /
+          signalStats.test
+        )
+      : "—";
+}
+
+
+/* =========================================================
+   HISTORIQUE UI
+========================================================= */
+
+function renderHistory(){
+
+  const body =
+    document.getElementById(
+      "historyBody"
+    );
+
+  let html = "";
+
+  for(
+    const item of validationHistory
+  ){
+
+    html += `
+      <tr>
+
+        <td>
+          ${item.id}
+        </td>
+
+        <td>
+          ${item.predicted}
+        </td>
+
+        <td>
+          ${item.actual}
+        </td>
+
+        <td>
+          ${item.score}
+        </td>
+
+        <td>
+          ${item.agreement}/3
+        </td>
+
+        <td class="${
+          item.win
+            ? "win"
+            : "loss"
+        }">
+
+          ${
+            item.win
+              ? "WIN"
+              : "LOSS"
+          }
+
+        </td>
+
+      </tr>
+    `;
+  }
+
+  body.innerHTML =
+    html;
+}
+
+
+/* =========================================================
+   RENDER ALL
+========================================================= */
+
+function renderAll(){
+
+  renderGlobal();
+
+  renderAnalysis();
+
+  renderFrequency();
+
+  renderModels();
+
+  renderDecision();
+
+  renderTransitions();
+
+  renderCalibration();
+
+  renderHistory();
+}
+
+
+/* =========================================================
+   RESET
+========================================================= */
+
+function resetStats(){
+
+  const ok =
+    confirm(
+      "Réinitialiser toutes les statistiques ?"
+    );
+
+  if(!ok){
+    return;
+  }
+
+  predictions = [];
+
+  validationHistory = [];
+
+  lastPrediction = null;
+
+  modelStats = {
+    global:{
+      test:0,
+      win:0
+    },
+
+    recent:{
+      test:0,
+      win:0
+    },
+
+    transition:{
+      test:0,
+      win:0
+    }
+  };
+
+  signalStats = {
+    test:0,
+    win:0
+  };
+
+  calibration = {
+    "50-59":{test:0,win:0},
+    "60-69":{test:0,win:0},
+    "70-79":{test:0,win:0},
+    "80-89":{test:0,win:0},
+    "90-100":{test:0,win:0}
+  };
+
+  log(
+    "Statistiques réinitialisées."
+  );
+
+  renderAll();
 }
 
 
@@ -3665,224 +3079,27 @@ function connect(){
 
 function reconnect(){
 
-  ticks=[];
-
-  pendingPrediction=null;
-
-  $("price").textContent =
-    "—";
-
-  $("lastDigit").textContent =
-    "—";
-
-  $("usedSymbol").textContent =
-    "—";
-
+  log(
+    "Reconnexion manuelle..."
+  );
 
   connect();
-
 }
 
 
 /* =========================================================
-   RESET STATISTIQUES
+   START
 ========================================================= */
 
-function resetStats(){
-
-  predictionCount=0;
-
-  validatedCount=0;
-
-  wins=0;
-
-  losses=0;
-
-  history=[];
-
-
-  modelStats={
-
-    global:{
-      wins:0,
-      total:0
-    },
-
-    recent:{
-      wins:0,
-      total:0
-    },
-
-    transition:{
-      wins:0,
-      total:0
-    }
-
-  };
-
-
-  modelHistory={
-
-    global:[],
-    recent:[],
-    transition:[]
-
-  };
-
-
-  buckets={
-
-    "50-59":{
-      wins:0,
-      total:0
-    },
-
-    "60-69":{
-      wins:0,
-      total:0
-    },
-
-    "70-79":{
-      wins:0,
-      total:0
-    },
-
-    "80-89":{
-      wins:0,
-      total:0
-    },
-
-    "90-100":{
-      wins:0,
-      total:0
-    }
-
-  };
-
-
-  pendingPrediction=null;
-
-
-  updateStats();
-
-  updateModelDisplay();
-
-  renderHistory();
-
-  renderBuckets();
-
-  updateAnalysis();
-
-
-  log(
-    "Statistiques V5.6 réinitialisées"
-  );
-
-}
-
-
-/* =========================================================
-   BUCKETS
-========================================================= */
-
-function renderBuckets(){
-
-  const config=[
-
-    [
-      "50-59",
-      "b50",
-      "r50"
-    ],
-
-    [
-      "60-69",
-      "b60",
-      "r60"
-    ],
-
-    [
-      "70-79",
-      "b70",
-      "r70"
-    ],
-
-    [
-      "80-89",
-      "b80",
-      "r80"
-    ],
-
-    [
-      "90-100",
-      "b90",
-      "r90"
-    ]
-
-  ];
-
-
-  config.forEach(
-    item=>{
-
-      const key =
-        item[0];
-
-      const bid =
-        item[1];
-
-      const rid =
-        item[2];
-
-
-      const b =
-        buckets[key];
-
-
-      $(bid).textContent =
-        b.wins+
-        "/"+
-        b.total;
-
-
-      $(rid).textContent =
-
-        b.total
-
-        ?
-
-        (
-          b.wins/
-          b.total*
-          100
-        ).toFixed(1)+
-        "%"
-
-        :
-
-        "—";
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   INITIALISATION
-========================================================= */
-
-renderFrequency();
-
-renderTransition();
-
-updateStats();
-
-updateModelDisplay();
-
-renderHistory();
-
-renderBuckets();
+renderAll();
+
+log(
+  "Prediction R75 V5.7 démarrage..."
+);
+
+log(
+  "Mode WALK-FORWARD / TEST uniquement."
+);
 
 connect();
 
