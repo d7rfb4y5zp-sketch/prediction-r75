@@ -3,245 +3,270 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Prediction R75 V5.5</title>
+<title>Prediction R75 V5.6</title>
 
 <style>
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box;
+}
 
 body{
- margin:0;
- background:#061b2e;
- color:#fff;
- font-family:Arial,sans-serif;
- font-size:13px;
+  margin:0;
+  background:#061b2e;
+  color:#fff;
+  font-family:Arial,sans-serif;
+  font-size:13px;
 }
 
 .container{
- max-width:430px;
- margin:auto;
- padding:14px 10px 30px;
+  max-width:430px;
+  margin:auto;
+  padding:14px 10px 30px;
 }
 
 h1{
- text-align:center;
- color:#4aa8ff;
- font-size:20px;
- margin:0 0 10px;
+  text-align:center;
+  color:#4aa8ff;
+  font-size:20px;
+  margin:0 0 10px;
 }
 
 .status{
- text-align:center;
- padding:9px;
- border-radius:10px;
- background:#087a3d;
- font-weight:bold;
- margin-bottom:12px;
+  text-align:center;
+  padding:10px;
+  border-radius:10px;
+  background:#087a3d;
+  font-weight:bold;
+  margin-bottom:12px;
 }
 
 .card{
- background:#092844;
- border-radius:12px;
- padding:12px;
- margin-bottom:10px;
- box-shadow:0 2px 7px #0005;
+  background:#092844;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:10px;
+  box-shadow:0 2px 7px #0005;
 }
 
 .title{
- color:#4aa8ff;
- font-weight:bold;
- margin-bottom:8px;
+  color:#4aa8ff;
+  font-weight:bold;
+  margin-bottom:9px;
 }
 
 .label{
- color:#a9bfd2;
- font-size:10px;
+  color:#a9bfd2;
+  font-size:10px;
 }
 
 .value{
- font-weight:bold;
- font-size:15px;
- margin-bottom:5px;
+  font-weight:bold;
+  font-size:15px;
+  margin-bottom:6px;
 }
 
 .price{
- color:#4aa8ff;
- font-size:16px;
-}
-
-.grid{
- display:grid;
- grid-template-columns:1fr 1fr;
- gap:6px;
-}
-
-.stat{
- background:#061d34;
- border-radius:8px;
- padding:8px 5px;
- text-align:center;
-}
-
-.stat .n{
- font-size:15px;
- font-weight:bold;
- margin-top:3px;
-}
-
-.green{color:#00e676}
-.red{color:#ff5252}
-.yellow{color:#ffd600}
-.blue{color:#4aa8ff}
-.orange{color:#ffab00}
-
-.prediction{
- background:#24558a;
- border-radius:12px;
- padding:13px;
- text-align:center;
+  color:#4aa8ff;
+  font-size:17px;
 }
 
 .bigDigit{
- font-size:30px;
- color:#ffd600;
- font-weight:bold;
- margin:4px;
+  font-size:32px;
+  color:#ffd600;
+  font-weight:bold;
+  text-align:center;
+  margin:5px;
+}
+
+.prediction{
+  background:#24558a;
+  border-radius:12px;
+  padding:14px;
+  text-align:center;
 }
 
 .score{
- font-size:17px;
- font-weight:bold;
+  font-size:18px;
+  font-weight:bold;
+  margin:5px 0;
 }
 
 .signal{
- margin-top:6px;
- padding:7px;
- border-radius:8px;
- font-weight:bold;
+  margin-top:7px;
+  padding:8px;
+  border-radius:8px;
+  font-weight:bold;
 }
 
 .signal.strong{
- background:#087a3d;
+  background:#087a3d;
 }
 
 .signal.medium{
- background:#806500;
+  background:#806500;
 }
 
 .signal.none{
- background:#6d2222;
+  background:#6d2222;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+}
+
+.stat{
+  background:#061d34;
+  border-radius:8px;
+  padding:8px 5px;
+  text-align:center;
+}
+
+.stat .n{
+  font-size:15px;
+  font-weight:bold;
+  margin-top:3px;
+}
+
+.green{
+  color:#00e676;
+}
+
+.red{
+  color:#ff5252;
+}
+
+.yellow{
+  color:#ffd600;
+}
+
+.blue{
+  color:#4aa8ff;
+}
+
+.orange{
+  color:#ffab00;
 }
 
 .digits{
- display:grid;
- grid-template-columns:repeat(5,1fr);
- gap:5px;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:5px;
 }
 
 .digit{
- background:#061d34;
- border-radius:6px;
- padding:6px 2px;
- text-align:center;
+  background:#061d34;
+  border-radius:6px;
+  padding:7px 2px;
+  text-align:center;
 }
 
 .digit strong{
- display:block;
- font-size:14px;
+  display:block;
+  font-size:14px;
 }
 
 .small{
- font-size:9px;
- color:#9eb4c7;
+  font-size:9px;
+  color:#9eb4c7;
+  line-height:1.45;
 }
 
-.bars{
- display:grid;
- grid-template-columns:repeat(5,1fr);
- gap:4px;
+.model{
+  background:#061d34;
+  border-radius:8px;
+  padding:8px 5px;
+  text-align:center;
 }
 
-.bar{
- background:#061d34;
- border-radius:7px;
- padding:6px 2px;
- text-align:center;
- font-size:10px;
+.modelName{
+  color:#9ec5e8;
+  font-size:9px;
 }
 
-.bar strong{
- display:block;
- font-size:12px;
+.modelPrediction{
+  color:#ffd600;
+  font-size:20px;
+  font-weight:bold;
+  margin:3px;
 }
 
-.modelBox{
- background:#061d34;
- border-radius:8px;
- padding:8px 5px;
- text-align:center;
-}
-
-.modelBox .name{
- color:#9ec5e8;
- font-size:9px;
-}
-
-.modelBox .weight{
- color:#4aa8ff;
- font-size:16px;
- font-weight:bold;
- margin:3px 0;
-}
-
-button{
- width:100%;
- border:0;
- border-radius:10px;
- padding:11px;
- margin-top:7px;
- font-weight:bold;
- color:white;
- background:#1689e8;
-}
-
-button.secondary{
- background:#087a3d;
+.modelWeight{
+  color:#4aa8ff;
+  font-size:15px;
+  font-weight:bold;
 }
 
 table{
- width:100%;
- border-collapse:collapse;
- font-size:9px;
+  width:100%;
+  border-collapse:collapse;
+  font-size:9px;
 }
 
-th,td{
- padding:5px 2px;
- text-align:center;
- border-bottom:1px solid #183b57;
+th,
+td{
+  padding:5px 2px;
+  text-align:center;
+  border-bottom:1px solid #183b57;
 }
 
 th{
- color:#9ec5e8;
+  color:#9ec5e8;
 }
 
 .log{
- background:#020d17;
- color:#b7d2e5;
- border-radius:7px;
- padding:8px;
- font-family:monospace;
- font-size:9px;
- max-height:190px;
- overflow:auto;
- white-space:pre-wrap;
+  background:#020d17;
+  color:#b7d2e5;
+  border-radius:7px;
+  padding:8px;
+  font-family:monospace;
+  font-size:9px;
+  max-height:210px;
+  overflow:auto;
+  white-space:pre-wrap;
 }
 
 .note{
- background:#735900;
- padding:10px;
- border-radius:9px;
- color:#fff4bd;
- font-size:10px;
- line-height:1.4;
+  background:#735900;
+  padding:10px;
+  border-radius:9px;
+  color:#fff4bd;
+  font-size:10px;
+  line-height:1.45;
+}
+
+.goodBox{
+  background:#073d29;
+  border:1px solid #087a3d;
+  border-radius:8px;
+  padding:8px;
+  margin-top:8px;
+  font-size:10px;
+}
+
+.warnBox{
+  background:#452d00;
+  border:1px solid #806500;
+  border-radius:8px;
+  padding:8px;
+  margin-top:8px;
+  font-size:10px;
+}
+
+button{
+  width:100%;
+  border:0;
+  border-radius:10px;
+  padding:11px;
+  margin-top:7px;
+  font-weight:bold;
+  color:white;
+  background:#1689e8;
+}
+
+button.secondary{
+  background:#087a3d;
 }
 </style>
 </head>
@@ -250,52 +275,82 @@ th{
 
 <div class="container">
 
-<h1>Prediction R75 V5.5</h1>
+<h1>Prediction R75 V5.6</h1>
 
 <div id="status" class="status">
 🟠 Connexion…
 </div>
 
 
-<!-- MARCHÉ -->
+<!-- =========================
+     MARCHE
+========================= -->
 
 <div class="card">
 
-<div class="title">Marché</div>
+<div class="title">
+Marché
+</div>
 
-<div class="label">Marché</div>
-<div class="value">Volatility 75</div>
+<div class="label">
+Marché
+</div>
 
-<div class="label">Symbole demandé</div>
-<div class="value">R_75</div>
+<div class="value">
+Volatility 75
+</div>
 
-<div class="label">Symbole utilisé</div>
-<div class="value" id="usedSymbol">—</div>
+<div class="label">
+Symbole demandé
+</div>
 
-<div class="label">Prix en direct</div>
-<div class="value price" id="price">—</div>
+<div class="value">
+R_75
+</div>
+
+<div class="label">
+Symbole utilisé
+</div>
+
+<div class="value" id="usedSymbol">
+—
+</div>
+
+<div class="label">
+Prix en direct
+</div>
+
+<div class="value price" id="price">
+—
+</div>
 
 <div style="text-align:center">
 
-<div class="label">Dernier chiffre</div>
+<div class="label">
+Dernier chiffre
+</div>
 
-<div id="lastDigit" class="bigDigit">—</div>
-
+<div id="lastDigit" class="bigDigit">
+—
 </div>
 
 </div>
 
+</div>
 
-<!-- ANALYSE -->
+
+<!-- =========================
+     ANALYSE V5.6
+========================= -->
 
 <div class="card prediction">
 
 <div class="title">
-🧠 ANALYSE V5.5
+🧠 ANALYSE V5.6
 </div>
 
 <div class="label">
-Candidat actuel
+Candidat final
 </div>
 
 <div id="candidate" class="bigDigit">
@@ -314,31 +369,72 @@ Score calibré :
 <div class="grid" style="margin-top:8px">
 
 <div class="stat">
-<div class="label">Accord modèles</div>
-<div class="n" id="agreement">—</div>
+<div class="label">
+Accord modèles
+</div>
+<div class="n" id="agreement">
+—
+</div>
 </div>
 
 <div class="stat">
-<div class="label">Score brut</div>
-<div class="n" id="rawScore">—</div>
+<div class="label">
+Score brut
+</div>
+<div class="n" id="rawScore">
+—
+</div>
 </div>
 
 <div class="stat">
-<div class="label">Performance</div>
-<div class="n" id="empirical">—</div>
+<div class="label">
+Performance finale
+</div>
+<div class="n" id="empirical">
+—
+</div>
 </div>
 
 <div class="stat">
-<div class="label">Échantillon</div>
-<div class="n" id="sample">—</div>
+<div class="label">
+Échantillon
+</div>
+<div class="n" id="sample">
+—
+</div>
+</div>
+
+<div class="stat">
+<div class="label">
+Stabilité
+</div>
+<div class="n" id="stability">
+—
+</div>
+</div>
+
+<div class="stat">
+<div class="label">
+Edge vs 10%
+</div>
+<div class="n" id="edge">
+—
+</div>
 </div>
 
 </div>
 
+<div id="analysisMessage"
+     class="warnBox">
+Collecte en cours.
+</div>
+
 </div>
 
 
-<!-- STATISTIQUES -->
+<!-- =========================
+     STATISTIQUES
+========================= -->
 
 <div class="card">
 
@@ -349,53 +445,93 @@ Score calibré :
 <div class="grid">
 
 <div class="stat">
-<div class="label">Ticks</div>
-<div class="n" id="tickCount">0</div>
+<div class="label">
+Ticks
+</div>
+<div class="n" id="tickCount">
+0
+</div>
 </div>
 
 <div class="stat">
-<div class="label">Prédictions</div>
-<div class="n" id="predictions">0</div>
+<div class="label">
+Prédictions
+</div>
+<div class="n" id="predictions">
+0
+</div>
 </div>
 
 <div class="stat">
-<div class="label">Validées</div>
-<div class="n" id="validated">0</div>
+<div class="label">
+Validées
+</div>
+<div class="n" id="validated">
+0
+</div>
 </div>
 
 <div class="stat">
-<div class="label">WIN</div>
-<div class="n green" id="wins">0</div>
+<div class="label">
+WIN
+</div>
+<div class="n green" id="wins">
+0
+</div>
 </div>
 
 <div class="stat">
-<div class="label">LOSS</div>
-<div class="n red" id="losses">0</div>
+<div class="label">
+LOSS
+</div>
+<div class="n red" id="losses">
+0
+</div>
 </div>
 
 <div class="stat">
-<div class="label">Taux réel</div>
-<div class="n" id="realRate">0%</div>
+<div class="label">
+Taux réel
+</div>
+<div class="n" id="realRate">
+0%
+</div>
 </div>
 
 <div class="stat">
-<div class="label">Global</div>
-<div class="n" id="globalDigit">—</div>
+<div class="label">
+Dominant global
+</div>
+<div class="n" id="globalDigit">
+—
+</div>
 </div>
 
 <div class="stat">
-<div class="label">Récent</div>
-<div class="n" id="recentDigit">—</div>
+<div class="label">
+Dominant récent
+</div>
+<div class="n" id="recentDigit">
+—
+</div>
 </div>
 
 <div class="stat">
-<div class="label">Streak</div>
-<div class="n" id="streak">—</div>
+<div class="label">
+Streak
+</div>
+<div class="n" id="streak">
+—
+</div>
 </div>
 
 <div class="stat">
-<div class="label">Transition</div>
-<div class="n" id="transitionDigit">—</div>
+<div class="label">
+Transition
+</div>
+<div class="n" id="transitionDigit">
+—
+</div>
 </div>
 
 </div>
@@ -403,7 +539,9 @@ Score calibré :
 </div>
 
 
-<!-- FREQUENCE -->
+<!-- =========================
+     FREQUENCE
+========================= -->
 
 <div class="card">
 
@@ -411,130 +549,207 @@ Score calibré :
 📊 Fréquence des chiffres
 </div>
 
-<div id="frequency" class="digits"></div>
+<div id="frequency"
+     class="digits">
+</div>
 
 </div>
 
 
-<!-- CERVEAU ADAPTATIF -->
+<!-- =========================
+     PERFORMANCE DES MODELES
+========================= -->
 
 <div class="card">
 
 <div class="title">
-🧠 Cerveau adaptatif V5.5
+🧠 Performance réelle des 3 modèles
 </div>
 
 <div class="grid">
 
-<div class="modelBox">
+<div class="model">
 
-<div class="name">GLOBAL</div>
+<div class="modelName">
+GLOBAL
+</div>
 
-<div class="weight" id="weightGlobal">
+<div class="modelPrediction"
+     id="predGlobal">
+—
+</div>
+
+<div class="modelWeight"
+     id="weightGlobal">
 33%
 </div>
 
 <div class="small">
-WIN <span id="winGlobal">0</span>
+WIN :
+<span id="winGlobal">0</span>
 </div>
 
 <div class="small">
-TEST <span id="testGlobal">0</span>
+TEST :
+<span id="testGlobal">0</span>
 </div>
 
 <div class="small">
-TAUX <span id="rateGlobal">—</span>
+TAUX :
+<span id="rateGlobal">—</span>
+</div>
+
+<div class="small">
+STABLE :
+<span id="stableGlobal">—</span>
 </div>
 
 </div>
 
 
-<div class="modelBox">
+<div class="model">
 
-<div class="name">RÉCENT</div>
+<div class="modelName">
+RÉCENT
+</div>
 
-<div class="weight" id="weightRecent">
+<div class="modelPrediction"
+     id="predRecent">
+—
+</div>
+
+<div class="modelWeight"
+     id="weightRecent">
 33%
 </div>
 
 <div class="small">
-WIN <span id="winRecent">0</span>
+WIN :
+<span id="winRecent">0</span>
 </div>
 
 <div class="small">
-TEST <span id="testRecent">0</span>
+TEST :
+<span id="testRecent">0</span>
 </div>
 
 <div class="small">
-TAUX <span id="rateRecent">—</span>
+TAUX :
+<span id="rateRecent">—</span>
+</div>
+
+<div class="small">
+STABLE :
+<span id="stableRecent">—</span>
 </div>
 
 </div>
 
 
-<div class="modelBox">
+<div class="model">
 
-<div class="name">TRANSITION</div>
+<div class="modelName">
+TRANSITION
+</div>
 
-<div class="weight" id="weightTransition">
+<div class="modelPrediction"
+     id="predTransition">
+—
+</div>
+
+<div class="modelWeight"
+     id="weightTransition">
 34%
 </div>
 
 <div class="small">
-WIN <span id="winTransition">0</span>
+WIN :
+<span id="winTransition">0</span>
 </div>
 
 <div class="small">
-TEST <span id="testTransition">0</span>
+TEST :
+<span id="testTransition">0</span>
 </div>
 
 <div class="small">
-TAUX <span id="rateTransition">—</span>
+TAUX :
+<span id="rateTransition">—</span>
+</div>
+
+<div class="small">
+STABLE :
+<span id="stableTransition">—</span>
 </div>
 
 </div>
 
 </div>
 
-<p class="small">
+<div class="small"
+     style="margin-top:8px">
 
-V5.5 mesure séparément la performance des trois
-modèles. Les poids s'adaptent progressivement à leurs
-résultats récents.
+Chaque modèle est maintenant validé
+individuellement sur le tick suivant.
 
-</p>
+Les poids ne sont pas modifiés fortement
+avec quelques validations seulement.
+
+</div>
 
 </div>
 
 
-<!-- MODELES -->
+<!-- =========================
+     MODELES
+========================= -->
 
 <div class="card">
 
 <div class="title">
-🎯 Les 3 modèles
+🎯 Décision des modèles
 </div>
 
 <div class="grid">
 
 <div class="stat">
-<div class="label">GLOBAL</div>
-<div class="n" id="modelGlobal">—</div>
+<div class="label">
+GLOBAL
+</div>
+<div class="n yellow"
+     id="modelGlobal">
+—
+</div>
 </div>
 
 <div class="stat">
-<div class="label">RÉCENT</div>
-<div class="n" id="modelRecent">—</div>
+<div class="label">
+RÉCENT
+</div>
+<div class="n yellow"
+     id="modelRecent">
+—
+</div>
 </div>
 
 <div class="stat">
-<div class="label">TRANSITION</div>
-<div class="n" id="modelTransition">—</div>
+<div class="label">
+TRANSITION
+</div>
+<div class="n yellow"
+     id="modelTransition">
+—
+</div>
 </div>
 
 <div class="stat">
-<div class="label">FINAL</div>
-<div class="n" id="modelFinal">—</div>
+<div class="label">
+FINAL
+</div>
+<div class="n yellow"
+     id="modelFinal">
+—
+</div>
 </div>
 
 </div>
@@ -542,7 +757,9 @@ résultats récents.
 </div>
 
 
-<!-- TRANSITION -->
+<!-- =========================
+     TRANSITION
+========================= -->
 
 <div class="card">
 
@@ -550,12 +767,16 @@ résultats récents.
 🔄 Transition après le dernier chiffre
 </div>
 
-<div id="transition" class="digits"></div>
+<div id="transition"
+     class="digits">
+</div>
 
 </div>
 
 
-<!-- CALIBRATION -->
+<!-- =========================
+     CALIBRATION
+========================= -->
 
 <div class="card">
 
@@ -563,75 +784,133 @@ résultats récents.
 📈 Calibration du score brut
 </div>
 
-<div class="bars">
+<div class="grid">
 
-<div class="bar">
+<div class="stat">
+<div class="label">
 50–59
-<strong id="b50">0/0</strong>
-<span id="r50">—</span>
+</div>
+<div class="n"
+     id="b50">
+0/0
+</div>
+<div class="small"
+     id="r50">
+—
+</div>
 </div>
 
-<div class="bar">
+<div class="stat">
+<div class="label">
 60–69
-<strong id="b60">0/0</strong>
-<span id="r60">—</span>
+</div>
+<div class="n"
+     id="b60">
+0/0
+</div>
+<div class="small"
+     id="r60">
+—
+</div>
 </div>
 
-<div class="bar">
+<div class="stat">
+<div class="label">
 70–79
-<strong id="b70">0/0</strong>
-<span id="r70">—</span>
+</div>
+<div class="n"
+     id="b70">
+0/0
+</div>
+<div class="small"
+     id="r70">
+—
+</div>
 </div>
 
-<div class="bar">
+<div class="stat">
+<div class="label">
 80–89
-<strong id="b80">0/0</strong>
-<span id="r80">—</span>
+</div>
+<div class="n"
+     id="b80">
+0/0
+</div>
+<div class="small"
+     id="r80">
+—
+</div>
 </div>
 
-<div class="bar">
+<div class="stat">
+<div class="label">
 90–100
-<strong id="b90">0/0</strong>
-<span id="r90">—</span>
+</div>
+<div class="n"
+     id="b90">
+0/0
+</div>
+<div class="small"
+     id="r90">
+—
+</div>
 </div>
 
 </div>
 
-<p class="small">
+<div class="small"
+     style="margin-top:8px">
 
-Les validations sont classées selon le score
-BRUT. Le score calibré ne modifie jamais cette
-classification.
+Référence neutre :
+<strong>10%</strong>
 
-Référence exacte d'un chiffre : 10%.
+Le score brut mesure la force interne
+du modèle.
 
-</p>
+La calibration mesure si cette force
+correspond réellement aux résultats.
+
+</div>
 
 </div>
 
 
-<!-- MOTEUR -->
+<!-- =========================
+     MOTEUR
+========================= -->
 
 <div class="card">
 
 <div class="title">
-⚙️ Moteur V5.5
+⚙️ Moteur V5.6
 </div>
 
 <div class="small">
 
-<b>Fenêtre ticks :</b> 100<br>
-<b>Fenêtre récente :</b> 30<br>
-<b>Fenêtre performance :</b> 100 validations<br><br>
+<b>Fenêtre :</b> 100 ticks<br>
 
-<b>Global :</b> adaptatif<br>
-<b>Récent :</b> adaptatif<br>
-<b>Transition :</b> adaptatif<br><br>
+<b>Fenêtre récente :</b> 30 ticks<br>
 
-<b>Calibration :</b> active<br>
+<b>Performance modèle :</b> 100 validations<br>
+
 <b>Validation :</b> tick suivant uniquement<br>
+
+<b>Référence :</b> 10%<br>
+
+<b>Poids :</b> adaptatifs avec stabilisation<br>
+
+<b>Statistique :</b> taux + stabilité + échantillon<br>
+
 <b>Ordres :</b> aucun<br>
+
 <b>Martingale :</b> aucune
+
+</div>
+
+<div class="goodBox">
+
+✅ V5.6 corrige la validation indépendante
+des trois modèles.
 
 </div>
 
@@ -642,12 +921,15 @@ Référence exacte d'un chiffre : 10%.
 🔄 Reconnecter à Deriv
 </button>
 
-<button class="secondary" onclick="resetStats()">
+<button class="secondary"
+        onclick="resetStats()">
 ♻️ Réinitialiser les statistiques
 </button>
 
 
-<!-- NOTE -->
+<!-- =========================
+     NOTE
+========================= -->
 
 <div class="note">
 
@@ -662,15 +944,18 @@ Aucun ordre n'est envoyé à Deriv.
 
 <br><br>
 
-Les scores et taux affichés sont des mesures
-statistiques internes. Ils ne constituent pas une
-garantie de gain et les performances passées ne
-garantissent pas les résultats futurs.
+Le score n'est PAS une probabilité de gain.
+
+Un résultat supérieur à 10% dans un petit
+échantillon ne constitue pas une preuve
+d'avantage statistique.
 
 </div>
 
 
-<!-- HISTORIQUE -->
+<!-- =========================
+     HISTORIQUE
+========================= -->
 
 <div class="card">
 
@@ -686,20 +971,24 @@ garantissent pas les résultats futurs.
 <th>#</th>
 <th>Prédit</th>
 <th>Réel</th>
-<th>Score</th>
+<th>Brut</th>
+<th>Final</th>
 <th>Résultat</th>
 </tr>
 
 </thead>
 
-<tbody id="history"></tbody>
+<tbody id="history">
+</tbody>
 
 </table>
 
 </div>
 
 
-<!-- LOG -->
+<!-- =========================
+     JOURNAL
+========================= -->
 
 <div class="card">
 
@@ -707,13 +996,20 @@ garantissent pas les résultats futurs.
 🧪 Journal technique
 </div>
 
-<div id="log" class="log"></div>
+<div id="log"
+     class="log">
+</div>
 
 </div>
 
 
-<div class="small" style="text-align:center">
-Prediction R75 V5.5 — TEST STATISTIQUE — Aucun ordre
+<div class="small"
+     style="text-align:center">
+
+Prediction R75 V5.6 —
+TEST STATISTIQUE —
+Aucun ordre
+
 </div>
 
 </div>
@@ -722,9 +1018,9 @@ Prediction R75 V5.5 — TEST STATISTIQUE — Aucun ordre
 <script>
 
 
-/* =====================================================
-   CONFIG
-===================================================== */
+/* =========================================================
+   CONFIGURATION
+========================================================= */
 
 const PUBLIC_WS =
 "wss://api.derivws.com/trading/v1/options/ws/public";
@@ -735,2184 +1031,2858 @@ const REQUESTED_SYMBOL =
 const WINDOW =
 100;
 
-const RECENT =
+const RECENT_WINDOW =
 30;
 
-const PERFORMANCE_WINDOW =
+const MODEL_PERFORMANCE_WINDOW =
 100;
 
+const MIN_MODEL_TESTS =
+30;
 
-/* =====================================================
+const BASELINE =
+0.10;
+
+
+/* =========================================================
    VARIABLES
-===================================================== */
+========================================================= */
 
-let ws=null;
+let ws = null;
 
-let currentSymbol=null;
+let currentSymbol = null;
 
-let ticks=[];
+let ticks = [];
 
-let pendingPrediction=null;
+let pendingPrediction = null;
 
-let predictionCount=0;
+let predictionCount = 0;
 
-let validatedCount=0;
+let validatedCount = 0;
 
-let wins=0;
+let wins = 0;
 
-let losses=0;
+let losses = 0;
 
-let history=[];
+let history = [];
 
 
 /*
- Performance indépendante
- des trois modèles.
+ Statistiques réelles des modèles.
 */
 
-let modelStats={
+let modelStats = {
 
- global:{
-   wins:0,
-   total:0
- },
+  global:{
+    wins:0,
+    total:0
+  },
 
- recent:{
-   wins:0,
-   total:0
- },
+  recent:{
+    wins:0,
+    total:0
+  },
 
- transition:{
-   wins:0,
-   total:0
- }
+  transition:{
+    wins:0,
+    total:0
+  }
 
 };
 
 
 /*
- Historique des performances
- des modèles pour calculer
- une performance récente.
+ Historique récent des modèles.
+
+ 1 = WIN
+ 0 = LOSS
 */
 
-let modelHistory={
+let modelHistory = {
 
- global:[],
- recent:[],
- transition:[]
+  global:[],
+  recent:[],
+  transition:[]
 
 };
 
 
 /*
- Calibration par SCORE BRUT.
+ Calibration score brut.
 */
 
-let buckets={
+let buckets = {
 
- "50-59":{
-   wins:0,
-   total:0
- },
+  "50-59":{
+    wins:0,
+    total:0
+  },
 
- "60-69":{
-   wins:0,
-   total:0
- },
+  "60-69":{
+    wins:0,
+    total:0
+  },
 
- "70-79":{
-   wins:0,
-   total:0
- },
+  "70-79":{
+    wins:0,
+    total:0
+  },
 
- "80-89":{
-   wins:0,
-   total:0
- },
+  "80-89":{
+    wins:0,
+    total:0
+  },
 
- "90-100":{
-   wins:0,
-   total:0
- }
+  "90-100":{
+    wins:0,
+    total:0
+  }
 
 };
 
 
-/* =====================================================
+/* =========================================================
    UTILITAIRES
-===================================================== */
+========================================================= */
 
 function $(id){
-
- return document.getElementById(id);
-
+  return document.getElementById(id);
 }
 
 
-function log(msg){
+function log(message){
 
- const time=
- new Date().toLocaleTimeString();
+  const time =
+    new Date().toLocaleTimeString();
 
- $("log").textContent=
- time+" | "+msg+
- "\n"+
- $("log").textContent;
+  $("log").textContent =
+    time+" | "+message+
+    "\n"+
+    $("log").textContent;
 
 }
 
 
 function setStatus(text,color){
 
- $("status").textContent=
- text;
+  $("status").textContent =
+    text;
 
- $("status").style.background=
- color;
+  $("status").style.background =
+    color;
 
 }
 
 
 function digitOf(quote){
 
- const s=
- String(quote);
+  const s =
+    String(quote);
 
- const digits=
- s.replace(/\D/g,"");
+  const clean =
+    s.replace(/\D/g,"");
 
- if(!digits.length)
-   return null;
+  if(!clean.length)
+    return null;
 
- return Number(
-   digits[digits.length-1]
- );
+  return Number(
+    clean[clean.length-1]
+  );
 
 }
 
 
 function counts(arr){
 
- const c=
- Array(10).fill(0);
+  const c =
+    Array(10).fill(0);
 
- arr.forEach(d=>{
+  arr.forEach(d=>{
 
-   if(Number.isInteger(d))
-     c[d]++;
+    if(Number.isInteger(d))
+      c[d]++;
 
- });
+  });
 
- return c;
+  return c;
 
 }
 
 
 function normalizeCounts(c){
 
- const total=
- c.reduce((a,b)=>a+b,0);
+  const total =
+    c.reduce(
+      (a,b)=>a+b,
+      0
+    );
 
- if(!total)
-   return Array(10).fill(.1);
+  if(!total)
+    return Array(10).fill(
+      0.1
+    );
 
- return c.map(
-   x=>(x+1)/(total+10)
- );
+  /*
+   Laplace smoothing.
+  */
+
+  return c.map(
+    x=>
+      (x+1)/
+      (total+10)
+  );
 
 }
 
 
 function argmax(arr){
 
- let best=0;
+  let best = 0;
 
- for(let i=1;i<arr.length;i++){
+  for(
+    let i=1;
+    i<arr.length;
+    i++
+  ){
 
-   if(arr[i]>arr[best])
-     best=i;
+    if(arr[i]>arr[best])
+      best=i;
 
- }
+  }
 
- return best;
+  return best;
 
 }
 
 
 function topTwo(arr){
 
- const ids=
- [...Array(10).keys()];
+  const ids =
+    [...Array(10).keys()];
 
- ids.sort(
-   (a,b)=>arr[b]-arr[a]
- );
+  ids.sort(
+    (a,b)=>
+      arr[b]-arr[a]
+  );
 
- return [
-   ids[0],
-   ids[1]
- ];
+  return [
+    ids[0],
+    ids[1]
+  ];
+
+}
+
+
+function percent(x){
+
+  return (
+    x*100
+  ).toFixed(1)+"%";
 
 }
 
 
-/* =====================================================
-   MODELES
-===================================================== */
-
-function getRecent(){
-
- return ticks.slice(-RECENT);
-
-}
-
+/* =========================================================
+   MODELES BRUTS
+========================================================= */
 
 function getGlobalModel(){
 
- return normalizeCounts(
-   counts(ticks)
- );
+  return normalizeCounts(
+    counts(ticks)
+  );
 
 }
 
 
 function getRecentModel(){
 
- return normalizeCounts(
-   counts(getRecent())
- );
+  const recent =
+    ticks.slice(
+      -RECENT_WINDOW
+    );
+
+  return normalizeCounts(
+    counts(recent)
+  );
 
 }
 
 
 function getTransitionModel(){
 
- const matrix=
- Array.from(
-   {length:10},
-   ()=>Array(10).fill(1)
- );
+  const matrix =
+    Array.from(
+      {length:10},
+      ()=>Array(10).fill(1)
+    );
 
- for(let i=1;i<ticks.length;i++){
 
-   const from=
-   ticks[i-1];
+  for(
+    let i=1;
+    i<ticks.length;
+    i++
+  ){
 
-   const to=
-   ticks[i];
+    const from =
+      ticks[i-1];
 
-   if(
-     Number.isInteger(from)&&
-     Number.isInteger(to)
-   ){
+    const to =
+      ticks[i];
 
-     matrix[from][to]++;
 
-   }
+    if(
+      Number.isInteger(from)&&
+      Number.isInteger(to)
+    ){
 
- }
+      matrix[from][to]++;
 
- const last=
- ticks[ticks.length-1];
+    }
 
- if(!Number.isInteger(last))
-   return Array(10).fill(.1);
+  }
 
- const row=
- matrix[last];
 
- const total=
- row.reduce((a,b)=>a+b,0);
+  const last =
+    ticks[ticks.length-1];
 
- return row.map(
-   x=>x/total
- );
+
+  if(!Number.isInteger(last))
+    return Array(10).fill(
+      0.1
+    );
+
+
+  const row =
+    matrix[last];
+
+
+  const total =
+    row.reduce(
+      (a,b)=>a+b,
+      0
+    );
+
+
+  return row.map(
+    x=>x/total
+  );
 
 }
 
 
-/* =====================================================
-   PERFORMANCE MODELES
-===================================================== */
+/* =========================================================
+   PREDICTION INDIVIDUELLE
+========================================================= */
+
+function getModelPredictions(){
+
+  const global =
+    getGlobalModel();
+
+  const recent =
+    getRecentModel();
+
+  const transition =
+    getTransitionModel();
+
+
+  return {
+
+    global:{
+      scores:global,
+      candidate:argmax(global)
+    },
+
+    recent:{
+      scores:recent,
+      candidate:argmax(recent)
+    },
+
+    transition:{
+      scores:transition,
+      candidate:argmax(transition)
+    }
+
+  };
+
+}
+
+
+/* =========================================================
+   STATISTIQUES MODELES
+========================================================= */
 
 
 /*
- Taux lissé avec référence 10%.
-
- On utilise un prior assez fort
- pour éviter qu'un modèle fasse
- 1/1 et devienne immédiatement
- le modèle dominant.
+ Taux brut.
 */
 
-function smoothedModelRate(name){
+function modelRate(name){
 
- const s=
- modelStats[name];
+  const s =
+    modelStats[name];
 
- const PRIOR_TOTAL=
- 100;
+  if(!s.total)
+    return BASELINE;
 
- const PRIOR_WINS=
- 10;
-
- return (
-   s.wins+PRIOR_WINS
- )/
- (
-   s.total+PRIOR_TOTAL
- );
+  return (
+    s.wins/
+    s.total
+  );
 
 }
 
 
 /*
- Performance récente.
-
- On conserve au maximum
- PERFORMANCE_WINDOW validations.
+ Taux récent avec fenêtre.
 */
 
 function recentModelRate(name){
 
- const arr=
- modelHistory[name];
+  const arr =
+    modelHistory[name];
 
- if(!arr.length)
-   return .10;
+  if(!arr.length)
+    return BASELINE;
 
- const recent=
- arr.slice(
-   -PERFORMANCE_WINDOW
- );
 
- const winsRecent=
- recent.reduce(
-   (a,b)=>a+b,
-   0
- );
+  const sample =
+    arr.slice(
+      -MODEL_PERFORMANCE_WINDOW
+    );
 
- /*
-  Petit lissage.
- */
 
- return (
-   winsRecent+10
- )/
- (
-   recent.length+100
- );
+  const winsRecent =
+    sample.reduce(
+      (a,b)=>a+b,
+      0
+    );
+
+
+  /*
+   Prior neutre :
+   10 wins / 100 tests.
+  */
+
+  return (
+    winsRecent+10
+  )/
+  (
+    sample.length+100
+  );
 
 }
 
 
 /*
- Poids adaptatifs.
+ Intervalle de Wilson.
 
- On part de 1/3 pour chaque modèle.
+ Sert à mesurer la stabilité.
 
- Un modèle qui fait mieux que
- 10% gagne progressivement du poids.
-
- Un modèle qui fait moins que
- 10% perd progressivement du poids.
+ Plus la borne basse est proche
+ du taux observé, plus l'estimation
+ est stable.
 */
+
+function wilsonLower(
+  winsCount,
+  totalCount
+){
+
+  if(totalCount<=0)
+    return 0;
+
+
+  const z = 1.96;
+
+  const p =
+    winsCount/
+    totalCount;
+
+
+  const denominator =
+    1+
+    (z*z)/
+    totalCount;
+
+
+  const centre =
+    p+
+    (z*z)/
+    (2*totalCount);
+
+
+  const spread =
+    z*
+    Math.sqrt(
+      (
+        p*(1-p)+
+        (z*z)/
+        (4*totalCount)
+      )/
+      totalCount
+    );
+
+
+  return Math.max(
+    0,
+    (
+      centre-spread
+    )/
+    denominator
+  );
+
+}
+
+
+/*
+ Stabilité = borne basse
+ de l'estimation récente.
+
+ On ajoute le prior 10/100
+ pour éviter des valeurs
+ absurdes au début.
+*/
+
+function modelStability(name){
+
+  const arr =
+    modelHistory[name];
+
+
+  if(!arr.length)
+    return BASELINE;
+
+
+  const sample =
+    arr.slice(
+      -MODEL_PERFORMANCE_WINDOW
+    );
+
+
+  const w =
+    sample.reduce(
+      (a,b)=>a+b,
+      0
+    );
+
+
+  const total =
+    sample.length;
+
+
+  return wilsonLower(
+    w+10,
+    total+100
+  );
+
+}
+
+
+/* =========================================================
+   POIDS ADAPTATIFS V5.6
+========================================================= */
 
 function getAdaptiveWeights(){
 
- const names=[
-   "global",
-   "recent",
-   "transition"
- ];
-
- const raw={};
-
- names.forEach(name=>{
-
-   const rate=
-   recentModelRate(name);
-
-   /*
-    Rapport à la référence 10%.
-   */
-
-   let factor=
-   rate/.10;
-
-   /*
-    Limitation volontaire.
-   Aucun modèle ne peut dépasser
-   60% du poids total.
-   */
-
-   factor=
-   Math.max(
-     .50,
-     Math.min(2.50,factor)
-   );
-
-   raw[name]=factor;
-
- });
+  const names = [
+    "global",
+    "recent",
+    "transition"
+  ];
 
 
- const total=
- raw.global+
- raw.recent+
- raw.transition;
+  /*
+   Tant que les modèles ont
+   peu de tests, on reste
+   pratiquement égalitaire.
+  */
+
+  const raw = {};
 
 
- let weights={
+  names.forEach(name=>{
 
-   global:
-     raw.global/total,
-
-   recent:
-     raw.recent/total,
-
-   transition:
-     raw.transition/total
-
- };
+    const total =
+      modelStats[name].total;
 
 
- /*
-  Plafond 60%.
- */
+    if(total<MIN_MODEL_TESTS){
 
- const maxWeight=.60;
+      raw[name]=1;
 
- names.forEach(name=>{
+      return;
 
-   if(weights[name]>maxWeight)
-     weights[name]=maxWeight;
-
- });
+    }
 
 
- /*
-  Renormalisation.
- */
-
- const sum=
- weights.global+
- weights.recent+
- weights.transition;
-
- weights.global/=sum;
- weights.recent/=sum;
- weights.transition/=sum;
+    const rate =
+      recentModelRate(name);
 
 
- return weights;
+    const stability =
+      modelStability(name);
+
+
+    /*
+     On exige que la performance
+     récente et la borne basse
+     soient cohérentes.
+
+     Cela empêche un modèle de
+     gagner beaucoup de poids
+     sur une courte série chanceuse.
+    */
+
+    const conservativeRate =
+      (
+        rate+
+        stability
+      )/
+      2;
+
+
+    let factor =
+      conservativeRate/
+      BASELINE;
+
+
+    /*
+     Limitation volontaire.
+    */
+
+    factor =
+      Math.max(
+        0.70,
+        Math.min(
+          1.80,
+          factor
+        )
+      );
+
+
+    raw[name]=factor;
+
+  });
+
+
+  const totalRaw =
+    raw.global+
+    raw.recent+
+    raw.transition;
+
+
+  let weights={
+
+    global:
+      raw.global/
+      totalRaw,
+
+    recent:
+      raw.recent/
+      totalRaw,
+
+    transition:
+      raw.transition/
+      totalRaw
+
+  };
+
+
+  /*
+   Aucun modèle > 55%.
+  */
+
+  const maxWeight =
+    0.55;
+
+
+  names.forEach(name=>{
+
+    if(
+      weights[name]>
+      maxWeight
+    ){
+
+      weights[name]=
+        maxWeight;
+
+    }
+
+  });
+
+
+  /*
+   Renormalisation.
+  */
+
+  const sum =
+    weights.global+
+    weights.recent+
+    weights.transition;
+
+
+  weights.global /=
+    sum;
+
+  weights.recent /=
+    sum;
+
+  weights.transition /=
+    sum;
+
+
+  return weights;
 
 }
 
 
-/* =====================================================
-   COMBINAISON ADAPTATIVE
-===================================================== */
+/* =========================================================
+   ENSEMBLE FINAL
+========================================================= */
 
 function combineModels(){
 
- const global=
- getGlobalModel();
+  const models =
+    getModelPredictions();
 
- const recent=
- getRecentModel();
 
- const transition=
- getTransitionModel();
+  const weights =
+    getAdaptiveWeights();
 
- const weights=
- getAdaptiveWeights();
 
- const final=[];
+  const final =
+    Array(10).fill(0);
 
- for(let d=0;d<10;d++){
 
-   final[d]=
+  for(
+    let d=0;
+    d<10;
+    d++
+  ){
 
-     weights.global*
-     global[d]
+    final[d] =
 
-     +
+      weights.global*
+      models.global.scores[d]
 
-     weights.recent*
-     recent[d]
+      +
 
-     +
+      weights.recent*
+      models.recent.scores[d]
 
-     weights.transition*
-     transition[d];
+      +
 
- }
+      weights.transition*
+      models.transition.scores[d];
 
- return {
+  }
 
-   global,
-   recent,
-   transition,
-   final,
-   weights
 
- };
+  return {
+
+    models,
+
+    final,
+
+    weights
+
+  };
 
 }
 
 
-/* =====================================================
+/* =========================================================
    STREAK
-===================================================== */
+========================================================= */
 
 function currentStreak(){
 
- if(!ticks.length)
-   return "—";
+  if(!ticks.length)
+    return "—";
 
- const last=
- ticks[ticks.length-1];
 
- let n=0;
+  const last =
+    ticks[ticks.length-1];
 
- for(
-   let i=ticks.length-1;
-   i>=0;
-   i--
- ){
 
-   if(ticks[i]===last)
-     n++;
-   else
-     break;
+  let count=0;
 
- }
 
- return last+" × "+n;
+  for(
+    let i=ticks.length-1;
+    i>=0;
+    i--
+  ){
+
+    if(ticks[i]===last)
+      count++;
+
+    else
+      break;
+
+  }
+
+
+  return last+
+    " × "+
+    count;
 
 }
 
 
-/* =====================================================
+/* =========================================================
    SCORE BRUT
-===================================================== */
+========================================================= */
 
 function calculateRawPrediction(){
 
- const models=
- combineModels();
-
- const [candidate,second]=
- topTwo(models.final);
-
- const top=
- models.final[candidate];
-
- const secondScore=
- models.final[second];
-
- const edge=
- Math.max(
-   0,
-   top-.10
- );
-
- const agreement=[
-
-   argmax(models.global),
-
-   argmax(models.recent),
-
-   argmax(models.transition)
-
- ].filter(
-   x=>x===candidate
- ).length;
+  const ensemble =
+    combineModels();
 
 
- const gap=
- top-secondScore;
+  const [candidate,second] =
+    topTwo(
+      ensemble.final
+    );
 
 
- let agreementScore;
-
- if(agreement===3)
-   agreementScore=1;
-
- else if(agreement===2)
-   agreementScore=.65;
-
- else
-   agreementScore=.25;
+  const top =
+    ensemble.final[candidate];
 
 
- let edgeScore=
- Math.max(
-   0,
-   Math.min(
-     1,
-     edge/.12
-   )
- );
+  const secondScore =
+    ensemble.final[second];
 
 
- let raw=
-
-   45+
-
-   35*edgeScore+
-
-   20*agreementScore;
+  const edge =
+    Math.max(
+      0,
+      top-BASELINE
+    );
 
 
- if(gap<.01)
-   raw-=8;
+  const agreement =
+    [
 
- else if(gap<.02)
-   raw-=4;
+      ensemble.models.global.candidate,
 
+      ensemble.models.recent.candidate,
 
- raw=
- Math.max(
-   50,
-   Math.min(
-     100,
-     raw
-   )
- );
+      ensemble.models.transition.candidate
+
+    ].filter(
+      x=>x===candidate
+    ).length;
 
 
- return {
+  const gap =
+    top-secondScore;
 
-   candidate,
 
-   second,
+  let agreementScore;
 
-   models,
 
-   agreement,
+  if(agreement===3)
+    agreementScore=1;
 
-   gap,
+  else if(agreement===2)
+    agreementScore=.65;
 
-   raw
+  else
+    agreementScore=.25;
 
- };
+
+  let edgeScore =
+    Math.max(
+      0,
+      Math.min(
+        1,
+        edge/.12
+      )
+    );
+
+
+  let raw =
+
+    45+
+
+    35*
+    edgeScore+
+
+    20*
+    agreementScore;
+
+
+  if(gap<.01)
+    raw-=8;
+
+  else if(gap<.02)
+    raw-=4;
+
+
+  raw =
+    Math.max(
+      50,
+      Math.min(
+        100,
+        raw
+      )
+    );
+
+
+  return {
+
+    candidate,
+
+    second,
+
+    top,
+
+    secondScore,
+
+    edge,
+
+    gap,
+
+    agreement,
+
+    raw,
+
+    ensemble
+
+  };
 
 }
 
 
-/* =====================================================
+/* =========================================================
    CALIBRATION SCORE
-===================================================== */
+========================================================= */
 
-function bucketForRawScore(score){
+function bucketForScore(score){
 
- if(score<60)
-   return "50-59";
+  if(score<60)
+    return "50-59";
 
- if(score<70)
-   return "60-69";
+  if(score<70)
+    return "60-69";
 
- if(score<80)
-   return "70-79";
+  if(score<80)
+    return "70-79";
 
- if(score<90)
-   return "80-89";
+  if(score<90)
+    return "80-89";
 
- return "90-100";
-
-}
-
-
-function rawBucketRate(bucket){
-
- const b=
- buckets[bucket];
-
- if(!b||b.total===0)
-   return null;
-
- return b.wins/b.total;
+  return "90-100";
 
 }
 
 
-function smoothedBucketRate(bucket){
+function bucketObservedRate(bucket){
 
- const b=
- buckets[bucket];
-
- if(!b)
-   return .10;
-
- return (
-   b.wins+10
- )/
- (
-   b.total+100
- );
-
-}
+  const b =
+    buckets[bucket];
 
 
-/* =====================================================
-   SCORE CALIBRÉ
-===================================================== */
-
-function calibrateRawScore(raw){
-
- /*
-  IMPORTANT :
-  la tranche est basée uniquement
-  sur le SCORE BRUT.
- */
-
- const bucket=
- bucketForRawScore(raw);
-
- const observed=
- rawBucketRate(bucket);
-
- const smoothed=
- smoothedBucketRate(bucket);
-
- const sample=
- buckets[bucket].total;
+  if(!b.total)
+    return null;
 
 
- /*
-  Fiabilité par rapport à 10%.
- */
-
- const edge=
- smoothed-.10;
-
- let reliability=
- .50+
- edge*4;
-
-
- reliability=
- Math.max(
-   .10,
-   Math.min(
-     1,
-     reliability
-   )
- );
-
-
- /*
-  Plus l'échantillon est grand,
-  plus la calibration est forte.
- */
-
- const sampleConfidence=
- Math.min(
-   1,
-   sample/50
- );
-
-
- let finalScore=
-
-   50+
-
-   (raw-50)*
-
-   (
-     .55+
-
-     .45*
-
-     reliability*
-
-     (
-       .25+
-       .75*sampleConfidence
-     )
-   );
-
-
- finalScore=
- Math.max(
-   50,
-   Math.min(
-     100,
-     finalScore
-   )
- );
-
-
- return {
-
-   bucket,
-
-   observed,
-
-   smoothed,
-
-   sample,
-
-   reliability,
-
-   finalScore:
-     Math.round(finalScore)
-
- };
+  return (
+    b.wins/
+    b.total
+  );
 
 }
 
 
-/* =====================================================
+function bucketSmoothedRate(bucket){
+
+  const b =
+    buckets[bucket];
+
+
+  if(!b)
+    return BASELINE;
+
+
+  return (
+    b.wins+10
+  )/
+  (
+    b.total+100
+  );
+
+}
+
+
+/* =========================================================
+   CALIBRATION
+========================================================= */
+
+function calibrateScore(raw){
+
+  const bucket =
+    bucketForScore(raw);
+
+
+  const observed =
+    bucketObservedRate(
+      bucket
+    );
+
+
+  const smoothed =
+    bucketSmoothedRate(
+      bucket
+    );
+
+
+  const sample =
+    buckets[bucket].total;
+
+
+  /*
+   Confiance de l'échantillon.
+  */
+
+  const sampleConfidence =
+    Math.min(
+      1,
+      sample/50
+    );
+
+
+  /*
+   Edge de la tranche.
+  */
+
+  const bucketEdge =
+    smoothed-
+    BASELINE;
+
+
+  /*
+   Calibration conservatrice.
+  */
+
+  let calibrationFactor =
+
+    0.55+
+
+    Math.max(
+      -0.15,
+      Math.min(
+        0.25,
+        bucketEdge*2
+      )
+    );
+
+
+  calibrationFactor *=
+
+    (
+      .40+
+      .60*
+      sampleConfidence
+    );
+
+
+  let finalScore =
+
+    50+
+
+    (
+      raw-50
+    )*
+    calibrationFactor;
+
+
+  finalScore =
+    Math.max(
+      50,
+      Math.min(
+        100,
+        finalScore
+      )
+    );
+
+
+  return {
+
+    bucket,
+
+    observed,
+
+    smoothed,
+
+    sample,
+
+    finalScore:
+      Math.round(
+        finalScore
+      )
+
+  };
+
+}
+
+
+/* =========================================================
+   STABILITE GLOBALE
+========================================================= */
+
+function calculateStability(prediction){
+
+  const names=[
+    "global",
+    "recent",
+    "transition"
+  ];
+
+
+  const stabilityValues =
+    names.map(
+      name=>
+        modelStability(name)
+    );
+
+
+  const average =
+    stabilityValues.reduce(
+      (a,b)=>a+b,
+      0
+    )/
+    stabilityValues.length;
+
+
+  /*
+   Accord des modèles.
+  */
+
+  let agreementFactor =
+    prediction.agreement/
+    3;
+
+
+  let stability =
+    average*
+    100*
+    agreementFactor;
+
+
+  /*
+   Ne pas afficher une stabilité
+   artificiellement énorme au début.
+  */
+
+  if(validatedCount<30)
+    stability =
+      Math.min(
+        stability,
+        50
+      );
+
+
+  return stability;
+
+}
+
+
+/* =========================================================
    PREDICTION COMPLETE
-===================================================== */
+========================================================= */
 
 function calculatePrediction(){
 
- const base=
- calculateRawPrediction();
-
- const calibration=
- calibrateRawScore(
-   base.raw
- );
+  const raw =
+    calculateRawPrediction();
 
 
- let signal=
- "NO SIGNAL";
-
- let signalClass=
- "none";
-
-
- /*
-  Phase d'observation.
- */
-
- if(validatedCount<20){
-
-   if(
-     calibration.finalScore>=72 &&
-     base.agreement>=2
-   ){
-
-     signal=
-     "SIGNAL EN OBSERVATION";
-
-     signalClass=
-     "medium";
-
-   }
-
- }else{
-
-   const enoughSample=
-     calibration.sample>=10;
-
-   const aboveBaseline=
-     calibration.smoothed>=.105;
+  const calibration =
+    calibrateScore(
+      raw.raw
+    );
 
 
-   /*
-    Pour un signal fort :
-    score élevé + au moins 2 modèles
-    d'accord + calibration acceptable.
-   */
-
-   if(
-
-     calibration.finalScore>=80 &&
-
-     base.agreement>=2 &&
-
-     (
-       !enoughSample||
-       aboveBaseline
-     )
-
-   ){
-
-     signal=
-     "SIGNAL FORT";
-
-     signalClass=
-     "strong";
+  const stability =
+    calculateStability(
+      raw
+    );
 
 
-   }else if(
+  /*
+   Performance empirique
+   du candidat final via
+   la tranche de score.
+  */
 
-     calibration.finalScore>=68 &&
-
-     base.agreement>=2 &&
-
-     (
-       !enoughSample||
-       aboveBaseline
-     )
-
-   ){
-
-     signal=
-     "SIGNAL MODÉRÉ";
-
-     signalClass=
-     "medium";
-
-   }
-
- }
+  const empirical =
+    calibration.smoothed;
 
 
- return {
+  let signal =
+    "NO SIGNAL";
 
-   ...base,
 
-   ...calibration,
+  let signalClass =
+    "none";
 
-   signal,
 
-   signalClass
+  /*
+   Phase de collecte.
+  */
 
- };
+  if(validatedCount<30){
+
+    if(
+      calibration.finalScore>=80 &&
+      raw.agreement>=2
+    ){
+
+      signal =
+        "SIGNAL EN OBSERVATION";
+
+      signalClass =
+        "medium";
+
+    }
+
+
+  }else{
+
+    /*
+     Pour un vrai signal,
+     on demande :
+
+     - score calibré élevé
+     - au moins 2 modèles
+     - échantillon raisonnable
+     - performance calibrée > référence
+    */
+
+    const enoughSample =
+      calibration.sample>=20;
+
+
+    const aboveBaseline =
+      empirical>
+      0.105;
+
+
+    if(
+
+      calibration.finalScore>=82 &&
+
+      raw.agreement>=2 &&
+
+      enoughSample &&
+
+      aboveBaseline
+
+    ){
+
+      signal =
+        "SIGNAL FORT";
+
+      signalClass =
+        "strong";
+
+
+    }else if(
+
+      calibration.finalScore>=70 &&
+
+      raw.agreement>=2 &&
+
+      aboveBaseline
+
+    ){
+
+      signal =
+        "SIGNAL MODÉRÉ";
+
+      signalClass =
+        "medium";
+
+    }
+
+  }
+
+
+  return {
+
+    ...raw,
+
+    ...calibration,
+
+    stability,
+
+    signal,
+
+    signalClass
+
+  };
 
 }
 
 
-/* =====================================================
+/* =========================================================
    AFFICHAGE ANALYSE
-===================================================== */
+========================================================= */
 
 function updateAnalysis(){
 
- if(ticks.length<WINDOW){
+  if(ticks.length<WINDOW){
 
-   $("candidate").textContent=
-   "—";
+    $("candidate").textContent =
+      "—";
 
-   $("score").textContent=
-   "—";
+    $("score").textContent =
+      "—";
 
-   $("signal").textContent=
-   "⏳ COLLECTE DES DONNÉES";
+    $("signal").textContent =
+      "⏳ COLLECTE DES DONNÉES";
 
-   $("signal").className=
-   "signal none";
+    $("signal").className =
+      "signal none";
 
-   return;
+    $("analysisMessage").textContent =
+      "Il faut 100 ticks avant l'analyse.";
 
- }
+    return;
 
-
- const p=
- calculatePrediction();
-
-
- $("candidate").textContent=
- p.candidate;
-
- $("score").textContent=
- p.finalScore;
-
- $("rawScore").textContent=
- p.raw.toFixed(0);
-
- $("agreement").textContent=
- p.agreement+"/3";
-
- $("empirical").textContent=
- p.observed===null
-   ?"—"
-   :(p.observed*100).toFixed(1)+"%";
-
- $("sample").textContent=
- p.sample;
-
- $("signal").textContent=
- p.signal;
-
- $("signal").className=
- "signal "+p.signalClass;
+  }
 
 
- $("globalDigit").textContent=
- argmax(p.models.global);
-
- $("recentDigit").textContent=
- argmax(p.models.recent);
-
- $("transitionDigit").textContent=
- argmax(p.models.transition);
+  const p =
+    calculatePrediction();
 
 
- $("modelGlobal").textContent=
- argmax(p.models.global);
-
- $("modelRecent").textContent=
- argmax(p.models.recent);
-
- $("modelTransition").textContent=
- argmax(p.models.transition);
-
- $("modelFinal").textContent=
- p.candidate;
-
- $("streak").textContent=
- currentStreak();
+  $("candidate").textContent =
+    p.candidate;
 
 
- $("weightGlobal").textContent=
- Math.round(
-   p.models.weights.global*100
- )+"%";
-
- $("weightRecent").textContent=
- Math.round(
-   p.models.weights.recent*100
- )+"%";
-
- $("weightTransition").textContent=
- Math.round(
-   p.models.weights.transition*100
- )+"%";
+  $("score").textContent =
+    p.finalScore;
 
 
- updateModelStatsDisplay();
+  $("rawScore").textContent =
+    p.raw.toFixed(0);
 
- renderFrequency();
 
- renderTransition();
+  $("agreement").textContent =
+    p.agreement+"/3";
 
- renderBuckets();
+
+  $("empirical").textContent =
+    percent(
+      p.smoothed
+    );
+
+
+  $("sample").textContent =
+    p.sample;
+
+
+  $("stability").textContent =
+    p.stability.toFixed(1)+"%";
+
+
+  $("edge").textContent =
+    (
+      (
+        p.smoothed-
+        BASELINE
+      )*
+      100
+    ).toFixed(1)+"%";
+
+
+  $("signal").textContent =
+    p.signal;
+
+
+  $("signal").className =
+    "signal "+
+    p.signalClass;
+
+
+  $("globalDigit").textContent =
+    p.ensemble.models.global.candidate;
+
+
+  $("recentDigit").textContent =
+    p.ensemble.models.recent.candidate;
+
+
+  $("transitionDigit").textContent =
+    p.ensemble.models.transition.candidate;
+
+
+  $("streak").textContent =
+    currentStreak();
+
+
+  $("modelGlobal").textContent =
+    p.ensemble.models.global.candidate;
+
+
+  $("modelRecent").textContent =
+    p.ensemble.models.recent.candidate;
+
+
+  $("modelTransition").textContent =
+    p.ensemble.models.transition.candidate;
+
+
+  $("modelFinal").textContent =
+    p.candidate;
+
+
+  $("predGlobal").textContent =
+    p.ensemble.models.global.candidate;
+
+
+  $("predRecent").textContent =
+    p.ensemble.models.recent.candidate;
+
+
+  $("predTransition").textContent =
+    p.ensemble.models.transition.candidate;
+
+
+  $("weightGlobal").textContent =
+    Math.round(
+      p.ensemble.weights.global*
+      100
+    )+"%";
+
+
+  $("weightRecent").textContent =
+    Math.round(
+      p.ensemble.weights.recent*
+      100
+    )+"%";
+
+
+  $("weightTransition").textContent =
+    Math.round(
+      p.ensemble.weights.transition*
+      100
+    )+"%";
+
+
+  if(validatedCount<30){
+
+    $("analysisMessage").textContent =
+      "⚠️ Moins de 30 validations : le moteur reste volontairement prudent.";
+
+    $("analysisMessage").className =
+      "warnBox";
+
+  }else if(
+    p.smoothed<=BASELINE
+  ){
+
+    $("analysisMessage").textContent =
+      "🔴 La performance calibrée n'est pas supérieure à la référence de 10%.";
+
+    $("analysisMessage").className =
+      "warnBox";
+
+  }else{
+
+    $("analysisMessage").textContent =
+      "🟢 Performance au-dessus de 10%, mais elle doit rester stable sur un échantillon suffisant.";
+
+    $("analysisMessage").className =
+      "goodBox";
+
+  }
+
+
+  updateModelDisplay();
+
+  renderFrequency();
+
+  renderTransition();
+
+  renderBuckets();
 
 }
 
 
-/* =====================================================
-   AFFICHAGE PERFORMANCE MODELES
-===================================================== */
+/* =========================================================
+   AFFICHAGE MODELES
+========================================================= */
 
-function updateModelStatsDisplay(){
+function updateModelDisplay(){
 
- const names=[
-   "global",
-   "recent",
-   "transition"
- ];
-
- names.forEach(name=>{
-
-   const stats=
-   modelStats[name];
-
-   const rate=
-   recentModelRate(name);
-
-   const capital=
-   name.charAt(0).toUpperCase()+
-   name.slice(1);
+  const names=[
+    "global",
+    "recent",
+    "transition"
+  ];
 
 
-   $("win"+capital).textContent=
-   stats.wins;
+  names.forEach(name=>{
 
-   $("test"+capital).textContent=
-   stats.total;
+    const cap =
+      name.charAt(0).toUpperCase()+
+      name.slice(1);
 
-   $("rate"+capital).textContent=
-   (rate*100).toFixed(1)+"%";
 
- });
+    const stats =
+      modelStats[name];
+
+
+    const rate =
+      modelRate(name);
+
+
+    const stable =
+      modelStability(name);
+
+
+    $("win"+cap).textContent =
+      stats.wins;
+
+
+    $("test"+cap).textContent =
+      stats.total;
+
+
+    $("rate"+cap).textContent =
+      percent(rate);
+
+
+    $("stable"+cap).textContent =
+      percent(stable);
+
+  });
 
 }
 
 
-/* =====================================================
+/* =========================================================
    FREQUENCE
-===================================================== */
+========================================================= */
 
 function renderFrequency(){
 
- const c=
- counts(ticks);
-
- const total=
- ticks.length;
-
- $("frequency").innerHTML="";
+  const c =
+    counts(ticks);
 
 
- for(let d=0;d<10;d++){
-
-   const pct=
-   total
-   ?c[d]/total*100
-   :0;
+  const total =
+    ticks.length;
 
 
-   const el=
-   document.createElement("div");
-
-   el.className=
-   "digit";
-
-   el.innerHTML=
-
-   "<strong>"+d+"</strong>"+
-
-   "<span class='small'>"+
-   c[d]+
-   " ("+
-   pct.toFixed(1)+
-   "%)"+
-   "</span>";
+  $("frequency").innerHTML =
+    "";
 
 
-   $("frequency").appendChild(el);
+  for(
+    let d=0;
+    d<10;
+    d++
+  ){
 
- }
+    const pct =
+      total
+      ?
+      c[d]/total*100
+      :
+      0;
+
+
+    const el =
+      document.createElement(
+        "div"
+      );
+
+
+    el.className =
+      "digit";
+
+
+    el.innerHTML =
+
+      "<strong>"+
+      d+
+      "</strong>"+
+
+      "<span class='small'>"+
+      c[d]+
+      " ("+
+      pct.toFixed(1)+
+      "%)"+
+      "</span>";
+
+
+    $("frequency")
+      .appendChild(el);
+
+  }
 
 }
 
 
-/* =====================================================
+/* =========================================================
    TRANSITION
-===================================================== */
+========================================================= */
 
 function renderTransition(){
 
- $("transition").innerHTML="";
+  $("transition").innerHTML =
+    "";
 
 
- if(!ticks.length)
-   return;
+  if(!ticks.length)
+    return;
 
 
- const model=
- getTransitionModel();
+  const model =
+    getTransitionModel();
 
 
- for(let d=0;d<10;d++){
+  for(
+    let d=0;
+    d<10;
+    d++
+  ){
 
-   const el=
-   document.createElement("div");
-
-   el.className=
-   "digit";
-
-   el.innerHTML=
-
-   "<strong>"+d+"</strong>"+
-
-   "<span class='small'>"+
-   (model[d]*100).toFixed(1)+
-   "%"+
-   "</span>";
+    const el =
+      document.createElement(
+        "div"
+      );
 
 
-   $("transition").appendChild(el);
-
- }
-
-}
+    el.className =
+      "digit";
 
 
-/* =====================================================
-   BUCKETS
-===================================================== */
+    el.innerHTML =
 
-function renderBuckets(){
+      "<strong>"+
+      d+
+      "</strong>"+
 
- const configs=[
-
-   ["50-59","b50","r50"],
-
-   ["60-69","b60","r60"],
-
-   ["70-79","b70","r70"],
-
-   ["80-89","b80","r80"],
-
-   ["90-100","b90","r90"]
-
- ];
+      "<span class='small'>"+
+      percent(model[d])+
+      "</span>";
 
 
- configs.forEach(
- ([key,bid,rid])=>{
+    $("transition")
+      .appendChild(el);
 
-   const b=
-   buckets[key];
-
-
-   $(bid).textContent=
-   b.wins+"/"+b.total;
-
-
-   $(rid).textContent=
-
-   b.total
-
-   ?
-
-   (
-     b.wins/
-     b.total*
-     100
-   ).toFixed(1)+"%"
-
-   :
-
-   "—";
-
- });
+  }
 
 }
 
 
-/* =====================================================
+/* =========================================================
    STATS
-===================================================== */
+========================================================= */
 
 function updateStats(){
 
- $("tickCount").textContent=
- ticks.length;
+  $("tickCount").textContent =
+    ticks.length;
 
- $("predictions").textContent=
- predictionCount;
 
- $("validated").textContent=
- validatedCount;
+  $("predictions").textContent =
+    predictionCount;
 
- $("wins").textContent=
- wins;
 
- $("losses").textContent=
- losses;
+  $("validated").textContent =
+    validatedCount;
 
- $("realRate").textContent=
 
- validatedCount
+  $("wins").textContent =
+    wins;
 
- ?
 
- (
-   wins/
-   validatedCount*
-   100
- ).toFixed(1)+"%"
+  $("losses").textContent =
+    losses;
 
- :
 
- "0%";
+  $("realRate").textContent =
+
+    validatedCount
+
+    ?
+
+    (
+      wins/
+      validatedCount*
+      100
+    ).toFixed(1)+"%"
+
+    :
+
+    "0%";
 
 }
 
 
-/* =====================================================
+/* =========================================================
    HISTORIQUE
-===================================================== */
+========================================================= */
 
 function renderHistory(){
 
- $("history").innerHTML="";
+  $("history").innerHTML =
+    "";
 
 
- history.slice(0,40).forEach(
- h=>{
+  history
+    .slice(0,50)
+    .forEach(h=>{
 
-   const tr=
-   document.createElement("tr");
-
-
-   tr.innerHTML=
-
-   "<td>"+h.n+"</td>"+
-
-   "<td>"+h.pred+"</td>"+
-
-   "<td>"+h.real+"</td>"+
-
-   "<td>"+h.score+"</td>"+
-
-   "<td class='"+
-   (
-     h.result==="WIN"
-     ?"green"
-     :"red"
-   )+
-   "'>"+
-   h.result+
-   "</td>";
+      const tr =
+        document.createElement(
+          "tr"
+        );
 
 
-   $("history").appendChild(tr);
+      tr.innerHTML =
 
- });
+        "<td>"+
+        h.n+
+        "</td>"+
+
+        "<td>"+
+        h.pred+
+        "</td>"+
+
+        "<td>"+
+        h.real+
+        "</td>"+
+
+        "<td>"+
+        h.raw+
+        "</td>"+
+
+        "<td>"+
+        h.final+
+        "</td>"+
+
+        "<td class='"+
+        (
+          h.result==="WIN"
+          ?"green"
+          :"red"
+        )+
+        "'>"+
+        h.result+
+        "</td>";
+
+
+      $("history")
+        .appendChild(tr);
+
+    });
 
 }
 
 
-/* =====================================================
-   VALIDATION DES TROIS MODELES
-===================================================== */
+/* =========================================================
+   VALIDATION INDIVIDUELLE
+========================================================= */
 
 function validateModels(realDigit){
 
- if(!pendingPrediction)
-   return;
+  if(!pendingPrediction)
+    return;
 
 
- const p=
- pendingPrediction;
+  const models =
+    pendingPrediction
+      .ensemble
+      .models;
 
 
- const names=[
-   "global",
-   "recent",
-   "transition"
- ];
+  const names=[
+    "global",
+    "recent",
+    "transition"
+  ];
 
 
- names.forEach(name=>{
+  names.forEach(name=>{
 
-   const predicted=
-   p.models[name].candidate;
+    /*
+     IMPORTANT :
 
+     Chaque modèle possède
+     maintenant explicitement
+     son propre candidat.
+    */
 
-   const win=
-   predicted===realDigit;
-
-
-   modelStats[name].total++;
-
-
-   if(win)
-     modelStats[name].wins++;
+    const predicted =
+      models[name]
+        .candidate;
 
 
-   modelHistory[name].push(
-     win?1:0
-   );
+    const win =
+      predicted===
+      realDigit;
 
 
-   if(
-     modelHistory[name].length>
-     PERFORMANCE_WINDOW
-   ){
+    modelStats[name]
+      .total++;
 
-     modelHistory[name].shift();
 
-   }
+    if(win)
+      modelStats[name]
+        .wins++;
 
- });
+
+    modelHistory[name]
+      .push(
+        win?1:0
+      );
+
+
+    if(
+      modelHistory[name]
+        .length>
+      MODEL_PERFORMANCE_WINDOW
+    ){
+
+      modelHistory[name]
+        .shift();
+
+    }
+
+  });
 
 }
 
 
-/* =====================================================
+/* =========================================================
    VALIDATION FINALE
-===================================================== */
+========================================================= */
 
 function validatePrediction(realDigit){
 
- if(!pendingPrediction)
-   return;
+  if(!pendingPrediction)
+    return;
 
 
- const p=
- pendingPrediction;
+  const p =
+    pendingPrediction;
 
 
- /*
-  On valide d'abord les trois
-  modèles individuellement.
- */
+  /*
+   1. Validation indépendante
+      des trois modèles.
+  */
 
- validateModels(realDigit);
-
-
- const win=
- p.candidate===realDigit;
+  validateModels(
+    realDigit
+  );
 
 
- validatedCount++;
+  /*
+   2. Validation de la
+      prédiction finale.
+  */
+
+  const win =
+    p.candidate===
+    realDigit;
 
 
- if(win)
-   wins++;
-
- else
-   losses++;
+  validatedCount++;
 
 
- /*
-  Calibration basée sur SCORE BRUT.
- */
+  if(win)
+    wins++;
 
- const bucket=
- bucketForRawScore(
-   p.raw
- );
+  else
+    losses++;
 
 
- buckets[bucket].total++;
+  /*
+   3. Calibration du score brut.
+  */
+
+  const bucket =
+    bucketForScore(
+      p.raw
+    );
 
 
- if(win)
-   buckets[bucket].wins++;
+  buckets[bucket]
+    .total++;
 
 
- history.unshift({
-
-   n:
-   predictionCount,
-
-   pred:
-   p.candidate,
-
-   real:
-   realDigit,
-
-   score:
-   p.finalScore,
-
-   result:
-   win
-   ?"WIN"
-   :"LOSS"
-
- });
+  if(win)
+    buckets[bucket]
+      .wins++;
 
 
- if(history.length>100)
-   history.pop();
+  /*
+   4. Historique.
+  */
+
+  history.unshift({
+
+    n:
+      predictionCount,
+
+    pred:
+      p.candidate,
+
+    real:
+      realDigit,
+
+    raw:
+      Math.round(
+        p.raw
+      ),
+
+    final:
+      p.finalScore,
+
+    result:
+      win
+      ?
+      "WIN"
+      :
+      "LOSS"
+
+  });
 
 
- log(
-
-   "Validation #"+
-   predictionCount+
-
-   " | prédit "+
-   p.candidate+
-
-   " | réel "+
-   realDigit+
-
-   " | brut "+
-   p.raw.toFixed(0)+
-
-   " | final "+
-   p.finalScore+
-
-   " | "+
-   (
-     win
-     ?"WIN"
-     :"LOSS"
-   )
-
- );
+  if(history.length>100)
+    history.pop();
 
 
- pendingPrediction=
- null;
+  log(
+
+    "Validation #"+
+    predictionCount+
+
+    " | final "+
+    p.candidate+
+
+    " | réel "+
+    realDigit+
+
+    " | brut "+
+    p.raw.toFixed(0)+
+
+    " | final "+
+    p.finalScore+
+
+    " | accord "+
+    p.agreement+
+    "/3"+
+
+    " | G "+
+    p.ensemble
+      .models
+      .global
+      .candidate+
+
+    " | R "+
+    p.ensemble
+      .models
+      .recent
+      .candidate+
+
+    " | T "+
+    p.ensemble
+      .models
+      .transition
+      .candidate+
+
+    " | "+
+    (
+      win
+      ?"WIN"
+      :"LOSS"
+    )
+
+  );
 
 
- updateStats();
+  pendingPrediction =
+    null;
 
- renderHistory();
 
- updateModelStatsDisplay();
+  updateStats();
 
- updateAnalysis();
+  renderHistory();
+
+  updateModelDisplay();
+
+  updateAnalysis();
 
 }
 
 
-/* =====================================================
+/* =========================================================
    NOUVELLE PREDICTION
-===================================================== */
+========================================================= */
 
 function createPrediction(){
 
- if(ticks.length<WINDOW)
-   return;
+  if(ticks.length<WINDOW)
+    return;
 
 
- if(pendingPrediction)
-   return;
+  if(pendingPrediction)
+    return;
 
 
- const p=
- calculatePrediction();
+  const p =
+    calculatePrediction();
 
 
- predictionCount++;
+  predictionCount++;
 
 
- pendingPrediction=
- p;
+  pendingPrediction =
+    p;
 
 
- log(
+  log(
 
-   "Prediction #"+
-   predictionCount+
+    "Prediction #"+
+    predictionCount+
 
-   " | candidat "+
-   p.candidate+
+    " | final "+
+    p.candidate+
 
-   " | brut "+
-   p.raw.toFixed(0)+
+    " | G "+
+    p.ensemble
+      .models
+      .global
+      .candidate+
 
-   " | final "+
-   p.finalScore+
+    " | R "+
+    p.ensemble
+      .models
+      .recent
+      .candidate+
 
-   " | accord "+
-   p.agreement+
-   "/3"+
+    " | T "+
+    p.ensemble
+      .models
+      .transition
+      .candidate+
 
-   " | poids "+
-   Math.round(
-     p.models.weights.global*100
-   )+
-   "/"+
-   Math.round(
-     p.models.weights.recent*100
-   )+
-   "/"+
-   Math.round(
-     p.models.weights.transition*100
-   )+
+    " | brut "+
+    p.raw.toFixed(0)+
 
-   " | "+
-   p.signal
+    " | calibré "+
+    p.finalScore+
 
- );
+    " | accord "+
+    p.agreement+
+    "/3"+
+
+    " | poids "+
+    Math.round(
+      p.ensemble
+        .weights
+        .global*
+      100
+    )+
+    "/"+
+    Math.round(
+      p.ensemble
+        .weights
+        .recent*
+      100
+    )+
+    "/"+
+    Math.round(
+      p.ensemble
+        .weights
+        .transition*
+      100
+    )
+
+  );
 
 
- updateAnalysis();
+  updateStats();
 
- updateStats();
+  updateAnalysis();
 
 }
 
 
-/* =====================================================
+/* =========================================================
    TICK
-===================================================== */
+========================================================= */
 
 function handleTick(data){
 
- if(!data.tick)
-   return;
+  if(!data.tick)
+    return;
 
 
- const tick=
- data.tick;
+  const tick =
+    data.tick;
 
 
- const digit=
- digitOf(tick.quote);
+  const digit =
+    digitOf(
+      tick.quote
+    );
 
 
- if(digit===null)
-   return;
+  if(digit===null)
+    return;
 
 
- $("price").textContent=
- tick.quote;
+  $("price").textContent =
+    tick.quote;
 
 
- $("lastDigit").textContent=
- digit;
+  $("lastDigit").textContent =
+    digit;
 
 
- /*
-  IMPORTANT :
+  /*
+   IMPORTANT :
 
-  Le tick actuel valide la prédiction
-  précédente AVANT d'être ajouté
-  à la fenêtre.
+   Le tick actuel valide
+   la prédiction précédente
+   AVANT d'être ajouté à
+   la fenêtre.
 
-  Il ne peut donc pas contaminer
-  sa propre prédiction.
- */
+   Donc aucune fuite de données.
+  */
 
- if(pendingPrediction)
-   validatePrediction(digit);
+  if(pendingPrediction){
 
+    validatePrediction(
+      digit
+    );
 
- ticks.push(digit);
-
-
- if(ticks.length>WINDOW)
-   ticks.shift();
+  }
 
 
- updateStats();
+  /*
+   Ensuite seulement,
+   le tick rejoint les données.
+  */
 
- updateAnalysis();
+  ticks.push(
+    digit
+  );
 
- createPrediction();
+
+  if(ticks.length>WINDOW)
+    ticks.shift();
+
+
+  updateStats();
+
+  updateAnalysis();
+
+  createPrediction();
 
 }
 
 
-/* =====================================================
+/* =========================================================
    RECHERCHE R75
-===================================================== */
+========================================================= */
 
 function findR75(list){
 
- if(!Array.isArray(list))
-   return null;
+  if(!Array.isArray(list))
+    return null;
 
 
- let found=
- list.find(
-   x=>
-   x.underlying_symbol===
-   REQUESTED_SYMBOL
- );
+  /*
+   Nouvelle API :
+   underlying_symbol.
+  */
+
+  let found =
+    list.find(
+      x=>
+        x.underlying_symbol===
+        REQUESTED_SYMBOL
+    );
 
 
- if(found)
-   return found;
+  if(found)
+    return found;
 
 
- found=
- list.find(
-   x=>
-   x.symbol===
-   REQUESTED_SYMBOL
- );
+  /*
+   Compatibilité ancienne API.
+  */
+
+  found =
+    list.find(
+      x=>
+        x.symbol===
+        REQUESTED_SYMBOL
+    );
 
 
- if(found)
-   return found;
+  if(found)
+    return found;
 
 
- found=
- list.find(
-   x=>
-   String(
-     x.underlying_symbol_name||
-     ""
-   )
-   .toLowerCase()
-   .includes(
-     "volatility 75"
-   )
- );
+  /*
+   Recherche par nom.
+  */
+
+  found =
+    list.find(
+      x=>
+        String(
+          x.underlying_symbol_name||
+          ""
+        )
+        .toLowerCase()
+        .includes(
+          "volatility 75"
+        )
+    );
 
 
- return found||null;
+  return found||null;
 
 }
 
 
-/* =====================================================
-   MARKET DATA
-===================================================== */
+/* =========================================================
+   ACTIVE SYMBOLS
+========================================================= */
 
 function requestMarketData(){
 
- if(
-   !ws||
-   ws.readyState!==WebSocket.OPEN
- )
-   return;
+  if(
+    !ws||
+    ws.readyState!==WebSocket.OPEN
+  )
+    return;
 
 
- log(
-   "Demande active_symbols"
- );
+  log(
+    "Demande active_symbols"
+  );
 
 
- ws.send(
-   JSON.stringify({
+  ws.send(
+    JSON.stringify({
 
-     active_symbols:
-     "brief",
+      active_symbols:
+        "brief",
 
-     req_id:1
+      req_id:
+        1
 
-   })
- );
+    })
+  );
 
 }
 
 
-/* =====================================================
-   SUBSCRIPTION
-===================================================== */
+/* =========================================================
+   ABONNEMENT
+========================================================= */
 
 function subscribe(){
 
- if(!currentSymbol)
-   return;
+  if(!currentSymbol)
+    return;
 
 
- log(
-   "Demande historique "+
-   currentSymbol
- );
+  log(
+    "Demande historique "+
+    currentSymbol
+  );
 
 
- ws.send(
-   JSON.stringify({
+  ws.send(
+    JSON.stringify({
 
-     ticks_history:
-     currentSymbol,
+      ticks_history:
+        currentSymbol,
 
-     count:
-     WINDOW,
+      count:
+        WINDOW,
 
-     end:
-     "latest",
+      end:
+        "latest",
 
-     style:
-     "ticks",
+      style:
+        "ticks",
 
-     subscribe:
-     0,
+      subscribe:
+        0,
 
-     req_id:
-     2
+      req_id:
+        2
 
-   })
- );
-
-
- setTimeout(
- ()=>{
-
-   if(
-     !ws||
-     ws.readyState!==WebSocket.OPEN
-   )
-     return;
+    })
+  );
 
 
-   log(
-     "Abonnement ticks "+
-     currentSymbol
-   );
+  setTimeout(
+    ()=>{
+
+      if(
+        !ws||
+        ws.readyState!==WebSocket.OPEN
+      )
+        return;
 
 
-   ws.send(
-     JSON.stringify({
-
-       ticks:
-       currentSymbol,
-
-       subscribe:
-       1,
-
-       req_id:
-       3
-
-     })
-   );
+      log(
+        "Abonnement ticks "+
+        currentSymbol
+      );
 
 
- },
- 500
- );
+      ws.send(
+        JSON.stringify({
+
+          ticks:
+            currentSymbol,
+
+          subscribe:
+            1,
+
+          req_id:
+            3
+
+        })
+      );
+
+
+    },
+    500
+  );
 
 }
 
 
-/* =====================================================
+/* =========================================================
    HISTORIQUE
-===================================================== */
+========================================================= */
 
 function handleHistory(data){
 
- if(!data.history)
-   return;
+  if(!data.history)
+    return;
 
 
- const prices=
- data.history.prices||[];
+  const prices =
+    data.history.prices||[];
 
 
- ticks=[];
+  ticks=[];
 
 
- prices.forEach(
- q=>{
+  prices.forEach(
+    q=>{
 
-   const d=
-   digitOf(q);
-
-
-   if(d!==null)
-     ticks.push(d);
-
- }
- );
+      const d =
+        digitOf(q);
 
 
- ticks=
- ticks.slice(-WINDOW);
+      if(d!==null)
+        ticks.push(d);
+
+    }
+  );
 
 
- log(
-   "Historique reçu : "+
-   ticks.length+
-   " ticks"
- );
+  ticks =
+    ticks.slice(
+      -WINDOW
+    );
 
 
- updateStats();
+  log(
+    "Historique reçu : "+
+    ticks.length+
+    " ticks"
+  );
 
- updateAnalysis();
 
- createPrediction();
+  updateStats();
+
+  updateAnalysis();
+
+  createPrediction();
 
 }
 
 
-/* =====================================================
+/* =========================================================
    CONNEXION
-===================================================== */
+========================================================= */
 
 function connect(){
 
- try{
+  try{
 
-   if(ws)
-     ws.close();
+    if(ws)
+      ws.close();
 
- }catch(e){}
+  }catch(e){}
 
 
- setStatus(
-   "🟠 Connexion…",
-   "#735900"
- );
+  setStatus(
+    "🟠 Connexion…",
+    "#735900"
+  );
 
 
- log(
-   "Connexion WebSocket"
- );
+  log(
+    "Connexion WebSocket"
+  );
 
 
- ws=
- new WebSocket(
-   PUBLIC_WS
- );
+  ws =
+    new WebSocket(
+      PUBLIC_WS
+    );
 
 
- ws.onopen=()=>{
+  ws.onopen =
+    ()=>{
 
-   setStatus(
-     "🟢 Connecté — recherche de R_75",
-     "#087a3d"
-   );
+      setStatus(
+        "🟢 Connecté — recherche de R_75",
+        "#087a3d"
+      );
 
 
-   log(
-     "WebSocket connecté"
-   );
+      log(
+        "WebSocket connecté"
+      );
 
 
-   requestMarketData();
+      requestMarketData();
 
- };
+    };
 
 
- ws.onmessage=
- event=>{
+  ws.onmessage =
+    event=>{
 
-   try{
+      try{
 
-     const data=
-     JSON.parse(
-       event.data
-     );
+        const data =
+          JSON.parse(
+            event.data
+          );
 
 
-     if(data.error){
+        if(data.error){
 
-       log(
-         "ERREUR API : "+
-         (
-           data.error.message||
-           "Erreur"
-         )
-       );
+          log(
+            "ERREUR API : "+
+            (
+              data.error.message||
+              "Erreur"
+            )
+          );
 
-       return;
+          return;
 
-     }
+        }
 
 
-     if(
-       data.msg_type===
-       "active_symbols"
-     ){
+        /*
+         ACTIVE SYMBOLS
+        */
 
-       const list=
-       data.active_symbols||[];
+        if(
+          data.msg_type===
+          "active_symbols"
+        ){
 
+          const list =
+            data.active_symbols||
+            [];
 
-       const found=
-       findR75(list);
 
+          const found =
+            findR75(
+              list
+            );
 
-       if(!found){
 
-         setStatus(
-           "🔴 R_75 indisponible",
-           "#8b3030"
-         );
+          if(!found){
 
+            setStatus(
+              "🔴 R_75 indisponible",
+              "#8b3030"
+            );
 
-         log(
-           "R_75 introuvable dans "+
-           list.length+
-           " symboles"
-         );
 
+            log(
+              "R_75 introuvable parmi "+
+              list.length+
+              " symboles"
+            );
 
-         return;
 
-       }
+            return;
 
+          }
 
-       currentSymbol=
-       found.underlying_symbol||
-       found.symbol||
-       REQUESTED_SYMBOL;
 
+          currentSymbol =
+            found.underlying_symbol||
+            found.symbol||
+            REQUESTED_SYMBOL;
 
-       $("usedSymbol").textContent=
-       currentSymbol;
 
+          $("usedSymbol")
+            .textContent =
+            currentSymbol;
 
-       setStatus(
-         "🟢 R_75 trouvé — réception des ticks",
-         "#087a3d"
-       );
 
+          setStatus(
+            "🟢 R_75 trouvé — réception des ticks",
+            "#087a3d"
+          );
 
-       log(
-         "Symbole utilisé : "+
-         currentSymbol
-       );
 
+          log(
+            "Symbole utilisé : "+
+            currentSymbol
+          );
 
-       subscribe();
 
+          subscribe();
 
-       return;
 
-     }
+          return;
 
+        }
 
-     if(
-       data.msg_type===
-       "history"
-     ){
 
-       handleHistory(data);
+        /*
+         HISTORIQUE
+        */
 
-       return;
+        if(
+          data.msg_type===
+          "history"
+        ){
 
-     }
+          handleHistory(
+            data
+          );
 
 
-     if(
-       data.msg_type===
-       "tick"
-     ){
+          return;
 
-       handleTick(data);
+        }
 
-       return;
 
-     }
+        /*
+         TICK
+        */
 
+        if(
+          data.msg_type===
+          "tick"
+        ){
 
-   }catch(e){
+          handleTick(
+            data
+          );
 
-     log(
-       "Erreur parsing : "+
-       e.message
-     );
 
-   }
+          return;
 
- };
+        }
 
 
- ws.onerror=()=>{
+      }catch(error){
 
-   setStatus(
-     "🔴 Erreur WebSocket",
-     "#8b3030"
-   );
+        log(
+          "Erreur parsing : "+
+          error.message
+        );
 
+      }
 
-   log(
-     "Erreur WebSocket"
-   );
+    };
 
- };
 
+  ws.onerror =
+    ()=>{
 
- ws.onclose=()=>{
+      setStatus(
+        "🔴 Erreur WebSocket",
+        "#8b3030"
+      );
 
-   setStatus(
-     "🟠 Connexion fermée",
-     "#735900"
-   );
 
+      log(
+        "Erreur WebSocket"
+      );
 
-   log(
-     "WebSocket fermé"
-   );
+    };
 
- };
+
+  ws.onclose =
+    ()=>{
+
+      setStatus(
+        "🟠 Connexion fermée",
+        "#735900"
+      );
+
+
+      log(
+        "WebSocket fermé"
+      );
+
+    };
 
 }
 
 
-/* =====================================================
+/* =========================================================
    RECONNECT
-===================================================== */
+========================================================= */
 
 function reconnect(){
 
- ticks=[];
+  ticks=[];
 
- pendingPrediction=null;
+  pendingPrediction=null;
 
- $("price").textContent=
- "—";
+  $("price").textContent =
+    "—";
 
- $("lastDigit").textContent=
- "—";
+  $("lastDigit").textContent =
+    "—";
 
- $("usedSymbol").textContent=
- "—";
+  $("usedSymbol").textContent =
+    "—";
 
 
- connect();
+  connect();
 
 }
 
 
-/* =====================================================
-   RESET
-===================================================== */
+/* =========================================================
+   RESET STATISTIQUES
+========================================================= */
 
 function resetStats(){
 
- predictionCount=0;
+  predictionCount=0;
 
- validatedCount=0;
+  validatedCount=0;
 
- wins=0;
+  wins=0;
 
- losses=0;
+  losses=0;
 
- history=[];
-
-
- modelStats={
-
-   global:{
-     wins:0,
-     total:0
-   },
-
-   recent:{
-     wins:0,
-     total:0
-   },
-
-   transition:{
-     wins:0,
-     total:0
-   }
-
- };
+  history=[];
 
 
- modelHistory={
+  modelStats={
 
-   global:[],
+    global:{
+      wins:0,
+      total:0
+    },
 
-   recent:[],
+    recent:{
+      wins:0,
+      total:0
+    },
 
-   transition:[]
+    transition:{
+      wins:0,
+      total:0
+    }
 
- };
-
-
- buckets={
-
-   "50-59":{
-     wins:0,
-     total:0
-   },
-
-   "60-69":{
-     wins:0,
-     total:0
-   },
-
-   "70-79":{
-     wins:0,
-     total:0
-   },
-
-   "80-89":{
-     wins:0,
-     total:0
-   },
-
-   "90-100":{
-     wins:0,
-     total:0
-   }
-
- };
+  };
 
 
- pendingPrediction=null;
+  modelHistory={
+
+    global:[],
+    recent:[],
+    transition:[]
+
+  };
 
 
- updateStats();
+  buckets={
 
- updateModelStatsDisplay();
+    "50-59":{
+      wins:0,
+      total:0
+    },
 
- renderHistory();
+    "60-69":{
+      wins:0,
+      total:0
+    },
 
- renderBuckets();
+    "70-79":{
+      wins:0,
+      total:0
+    },
 
- updateAnalysis();
+    "80-89":{
+      wins:0,
+      total:0
+    },
+
+    "90-100":{
+      wins:0,
+      total:0
+    }
+
+  };
 
 
- log(
-   "Statistiques V5.5 réinitialisées"
- );
+  pendingPrediction=null;
+
+
+  updateStats();
+
+  updateModelDisplay();
+
+  renderHistory();
+
+  renderBuckets();
+
+  updateAnalysis();
+
+
+  log(
+    "Statistiques V5.6 réinitialisées"
+  );
 
 }
 
 
-/* =====================================================
-   START
-===================================================== */
+/* =========================================================
+   BUCKETS
+========================================================= */
+
+function renderBuckets(){
+
+  const config=[
+
+    [
+      "50-59",
+      "b50",
+      "r50"
+    ],
+
+    [
+      "60-69",
+      "b60",
+      "r60"
+    ],
+
+    [
+      "70-79",
+      "b70",
+      "r70"
+    ],
+
+    [
+      "80-89",
+      "b80",
+      "r80"
+    ],
+
+    [
+      "90-100",
+      "b90",
+      "r90"
+    ]
+
+  ];
+
+
+  config.forEach(
+    item=>{
+
+      const key =
+        item[0];
+
+      const bid =
+        item[1];
+
+      const rid =
+        item[2];
+
+
+      const b =
+        buckets[key];
+
+
+      $(bid).textContent =
+        b.wins+
+        "/"+
+        b.total;
+
+
+      $(rid).textContent =
+
+        b.total
+
+        ?
+
+        (
+          b.wins/
+          b.total*
+          100
+        ).toFixed(1)+
+        "%"
+
+        :
+
+        "—";
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   INITIALISATION
+========================================================= */
+
+renderFrequency();
+
+renderTransition();
+
+updateStats();
+
+updateModelDisplay();
+
+renderHistory();
+
+renderBuckets();
 
 connect();
 
