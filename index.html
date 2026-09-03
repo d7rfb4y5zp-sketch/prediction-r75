@@ -1,39 +1,46 @@
 <!doctype html>
 <html lang="fr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 
-<title>Prediction R75 V5.1</title>
+<head>
+
+<meta charset="utf-8">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<title>Prediction R75 V5.2</title>
 
 <style>
-*{box-sizing:border-box}
+
+*{
+box-sizing:border-box;
+}
 
 body{
 margin:0;
 background:#061321;
 color:#fff;
-font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
 
 .app{
 max-width:520px;
 margin:auto;
-padding:14px
+padding:14px;
 }
 
 .card{
 background:#0d2945;
 border:1px solid #173f64;
 border-radius:22px;
-padding:16px
+padding:16px;
 }
 
 h1{
 text-align:center;
 color:#55a7ff;
 font-size:29px;
-margin:4px 0 16px
+margin:4px 0 16px;
 }
 
 .status{
@@ -42,41 +49,49 @@ padding:13px;
 text-align:center;
 font-weight:800;
 background:#263a51;
-margin-bottom:18px
+margin-bottom:18px;
 }
 
-.status.ok{background:#08783b}
-.status.err{background:#8c2025}
-.status.wait{background:#765900}
+.status.ok{
+background:#08783b;
+}
+
+.status.err{
+background:#8c2025;
+}
+
+.status.wait{
+background:#765900;
+}
 
 .label{
 color:#9db0c5;
 font-weight:700;
 font-size:14px;
-margin-top:12px
+margin-top:12px;
 }
 
 .market{
 font-size:25px;
-font-weight:900
+font-weight:900;
 }
 
 .symbol{
 font-size:24px;
-font-weight:900
+font-weight:900;
 }
 
 .price{
 font-size:25px;
 font-weight:900;
-color:#55a7ff
+color:#55a7ff;
 }
 
 .last{
 text-align:center;
 color:#9db0c5;
 font-weight:700;
-margin-top:20px
+margin-top:20px;
 }
 
 .digit{
@@ -89,96 +104,183 @@ align-items:center;
 justify-content:center;
 font-size:52px;
 font-weight:900;
-margin:8px auto 18px
+margin:8px auto 18px;
 }
 
 .analysis{
 background:#244e7f;
 border-radius:18px;
 padding:18px;
-text-align:center
+text-align:center;
 }
 
 .analysis h2{
 font-size:17px;
-margin:0 0 12px
+margin:0 0 12px;
 }
 
 .pred{
 font-size:42px;
 color:#ffd33d;
-font-weight:900
+font-weight:900;
 }
 
 .score{
 font-size:23px;
 font-weight:900;
-margin-top:8px
+margin-top:8px;
+}
+
+.signal{
+font-weight:900;
+margin-top:4px;
 }
 
 .grid{
 display:grid;
 grid-template-columns:1fr 1fr;
 gap:9px;
-margin-top:12px
+margin-top:12px;
 }
 
 .box{
 background:#062039;
 border-radius:14px;
 padding:12px;
-text-align:center
+text-align:center;
 }
 
 .box small{
 display:block;
 color:#9db0c5;
-font-weight:700
+font-weight:700;
 }
 
 .box strong{
 display:block;
 font-size:22px;
-margin-top:4px
+margin-top:4px;
 }
 
-.green{color:#20df6b}
-.red{color:#ff5353}
+.green{
+color:#20df6b;
+}
+
+.red{
+color:#ff5353;
+}
+
+.yellow{
+color:#ffd33d;
+}
 
 .section{
 background:#062039;
 border-radius:17px;
 padding:14px;
-margin-top:12px
+margin-top:12px;
 }
 
 .section h3{
 color:#55a7ff;
 margin:0 0 12px;
-font-size:17px
+font-size:17px;
 }
 
 .freq{
 display:grid;
 grid-template-columns:repeat(5,1fr);
-gap:6px
+gap:6px;
 }
 
 .f{
 background:#123a5e;
 border-radius:9px;
 padding:8px 2px;
-text-align:center
+text-align:center;
 }
 
 .f b{
 display:block;
-font-size:17px
+font-size:17px;
 }
 
 .f span{
 font-size:10px;
-color:#b5c6d7
+color:#b5c6d7;
+}
+
+.model-grid{
+display:grid;
+grid-template-columns:1fr 1fr 1fr;
+gap:6px;
+}
+
+.model{
+background:#123a5e;
+border-radius:10px;
+padding:9px 4px;
+text-align:center;
+}
+
+.model small{
+display:block;
+color:#b5c6d7;
+font-size:10px;
+}
+
+.model b{
+display:block;
+font-size:18px;
+margin-top:3px;
+}
+
+.transition{
+display:grid;
+grid-template-columns:repeat(5,1fr);
+gap:6px;
+}
+
+.t{
+background:#123a5e;
+border-radius:9px;
+padding:8px 2px;
+text-align:center;
+}
+
+.t b{
+display:block;
+font-size:16px;
+}
+
+.t span{
+font-size:10px;
+color:#b5c6d7;
+}
+
+.bucket{
+display:grid;
+grid-template-columns:1fr 1fr 1fr 1fr 1fr;
+gap:4px;
+}
+
+.bucket-box{
+background:#123a5e;
+border-radius:9px;
+padding:8px 2px;
+text-align:center;
+}
+
+.bucket-box small{
+display:block;
+font-size:9px;
+color:#b5c6d7;
+}
+
+.bucket-box b{
+display:block;
+font-size:14px;
+margin-top:3px;
 }
 
 button{
@@ -190,11 +292,11 @@ margin-top:10px;
 color:#fff;
 font-size:16px;
 font-weight:900;
-background:#2387ef
+background:#2387ef;
 }
 
 button.secondary{
-background:#176bbd
+background:#176bbd;
 }
 
 .warning{
@@ -204,7 +306,7 @@ padding:14px;
 margin-top:12px;
 color:#ffeeb0;
 font-size:13px;
-line-height:1.45
+line-height:1.45;
 }
 
 .log{
@@ -216,159 +318,522 @@ font-size:11px;
 line-height:1.5;
 max-height:250px;
 overflow:auto;
-white-space:pre-wrap
+white-space:pre-wrap;
 }
 
 table{
 width:100%;
 border-collapse:collapse;
-font-size:11px
+font-size:11px;
 }
 
-th,td{
+th,
+td{
 padding:7px 3px;
 border-bottom:1px solid #18344e;
-text-align:center
+text-align:center;
 }
 
 .muted{
-color:#9db0c5
+color:#9db0c5;
 }
 
 .footer{
 text-align:center;
 color:#6f8ba6;
 font-size:11px;
-margin-top:14px
+margin-top:14px;
 }
+
 </style>
+
 </head>
+
 
 <body>
 
 <div class="app">
+
 <div class="card">
 
-<h1>Prediction R75 V5.1</h1>
 
-<div id="status" class="status wait">
-🟠 Recherche du marché R75…
+<h1>Prediction R75 V5.2</h1>
+
+
+<div id="status"
+class="status wait">
+
+🟠 Connexion au serveur Deriv…
+
 </div>
 
-<div class="label">Marché</div>
-<div class="market">Volatility 75</div>
 
-<div class="label">Symbole demandé</div>
-<div class="symbol">R_75</div>
+<div class="label">
+Marché
+</div>
 
-<div class="label">Symbole utilisé</div>
-<div id="realSymbol" class="symbol">—</div>
+<div class="market">
+Volatility 75
+</div>
 
-<div class="label">Prix en direct</div>
-<div id="price" class="price">—</div>
 
-<div class="last">Dernier chiffre</div>
-<div id="last" class="digit">—</div>
+<div class="label">
+Symbole demandé
+</div>
+
+<div class="symbol">
+R_75
+</div>
+
+
+<div class="label">
+Symbole utilisé
+</div>
+
+<div id="realSymbol"
+class="symbol">
+
+—
+
+</div>
+
+
+<div class="label">
+Prix en direct
+</div>
+
+<div id="price"
+class="price">
+
+—
+
+</div>
+
+
+<div class="last">
+Dernier chiffre
+</div>
+
+<div id="last"
+class="digit">
+
+—
+
+</div>
+
 
 
 <div class="analysis">
 
-<h2>ANALYSE DU PROCHAIN CHIFFRE</h2>
+<h2>
+🧠 ANALYSE V5.2
+</h2>
 
-<div id="pred" class="pred">—</div>
 
-<div id="txt" class="muted">
-Recherche du marché…
+<div id="pred"
+class="pred">
+
+—
+
 </div>
 
-<div id="score" class="score">
+
+<div id="txt"
+class="muted">
+
+Collecte de 100 ticks…
+
+</div>
+
+
+<div id="score"
+class="score">
+
 Score : —/100
+
 </div>
 
-<div id="signal">
+
+<div id="signal"
+class="signal">
+
 ⚪ PAS DE SIGNAL
+
 </div>
 
 </div>
+
 
 
 <div class="grid">
 
-<div class="box">
-<small>Ticks analysés</small>
-<strong id="count">0</strong>
-</div>
 
 <div class="box">
-<small>Prédictions</small>
-<strong id="pc">0</strong>
+
+<small>
+Ticks analysés
+</small>
+
+<strong id="count">
+0
+</strong>
+
 </div>
+
 
 <div class="box">
-<small>Validées</small>
-<strong id="vc">0</strong>
+
+<small>
+Prédictions
+</small>
+
+<strong id="pc">
+0
+</strong>
+
 </div>
+
 
 <div class="box">
-<small>WIN</small>
-<strong id="win" class="green">0</strong>
+
+<small>
+Validées
+</small>
+
+<strong id="vc">
+0
+</strong>
+
 </div>
+
 
 <div class="box">
-<small>LOSS</small>
-<strong id="loss" class="red">0</strong>
+
+<small>
+WIN
+</small>
+
+<strong id="win"
+class="green">
+
+0
+
+</strong>
+
 </div>
+
 
 <div class="box">
-<small>Taux réel</small>
-<strong id="rate">—</strong>
+
+<small>
+LOSS
+</small>
+
+<strong id="loss"
+class="red">
+
+0
+
+</strong>
+
 </div>
+
 
 <div class="box">
-<small>Dominant global</small>
-<strong id="gd">—</strong>
+
+<small>
+Taux réel
+</small>
+
+<strong id="rate">
+
+—
+
+</strong>
+
 </div>
+
 
 <div class="box">
-<small>Dominant récent</small>
-<strong id="rd">—</strong>
-</div>
+
+<small>
+Dominant global
+</small>
+
+<strong id="gd">
+
+—
+
+</strong>
 
 </div>
+
+
+<div class="box">
+
+<small>
+Dominant récent
+</small>
+
+<strong id="rd">
+
+—
+
+</strong>
+
+</div>
+
+
+<div class="box">
+
+<small>
+Streak actuel
+</small>
+
+<strong id="streak">
+
+—
+
+</strong>
+
+</div>
+
+
+<div class="box">
+
+<small>
+Accord modèles
+</small>
+
+<strong id="agreement">
+
+—
+
+</strong>
+
+</div>
+
+
+</div>
+
 
 
 <div class="section">
 
-<h3>📊 Fréquence des chiffres</h3>
+<h3>
+📊 Fréquence des chiffres
+</h3>
 
-<div id="freq" class="freq"></div>
+<div id="freq"
+class="freq">
+</div>
 
 </div>
 
 
+
 <div class="section">
 
-<h3>🧠 Moteur V5.1</h3>
+<h3>
+🧠 Les 3 modèles
+</h3>
 
-<div id="engine" class="muted">
+<div class="model-grid">
+
+
+<div class="model">
+
+<small>
+GLOBAL
+</small>
+
+<b id="modelGlobal">
+—
+</b>
+
+</div>
+
+
+<div class="model">
+
+<small>
+RÉCENT
+</small>
+
+<b id="modelRecent">
+—
+</b>
+
+</div>
+
+
+<div class="model">
+
+<small>
+TRANSITION
+</small>
+
+<b id="modelTransition">
+—
+</b>
+
+</div>
+
+
+</div>
+
+<br>
+
+<div class="muted">
+
+Le modèle final combine les trois informations.
+
+</div>
+
+</div>
+
+
+
+<div class="section">
+
+<h3>
+🔄 Transition après le dernier chiffre
+</h3>
+
+<div id="transition"
+class="transition">
+</div>
+
+</div>
+
+
+
+<div class="section">
+
+<h3>
+📈 Performance par score
+</h3>
+
+<div class="bucket">
+
+
+<div class="bucket-box">
+
+<small>
+50–59
+</small>
+
+<b id="b50">
+—
+</b>
+
+</div>
+
+
+<div class="bucket-box">
+
+<small>
+60–69
+</small>
+
+<b id="b60">
+—
+</b>
+
+</div>
+
+
+<div class="bucket-box">
+
+<small>
+70–79
+</small>
+
+<b id="b70">
+—
+</b>
+
+</div>
+
+
+<div class="bucket-box">
+
+<small>
+80–89
+</small>
+
+<b id="b80">
+—
+</b>
+
+</div>
+
+
+<div class="bucket-box">
+
+<small>
+90–100
+</small>
+
+<b id="b90">
+—
+</b>
+
+</div>
+
+
+</div>
+
+<div class="muted"
+style="margin-top:10px;font-size:11px">
+
+Format : WIN / validations — taux réel
+
+</div>
+
+</div>
+
+
+
+<div class="section">
+
+<h3>
+🧠 Moteur V5.2
+</h3>
+
+<div id="engine"
+class="muted">
+
 Initialisation…
+
 </div>
 
 </div>
+
 
 
 <button onclick="connect()">
+
 🔄 Reconnecter à Deriv
+
 </button>
 
-<button class="secondary" onclick="resetStats()">
+
+<button
+class="secondary"
+onclick="resetStats()">
+
 ♻️ Réinitialiser les statistiques
+
 </button>
+
 
 
 <div class="warning">
 
-<b>⚠️ MODE TEST UNIQUEMENT</b>
+<b>
+⚠️ MODE TEST UNIQUEMENT
+</b>
 
 <br><br>
 
@@ -378,53 +843,87 @@ Aucun ordre de trading n'est envoyé à Deriv.
 
 <br><br>
 
-Le score est un score statistique du modèle, pas une garantie de résultat.
+Le score /100 est un score interne du modèle.
+
+Il ne représente pas une probabilité garantie de gain.
+
+<br><br>
+
+Les performances affichées sont basées sur les validations réellement observées.
 
 </div>
 
 
+
 <div class="section">
 
-<h3>📋 Historique des validations</h3>
+<h3>
+📋 Historique des validations
+</h3>
+
 
 <table>
 
 <thead>
+
 <tr>
+
 <th>#</th>
+
 <th>Prédit</th>
+
 <th>Réel</th>
+
+<th>Score</th>
+
 <th>Résultat</th>
+
 </tr>
+
 </thead>
 
-<tbody id="hist"></tbody>
+
+<tbody id="hist">
+
+</tbody>
 
 </table>
 
 </div>
 
 
+
 <div class="section">
 
-<h3>📝 Journal technique</h3>
+<h3>
+📝 Journal technique
+</h3>
 
-<div id="log" class="log"></div>
+<div id="log"
+class="log">
+</div>
 
 </div>
+
 
 
 <div class="footer">
-Prediction R75 V5.1 —
+
+Prediction R75 V5.2 —
 TEST STATISTIQUE —
 Aucun ordre envoyé
+
+</div>
+
+
 </div>
 
 </div>
-</div>
+
 
 
 <script>
+
 
 /* =========================================================
    CONFIGURATION
@@ -432,12 +931,12 @@ Aucun ordre envoyé
 
 const REQUESTED_SYMBOL = "R_75";
 
+const PUBLIC_WS =
+"wss://api.derivws.com/trading/v1/options/ws/public";
+
 const MAX_TICKS = 100;
 
 const RECENT_TICKS = 30;
-
-const PUBLIC_WS =
-"wss://api.derivws.com/trading/v1/options/ws/public";
 
 
 /* =========================================================
@@ -465,6 +964,25 @@ let losses = 0;
 let historyRows = [];
 
 
+/*
+   Performance par tranche de score.
+*/
+
+const buckets = {
+
+"50": {wins:0,total:0},
+
+"60": {wins:0,total:0},
+
+"70": {wins:0,total:0},
+
+"80": {wins:0,total:0},
+
+"90": {wins:0,total:0}
+
+};
+
+
 /* =========================================================
    DOM
 ========================================================= */
@@ -474,7 +992,7 @@ document.getElementById(id);
 
 
 /* =========================================================
-   OUTILS
+   TEMPS / LOG
 ========================================================= */
 
 function currentTime(){
@@ -514,7 +1032,7 @@ $("status").className =
 
 
 /* =========================================================
-   EXTRACTION DU DERNIER CHIFFRE
+   DERNIER CHIFFRE
 ========================================================= */
 
 function getDigit(quote){
@@ -533,7 +1051,7 @@ clean.slice(-1)
 
 
 /* =========================================================
-   FREQUENCES
+   COMPTAGE
 ========================================================= */
 
 function getCounts(array){
@@ -576,6 +1094,10 @@ return counts.indexOf(maximum);
 }
 
 
+/* =========================================================
+   FREQUENCE
+========================================================= */
+
 function renderFrequency(){
 
 const counts =
@@ -594,16 +1116,607 @@ count / ticks.length * 100
 
 return `
 <div class="f">
+
 <b>${digit}</b>
+
 <span>
 ${count}
 (${percent.toFixed(1)}%)
 </span>
+
 </div>
 `;
 
 }
 ).join("");
+
+}
+
+
+/* =========================================================
+   STREAK
+========================================================= */
+
+function getCurrentStreak(){
+
+if(ticks.length === 0){
+
+return {
+digit:null,
+length:0
+};
+
+}
+
+const last =
+ticks[ticks.length-1];
+
+let length = 1;
+
+for(
+let i=ticks.length-2;
+i>=0;
+i--
+){
+
+if(ticks[i] === last){
+
+length++;
+
+}
+else{
+
+break;
+
+}
+
+}
+
+return {
+digit:last,
+length:length
+};
+
+}
+
+
+/* =========================================================
+   TRANSITIONS
+========================================================= */
+
+function getTransitionCounts(){
+
+const matrix =
+Array.from(
+{length:10},
+() => Array(10).fill(0)
+);
+
+
+for(
+let i=0;
+i<ticks.length-1;
+i++
+){
+
+const from =
+ticks[i];
+
+const to =
+ticks[i+1];
+
+if(
+from >= 0 &&
+from <= 9 &&
+to >= 0 &&
+to <= 9
+){
+
+matrix[from][to]++;
+
+}
+
+}
+
+return matrix;
+
+}
+
+
+/* =========================================================
+   TRANSITION UI
+========================================================= */
+
+function renderTransition(lastDigit){
+
+const box =
+$("transition");
+
+if(lastDigit === null){
+
+box.innerHTML =
+"<div class='muted'>Pas encore disponible</div>";
+
+return;
+
+}
+
+const matrix =
+getTransitionCounts();
+
+const row =
+matrix[lastDigit];
+
+const total =
+row.reduce(
+(a,b)=>a+b,
+0
+);
+
+
+if(total === 0){
+
+box.innerHTML =
+"<div class='muted'>Pas assez de transitions</div>";
+
+return;
+
+}
+
+
+box.innerHTML =
+row.map(
+(count,digit)=>{
+
+const percent =
+count / total * 100;
+
+return `
+<div class="t">
+
+<b>${digit}</b>
+
+<span>
+${count}
+<br>
+${percent.toFixed(1)}%
+</span>
+
+</div>
+`;
+
+}
+).join("");
+
+}
+
+
+/* =========================================================
+   MODELES
+========================================================= */
+
+function getModelScores(){
+
+const globalCounts =
+getCounts(ticks);
+
+
+const recent =
+ticks.slice(
+-Math.min(
+RECENT_TICKS,
+ticks.length
+)
+);
+
+
+const recentCounts =
+getCounts(recent);
+
+
+const matrix =
+getTransitionCounts();
+
+
+const streak =
+getCurrentStreak();
+
+
+const transitionRow =
+streak.digit === null
+?
+Array(10).fill(0)
+:
+matrix[streak.digit];
+
+
+const transitionTotal =
+transitionRow.reduce(
+(a,b)=>a+b,
+0
+);
+
+
+const globalScores =
+Array(10).fill(0);
+
+const recentScores =
+Array(10).fill(0);
+
+const transitionScores =
+Array(10).fill(0);
+
+
+for(
+let digit=0;
+digit<=9;
+digit++
+){
+
+/*
+   Lissage de Laplace.
+
+   Cela évite qu'un chiffre avec zéro
+   observation reçoive exactement zéro.
+*/
+
+globalScores[digit] =
+(
+globalCounts[digit] + 1
+) /
+(
+ticks.length + 10
+);
+
+
+recentScores[digit] =
+(
+recentCounts[digit] + 1
+) /
+(
+recent.length + 10
+);
+
+
+if(transitionTotal > 0){
+
+transitionScores[digit] =
+(
+transitionRow[digit] + 1
+) /
+(
+transitionTotal + 10
+);
+
+}
+else{
+
+transitionScores[digit] =
+0.10;
+
+}
+
+}
+
+
+return {
+
+global:globalScores,
+
+recent:recentScores,
+
+transition:transitionScores
+
+};
+
+}
+
+
+/* =========================================================
+   RANK
+========================================================= */
+
+function getBest(scores){
+
+let best = 0;
+
+for(
+let i=1;
+i<scores.length;
+i++
+){
+
+if(scores[i] > scores[best]){
+
+best = i;
+
+}
+
+}
+
+return best;
+
+}
+
+
+/* =========================================================
+   CALCUL DU MODELE V5.2
+========================================================= */
+
+function calculateModel(){
+
+const models =
+getModelScores();
+
+
+const finalScores =
+Array(10).fill(0);
+
+
+/*
+   Pondération :
+
+   35% global
+   35% récent
+   30% transition
+*/
+
+for(
+let digit=0;
+digit<=9;
+digit++
+){
+
+finalScores[digit] =
+(
+0.35 * models.global[digit]
+) +
+(
+0.35 * models.recent[digit]
+) +
+(
+0.30 * models.transition[digit]
+);
+
+}
+
+
+const globalBest =
+getBest(models.global);
+
+const recentBest =
+getBest(models.recent);
+
+const transitionBest =
+getBest(models.transition);
+
+const finalBest =
+getBest(finalScores);
+
+
+/*
+   Nombre de modèles qui choisissent
+   le même chiffre final.
+*/
+
+let agreement = 0;
+
+if(globalBest === finalBest){
+
+agreement++;
+
+}
+
+if(recentBest === finalBest){
+
+agreement++;
+
+}
+
+if(transitionBest === finalBest){
+
+agreement++;
+
+}
+
+
+/*
+   Deuxième meilleur candidat.
+*/
+
+const ranked =
+[...Array(10).keys()]
+.sort(
+(a,b) =>
+finalScores[b] -
+finalScores[a]
+);
+
+
+const second =
+ranked[1];
+
+
+const gap =
+finalScores[finalBest] -
+finalScores[second];
+
+
+/*
+   Edge par rapport au hasard
+   théorique de 10%.
+*/
+
+const edge =
+Math.max(
+0,
+finalScores[finalBest] - 0.10
+);
+
+
+/*
+   Plus l'écart au hasard est grand,
+   plus le composant "edge" monte.
+*/
+
+const edgeScore =
+Math.min(
+1,
+edge / 0.12
+);
+
+
+/*
+   Accord :
+
+   0/3 = 0
+   1/3 = 0.33
+   2/3 = 0.67
+   3/3 = 1
+*/
+
+const agreementScore =
+agreement / 3;
+
+
+/*
+   Écart entre premier et deuxième.
+*/
+
+const gapScore =
+Math.min(
+1,
+Math.max(
+0,
+gap / 0.06
+)
+);
+
+
+/*
+   Score final.
+
+   45 points structure
+   35 points edge
+   20 points accord
+*/
+
+let modelScore =
+Math.round(
+45 +
+35 * edgeScore +
+20 * agreementScore
+);
+
+
+/*
+   Petite pénalité si l'écart
+   entre les deux premiers est très faible.
+*/
+
+if(gapScore < 0.15){
+
+modelScore -= 8;
+
+}
+else if(gapScore < 0.30){
+
+modelScore -= 4;
+
+}
+
+
+modelScore =
+Math.max(
+50,
+Math.min(
+100,
+modelScore
+)
+);
+
+
+return {
+
+models:models,
+
+finalScores:finalScores,
+
+globalBest:globalBest,
+
+recentBest:recentBest,
+
+transitionBest:transitionBest,
+
+finalBest:finalBest,
+
+second:second,
+
+gap:gap,
+
+agreement:agreement,
+
+modelScore:modelScore
+
+};
+
+}
+
+
+/* =========================================================
+   AFFICHAGE MODELE
+========================================================= */
+
+function renderModel(){
+
+if(ticks.length < 30){
+
+return null;
+
+}
+
+
+const result =
+calculateModel();
+
+
+$("modelGlobal").textContent =
+result.globalBest;
+
+
+$("modelRecent").textContent =
+result.recentBest;
+
+
+$("modelTransition").textContent =
+result.transitionBest;
+
+
+$("agreement").textContent =
+result.agreement +
+"/3";
+
+
+const streak =
+getCurrentStreak();
+
+
+$("streak").textContent =
+streak.length > 0
+?
+streak.digit +
+" × " +
+streak.length
+:
+"—";
+
+
+renderTransition(
+streak.digit
+);
+
+
+return result;
 
 }
 
@@ -627,14 +1740,37 @@ $("txt").textContent =
 ticks.length +
 "/100 ticks";
 
+$("signal").textContent =
+"⚪ PAS DE SIGNAL";
+
 return;
 
 }
 
 
+const result =
+renderModel();
+
+
+if(!result){
+
+return;
+
+}
+
+
+const best =
+result.finalBest;
+
+const score =
+result.modelScore;
+
+const agreement =
+result.agreement;
+
+
 const globalCounts =
 getCounts(ticks);
-
 
 const recent =
 ticks.slice(
@@ -644,92 +1780,18 @@ ticks.length
 )
 );
 
-
 const recentCounts =
 getCounts(recent);
 
 
 const globalDominant =
-getDominant(globalCounts);
-
+getDominant(
+globalCounts
+);
 
 const recentDominant =
-getDominant(recentCounts);
-
-
-const scores =
-Array(10).fill(0);
-
-
-for(
-let digit = 0;
-digit <= 9;
-digit++
-){
-
-const globalRate =
-globalCounts[digit] /
-ticks.length;
-
-const recentRate =
-recentCounts[digit] /
-recent.length;
-
-
-scores[digit] =
-(
-0.45 * globalRate
-) +
-(
-0.55 * recentRate
-);
-
-}
-
-
-const ranked =
-[...Array(10).keys()]
-.sort(
-(a,b) =>
-scores[b] -
-scores[a]
-);
-
-
-const best =
-ranked[0];
-
-const second =
-ranked[1];
-
-
-const gap =
-scores[best] -
-scores[second];
-
-
-const concentration =
-Math.min(
-1,
-Math.max(
-0,
-(scores[best] - 0.10) / 0.12
-)
-);
-
-
-const gapScore =
-Math.min(
-1,
-gap / 0.06
-);
-
-
-const modelScore =
-Math.round(
-50 +
-25 * concentration +
-25 * gapScore
+getDominant(
+recentCounts
 );
 
 
@@ -739,20 +1801,31 @@ best;
 
 $("score").textContent =
 "Score : " +
-modelScore +
+score +
 "/100";
 
 
-if(modelScore >= 70){
+/*
+   Le signal dépend maintenant
+   du score ET de l'accord.
+*/
+
+if(
+score >= 80 &&
+agreement >= 2
+){
 
 $("signal").textContent =
-"🟢 SIGNAL STATISTIQUE FORT";
+"🟢 SIGNAL STRUCTUREL FORT";
 
 }
-else if(modelScore >= 60){
+else if(
+score >= 68 &&
+agreement >= 2
+){
 
 $("signal").textContent =
-"🟡 SIGNAL MODÉRÉ";
+"🟡 SIGNAL STRUCTUREL MODÉRÉ";
 
 }
 else{
@@ -787,19 +1860,38 @@ recentDominant;
 
 
 $("engine").innerHTML =
-"Méthode : 45% global + 55% récent." +
+
+"<b>Ensemble V5.2</b>" +
+
 "<br>" +
-"Candidat : <b>" +
+
+"Global : 35% | Récent : 35% | Transition : 30%" +
+
+"<br>" +
+
+"Choix : <b>" +
 best +
 "</b> | score : <b>" +
-modelScore +
+score +
 "/100</b>" +
+
 "<br>" +
-"Validation uniquement — aucun ordre.";
+
+"Accord des modèles : <b>" +
+agreement +
+"/3</b>" +
+
+"<br>" +
+
+"Validation : tick suivant uniquement." +
+
+"<br>" +
+
+"Aucun ordre — aucune martingale.";
 
 
 /*
-   UNE SEULE prédiction à la fois.
+   UNE seule prédiction à la fois.
 */
 
 if(
@@ -811,7 +1903,9 @@ pendingPrediction = {
 
 digit:best,
 
-score:modelScore
+score:score,
+
+agreement:agreement
 
 };
 
@@ -828,11 +1922,92 @@ predictionCount +
 " : chiffre " +
 best +
 " | score " +
-modelScore +
-"/100"
+score +
+"/100" +
+" | accord " +
+agreement +
+"/3"
 );
 
 }
+
+}
+
+
+/* =========================================================
+   BUCKET SCORE
+========================================================= */
+
+function getBucket(score){
+
+if(score < 60){
+
+return "50";
+
+}
+
+if(score < 70){
+
+return "60";
+
+}
+
+if(score < 80){
+
+return "70";
+
+}
+
+if(score < 90){
+
+return "80";
+
+}
+
+return "90";
+
+}
+
+
+function renderBuckets(){
+
+const ids =
+["50","60","70","80","90"];
+
+
+ids.forEach(
+id => {
+
+const item =
+buckets[id];
+
+const element =
+$("b"+id);
+
+if(item.total === 0){
+
+element.textContent =
+"—";
+
+return;
+
+}
+
+const rate =
+item.wins /
+item.total *
+100;
+
+element.textContent =
+item.wins +
+"/" +
+item.total +
+" · " +
+rate.toFixed(1) +
+"%";
+
+}
+);
 
 }
 
@@ -852,7 +2027,6 @@ return;
 
 const prediction =
 pendingPrediction;
-
 
 pendingPrediction =
 null;
@@ -877,13 +2051,39 @@ losses++;
 }
 
 
+/*
+   Bucket basé sur le score AU MOMENT
+   de la prédiction.
+*/
+
+const bucket =
+getBucket(
+prediction.score
+);
+
+
+buckets[bucket].total++;
+
+
+if(win){
+
+buckets[bucket].wins++;
+
+}
+
+
 historyRows.unshift({
 
 number:validated,
 
-predicted:prediction.digit,
+predicted:
+prediction.digit,
 
-real:realDigit,
+real:
+realDigit,
+
+score:
+prediction.score,
 
 result:
 win
@@ -896,7 +2096,10 @@ win
 
 
 historyRows =
-historyRows.slice(0,30);
+historyRows.slice(
+0,
+30
+);
 
 
 $("vc").textContent =
@@ -915,8 +2118,11 @@ $("rate").textContent =
 validated
 ?
 (
-wins / validated * 100
-).toFixed(1) + "%"
+wins /
+validated *
+100
+).toFixed(1) +
+"%"
 :
 "—";
 
@@ -927,11 +2133,21 @@ row => `
 
 <tr>
 
-<td>${row.number}</td>
+<td>
+${row.number}
+</td>
 
-<td>${row.predicted}</td>
+<td>
+${row.predicted}
+</td>
 
-<td>${row.real}</td>
+<td>
+${row.real}
+</td>
+
+<td>
+${row.score}
+</td>
 
 <td class="${
 row.result === "WIN"
@@ -951,14 +2167,25 @@ ${row.result}
 ).join("");
 
 
+renderBuckets();
+
+
 log(
+
 "Validation #" +
 validated +
+
 " : prédit " +
 prediction.digit +
+
 " | réel " +
 realDigit +
+
+" | score " +
+prediction.score +
+
 " | " +
+
 (
 win
 ?
@@ -966,19 +2193,37 @@ win
 :
 "LOSS"
 )
+
 );
 
 }
 
 
 /* =========================================================
-   TRAITEMENT TICK
+   TICK
 ========================================================= */
 
 function processTick(quote){
 
 const digit =
 getDigit(quote);
+
+
+/*
+   IMPORTANT :
+
+   La validation se fait AVANT
+   d'ajouter le nouveau tick à la
+   fenêtre d'analyse.
+
+   Donc la prédiction précédente
+   n'utilise jamais son propre tick
+   de validation pour être calculée.
+*/
+
+validatePrediction(
+digit
+);
 
 
 $("price").textContent =
@@ -989,14 +2234,14 @@ $("last").textContent =
 digit;
 
 
-validatePrediction(digit);
-
-
-ticks.push(digit);
+ticks.push(
+digit
+);
 
 
 if(
-ticks.length > MAX_TICKS
+ticks.length >
+MAX_TICKS
 ){
 
 ticks.shift();
@@ -1016,45 +2261,68 @@ analyze();
 
 
 /* =========================================================
-   RECHERCHE DU SYMBOLE
+   RECHERCHE R75
 ========================================================= */
+
 function findR75Symbol(list){
 
 if(!Array.isArray(list)){
+
 return null;
+
 }
 
-/* Nouvelle API Deriv */
+
+/*
+   Nouvelle API.
+*/
+
 const exact =
 list.find(
 item =>
 String(
-item.underlying_symbol || ""
+item.underlying_symbol ||
+""
 ).toUpperCase()
 ===
 REQUESTED_SYMBOL
 );
 
+
 if(exact){
+
 return exact;
+
 }
 
-/* Sécurité : ancienne API */
+
+/*
+   Compatibilité ancienne API.
+*/
+
 const legacy =
 list.find(
 item =>
 String(
-item.symbol || ""
+item.symbol ||
+""
 ).toUpperCase()
 ===
 REQUESTED_SYMBOL
 );
 
+
 if(legacy){
+
 return legacy;
+
 }
 
-/* Recherche par nom */
+
+/*
+   Recherche par nom.
+*/
+
 const volatility75 =
 list.find(
 item => {
@@ -1075,12 +2343,14 @@ name.includes("volatility 75") &&
 }
 );
 
+
 return volatility75 || null;
 
 }
 
+
 /* =========================================================
-   TRAITEMENT ACTIVE SYMBOLS
+   ACTIVE SYMBOLS
 ========================================================= */
 
 function handleActiveSymbols(data){
@@ -1092,11 +2362,11 @@ data.active_symbols;
 if(!Array.isArray(list)){
 
 log(
-"Deriv n'a pas renvoyé de liste de symboles."
+"Liste active_symbols invalide."
 );
 
 setStatus(
-"🔴 Impossible de vérifier R_75",
+"🔴 Réponse symboles invalide",
 "err"
 );
 
@@ -1118,7 +2388,7 @@ findR75Symbol(list);
 if(!found){
 
 log(
-"R_75 introuvable dans active_symbols."
+"R_75 introuvable."
 );
 
 setStatus(
@@ -1128,9 +2398,6 @@ setStatus(
 
 $("realSymbol").textContent =
 "Introuvable";
-
-$("txt").textContent =
-"R_75 n'est pas disponible actuellement.";
 
 return;
 
@@ -1153,7 +2420,7 @@ currentSymbol
 
 
 setStatus(
-"🟢 R_75 trouvé — chargement des ticks…",
+"🟢 R_75 trouvé — chargement…",
 "ok"
 );
 
@@ -1184,7 +2451,7 @@ req_id:2
 
 
 /*
-   Abonnement live immédiatement.
+   Flux live.
 */
 
 ws.send(
@@ -1202,8 +2469,7 @@ req_id:3
 
 
 log(
-"Abonnement live envoyé pour " +
-currentSymbol
+"Flux live demandé."
 );
 
 }
@@ -1247,28 +2513,17 @@ ticks.length +
 " ticks."
 );
 
-
-if(
-ticks.length < MAX_TICKS
-){
-
-log(
-"Attention : moins de 100 ticks reçus."
-);
-
-}
-
 }
 
 
 /* =========================================================
-   MESSAGE DERIV
+   MESSAGES
 ========================================================= */
 
 function handleMessage(data){
 
 /*
-   Erreur API.
+   Erreur.
 */
 
 if(data.error){
@@ -1296,14 +2551,13 @@ setStatus(
 "err"
 );
 
-
 return;
 
 }
 
 
 /*
-   Active symbols.
+   Symboles.
 */
 
 if(
@@ -1311,7 +2565,9 @@ data.msg_type ===
 "active_symbols"
 ){
 
-handleActiveSymbols(data);
+handleActiveSymbols(
+data
+);
 
 return;
 
@@ -1327,7 +2583,9 @@ data.msg_type ===
 "history"
 ){
 
-handleHistory(data);
+handleHistory(
+data
+);
 
 return;
 
@@ -1335,7 +2593,7 @@ return;
 
 
 /*
-   Tick live.
+   Tick.
 */
 
 if(
@@ -1353,7 +2611,6 @@ setStatus(
 "🟢 Connecté — réception des ticks",
 "ok"
 );
-
 
 return;
 
@@ -1407,6 +2664,19 @@ $("count").textContent =
 "0";
 
 
+$("pred").textContent =
+"—";
+
+$("score").textContent =
+"Score : —/100";
+
+$("signal").textContent =
+"⚪ PAS DE SIGNAL";
+
+$("txt").textContent =
+"Recherche de R_75…";
+
+
 renderFrequency();
 
 
@@ -1417,7 +2687,7 @@ setStatus(
 
 
 log(
-"Ouverture du WebSocket public actuel..."
+"Ouverture WebSocket public..."
 );
 
 
@@ -1432,7 +2702,7 @@ PUBLIC_WS
 catch(error){
 
 log(
-"Impossible de créer le WebSocket."
+"Création WebSocket impossible."
 );
 
 setStatus(
@@ -1448,14 +2718,14 @@ return;
 
 
 /*
-   OPEN
+   OPEN.
 */
 
 ws.onopen =
 function(){
 
 setStatus(
-"🟢 Serveur connecté — recherche de R_75…",
+"🟢 Serveur connecté — recherche R_75…",
 "ok"
 );
 
@@ -1464,16 +2734,6 @@ log(
 "WebSocket OPEN."
 );
 
-
-log(
-"Demande active_symbols..."
-);
-
-
-/*
-   On demande à Deriv
-   quels marchés sont réellement disponibles.
-*/
 
 ws.send(
 JSON.stringify({
@@ -1486,11 +2746,16 @@ req_id:1
 })
 );
 
+
+log(
+"Demande active_symbols envoyée."
+);
+
 };
 
 
 /*
-   MESSAGE
+   MESSAGE.
 */
 
 ws.onmessage =
@@ -1499,15 +2764,19 @@ function(event){
 try{
 
 const data =
-JSON.parse(event.data);
+JSON.parse(
+event.data
+);
 
-handleMessage(data);
+handleMessage(
+data
+);
 
 }
 catch(error){
 
 log(
-"Message WebSocket illisible."
+"Message JSON illisible."
 );
 
 }
@@ -1516,21 +2785,21 @@ log(
 
 
 /*
-   ERREUR
+   ERROR.
 */
 
 ws.onerror =
 function(){
 
 log(
-"Erreur WebSocket détectée."
+"Erreur WebSocket."
 );
 
 };
 
 
 /*
-   FERMETURE
+   CLOSE.
 */
 
 ws.onclose =
@@ -1604,6 +2873,17 @@ historyRows =
 [];
 
 
+Object.keys(buckets).forEach(
+key => {
+
+buckets[key].wins = 0;
+
+buckets[key].total = 0;
+
+}
+);
+
+
 $("pc").textContent =
 "0";
 
@@ -1623,8 +2903,11 @@ $("hist").innerHTML =
 "";
 
 
+renderBuckets();
+
+
 log(
-"Statistiques réinitialisées."
+"Statistiques V5.2 réinitialisées."
 );
 
 }
@@ -1639,9 +2922,11 @@ function(){
 
 renderFrequency();
 
+renderBuckets();
+
 
 log(
-"Prediction R75 V5.1 démarrée."
+"Prediction R75 V5.2 démarrée."
 );
 
 
@@ -1656,6 +2941,11 @@ REQUESTED_SYMBOL
 );
 
 
+log(
+"Moteur : global + récent + transition."
+);
+
+
 connect();
 
 };
@@ -1663,4 +2953,5 @@ connect();
 </script>
 
 </body>
+
 </html>
