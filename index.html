@@ -1,5006 +1,3043 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta name="viewport"
-content="width=device-width,initial-scale=1.0">
-
-<title>Prediction R75 V6.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Prediction R75 V7.0</title>
 
 <style>
-
 *{
-box-sizing:border-box;
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
 }
 
 body{
-margin:0;
-background:#071522;
-color:#eaf4ff;
-font-family:Arial,sans-serif;
-font-size:13px;
+  margin:0;
+  background:#061522;
+  color:#eaf4ff;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  font-size:12px;
 }
 
 .container{
-max-width:520px;
-margin:auto;
-padding:8px;
+  width:100%;
+  max-width:520px;
+  margin:auto;
+  padding:6px;
 }
 
 h1{
-text-align:center;
-font-size:14px;
-margin:3px 0 7px;
-}
-
-.status{
-text-align:center;
-padding:8px;
-border-radius:6px;
-background:#775c18;
-font-weight:bold;
-margin-bottom:7px;
-}
-
-.status.ok{
-background:#235f35;
-}
-
-.status.error{
-background:#8e2020;
-}
-
-.status.wait{
-background:#775c18;
+  text-align:center;
+  font-size:15px;
+  margin:3px 0 5px;
 }
 
 .card{
-background:#0d2033;
-border:1px solid #1c3852;
-border-radius:7px;
-padding:7px;
-margin-bottom:7px;
+  background:#0b2638;
+  border:1px solid #123d56;
+  border-radius:7px;
+  margin:5px 0;
+  padding:6px;
+  box-shadow:0 1px 4px rgba(0,0,0,.35);
 }
 
 .title{
-font-weight:bold;
-margin-bottom:6px;
+  font-weight:800;
+  font-size:11px;
+  margin-bottom:5px;
+}
+
+.status{
+  text-align:center;
+  padding:5px;
+  border-radius:5px;
+  font-weight:800;
+  font-size:10px;
+  margin-bottom:5px;
+}
+
+.connected{
+  background:#168342;
+}
+
+.disconnected{
+  background:#b51e27;
+}
+
+.warning{
+  background:#8d6813;
 }
 
 .grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:5px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:4px;
 }
 
 .box{
-background:#102940;
-border-radius:5px;
-padding:7px;
-text-align:center;
-min-height:47px;
+  background:#082032;
+  border:1px solid #123c55;
+  border-radius:5px;
+  padding:5px;
+  text-align:center;
+  min-height:42px;
 }
 
 .label{
-font-size:8px;
-color:#a9bdd0;
+  font-size:8px;
+  color:#9cb4c8;
 }
 
 .value{
-font-size:14px;
-font-weight:bold;
-margin-top:3px;
-}
-
-.big{
-font-size:20px;
+  font-size:13px;
+  font-weight:800;
+  margin-top:2px;
 }
 
 .small{
-font-size:9px;
-color:#a9bdd0;
-line-height:1.45;
+  font-size:9px;
+  color:#a8bfce;
 }
+
+.green{color:#28e77a}
+.red{color:#ff5360}
+.yellow{color:#ffd34e}
+.blue{color:#57b8ff}
+.white{color:#fff}
 
 .signal{
-text-align:center;
-padding:8px;
-border-radius:5px;
-background:#8d1f1f;
-font-weight:bold;
-margin-top:6px;
+  text-align:center;
+  padding:7px;
+  border-radius:5px;
+  margin:5px 0;
+  font-weight:900;
+  font-size:11px;
 }
 
-.signal.good{
-background:#216b3a;
+.signal-no{
+  background:#a91d26;
 }
 
-.signal.mid{
-background:#80621a;
+.signal-warn{
+  background:#9a7311;
 }
 
-.green{
-color:#52e38b;
+.signal-yes{
+  background:#188544;
 }
 
-.red{
-color:#ff6767;
+.progress{
+  height:7px;
+  background:#06131e;
+  border-radius:5px;
+  overflow:hidden;
+  margin-top:4px;
 }
 
-.yellow{
-color:#ffd45c;
+.progress > div{
+  height:100%;
+  width:0%;
+  background:#2ca8ff;
 }
 
-.blueText{
-color:#5db5ff;
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:8px;
+}
+
+th,td{
+  border:1px solid #17435b;
+  padding:4px 2px;
+  text-align:center;
+}
+
+th{
+  background:#0d3045;
+}
+
+textarea,
+pre{
+  width:100%;
+  background:#04131e;
+  color:#b9d6e8;
+  border:1px solid #12384d;
+  border-radius:5px;
+  padding:5px;
+  font-size:8px;
+  white-space:pre-wrap;
+  word-break:break-word;
 }
 
 button{
-width:100%;
-border:0;
-border-radius:5px;
-padding:9px;
-margin-top:5px;
-background:#407fca;
-color:white;
-font-weight:bold;
+  width:100%;
+  border:0;
+  border-radius:5px;
+  padding:7px;
+  margin:3px 0;
+  background:#1685d9;
+  color:#fff;
+  font-weight:800;
+  font-size:10px;
 }
 
-button.secondary{
-background:#315b84;
+button:active{
+  opacity:.7;
 }
 
-.log{
-background:#091827;
-border-radius:5px;
-padding:6px;
-height:160px;
-overflow:auto;
-font-size:8px;
-line-height:1.45;
+.note{
+  font-size:8px;
+  line-height:1.4;
+  color:#9fb7c8;
 }
 
-.tableRow{
-display:grid;
-grid-template-columns:1.3fr .65fr .65fr .8fr;
-gap:4px;
-padding:5px 2px;
-border-bottom:1px solid #1c3852;
-font-size:9px;
-text-align:center;
+.badge{
+  display:inline-block;
+  padding:2px 5px;
+  border-radius:4px;
+  background:#123e55;
+  margin:1px;
+  font-size:8px;
 }
 
-.tableHead{
-font-weight:bold;
-color:#a9bdd0;
+hr{
+  border:0;
+  border-top:1px solid #174258;
+  margin:5px 0;
 }
-
-.gate{
-border-left:4px solid #ff6767;
-}
-
-.gate.pass{
-border-left-color:#52e38b;
-}
-
-.info{
-background:#102940;
-padding:7px;
-border-radius:5px;
-font-size:9px;
-line-height:1.5;
-}
-
-.configLine{
-padding:6px 2px;
-border-bottom:1px solid #1c3852;
-font-size:9px;
-line-height:1.45;
-}
-
 </style>
-
 </head>
 
 <body>
 
 <div class="container">
 
-<h1>
-Prediction R75 V6.1
-</h1>
+<h1>Prediction R75 V7.0</h1>
 
-<div id="status"
-class="status wait">
-Connexion à Deriv…
+<div id="connectionStatus" class="status disconnected">
+  🔴 Connexion fermée
 </div>
 
+<!-- MARCHE -->
+<div class="card">
+  <div class="title">📊 Marché</div>
 
-<!-- =====================================================
-MARCHE
-===================================================== -->
+  <div class="grid">
+    <div class="box">
+      <div class="label">Marché</div>
+      <div class="value">Volatility 75</div>
+      <div class="small">R_75</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Prix en direct</div>
+      <div id="price" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Dernier chiffre</div>
+      <div id="lastDigit" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Ticks</div>
+      <div id="tickCount" class="value">0</div>
+    </div>
+  </div>
+</div>
+
+<!-- ANALYSE -->
+<div class="card">
+  <div class="title">🧠 ANALYSE V7.0 — CONTEXT ENGINE</div>
+
+  <div class="grid">
+    <div class="box">
+      <div class="label">Candidat</div>
+      <div id="candidate" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Régime</div>
+      <div id="regime" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Score brut</div>
+      <div id="rawScore" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Score calibré</div>
+      <div id="calibratedScore" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Accord modèles</div>
+      <div id="agreement" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Entropie</div>
+      <div id="entropy" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Edge estimé</div>
+      <div id="edge" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Échantillon</div>
+      <div id="sample" class="value">—</div>
+    </div>
+  </div>
+
+  <div id="signalBox" class="signal signal-no">
+    PAS DE SIGNAL
+  </div>
+
+  <div class="note">
+    Le score /100 est un indicateur interne. Ce n'est PAS une probabilité
+    garantie du prochain chiffre.
+  </div>
+</div>
+
+<!-- REGIME -->
+<div class="card">
+  <div class="title">🌡️ REGIME ENGINE</div>
+
+  <div class="grid">
+    <div class="box">
+      <div class="label">Régime actuel</div>
+      <div id="regimeMain" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Confiance régime</div>
+      <div id="regimeConfidence" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Entropie</div>
+      <div id="entropyValue" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Uniformité</div>
+      <div id="uniformity" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Changement détecté</div>
+      <div id="regimeChange" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Streak actuel</div>
+      <div id="streak" class="value">—</div>
+    </div>
+  </div>
+
+  <div class="note">
+    Le moteur préfère bloquer lorsque les données sont trop proches d'une
+    distribution uniforme ou lorsque le régime vient de changer.
+  </div>
+</div>
+
+<!-- VALIDATION -->
+<div class="card">
+  <div class="title">📈 VALIDATION WALK-FORWARD</div>
+
+  <div class="grid">
+    <div class="box">
+      <div class="label">Prédictions</div>
+      <div id="predictions" class="value">0</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Validées</div>
+      <div id="validated" class="value">0</div>
+    </div>
+
+    <div class="box">
+      <div class="label">WIN</div>
+      <div id="wins" class="value green">0</div>
+    </div>
+
+    <div class="box">
+      <div class="label">LOSS</div>
+      <div id="losses" class="value red">0</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Taux réel</div>
+      <div id="realRate" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Baseline</div>
+      <div class="value">10%</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Edge réel</div>
+      <div id="realEdge" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Wilson inférieur</div>
+      <div id="wilson" class="value">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODELES -->
+<div class="card">
+  <div class="title">🤖 PERFORMANCE DES MODÈLES</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Modèle</th>
+        <th>Tests</th>
+        <th>WIN</th>
+        <th>Taux</th>
+        <th>Wilson</th>
+        <th>Poids</th>
+      </tr>
+    </thead>
+
+    <tbody id="modelTable"></tbody>
+  </table>
+
+  <div style="margin-top:5px">
+    <span class="badge">GLOBAL</span>
+    <span class="badge">RECENT</span>
+    <span class="badge">TRANSITION</span>
+    <span class="badge">SEQUENCE</span>
+  </div>
+</div>
+
+<!-- DECISION -->
+<div class="card">
+  <div class="title">🎯 DÉCISION DES MODÈLES</div>
+
+  <div class="grid">
+    <div class="box">
+      <div class="label">GLOBAL</div>
+      <div id="decisionGlobal" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">RECENT</div>
+      <div id="decisionRecent" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">TRANSITION</div>
+      <div id="decisionTransition" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">SEQUENCE</div>
+      <div id="decisionSequence" class="value">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- TRANSITION -->
+<div class="card">
+  <div class="title">🔗 TRANSITION — DERNIER CHIFFRE</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Dernier</th>
+        <th>Prochain favori</th>
+        <th>Force</th>
+        <th>Tests</th>
+      </tr>
+    </thead>
+
+    <tbody id="transitionTable"></tbody>
+  </table>
+</div>
+
+<!-- SEQUENCE -->
+<div class="card">
+  <div class="title">🧩 TRANSITION NIVEAU 2 — SÉQUENCE</div>
+
+  <div class="grid">
+    <div class="box">
+      <div class="label">Séquence actuelle</div>
+      <div id="sequenceCurrent" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Candidat séquence</div>
+      <div id="sequenceCandidate" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Tests séquence</div>
+      <div id="sequenceTests" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Force séquence</div>
+      <div id="sequenceStrength" class="value">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- ECONOMIC -->
+<div class="card">
+  <div class="title">💰 ECONOMIC GATE — TEST UNIQUEMENT</div>
+
+  <div class="grid">
+    <div class="box">
+      <div class="label">Payout théorique</div>
+      <input id="payoutInput"
+             type="number"
+             min="0"
+             step="0.01"
+             value="0"
+             style="width:90%;background:#061522;color:#fff;border:1px solid #17445d;border-radius:4px;padding:4px;text-align:center;">
+    </div>
+
+    <div class="box">
+      <div class="label">Break-even</div>
+      <div id="breakEven" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Probabilité modèle</div>
+      <div id="modelProbability" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">EV théorique</div>
+      <div id="expectedValue" class="value">—</div>
+    </div>
+  </div>
+
+  <div class="note">
+    Le payout doit être renseigné manuellement. Cette valeur ne déclenche
+    aucun ordre et ne constitue pas une recommandation de trading.
+  </div>
+</div>
+
+<!-- STATISTICAL GATE -->
+<div class="card">
+  <div class="title">🚦 STATISTICAL GATE</div>
+
+  <div class="grid">
+    <div class="box">
+      <div class="label">Score ≥ 70</div>
+      <div id="gateScore" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Accord ≥ 2/4</div>
+      <div id="gateAgreement" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Échantillon</div>
+      <div id="gateSample" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Edge réel</div>
+      <div id="gateEdge" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Wilson</div>
+      <div id="gateWilson" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Régime</div>
+      <div id="gateRegime" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Entropie</div>
+      <div id="gateEntropy" class="value">—</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Gate final</div>
+      <div id="gateFinal" class="value">BLOQUÉ</div>
+    </div>
+  </div>
+</div>
+
+<!-- CALIBRATION -->
+<div class="card">
+  <div class="title">🧪 CALIBRATION DU SCORE BRUT</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Bucket</th>
+        <th>WIN</th>
+        <th>Tests</th>
+        <th>Taux</th>
+      </tr>
+    </thead>
+    <tbody id="calibrationTable"></tbody>
+  </table>
+
+  <div class="note">
+    Calibration basée uniquement sur les résultats observés hors échantillon.
+  </div>
+</div>
+
+<!-- SHADOW LAB -->
+<div class="card">
+  <div class="title">🧪 SHADOW LAB — CANDIDATS</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Chiffre</th>
+        <th>Score</th>
+        <th>Tests</th>
+        <th>WIN</th>
+        <th>Taux</th>
+      </tr>
+    </thead>
+
+    <tbody id="shadowTable"></tbody>
+  </table>
+
+  <div class="note">
+    Tous les candidats sont testés en simulation. Aucun ordre réel.
+  </div>
+</div>
+
+<!-- FREQUENCES -->
+<div class="card">
+  <div class="title">🔢 FRÉQUENCE DES CHIFFRES</div>
+
+  <div id="frequencyGrid" class="grid"></div>
+</div>
+
+<!-- PERFORMANCE SIGNAL -->
+<div class="card">
+  <div class="title">🚨 PERFORMANCE DES SIGNAUX ACCEPTÉS</div>
+
+  <div class="grid">
+    <div class="box">
+      <div class="label">Signaux acceptés</div>
+      <div id="acceptedSignals" class="value">0</div>
+    </div>
+
+    <div class="box">
+      <div class="label">WIN signal</div>
+      <div id="signalWins" class="value green">0</div>
+    </div>
+
+    <div class="box">
+      <div class="label">LOSS signal</div>
+      <div id="signalLosses" class="value red">0</div>
+    </div>
+
+    <div class="box">
+      <div class="label">Taux signal</div>
+      <div id="signalRate" class="value">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- MOTEUR -->
+<div class="card">
+  <div class="title">🧠 MOTEUR V7.0</div>
+
+  <div class="note">
+    ✓ Walk-forward strict<br>
+    ✓ Validation avant ajout du tick<br>
+    ✓ Régime de marché statistique<br>
+    ✓ Entropie / uniformité<br>
+    ✓ Global + Recent<br>
+    ✓ Transition niveau 1<br>
+    ✓ Transition niveau 2<br>
+    ✓ Analyse des séquences<br>
+    ✓ Ensemble adaptatif<br>
+    ✓ Calibration indépendante<br>
+    ✓ Statistical Gate<br>
+    ✓ Benchmark baseline 10%<br>
+    ✓ Economic Gate informatif<br>
+    ✓ Shadow Lab<br>
+    ✓ Aucun ordre automatique<br>
+    ✓ Aucun martingale
+  </div>
+</div>
+
+<button onclick="connectDeriv()">🔄 Reconnecter à Deriv</button>
+<button onclick="resetStatistics()">♻️ Réinitialiser les statistiques</button>
 
 <div class="card">
+  <div class="title">⚠️ AVERTISSEMENT</div>
 
-<div class="title">
-📊 Marché
+  <div class="note">
+    Une fréquence historique ne garantit pas le prochain chiffre.
+    Une performance passée ne garantit pas une performance future.
+    Le modèle peut rester volontairement silencieux lorsqu'il ne possède
+    pas suffisamment de preuves statistiques.
+  </div>
 </div>
 
-<div class="grid">
-
-<div class="box">
-
-<div class="label">
-Marché
-</div>
-
-<div class="value">
-Volatility 75
-</div>
-
-<div class="small">
-R_75
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Prix en direct
-</div>
-
-<div id="price"
-class="value">
-—
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Dernier chiffre
-</div>
-
-<div id="lastDigit"
-class="big">
-—
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Ticks fenêtre
-</div>
-
-<div id="ticksCount"
-class="value">
-0
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-<!-- =====================================================
-ANALYSE
-===================================================== -->
-
+<!-- HISTORIQUE -->
 <div class="card">
-
-<div class="title">
-🧠 ANALYSE V6.1 — WALK-FORWARD
+  <div class="title">📜 HISTORIQUE DES VALIDATIONS</div>
+  <pre id="history">Aucune validation.</pre>
 </div>
 
-<div class="box">
-
-<div class="label">
-Candidat actuel
-</div>
-
-<div id="candidate"
-class="big">
-—
-</div>
-
-</div>
-
-<div id="signal"
-class="signal">
-PAS ENCORE DE SIGNAL
-</div>
-
-<div class="grid">
-
-<div class="box">
-
-<div class="label">
-Score brut
-</div>
-
-<div id="rawScore"
-class="value">
-—
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Score calibré
-</div>
-
-<div id="calibratedScore"
-class="value">
-—
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Accord
-</div>
-
-<div id="agreement"
-class="value">
-—
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Modèle dominant
-</div>
-
-<div id="dominant"
-class="value">
-—
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Edge modèle
-</div>
-
-<div id="edge"
-class="value">
-—
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Échantillon
-</div>
-
-<div id="sample"
-class="value">
-—
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Taux global
-</div>
-
-<div id="globalRate"
-class="value">
-—
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-IC bas global
-</div>
-
-<div id="globalWilson"
-class="value">
-—
-</div>
-
-</div>
-
-</div>
-
-<div class="small">
-
-Le score /100 est un indicateur interne.
-Ce n'est pas une probabilité garantie de gain.
-
-</div>
-
-</div>
-
-
-<!-- =====================================================
-SIGNAL GATE
-===================================================== -->
-
-<div id="gateCard"
-class="card gate">
-
-<div class="title">
-🚦 SIGNAL GATE V6.1
-</div>
-
-<div class="grid">
-
-<div class="box">
-
-<div class="label">
-Statut
-</div>
-
-<div id="gateStatus"
-class="value">
-—
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Configuration
-</div>
-
-<div id="gateConfig"
-class="small">
-—
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Tests config
-</div>
-
-<div id="gateTests"
-class="value">
-0
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-WIN config
-</div>
-
-<div id="gateWins"
-class="value green">
-0
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Taux config
-</div>
-
-<div id="gateRate"
-class="value">
-—
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-IC bas config
-</div>
-
-<div id="gateWilson"
-class="value">
-—
-</div>
-
-</div>
-
-</div>
-
-<div id="gateReason"
-class="info">
-—
-</div>
-
-</div>
-
-
-<!-- =====================================================
-VALIDATION GLOBALE
-===================================================== -->
-
+<!-- LOG -->
 <div class="card">
-
-<div class="title">
-📊 Validation globale
-</div>
-
-<div class="grid">
-
-<div class="box">
-
-<div class="label">
-Prédictions
-</div>
-
-<div id="predictions"
-class="value">
-0
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Validées
-</div>
-
-<div id="validated"
-class="value">
-0
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-WIN
-</div>
-
-<div id="wins"
-class="value green">
-0
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-LOSS
-</div>
-
-<div id="losses"
-class="value red">
-0
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Taux réel
-</div>
-
-<div id="rate"
-class="value">
-—
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Baseline
-</div>
-
-<div class="value">
-10%
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-<!-- =====================================================
-SHADOW LAB
-===================================================== -->
-
-<div class="card">
-
-<div class="title">
-🧪 SHADOW LAB V6.1
-</div>
-
-<div class="grid">
-
-<div class="box">
-
-<div class="label">
-Candidats
-</div>
-
-<div id="shadowSignals"
-class="value">
-0
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Validés
-</div>
-
-<div id="shadowValidated"
-class="value">
-0
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-WIN
-</div>
-
-<div id="shadowWins"
-class="value green">
-0
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-LOSS
-</div>
-
-<div id="shadowLosses"
-class="value red">
-0
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Taux shadow
-</div>
-
-<div id="shadowRate"
-class="value">
-—
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Edge / 10%
-</div>
-
-<div id="shadowEdge"
-class="value">
-—
-</div>
-
-</div>
-
-</div>
-
-<div class="small">
-
-Tous les candidats suffisamment structurés sont
-testés en shadow, même lorsque le Gate est fermé.
-
-</div>
-
-</div>
-
-
-<!-- =====================================================
-SIGNALS ACCEPTES
-===================================================== -->
-
-<div class="card">
-
-<div class="title">
-🎯 SIGNALS ACCEPTÉS PAR LE GATE
-</div>
-
-<div class="grid">
-
-<div class="box">
-
-<div class="label">
-Signaux
-</div>
-
-<div id="acceptedSignals"
-class="value">
-0
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Validés
-</div>
-
-<div id="acceptedValidated"
-class="value">
-0
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-WIN
-</div>
-
-<div id="acceptedWins"
-class="value green">
-0
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-LOSS
-</div>
-
-<div id="acceptedLosses"
-class="value red">
-0
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Taux
-</div>
-
-<div id="acceptedRate"
-class="value">
-—
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Edge / 10%
-</div>
-
-<div id="acceptedEdge"
-class="value">
-—
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-<!-- =====================================================
-SCORE
-===================================================== -->
-
-<div class="card">
-
-<div class="title">
-📈 Shadow — performance par score
-</div>
-
-<div class="tableRow tableHead">
-
-<div>Score</div>
-<div>Tests</div>
-<div>WIN</div>
-<div>Taux</div>
-
-</div>
-
-<div class="tableRow">
-
-<div>70–79</div>
-<div id="s70t">0</div>
-<div id="s70w">0</div>
-<div id="s70r">—</div>
-
-</div>
-
-<div class="tableRow">
-
-<div>80–89</div>
-<div id="s80t">0</div>
-<div id="s80w">0</div>
-<div id="s80r">—</div>
-
-</div>
-
-<div class="tableRow">
-
-<div>90–100</div>
-<div id="s90t">0</div>
-<div id="s90w">0</div>
-<div id="s90r">—</div>
-
-</div>
-
-</div>
-
-
-<!-- =====================================================
-ACCORD
-===================================================== -->
-
-<div class="card">
-
-<div class="title">
-🤝 Shadow — performance par accord
-</div>
-
-<div class="grid">
-
-<div class="box">
-
-<div class="label">
-ACCORD 2/3
-</div>
-
-<div id="a2"
-class="value">
-0 / 0
-</div>
-
-<div id="a2r"
-class="small">
-Taux —
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-ACCORD 3/3
-</div>
-
-<div id="a3"
-class="value">
-0 / 0
-</div>
-
-<div id="a3r"
-class="small">
-Taux —
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-<!-- =====================================================
-PAR CHIFFRE
-===================================================== -->
-
-<div class="card">
-
-<div class="title">
-🔢 Performance shadow par chiffre prédit
-</div>
-
-<div id="digitPerformance"
-class="grid">
-</div>
-
-</div>
-
-
-<!-- =====================================================
-PAR MODELE DOMINANT
-===================================================== -->
-
-<div class="card">
-
-<div class="title">
-🧠 Performance par modèle dominant
-</div>
-
-<div class="grid">
-
-<div class="box">
-
-<div class="label">
-GLOBAL
-</div>
-
-<div id="domGlobal"
-class="value">
-0 / 0
-</div>
-
-<div id="domGlobalRate"
-class="small">
-Taux —
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-RECENT
-</div>
-
-<div id="domRecent"
-class="value">
-0 / 0
-</div>
-
-<div id="domRecentRate"
-class="small">
-Taux —
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-TRANSITION
-</div>
-
-<div id="domTransition"
-class="value">
-0 / 0
-</div>
-
-<div id="domTransitionRate"
-class="small">
-Taux —
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-<!-- =====================================================
-CONFIGURATIONS
-===================================================== -->
-
-<div class="card">
-
-<div class="title">
-🔬 Laboratoire des configurations
-</div>
-
-<div class="small">
-
-Chaque configuration combine :
-
-<br>
-<strong>Score + Accord + Modèle dominant + Chiffre prédit</strong>
-
-<br><br>
-
-Une configuration n'est jamais considérée comme
-fiable avec quelques observations seulement.
-
-</div>
-
-<br>
-
-<div id="configTable">
-Aucune configuration observée.
-</div>
-
-</div>
-
-
-<!-- =====================================================
-MODELES
-===================================================== -->
-
-<div class="card">
-
-<div class="title">
-📊 Performance réelle des 3 modèles
-</div>
-
-<div class="grid">
-
-<div class="box">
-
-<div class="label">
-GLOBAL
-</div>
-
-<div id="modelGlobal">
-0 / 0
-</div>
-
-<div id="modelGlobalRate"
-class="small">
-Taux —
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-RECENT
-</div>
-
-<div id="modelRecent">
-0 / 0
-</div>
-
-<div id="modelRecentRate"
-class="small">
-Taux —
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-TRANSITION
-</div>
-
-<div id="modelTransition">
-0 / 0
-</div>
-
-<div id="modelTransitionRate"
-class="small">
-Taux —
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-<!-- =====================================================
-DECISION MODELES
-===================================================== -->
-
-<div class="card">
-
-<div class="title">
-🎯 Décision des modèles
-</div>
-
-<div class="grid">
-
-<div class="box">
-
-<div class="label">
-GLOBAL
-</div>
-
-<div id="decisionGlobal"
-class="big">
-—
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-RECENT
-</div>
-
-<div id="decisionRecent"
-class="big">
-—
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-TRANSITION
-</div>
-
-<div id="decisionTransition"
-class="big">
-—
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-<!-- =====================================================
-TRANSITION
-===================================================== -->
-
-<div class="card">
-
-<div class="title">
-🔄 Transition après le dernier chiffre
-</div>
-
-<div id="transition"
-class="grid">
-</div>
-
-</div>
-
-
-<!-- =====================================================
-CALIBRATION
-===================================================== -->
-
-<div class="card">
-
-<div class="title">
-📊 Calibration du score brut
-</div>
-
-<div id="calibration"
-class="grid">
-</div>
-
-</div>
-
-
-<!-- =====================================================
-STATISTIQUES
-===================================================== -->
-
-<div class="card">
-
-<div class="title">
-📈 Statistiques
-</div>
-
-<div class="grid">
-
-<div class="box">
-
-<div class="label">
-Ticks fenêtre
-</div>
-
-<div id="statTicks"
-class="value">
-0
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Prédictions
-</div>
-
-<div id="statPred"
-class="value">
-0
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Validées
-</div>
-
-<div id="statVal"
-class="value">
-0
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-WIN
-</div>
-
-<div id="statWin"
-class="value green">
-0
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-LOSS
-</div>
-
-<div id="statLoss"
-class="value red">
-0
-</div>
-
-</div>
-
-<div class="box">
-
-<div class="label">
-Taux
-</div>
-
-<div id="statRate"
-class="value">
-—
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-<!-- =====================================================
-FREQUENCE
-===================================================== -->
-
-<div class="card">
-
-<div class="title">
-🔢 Fréquence des chiffres
-</div>
-
-<div id="frequency"
-class="grid">
-</div>
-
-</div>
-
-
-<!-- =====================================================
-MOTEUR
-===================================================== -->
-
-<div class="card">
-
-<div class="title">
-🧠 Moteur V6.1
-</div>
-
-<div class="small">
-
-✓ Walk-forward strict<br>
-✓ Validation avant ajout du tick<br>
-✓ Global + Recent + Transition<br>
-✓ Validation indépendante des modèles<br>
-✓ Pondération adaptative<br>
-✓ Calibration empirique<br>
-✓ Shadow Lab<br>
-✓ Signal Gate<br>
-✓ Analyse par score<br>
-✓ Analyse par accord<br>
-✓ Analyse par chiffre<br>
-✓ Analyse par modèle dominant<br>
-✓ Analyse des configurations<br>
-✓ Wilson confidence bound<br>
-✓ Aucun ordre automatique<br>
-✓ Aucun martingale
-
-</div>
-
-<br>
-
-<div class="small green">
-
-✓ MODE ANALYSE / VALIDATION UNIQUEMENT<br>
-✓ Aucun trade n'est envoyé.
-
-</div>
-
-</div>
-
-
-<!-- =====================================================
-BOUTONS
-===================================================== -->
-
-<button onclick="connectDeriv()">
-🔄 Reconnecter à Deriv
-</button>
-
-<button
-class="secondary"
-onclick="resetStats()">
-♻️ Réinitialiser les statistiques
-</button>
-
-
-<!-- =====================================================
-AVERTISSEMENT
-===================================================== -->
-
-<div class="card">
-
-<div class="title">
-⚠️ Avertissement
-</div>
-
-<div class="small">
-
-La fréquence passée des chiffres ne garantit pas
-le prochain chiffre.
-
-Le score /100 n'est pas une probabilité.
-
-Les résultats historiques peuvent être dus au hasard.
-
-V6.1 est un laboratoire statistique uniquement.
-
-Aucun ordre n'est envoyé à Deriv.
-
-</div>
-
-</div>
-
-
-<!-- =====================================================
-HISTORIQUE
-===================================================== -->
-
-<div class="card">
-
-<div class="title">
-📜 Historique des validations
-</div>
-
-<div id="history"
-class="small">
-Aucune validation.
-</div>
-
-</div>
-
-
-<!-- =====================================================
-LOG
-===================================================== -->
-
-<div class="card">
-
-<div class="title">
-🛠️ Journal technique
-</div>
-
-<div id="log"
-class="log">
-</div>
-
+  <div class="title">🛠️ JOURNAL TECHNIQUE</div>
+  <pre id="log"></pre>
 </div>
 
 </div>
-
 
 <script>
 
-/* =====================================================
-CONFIG
-===================================================== */
+/* ============================================================
+   PREDICTION R75 V7.0
+   CONTEXT + REGIME + SHADOW LAB
+   TEST ONLY — NO REAL ORDERS
+   ============================================================ */
 
 const WS_URL =
-"wss://api.derivws.com/trading/v1/options/ws/public";
+  "wss://api.derivws.com/trading/v1/options/ws/public";
 
-const SYMBOL =
-"R_75";
+const SYMBOL_REQUESTED = "R_75";
 
-const MAX_TICKS =
-100;
+const HISTORY_SIZE = 100;
+const RECENT_SIZE = 30;
+const MIN_TICKS = 40;
+const BASELINE = 0.10;
 
-const RECENT_SIZE =
-30;
+let ws = null;
+let reconnectTimer = null;
+let currentSymbol = SYMBOL_REQUESTED;
 
+let ticks = [];
+let pendingPrediction = null;
 
-/*
-PARAMETRES DU GATE
+let predictionCount = 0;
+let validatedCount = 0;
+let wins = 0;
+let losses = 0;
 
-Ils sont volontairement stricts.
-*/
+let signalAccepted = 0;
+let signalWins = 0;
+let signalLosses = 0;
 
-const MIN_GLOBAL_VALIDATED =
-80;
+let logs = [];
+let history = [];
 
-const MIN_CONFIG_TESTS =
-30;
+/* ============================================================
+   MODEL STATS
+   ============================================================ */
 
-const MIN_SCORE =
-70;
+const modelStats = {
+  GLOBAL:{
+    tests:0,
+    wins:0,
+    candidate:null,
+    history:[]
+  },
 
-const MIN_AGREEMENT =
-2;
+  RECENT:{
+    tests:0,
+    wins:0,
+    candidate:null,
+    history:[]
+  },
 
-const MIN_CONFIG_RATE =
-0.105;
+  TRANSITION:{
+    tests:0,
+    wins:0,
+    candidate:null,
+    history:[]
+  },
 
-const MIN_CONFIG_WILSON =
-0.085;
-
-
-/* =====================================================
-ETAT
-===================================================== */
-
-let ws=null;
-
-let reconnectTimer=null;
-
-let ticks=[];
-
-let predictions=0;
-
-let validated=0;
-
-let wins=0;
-
-let losses=0;
-
-let lastPrediction=null;
-
-let historyRows=[];
-
-
-/* =====================================================
-SHADOW
-===================================================== */
-
-let shadowStats={
-
-signals:0,
-
-validated:0,
-
-wins:0,
-
-losses:0
-
+  SEQUENCE:{
+    tests:0,
+    wins:0,
+    candidate:null,
+    history:[]
+  }
 };
 
+/* ============================================================
+   CALIBRATION
+   ============================================================ */
 
-/* =====================================================
-ACCEPTED
-===================================================== */
-
-let acceptedStats={
-
-signals:0,
-
-validated:0,
-
-wins:0,
-
-losses:0
-
+const calibrationBuckets = {
+  "50-59":{tests:0,wins:0},
+  "60-69":{tests:0,wins:0},
+  "70-79":{tests:0,wins:0},
+  "80-89":{tests:0,wins:0},
+  "90-100":{tests:0,wins:0}
 };
 
+/* ============================================================
+   SHADOW LAB
+   ============================================================ */
 
-/* =====================================================
-SCORE
-===================================================== */
+const shadowLab = {};
 
-let scoreStats={
-
-"70-79":{
-tests:0,
-wins:0
-},
-
-"80-89":{
-tests:0,
-wins:0
-},
-
-"90-100":{
-tests:0,
-wins:0
+for(let d=0; d<=9; d++){
+  shadowLab[d] = {
+    tests:0,
+    wins:0,
+    scoreSum:0
+  };
 }
 
-};
-
-
-/* =====================================================
-ACCORD
-===================================================== */
-
-let agreementStats={
-
-2:{
-tests:0,
-wins:0
-},
-
-3:{
-tests:0,
-wins:0
-}
-
-};
-
-
-/* =====================================================
-DIGITS
-===================================================== */
-
-let digitStats={};
-
-for(
-let d=0;
-d<10;
-d++
-){
-
-digitStats[d]={
-tests:0,
-wins:0
-};
-
-}
-
-
-/* =====================================================
-DOMINANT
-===================================================== */
-
-let dominantStats={
-
-GLOBAL:{
-tests:0,
-wins:0
-},
-
-RECENT:{
-tests:0,
-wins:0
-},
-
-TRANSITION:{
-tests:0,
-wins:0
-}
-
-};
-
-
-/* =====================================================
-CONFIGURATIONS
-===================================================== */
-
-let configStats={};
-
-
-/* =====================================================
-MODELES
-===================================================== */
-
-let modelStats={
-
-global:{
-wins:0,
-total:0
-},
-
-recent:{
-wins:0,
-total:0
-},
-
-transition:{
-wins:0,
-total:0
-}
-
-};
-
-
-/* =====================================================
-CALIBRATION
-===================================================== */
-
-let calibrationBuckets={
-
-"50-59":{
-wins:0,
-total:0
-},
-
-"60-69":{
-wins:0,
-total:0
-},
-
-"70-79":{
-wins:0,
-total:0
-},
-
-"80-89":{
-wins:0,
-total:0
-},
-
-"90-100":{
-wins:0,
-total:0
-}
-
-};
-
-
-/* =====================================================
-UTILS
-===================================================== */
+/* ============================================================
+   DOM
+   ============================================================ */
 
 function $(id){
-
-return document.getElementById(id);
-
-}
-
-
-function log(message){
-
-const time =
-new Date().toLocaleTimeString();
-
-$("log").innerHTML +=
-time+" — "+message+"<br>";
-
-$("log").scrollTop =
-$("log").scrollHeight;
-
-}
-
-
-function setStatus(text,type){
-
-$("status").textContent=text;
-
-$("status").className=
-"status "+type;
-
-}
-
-
-function clamp(
-value,
-min,
-max
-){
-
-return Math.max(
-min,
-Math.min(max,value)
-);
-
-}
-
-
-/* =====================================================
-DIGIT EXTRACTION
-===================================================== */
-
-function extractDigit(quote){
-
-const s=
-String(quote);
-
-const clean=
-s.replace(
-/[^0-9.]/g,
-""
-);
-
-const parts=
-clean.split(".");
-
-if(parts.length<2){
-
-return Number(
-clean.slice(-1)
-);
-
-}
-
-const decimals=
-parts[1];
-
-if(!decimals.length){
-
-return Number(
-parts[0].slice(-1)
-);
-
-}
-
-return Number(
-decimals.slice(-1)
-);
-
-}
-
-
-/* =====================================================
-FREQUENCY
-===================================================== */
-
-function frequency(data){
-
-const f=
-Array(10).fill(0);
-
-data.forEach(
-d=>{
-if(
-Number.isInteger(d)
-&&
-d>=0
-&&
-d<=9
-){
-
-f[d]++;
-
-}
-});
-
-return f;
-
-}
-
-
-/* =====================================================
-GLOBAL MODEL
-===================================================== */
-
-function globalModel(){
-
-const f=
-frequency(ticks);
-
-let best=0;
-
-for(
-let d=1;
-d<10;
-d++
-){
-
-if(f[d]>f[best]){
-
-best=d;
-
-}
-
-}
-
-return {
-
-candidate:best,
-
-freq:f[best],
-
-total:ticks.length
-
-};
-
-}
-
-
-/* =====================================================
-RECENT MODEL
-===================================================== */
-
-function recentModel(){
-
-const recent=
-ticks.slice(-RECENT_SIZE);
-
-const f=
-frequency(recent);
-
-let best=0;
-
-for(
-let d=1;
-d<10;
-d++
-){
-
-if(f[d]>f[best]){
-
-best=d;
-
-}
-
-}
-
-return {
-
-candidate:best,
-
-freq:f[best],
-
-total:recent.length
-
-};
-
-}
-
-
-/* =====================================================
-TRANSITION MODEL
-===================================================== */
-
-function transitionModel(){
-
-if(ticks.length<2){
-
-return {
-
-candidate:0,
-
-freq:0,
-
-total:0
-
-};
-
-}
-
-const last=
-ticks[ticks.length-1];
-
-const counts=
-Array(10).fill(0);
-
-let total=0;
-
-
-for(
-let i=0;
-i<ticks.length-1;
-i++
-){
-
-if(
-ticks[i]===last
-){
-
-counts[
-ticks[i+1]
-]++;
-
-total++;
-
-}
-
-}
-
-
-let best=0;
-
-for(
-let d=1;
-d<10;
-d++
-){
-
-if(
-counts[d]>
-counts[best]
-){
-
-best=d;
-
-}
-
-}
-
-
-return {
-
-candidate:best,
-
-freq:counts[best],
-
-total
-
-};
-
-}
-
-
-/* =====================================================
-WILSON
-===================================================== */
-
-function wilsonLower(
-winsValue,
-totalValue
-){
-
-if(
-totalValue<=0
-){
-
-return 0;
-
-}
-
-const z=1.96;
-
-const p=
-winsValue/
-totalValue;
-
-const denom=
-1+
-z*z/
-totalValue;
-
-const centre=
-p+
-z*z/
-(
-2*totalValue
-);
-
-const adj=
-z*
-Math.sqrt(
-(
-p*(1-p)/
-totalValue
-)
-+
-(
-z*z/
-(
-4*
-totalValue*
-totalValue
-)
-)
-);
-
-return(
-centre-adj
-)/
-denom;
-
-}
-
-
-/* =====================================================
-MODEL RATE
-===================================================== */
-
-function modelRate(name){
-
-const s=
-modelStats[name];
-
-if(!s.total){
-
-return 0.10;
-
-}
-
-return s.wins/s.total;
-
-}
-
-
-/* =====================================================
-MODEL WEIGHTS
-===================================================== */
-
-function modelWeights(){
-
-const names=[
-"global",
-"recent",
-"transition"
-];
-
-let raw={};
-
-
-names.forEach(
-name=>{
-
-const s=
-modelStats[name];
-
-if(
-s.total<30
-){
-
-raw[name]=1;
-
-return;
-
-}
-
-const rate=
-modelRate(name);
-
-const lower=
-wilsonLower(
-s.wins,
-s.total
-);
-
-
-/*
-La stabilité compte,
-mais elle ne peut pas
-dominer le moteur.
-*/
-
-raw[name]=
-0.5+
-rate*3+
-lower*2;
-
-});
-
-
-const total=
-raw.global+
-raw.recent+
-raw.transition;
-
-
-return {
-
-global:
-clamp(
-raw.global/total,
-0.15,
-0.55
-),
-
-recent:
-clamp(
-raw.recent/total,
-0.15,
-0.55
-),
-
-transition:
-clamp(
-raw.transition/total,
-0.15,
-0.55
-)
-
-};
-
-}
-
-
-/* =====================================================
-ENSEMBLE
-===================================================== */
-
-function ensemble(){
-
-const gm=
-globalModel();
-
-const rm=
-recentModel();
-
-const tm=
-transitionModel();
-
-const weights=
-modelWeights();
-
-
-const gf=
-frequency(ticks);
-
-const rf=
-frequency(
-ticks.slice(-RECENT_SIZE)
-);
-
-
-const scores=
-Array(10).fill(0);
-
-
-for(
-let d=0;
-d<10;
-d++
-){
-
-scores[d]+=
-weights.global*
-(
-(gf[d]+1)/
-(ticks.length+10)
-);
-
-
-scores[d]+=
-weights.recent*
-(
-(rf[d]+1)/
-(
-Math.min(
-ticks.length,
-RECENT_SIZE
-)+10
-)
-);
-
-
-if(
-tm.total>0
-&&
-d===tm.candidate
-){
-
-scores[d]+=
-weights.transition*
-(
-(tm.freq+1)/
-(tm.total+10)
-);
-
-}else{
-
-scores[d]+=
-weights.transition*
-(
-1/
-(tm.total+10)
-);
-
-}
-
-}
-
-
-let best=0;
-
-for(
-let d=1;
-d<10;
-d++
-){
-
-if(
-scores[d]>
-scores[best]
-){
-
-best=d;
-
-}
-
-}
-
-
-const sorted=
-[...scores].sort(
-(a,b)=>b-a
-);
-
-
-const gap=
-sorted[0]-sorted[1];
-
-
-const candidates=[
-
-gm.candidate,
-
-rm.candidate,
-
-tm.candidate
-
-];
-
-
-const agreement=
-candidates.filter(
-x=>x===best
-).length;
-
-
-const totalScore=
-scores.reduce(
-(a,b)=>a+b,
-0
-);
-
-
-const normalized=
-scores[best]/
-totalScore;
-
-
-const edge=
-normalized-0.10;
-
-
-/*
-Score interne.
-
-Ce score n'est PAS
-une probabilité.
-*/
-
-let raw=
-50+
-edge*250+
-agreement*7+
-gap*100;
-
-
-raw=
-clamp(
-raw,
-50,
-100
-);
-
-
-/*
-Modèle dominant :
-on regarde lequel
-a le plus de support
-pour le candidat.
-*/
-
-const supports={
-
-GLOBAL:
-gm.candidate===best
-?
-gm.freq/
-Math.max(1,gm.total)
-:0,
-
-RECENT:
-rm.candidate===best
-?
-rm.freq/
-Math.max(1,rm.total)
-:0,
-
-TRANSITION:
-tm.candidate===best
-&&
-tm.total>0
-?
-tm.freq/
-Math.max(1,tm.total)
-:0
-
-};
-
-
-let dominant="GLOBAL";
-
-
-if(
-supports.RECENT>
-supports.GLOBAL
-&&
-supports.RECENT>=
-supports.TRANSITION
-){
-
-dominant="RECENT";
-
-}else if(
-supports.TRANSITION>
-supports.GLOBAL
-&&
-supports.TRANSITION>
-supports.RECENT
-){
-
-dominant="TRANSITION";
-
-}
-
-
-return {
-
-candidate:best,
-
-agreement,
-
-gap,
-
-edge,
-
-raw,
-
-dominant,
-
-models:{
-
-global:gm,
-
-recent:rm,
-
-transition:tm
-
-}
-
-};
-
-}
-
-
-/* =====================================================
-SCORE BUCKET
-===================================================== */
-
-function getScoreBucket(score){
-
-if(score<60){
-
-return "50-59";
-
-}
-
-if(score<70){
-
-return "60-69";
-
-}
-
-if(score<80){
-
-return "70-79";
-
-}
-
-if(score<90){
-
-return "80-89";
-
-}
-
-return "90-100";
-
-}
-
-
-/* =====================================================
-CALIBRATION
-===================================================== */
-
-function calibrate(raw){
-
-const bucket=
-getScoreBucket(raw);
-
-const b=
-calibrationBuckets[bucket];
-
-
-if(
-b.total<20
-){
-
-return raw;
-
-}
-
-
-const rate=
-b.wins/
-b.total;
-
-
-/*
-Réduction prudente
-si la performance réelle
-est faible.
-*/
-
-const factor=
-clamp(
-0.70+
-rate*3,
-0.70,
-1.05
-);
-
-
-return clamp(
-raw*factor,
-50,
-100
-);
-
-}
-
-
-/* =====================================================
-CONFIG KEY
-===================================================== */
-
-function makeConfigKey(
-score,
-agreement,
-dominant,
-digit
-){
-
-let scoreBucket;
-
-
-if(score<80){
-
-scoreBucket="70-79";
-
-}else if(score<90){
-
-scoreBucket="80-89";
-
-}else{
-
-scoreBucket="90-100";
-
-}
-
-
-return (
-"S"+
-scoreBucket+
-"_A"+
-agreement+
-"_"+
-dominant+
-"_D"+
-digit
-);
-
-}
-
-
-/* =====================================================
-ENSURE CONFIG
-===================================================== */
-
-function ensureConfig(key){
-
-if(
-!configStats[key]
-){
-
-configStats[key]={
-
-tests:0,
-
-wins:0,
-
-losses:0
-
-};
-
-}
-
-return configStats[key];
-
-}
-
-
-/* =====================================================
-GATE
-===================================================== */
-
-function evaluateGate(result){
-
-/*
-1 — score
-*/
-
-if(
-result.calibrated<
-MIN_SCORE
-){
-
-return {
-
-pass:false,
-
-reason:
-"Score calibré inférieur à 70"
-
-};
-
-}
-
-
-/*
-2 — accord
-*/
-
-if(
-result.agreement<
-MIN_AGREEMENT
-){
-
-return {
-
-pass:false,
-
-reason:
-"Accord inférieur à 2/3"
-
-};
-
-}
-
-
-/*
-3 — échantillon global
-*/
-
-if(
-validated<
-MIN_GLOBAL_VALIDATED
-){
-
-return {
-
-pass:false,
-
-reason:
-"Échantillon global insuffisant"
-
-};
-
-}
-
-
-/*
-4 — configuration
-*/
-
-const key=
-makeConfigKey(
-result.calibrated,
-result.agreement,
-result.dominant,
-result.candidate
-);
-
-
-const cfg=
-ensureConfig(key);
-
-
-if(
-cfg.tests<
-MIN_CONFIG_TESTS
-){
-
-return {
-
-pass:false,
-
-key,
-
-config:cfg,
-
-reason:
-"Configuration insuffisamment testée"
-
-};
-
-}
-
-
-const rate=
-cfg.wins/
-cfg.tests;
-
-
-const lower=
-wilsonLower(
-cfg.wins,
-cfg.tests
-);
-
-
-if(
-rate<
-MIN_CONFIG_RATE
-){
-
-return {
-
-pass:false,
-
-key,
-
-config:cfg,
-
-rate,
-
-lower,
-
-reason:
-"Taux de la configuration inférieur au seuil"
-
-};
-
-}
-
-
-if(
-lower<
-MIN_CONFIG_WILSON
-){
-
-return {
-
-pass:false,
-
-key,
-
-config:cfg,
-
-rate,
-
-lower,
-
-reason:
-"IC inférieur de la configuration insuffisant"
-
-};
-
-}
-
-
-return {
-
-pass:true,
-
-key,
-
-config:cfg,
-
-rate,
-
-lower,
-
-reason:
-"Configuration suffisamment validée"
-
-};
-
-}
-
-
-/* =====================================================
-ANALYSE
-===================================================== */
-
-function analyze(){
-
-if(
-ticks.length<50
-){
-
-$("candidate").textContent="—";
-
-$("signal").textContent=
-"PAS ENCORE ASSEZ DE DONNÉES";
-
-$("signal").className=
-"signal";
-
-return null;
-
-}
-
-
-const e=
-ensemble();
-
-
-const calibrated=
-calibrate(e.raw);
-
-
-const result={
-
-...e,
-
-calibrated,
-
-rate:
-validated
-?
-wins/
-validated
-:0,
-
-lower:
-wilsonLower(
-wins,
-validated
-)
-};
-
-
-result.gate=
-evaluateGate(result);
-
-
-/* =====================================================
-DOM
-===================================================== */
-
-$("candidate")
-.textContent=
-result.candidate;
-
-
-$("rawScore")
-.textContent=
-Math.round(result.raw)+"/100";
-
-
-$("calibratedScore")
-.textContent=
-Math.round(result.calibrated)+"/100";
-
-
-$("agreement")
-.textContent=
-result.agreement+"/3";
-
-
-$("dominant")
-.textContent=
-result.dominant;
-
-
-$("edge")
-.textContent=
-(result.edge*100)
-.toFixed(2)+"%";
-
-
-$("sample")
-.textContent=
-validated;
-
-
-$("globalRate")
-.textContent=
-validated
-?
-(result.rate*100)
-.toFixed(1)+"%"
-:"—";
-
-
-$("globalWilson")
-.textContent=
-(result.lower*100)
-.toFixed(1)+"%";
-
-
-/*
-Configuration utilisée
-par le Gate.
-*/
-
-const gateKey=
-result.gate.key
-||
-makeConfigKey(
-result.calibrated,
-result.agreement,
-result.dominant,
-result.candidate
-);
-
-
-const cfg=
-ensureConfig(gateKey);
-
-
-$("gateConfig")
-.textContent=
-gateKey;
-
-
-$("gateTests")
-.textContent=
-cfg.tests;
-
-
-$("gateWins")
-.textContent=
-cfg.wins;
-
-
-$("gateRate")
-.textContent=
-cfg.tests
-?
-(
-cfg.wins/
-cfg.tests*100
-).toFixed(1)+"%"
-:"—";
-
-
-$("gateWilson")
-.textContent=
-cfg.tests
-?
-(
-wilsonLower(
-cfg.wins,
-cfg.tests
-)*100
-).toFixed(1)+"%"
-:"—";
-
-
-$("gateReason")
-textContent=
-result.gate.reason;
-
-
-/*
-Correction robuste :
-*/
-
-$("gateReason").textContent=
-result.gate.reason;
-
-
-if(
-result.gate.pass
-){
-
-$("signal").textContent=
-"SIGNAL TEST — GATE VALIDÉ";
-
-$("signal").className=
-"signal good";
-
-$("gateStatus").textContent=
-"OUVERT";
-
-$("gateStatus").className=
-"value green";
-
-$("gateCard").className=
-"card gate pass";
-
-}else{
-
-$("signal").textContent=
-"PAS DE SIGNAL — GATE BLOQUÉ";
-
-$("signal").className=
-"signal";
-
-$("gateStatus").textContent=
-"BLOQUÉ";
-
-$("gateStatus").className=
-"value red";
-
-$("gateCard").className=
-"card gate";
-
-}
-
-
-$("decisionGlobal")
-.textContent=
-e.models.global.candidate;
-
-
-$("decisionRecent")
-.textContent=
-e.models.recent.candidate;
-
-
-$("decisionTransition")
-.textContent=
-e.models.transition.candidate;
-
-
-renderModelUI();
-
-return result;
-
-}
-
-
-/* =====================================================
-VALIDATION
-===================================================== */
-
-function validatePrevious(actual){
-
-if(!lastPrediction){
-
-return;
-
-}
-
-
-/* =====================================================
-GLOBAL
-===================================================== */
-
-validated++;
-
-
-const globalWin=
-lastPrediction.candidate===
-actual;
-
-
-if(globalWin){
-
-wins++;
-
-}else{
-
-losses++;
-
-}
-
-
-/* =====================================================
-CALIBRATION
-===================================================== */
-
-const cb=
-getScoreBucket(
-lastPrediction.raw
-);
-
-
-calibrationBuckets[
-cb
-].total++;
-
-
-if(globalWin){
-
-calibrationBuckets[
-cb
-].wins++;
-
-}
-
-
-/* =====================================================
-MODELES
-===================================================== */
-
-Object.keys(
-lastPrediction.models
-)
-.forEach(
-name=>{
-
-modelStats[name].total++;
-
-
-if(
-lastPrediction.models[name]===
-actual
-){
-
-modelStats[name].wins++;
-
-}
-
-});
-
-
-/* =====================================================
-SHADOW
-===================================================== */
-
-if(
-lastPrediction.shadow
-){
-
-shadowStats.validated++;
-
-
-if(globalWin){
-
-shadowStats.wins++;
-
-}else{
-
-shadowStats.losses++;
-
-}
-
-
-/*
-Le nombre de candidats
-est incrémenté à la
-création, pas ici.
-*/
-
-
-/*
-SCORE
-*/
-
-const scoreBucket=
-lastPrediction.scoreBucket;
-
-
-if(
-scoreStats[scoreBucket]
-){
-
-scoreStats[
-scoreBucket
-].tests++;
-
-
-if(globalWin){
-
-scoreStats[
-scoreBucket
-].wins++;
-
-}
-
-}
-
-
-/*
-ACCORD
-*/
-
-const agreementKey=
-lastPrediction.agreement>=3
-?
-3
-:
-2;
-
-
-agreementStats[
-agreementKey
-].tests++;
-
-
-if(globalWin){
-
-agreementStats[
-agreementKey
-].wins++;
-
-}
-
-
-/*
-DIGIT
-*/
-
-const digit=
-lastPrediction.candidate;
-
-
-digitStats[
-digit
-].tests++;
-
-
-if(globalWin){
-
-digitStats[
-digit
-].wins++;
-
-}
-
-
-/*
-MODELE DOMINANT
-*/
-
-const dominant=
-lastPrediction.dominant;
-
-
-dominantStats[
-dominant
-].tests++;
-
-
-if(globalWin){
-
-dominantStats[
-dominant
-].wins++;
-
-}
-
-
-/*
-CONFIGURATION
-*/
-
-const cfg=
-ensureConfig(
-lastPrediction.configKey
-);
-
-
-cfg.tests++;
-
-
-if(globalWin){
-
-cfg.wins++;
-
-}else{
-
-cfg.losses++;
-
-}
-
-
-/*
-ACCEPTED
-*/
-
-if(
-lastPrediction.accepted
-){
-
-acceptedStats.validated++;
-
-
-if(globalWin){
-
-acceptedStats.wins++;
-
-}else{
-
-acceptedStats.losses++;
-
-}
-
-}
-
-
-/*
-HISTORIQUE
-*/
-
-historyRows.unshift({
-
-predicted:
-lastPrediction.candidate,
-
-actual,
-
-result:
-globalWin
-?
-"WIN"
-:
-"LOSS",
-
-score:
-Math.round(
-lastPrediction.calibrated
-),
-
-raw:
-Math.round(
-lastPrediction.raw
-),
-
-agreement:
-lastPrediction.agreement,
-
-dominant:
-lastPrediction.dominant,
-
-config:
-lastPrediction.configKey,
-
-accepted:
-lastPrediction.accepted
-
-});
-
-
-if(
-historyRows.length>60
-){
-
-historyRows.pop();
-
-}
-
-}
-
-
-/*
-La prédiction précédente
-est maintenant consommée.
-*/
-
-lastPrediction=null;
-
-}
-
-
-/* =====================================================
-CREATE PREDICTION
-===================================================== */
-
-function createPrediction(){
-
-const result=
-analyze();
-
-
-if(!result){
-
-return;
-
-}
-
-
-const scoreBucket=
-getScoreBucket(
-result.calibrated
-);
-
-
-/*
-SHADOW :
-
-On observe uniquement
-les candidats suffisamment
-structurés.
-
-Le Gate peut cependant
-les bloquer.
-*/
-
-const shadow=
-result.calibrated>=MIN_SCORE
-&&
-result.agreement>=MIN_AGREEMENT
-&&
-validated>=MIN_GLOBAL_VALIDATED;
-
-
-const configKey=
-makeConfigKey(
-result.calibrated,
-result.agreement,
-result.dominant,
-result.candidate
-);
-
-
-if(shadow){
-
-shadowStats.signals++;
-
-}
-
-
-lastPrediction={
-
-candidate:
-result.candidate,
-
-raw:
-result.raw,
-
-calibrated:
-result.calibrated,
-
-agreement:
-result.agreement,
-
-dominant:
-result.dominant,
-
-scoreBucket,
-
-configKey,
-
-shadow,
-
-accepted:
-result.gate.pass,
-
-models:{
-
-global:
-result.models.global.candidate,
-
-recent:
-result.models.recent.candidate,
-
-transition:
-result.models.transition.candidate
-
-}
-
-};
-
-
-predictions++;
-
-
-if(shadow){
-
-log(
-"SHADOW → digit "
-+
-result.candidate
-+
-" | score "
-+
-Math.round(
-result.calibrated
-)
-+
-" | accord "
-+
-result.agreement
-+
-"/3"
-+
-" | "
-+
-result.dominant
-+
-" | "
-+
-configKey
-+
-" | Gate "
-+
-(
-result.gate.pass
-?
-"OPEN"
-:
-"BLOCKED"
-)
-);
-
-}
-
-}
-
-
-/* =====================================================
-UPDATE UI
-===================================================== */
-
-function updateUI(
-price,
-digit
-){
-
-if(
-price!==undefined
-){
-
-$("price")
-.textContent=
-Number(price)
-.toFixed(4);
-
-}
-
-
-if(
-digit!==undefined
-){
-
-$("lastDigit")
-.textContent=
-digit;
-
-}
-
-
-$("ticksCount")
-.textContent=
-ticks.length;
-
-
-$("statTicks")
-.textContent=
-ticks.length;
-
-
-$("predictions")
-.textContent=
-predictions;
-
-
-$("validated")
-.textContent=
-validated;
-
-
-$("wins")
-.textContent=
-wins;
-
-
-$("losses")
-.textContent=
-losses;
-
-
-$("rate")
-.textContent=
-validated
-?
-(
-wins/
-validated*100
-)
-.toFixed(1)+"%"
-:"—";
-
-
-$("statPred")
-.textContent=
-predictions;
-
-
-$("statVal")
-.textContent=
-validated;
-
-
-$("statWin")
-.textContent=
-wins;
-
-
-$("statLoss")
-.textContent=
-losses;
-
-
-$("statRate")
-.textContent=
-validated
-?
-(
-wins/
-validated*100
-)
-.toFixed(1)+"%"
-:"—";
-
-
-/*
-SHADOW
-*/
-
-$("shadowSignals")
-.textContent=
-shadowStats.signals;
-
-
-$("shadowValidated")
-.textContent=
-shadowStats.validated;
-
-
-$("shadowWins")
-.textContent=
-shadowStats.wins;
-
-
-$("shadowLosses")
-.textContent=
-shadowStats.losses;
-
-
-$("shadowRate")
-.textContent=
-shadowStats.validated
-?
-(
-shadowStats.wins/
-shadowStats.validated*100
-)
-.toFixed(1)+"%"
-:"—";
-
-
-$("shadowEdge")
-.textContent=
-shadowStats.validated
-?
-(
-(
-shadowStats.wins/
-shadowStats.validated
--
-0.10
-)*100
-)
-.toFixed(1)+"%"
-:"—";
-
-
-/*
-ACCEPTED
-*/
-
-$("acceptedSignals")
-.textContent=
-acceptedStats.signals;
-
-
-$("acceptedValidated")
-.textContent=
-acceptedStats.validated;
-
-
-$("acceptedWins")
-.textContent=
-acceptedStats.wins;
-
-
-$("acceptedLosses")
-.textContent=
-acceptedStats.losses;
-
-
-$("acceptedRate")
-.textContent=
-acceptedStats.validated
-?
-(
-acceptedStats.wins/
-acceptedStats.validated*100
-)
-.toFixed(1)+"%"
-:"—";
-
-
-$("acceptedEdge")
-.textContent=
-acceptedStats.validated
-?
-(
-(
-acceptedStats.wins/
-acceptedStats.validated
--
-0.10
-)*100
-)
-.toFixed(1)+"%"
-:"—";
-
-
-renderFrequency();
-
-renderTransition();
-
-renderCalibration();
-
-renderScores();
-
-renderAgreements();
-
-renderDigitPerformance();
-
-renderDominantPerformance();
-
-renderConfigs();
-
-renderHistory();
-
-renderModelUI();
-
-}
-
-
-/* =====================================================
-MODEL UI
-===================================================== */
-
-function renderModelUI(){
-
-const names=[
-
-["global","modelGlobal","modelGlobalRate"],
-
-["recent","modelRecent","modelRecentRate"],
-
-["transition","modelTransition","modelTransitionRate"]
-
-];
-
-
-names.forEach(
-item=>{
-
-const name=item[0];
-
-const s=
-modelStats[name];
-
-$(item[1]).textContent=
-s.wins+" / "+s.total;
-
-
-$(item[2]).textContent=
-s.total
-?
-"Taux "+
-(
-s.wins/
-s.total*100
-).toFixed(1)
-+"% | IC "+
-(
-wilsonLower(
-s.wins,
-s.total
-)*100
-).toFixed(1)
-+"%"
-:
-"Taux —";
-
-});
-
-}
-
-
-/* =====================================================
-SCORES
-===================================================== */
-
-function renderScores(){
-
-const map=[
-
-["70-79","s70t","s70w","s70r"],
-
-["80-89","s80t","s80w","s80r"],
-
-["90-100","s90t","s90w","s90r"]
-
-];
-
-
-map.forEach(
-m=>{
-
-const s=
-scoreStats[m[0]];
-
-
-$(m[1]).textContent=
-s.tests;
-
-
-$(m[2]).textContent=
-s.wins;
-
-
-$(m[3]).textContent=
-s.tests
-?
-(
-s.wins/
-s.tests*100
-).toFixed(1)+"%"
-:"—";
-
-});
-
-}
-
-
-/* =====================================================
-ACCORD
-===================================================== */
-
-function renderAgreements(){
-
-[2,3].forEach(
-a=>{
-
-const s=
-agreementStats[a];
-
-
-$("a"+a)
-.textContent=
-s.wins+
-" / "+
-s.tests;
-
-
-$("a"+a+"r")
-.textContent=
-s.tests
-?
-"Taux "+
-(
-s.wins/
-s.tests*100
-).toFixed(1)
-+"%"
-:
-"Taux —";
-
-});
-
-}
-
-
-/* =====================================================
-DIGIT PERFORMANCE
-===================================================== */
-
-function renderDigitPerformance(){
-
-let html="";
-
-
-for(
-let d=0;
-d<10;
-d++
-){
-
-const s=
-digitStats[d];
-
-
-const rate=
-s.tests
-?
-s.wins/
-s.tests*100
-:0;
-
-
-html+=`
-
-<div class="box">
-
-<div class="label">
-Digit ${d}
-</div>
-
-<div class="value">
-${s.wins}/${s.tests}
-</div>
-
-<div class="small">
-${s.tests
-?
-rate.toFixed(1)+"%"
-:
-"—"}
-</div>
-
-</div>
-
-`;
-
-}
-
-
-$("digitPerformance")
-.innerHTML=
-html;
-
-}
-
-
-/* =====================================================
-DOMINANT PERFORMANCE
-===================================================== */
-
-function renderDominantPerformance(){
-
-const map=[
-
-["GLOBAL","domGlobal","domGlobalRate"],
-
-["RECENT","domRecent","domRecentRate"],
-
-["TRANSITION","domTransition","domTransitionRate"]
-
-];
-
-
-map.forEach(
-m=>{
-
-const s=
-dominantStats[m[0]];
-
-
-$(m[1]).textContent=
-s.wins+
-" / "+
-s.tests;
-
-
-$(m[2]).textContent=
-s.tests
-?
-"Taux "+
-(
-s.wins/
-s.tests*100
-).toFixed(1)
-+"%"
-:
-"Taux —";
-
-});
-
-}
-
-
-/* =====================================================
-CONFIGURATIONS
-===================================================== */
-
-function renderConfigs(){
-
-const keys=
-Object.keys(
-configStats
-);
-
-
-if(!keys.length){
-
-$("configTable").textContent=
-"Aucune configuration observée.";
-
-return;
-
-}
-
-
-const sorted=
-keys
-.map(
-key=>({
-
-key,
-
-...configStats[key]
-
-})
-)
-.sort(
-(a,b)=>
-b.tests-a.tests
-)
-.slice(0,20);
-
-
-let html="";
-
-
-sorted.forEach(
-c=>{
-
-const rate=
-c.tests
-?
-c.wins/
-c.tests
-:0;
-
-
-const lower=
-wilsonLower(
-c.wins,
-c.tests
-);
-
-
-let state=
-"EN APPRENTISSAGE";
-
-
-let cls=
-"yellow";
-
-
-if(
-c.tests>=MIN_CONFIG_TESTS
-&&
-rate>=MIN_CONFIG_RATE
-&&
-lower>=MIN_CONFIG_WILSON
-){
-
-state=
-"GATE POTENTIEL";
-
-cls=
-"green";
-
-}else if(
-c.tests>=MIN_CONFIG_TESTS
-){
-
-state=
-"CONFIG FAIBLE";
-
-cls=
-"red";
-
-}
-
-
-html+=`
-
-<div class="configLine">
-
-<b>
-${c.key}
-</b>
-
-<br>
-
-WIN ${c.wins}/${c.tests}
-
-—
-
-Taux ${(rate*100).toFixed(1)}%
-
-—
-
-IC ${(lower*100).toFixed(1)}%
-
-—
-
-<span class="${cls}">
-${state}
-</span>
-
-</div>
-
-`;
-
-});
-
-
-$("configTable")
-.innerHTML=
-html;
-
-}
-
-
-/* =====================================================
-TRANSITION UI
-===================================================== */
-
-function renderTransition(){
-
-if(
-ticks.length<2
-){
-
-$("transition").innerHTML=
-`
-<div class="small">
-Pas encore assez de données.
-</div>
-`;
-
-return;
-
-}
-
-
-const last=
-ticks[ticks.length-1];
-
-const counts=
-Array(10).fill(0);
-
-let total=0;
-
-
-for(
-let i=0;
-i<ticks.length-1;
-i++
-){
-
-if(
-ticks[i]===last
-){
-
-counts[
-ticks[i+1]
-]++;
-
-total++;
-
-}
-
-}
-
-
-let html="";
-
-
-for(
-let d=0;
-d<10;
-d++
-){
-
-const pct=
-total
-?
-counts[d]/
-total*
-100
-:0;
-
-
-html+=`
-
-<div class="box">
-
-<div class="label">
-${last} → ${d}
-</div>
-
-<div class="value">
-${counts[d]}
-</div>
-
-<div class="small">
-${pct.toFixed(1)}%
-</div>
-
-</div>
-
-`;
-
-}
-
-
-$("transition")
-.innerHTML=
-html;
-
-}
-
-
-/* =====================================================
-CALIBRATION UI
-===================================================== */
-
-function renderCalibration(){
-
-let html="";
-
-
-Object.keys(
-calibrationBuckets
-)
-.forEach(
-bucket=>{
-
-const b=
-calibrationBuckets[bucket];
-
-
-const rate=
-b.total
-?
-b.wins/
-b.total*
-100
-:0;
-
-
-html+=`
-
-<div class="box">
-
-<div class="label">
-${bucket}
-</div>
-
-<div class="value">
-${b.wins}/${b.total}
-</div>
-
-<div class="small">
-${rate.toFixed(1)}%
-</div>
-
-</div>
-
-`;
-
-});
-
-
-$("calibration")
-.innerHTML=
-html;
-
-}
-
-
-/* =====================================================
-FREQUENCY
-===================================================== */
-
-function renderFrequency(){
-
-const f=
-frequency(ticks);
-
-let html="";
-
-
-for(
-let d=0;
-d<10;
-d++
-){
-
-const pct=
-ticks.length
-?
-f[d]/
-ticks.length*
-100
-:0;
-
-
-html+=`
-
-<div class="box">
-
-<div class="label">
-Chiffre ${d}
-</div>
-
-<div class="value">
-${f[d]}
-</div>
-
-<div class="small">
-${pct.toFixed(1)}%
-</div>
-
-</div>
-
-`;
-
-}
-
-
-$("frequency")
-.innerHTML=
-html;
-
-}
-
-
-/* =====================================================
-HISTORY
-===================================================== */
-
-function renderHistory(){
-
-if(
-!historyRows.length
-){
-
-$("history").textContent=
-"Aucune validation.";
-
-return;
-
-}
-
-
-let html="";
-
-
-historyRows.forEach(
-row=>{
-
-const cls=
-row.result==="WIN"
-?
-"green"
-:
-"red";
-
-
-html+=`
-
-<div>
-
-Prédit ${row.predicted}
-
-→ réel ${row.actual}
-
-—
-
-<span class="${cls}">
-${row.result}
-</span>
-
-—
-
-score ${row.score}
-
-—
-
-accord ${row.agreement}/3
-
-—
-
-${row.dominant}
-
-—
-
-${row.config}
-
-—
-
-${row.accepted
-?
-"ACCEPTÉ"
-:
-"bloqué"}
-
-</div>
-
-`;
-
-});
-
-
-$("history")
-.innerHTML=
-html;
-
-}
-
-
-/* =====================================================
-PROCESS TICK
-===================================================== */
-
-function processTick(tick){
-
-if(!tick){
-
-return;
-
-}
-
-
-const quote=
-tick.quote;
-
-
-if(
-quote===undefined
-){
-
-return;
-
+  return document.getElementById(id);
 }
-
-
-const digit=
-extractDigit(quote);
 
+/* ============================================================
+   LOG
+   ============================================================ */
 
-/*
-ORDRE CRITIQUE :
+function log(msg){
 
-1. Valider ancienne prédiction
-2. Ajouter nouveau tick
-3. Calculer nouvelle prédiction
-*/
+  const time =
+    new Date().toLocaleTimeString("fr-FR");
 
-validatePrevious(
-digit
-);
+  logs.unshift(
+    time + " — " + msg
+  );
 
+  logs = logs.slice(0,80);
 
-ticks.push(
-digit
-);
-
-
-if(
-ticks.length>
-MAX_TICKS
-){
-
-ticks.shift();
-
+  $("log").textContent =
+    logs.join("\n");
 }
 
+/* ============================================================
+   CONNECTION
+   ============================================================ */
 
-updateUI(
-quote,
-digit
-);
+function setConnection(ok,text){
 
+  const el = $("connectionStatus");
 
-if(
-ticks.length>=50
-){
+  el.className =
+    "status " + (ok ? "connected":"disconnected");
 
-createPrediction();
-
-updateUI(
-quote,
-digit
-);
-
+  el.textContent =
+    ok
+      ? "🟢 " + text
+      : "🔴 " + text;
 }
-
-}
-
 
-/* =====================================================
-WEBSOCKET
-===================================================== */
+/* ============================================================
+   CONNECT
+   ============================================================ */
 
 function connectDeriv(){
 
-if(ws){
+  try{
 
-try{
+    if(ws){
+      try{ ws.close(); }catch(e){}
+    }
 
-ws.close();
+    setConnection(
+      false,
+      "Connexion à Deriv..."
+    );
 
-}catch(e){}
+    log(
+      "Ouverture WebSocket public..."
+    );
 
+    ws =
+      new WebSocket(WS_URL);
+
+    ws.onopen = function(){
+
+      log("WebSocket connecté.");
+
+      setConnection(
+        true,
+        "Connecté — recherche de R_75"
+      );
+
+      requestActiveSymbols();
+    };
+
+    ws.onmessage = function(event){
+
+      try{
+
+        const data =
+          JSON.parse(event.data);
+
+        handleMessage(data);
+
+      }catch(error){
+
+        log(
+          "Erreur JSON: " +
+          error.message
+        );
+      }
+    };
+
+    ws.onerror = function(){
+
+      log("WebSocket error.");
+    };
+
+    ws.onclose = function(){
+
+      setConnection(
+        false,
+        "Connexion fermée"
+      );
+
+      log("WebSocket fermé.");
+
+      clearTimeout(reconnectTimer);
+
+      reconnectTimer =
+        setTimeout(
+          connectDeriv,
+          5000
+        );
+    };
+
+  }catch(error){
+
+    log(
+      "Erreur connexion: " +
+      error.message
+    );
+  }
 }
 
+/* ============================================================
+   ACTIVE SYMBOLS
+   ============================================================ */
 
-clearTimeout(
-reconnectTimer
-);
+function requestActiveSymbols(){
 
+  if(!ws || ws.readyState !== WebSocket.OPEN)
+    return;
 
-setStatus(
-"Connexion à Deriv…",
-"wait"
-);
+  ws.send(
+    JSON.stringify({
+      active_symbols:"brief",
+      req_id:1
+    })
+  );
 
-
-log(
-"Connexion WebSocket V6.1…"
-);
-
-
-ws=
-new WebSocket(
-WS_URL
-);
-
-
-ws.onopen=
-function(){
-
-setStatus(
-"Connecté — réception des ticks",
-"ok"
-);
-
-
-log(
-"WebSocket connecté."
-);
-
-
-/*
-HISTORIQUE
-*/
-
-ws.send(
-JSON.stringify({
-
-ticks_history:
-SYMBOL,
-
-count:
-100,
-
-end:
-"latest",
-
-style:
-"ticks",
-
-subscribe:
-0,
-
-req_id:
-100
-
-})
-);
-
-
-log(
-"Historique R_75 demandé."
-);
-
-
-/*
-LIVE
-*/
-
-ws.send(
-JSON.stringify({
-
-ticks:
-SYMBOL,
-
-subscribe:
-1,
-
-req_id:
-101
-
-})
-);
-
-
-log(
-"Abonnement live R_75 demandé."
-);
-
-};
-
-
-/* =====================================================
-MESSAGE
-===================================================== */
-
-ws.onmessage=
-function(event){
-
-let data;
-
-
-try{
-
-data=
-JSON.parse(
-event.data
-);
-
-}catch(e){
-
-log(
-"Réponse JSON invalide."
-);
-
-return;
-
+  log(
+    "Recherche du symbole R_75..."
+  );
 }
 
+/* ============================================================
+   FIND R75
+   ============================================================ */
 
-/*
-ERREUR API
-*/
+function findR75Symbol(data){
 
-if(
-data.error
+  if(!data || !Array.isArray(data.active_symbols))
+    return null;
+
+  const list =
+    data.active_symbols;
+
+  let found =
+    list.find(item =>
+      item &&
+      (
+        item.underlying_symbol === "R_75" ||
+        item.symbol === "R_75"
+      )
+    );
+
+  if(found)
+    return (
+      found.underlying_symbol ||
+      found.symbol
+    );
+
+  found =
+    list.find(item => {
+
+      const name =
+        String(
+          item.underlying_symbol_name ||
+          item.display_name ||
+          ""
+        ).toLowerCase();
+
+      return (
+        name.includes("volatility 75")
+      );
+    });
+
+  if(found){
+
+    return (
+      found.underlying_symbol ||
+      found.symbol
+    );
+  }
+
+  return null;
+}
+
+/* ============================================================
+   REQUEST HISTORY
+   ============================================================ */
+
+function requestHistory(){
+
+  if(!ws || ws.readyState !== WebSocket.OPEN)
+    return;
+
+  ws.send(
+    JSON.stringify({
+      ticks_history:currentSymbol,
+      count:HISTORY_SIZE,
+      end:"latest",
+      style:"ticks",
+      subscribe:0,
+      req_id:2
+    })
+  );
+
+  log(
+    "Demande historique " +
+    HISTORY_SIZE +
+    " ticks."
+  );
+}
+
+/* ============================================================
+   SUBSCRIBE
+   ============================================================ */
+
+function subscribeTicks(){
+
+  if(!ws || ws.readyState !== WebSocket.OPEN)
+    return;
+
+  ws.send(
+    JSON.stringify({
+      ticks:currentSymbol,
+      subscribe:1,
+      req_id:3
+    })
+  );
+
+  log(
+    "Abonnement aux ticks " +
+    currentSymbol
+  );
+
+  setConnection(
+    true,
+    "Connecté — réception des ticks"
+  );
+}
+
+/* ============================================================
+   MESSAGE HANDLER
+   ============================================================ */
+
+function handleMessage(data){
+
+  if(data.error){
+
+    log(
+      "API error: " +
+      (
+        data.error.message ||
+        data.error.code ||
+        "erreur inconnue"
+      )
+    );
+
+    return;
+  }
+
+  if(data.msg_type === "active_symbols"){
+
+    const found =
+      findR75Symbol(data);
+
+    if(!found){
+
+      log(
+        "R_75 introuvable dans active_symbols."
+      );
+
+      return;
+    }
+
+    currentSymbol =
+      found;
+
+    log(
+      "Symbole utilisé: " +
+      currentSymbol
+    );
+
+    requestHistory();
+
+    return;
+  }
+
+  if(data.msg_type === "history"){
+
+    processHistory(data);
+
+    subscribeTicks();
+
+    return;
+  }
+
+  if(data.msg_type === "tick"){
+
+    processTick(data.tick);
+
+    return;
+  }
+}
+
+/* ============================================================
+   DIGIT
+   ============================================================ */
+
+function extractDigit(quote){
+
+  const str =
+    String(quote);
+
+  const cleaned =
+    str.replace(/[^0-9]/g,"");
+
+  if(!cleaned.length)
+    return null;
+
+  return Number(
+    cleaned.charAt(
+      cleaned.length - 1
+    )
+  );
+}
+
+/* ============================================================
+   HISTORY
+   ============================================================ */
+
+function processHistory(data){
+
+  ticks = [];
+
+  if(
+    !data ||
+    !data.history ||
+    !Array.isArray(data.history.prices)
+  ){
+
+    log(
+      "Historique invalide."
+    );
+
+    return;
+  }
+
+  const prices =
+    data.history.prices;
+
+  const times =
+    Array.isArray(data.history.times)
+      ? data.history.times
+      : [];
+
+  for(let i=0;i<prices.length;i++){
+
+    const digit =
+      extractDigit(prices[i]);
+
+    if(digit === null)
+      continue;
+
+    ticks.push({
+      price:Number(prices[i]),
+      digit,
+      epoch:times[i] || Date.now()/1000
+    });
+  }
+
+  ticks =
+    ticks.slice(-HISTORY_SIZE);
+
+  log(
+    "Historique chargé: " +
+    ticks.length +
+    " ticks."
+  );
+
+  render();
+  runAnalysis();
+}
+
+/* ============================================================
+   LIVE TICK
+   ============================================================ */
+
+function processTick(tick){
+
+  if(!tick || tick.quote === undefined)
+    return;
+
+  const price =
+    Number(tick.quote);
+
+  const digit =
+    extractDigit(price);
+
+  if(digit === null)
+    return;
+
+  /*
+    IMPORTANT:
+    validation AVANT ajout du nouveau tick.
+    Cela empêche la fuite de données.
+  */
+
+  if(pendingPrediction){
+
+    validatePrediction(
+      pendingPrediction,
+      digit
+    );
+
+    pendingPrediction =
+      null;
+  }
+
+  ticks.push({
+    price,
+    digit,
+    epoch:
+      Number(tick.epoch) ||
+      Date.now()/1000
+  });
+
+  if(ticks.length > HISTORY_SIZE){
+
+    ticks =
+      ticks.slice(-HISTORY_SIZE);
+  }
+
+  render();
+  runAnalysis();
+}
+
+/* ============================================================
+   COUNTS
+   ============================================================ */
+
+function digitCounts(list){
+
+  const counts =
+    Array(10).fill(0);
+
+  for(const item of list){
+
+    if(
+      item &&
+      Number.isInteger(item.digit) &&
+      item.digit >= 0 &&
+      item.digit <= 9
+    ){
+
+      counts[item.digit]++;
+    }
+  }
+
+  return counts;
+}
+
+/* ============================================================
+   PROBABILITIES WITH LAPLACE
+   ============================================================ */
+
+function probabilities(list,alpha=1){
+
+  const counts =
+    digitCounts(list);
+
+  const total =
+    list.length + alpha*10;
+
+  return counts.map(
+    c => (c + alpha) / total
+  );
+}
+
+/* ============================================================
+   ARGMAX
+   ============================================================ */
+
+function argmax(arr){
+
+  let index=0;
+
+  for(let i=1;i<arr.length;i++){
+
+    if(arr[i] > arr[index])
+      index=i;
+  }
+
+  return index;
+}
+
+/* ============================================================
+   ENTROPY
+   ============================================================ */
+
+function entropyNormalized(list){
+
+  if(!list.length)
+    return 1;
+
+  const counts =
+    digitCounts(list);
+
+  const n =
+    list.length;
+
+  let h=0;
+
+  for(const c of counts){
+
+    if(c<=0)
+      continue;
+
+    const p =
+      c/n;
+
+    h -=
+      p * Math.log2(p);
+  }
+
+  return h / Math.log2(10);
+}
+
+/* ============================================================
+   UNIFORMITY
+   ============================================================ */
+
+function uniformity(list){
+
+  if(!list.length)
+    return 1;
+
+  const counts =
+    digitCounts(list);
+
+  const expected =
+    list.length / 10;
+
+  let deviation=0;
+
+  for(const c of counts){
+
+    deviation +=
+      Math.abs(c-expected);
+  }
+
+  deviation /=
+    list.length * 2;
+
+  return Math.max(
+    0,
+    Math.min(1,deviation)
+  );
+}
+
+/* ============================================================
+   STREAK
+   ============================================================ */
+
+function getStreak(list){
+
+  if(!list.length)
+    return {
+      digit:null,
+      length:0
+    };
+
+  const last =
+    list[list.length-1].digit;
+
+  let length=1;
+
+  for(
+    let i=list.length-2;
+    i>=0;
+    i--
+  ){
+
+    if(list[i].digit === last)
+      length++;
+    else
+      break;
+  }
+
+  return {
+    digit:last,
+    length
+  };
+}
+
+/* ============================================================
+   REGIME ENGINE
+   ============================================================ */
+
+function detectRegime(){
+
+  if(ticks.length < 40){
+
+    return {
+      name:"INSUFFISANT",
+      confidence:0,
+      entropy:1,
+      uniformity:1,
+      changed:false
+    };
+  }
+
+  const global =
+    ticks.slice(-100);
+
+  const recent =
+    ticks.slice(-30);
+
+  const old =
+    ticks.slice(-60,-30);
+
+  const eRecent =
+    entropyNormalized(recent);
+
+  const eOld =
+    entropyNormalized(old);
+
+  const uRecent =
+    uniformity(recent);
+
+  const change =
+    Math.abs(
+      eRecent - eOld
+    ) > 0.12 ||
+    Math.abs(
+      uRecent -
+      uniformity(old)
+    ) > 0.12;
+
+  let name =
+    "STABLE";
+
+  let confidence =
+    1 - Math.abs(
+      eRecent - 0.90
+    );
+
+  /*
+    Entropie proche de 1 =
+    distribution proche de l'uniforme.
+  */
+
+  if(eRecent > 0.985){
+
+    name =
+      "UNIFORME";
+  }
+
+  else if(change){
+
+    name =
+      "TRANSITION";
+  }
+
+  else if(eRecent < 0.78){
+
+    name =
+      "CONCENTRÉ";
+  }
+
+  else if(eRecent > 0.94){
+
+    name =
+      "FAIBLE-INFO";
+  }
+
+  else{
+
+    name =
+      "STABLE";
+  }
+
+  if(
+    ticks.length >= 70 &&
+    Math.abs(
+      entropyNormalized(
+        ticks.slice(-20)
+      ) -
+      entropyNormalized(
+        ticks.slice(-40,-20)
+      )
+    ) > 0.16
+  ){
+
+    name =
+      "CHANGEMENT";
+  }
+
+  return {
+    name,
+    confidence:
+      Math.max(
+        0,
+        Math.min(1,confidence)
+      ),
+    entropy:eRecent,
+    uniformity:uRecent,
+    changed:change
+  };
+}
+
+/* ============================================================
+   GLOBAL MODEL
+   ============================================================ */
+
+function globalModel(){
+
+  const list =
+    ticks.slice(-100);
+
+  const p =
+    probabilities(list);
+
+  return {
+    candidate:argmax(p),
+    probs:p
+  };
+}
+
+/* ============================================================
+   RECENT MODEL
+   ============================================================ */
+
+function recentModel(){
+
+  const list =
+    ticks.slice(-RECENT_SIZE);
+
+  const p =
+    probabilities(list);
+
+  return {
+    candidate:argmax(p),
+    probs:p
+  };
+}
+
+/* ============================================================
+   TRANSITION LEVEL 1
+   ============================================================ */
+
+function transitionModel(){
+
+  const matrix =
+    Array.from(
+      {length:10},
+      () => Array(10).fill(0)
+    );
+
+  for(let i=1;i<ticks.length;i++){
+
+    const prev =
+      ticks[i-1].digit;
+
+    const next =
+      ticks[i].digit;
+
+    matrix[prev][next]++;
+  }
+
+  if(ticks.length < 2){
+
+    return {
+      candidate:0,
+      probs:Array(10).fill(.1),
+      matrix
+    };
+  }
+
+  const last =
+    ticks[ticks.length-1].digit;
+
+  const row =
+    matrix[last];
+
+  const total =
+    row.reduce(
+      (a,b)=>a+b,
+      0
+    );
+
+  const probs =
+    row.map(
+      c => (c+1)/(total+10)
+    );
+
+  return {
+    candidate:argmax(probs),
+    probs,
+    matrix
+  };
+}
+
+/* ============================================================
+   TRANSITION LEVEL 2 / SEQUENCE
+   ============================================================ */
+
+function sequenceModel(){
+
+  const map = {};
+
+  /*
+    deux derniers chiffres
+    -> prochain chiffre
+  */
+
+  for(let i=2;i<ticks.length;i++){
+
+    const a =
+      ticks[i-2].digit;
+
+    const b =
+      ticks[i-1].digit;
+
+    const key =
+      a + "," + b;
+
+    if(!map[key])
+      map[key] =
+        Array(10).fill(0);
+
+    map[key][ticks[i].digit]++;
+  }
+
+  if(ticks.length < 3){
+
+    return {
+      candidate:0,
+      probs:Array(10).fill(.1),
+      tests:0,
+      key:"—"
+    };
+  }
+
+  const a =
+    ticks[ticks.length-2].digit;
+
+  const b =
+    ticks[ticks.length-1].digit;
+
+  const key =
+    a + "," + b;
+
+  const row =
+    map[key] ||
+    Array(10).fill(0);
+
+  const total =
+    row.reduce(
+      (x,y)=>x+y,
+      0
+    );
+
+  const probs =
+    row.map(
+      c => (c+1)/(total+10)
+    );
+
+  return {
+    candidate:argmax(probs),
+    probs,
+    tests:total,
+    key
+  };
+}
+
+/* ============================================================
+   MODEL WEIGHT
+   ============================================================ */
+
+function wilsonLower(wins,tests){
+
+  if(!tests)
+    return 0;
+
+  const z=1.96;
+
+  const p=
+    wins/tests;
+
+  const denominator=
+    1 + z*z/tests;
+
+  const center=
+    p + z*z/(2*tests);
+
+  const margin=
+    z *
+    Math.sqrt(
+      (
+        p*(1-p) +
+        z*z/(4*tests)
+      ) / tests
+    );
+
+  return Math.max(
+    0,
+    (center-margin) /
+    denominator
+  );
+}
+
+function modelRate(name){
+
+  const s =
+    modelStats[name];
+
+  if(s.tests<=0)
+    return BASELINE;
+
+  return s.wins/s.tests;
+}
+
+function modelWeight(name){
+
+  const s =
+    modelStats[name];
+
+  if(s.tests < 30)
+    return 0.25;
+
+  const rate =
+    modelRate(name);
+
+  const stability =
+    wilsonLower(
+      s.wins,
+      s.tests
+    );
+
+  /*
+    On donne davantage de poids
+    aux modèles réellement validés.
+  */
+
+  const quality =
+    Math.max(
+      0,
+      rate - BASELINE
+    ) * 4;
+
+  const stable =
+    Math.max(
+      0,
+      stability - BASELINE
+    ) * 5;
+
+  return (
+    0.25 +
+    quality +
+    stable
+  );
+}
+
+/* ============================================================
+   NORMALIZE WEIGHTS
+   ============================================================ */
+
+function getWeights(){
+
+  const names =
+    [
+      "GLOBAL",
+      "RECENT",
+      "TRANSITION",
+      "SEQUENCE"
+    ];
+
+  let weights =
+    names.map(modelWeight);
+
+  /*
+    Empêcher un seul modèle
+    de dominer complètement.
+  */
+
+  weights =
+    weights.map(
+      w => Math.min(w,1.8)
+    );
+
+  const total =
+    weights.reduce(
+      (a,b)=>a+b,
+      0
+    );
+
+  return {
+    GLOBAL:weights[0]/total,
+    RECENT:weights[1]/total,
+    TRANSITION:weights[2]/total,
+    SEQUENCE:weights[3]/total
+  };
+}
+
+/* ============================================================
+   ENSEMBLE
+   ============================================================ */
+
+function ensemble(){
+
+  const models = {
+
+    GLOBAL:globalModel(),
+
+    RECENT:recentModel(),
+
+    TRANSITION:transitionModel(),
+
+    SEQUENCE:sequenceModel()
+  };
+
+  const weights =
+    getWeights();
+
+  const combined =
+    Array(10).fill(0);
+
+  for(const name of Object.keys(models)){
+
+    const p =
+      models[name].probs;
+
+    for(let d=0;d<10;d++){
+
+      combined[d] +=
+        p[d] *
+        weights[name];
+    }
+  }
+
+  const candidate =
+    argmax(combined);
+
+  let agreement=0;
+
+  for(const name of Object.keys(models)){
+
+    if(
+      models[name].candidate ===
+      candidate
+    ){
+
+      agreement++;
+    }
+
+    modelStats[name].candidate =
+      models[name].candidate;
+  }
+
+  return {
+    models,
+    weights,
+    probs:combined,
+    candidate,
+    agreement
+  };
+}
+
+/* ============================================================
+   SCORE
+   ============================================================ */
+
+function calculateRawScore(
+  ensembleResult,
+  regime
 ){
 
+  const candidate =
+    ensembleResult.candidate;
+
+  const p =
+    ensembleResult.probs;
+
+  const sorted =
+    [...p].sort(
+      (a,b)=>b-a
+    );
+
+  const top =
+    sorted[0];
+
+  const second =
+    sorted[1];
+
+  const gap =
+    Math.max(
+      0,
+      top-second
+    );
+
+  const edge =
+    top - BASELINE;
+
+  const agreement =
+    ensembleResult.agreement;
+
+  const agreementScore =
+    agreement / 4;
+
+  const edgeScore =
+    Math.max(
+      0,
+      Math.min(
+        1,
+        edge / 0.12
+      )
+    );
+
+  const gapScore =
+    Math.max(
+      0,
+      Math.min(
+        1,
+        gap / 0.10
+      )
+    );
+
+  let score =
+    45 +
+    agreementScore*20 +
+    edgeScore*25 +
+    gapScore*10;
+
+  /*
+    Pénalité en régime peu informatif.
+  */
+
+  if(
+    regime.name === "UNIFORME" ||
+    regime.name === "FAIBLE-INFO"
+  ){
+
+    score -= 15;
+  }
+
+  if(
+    regime.name === "CHANGEMENT"
+  ){
+
+    score -= 12;
+  }
+
+  return {
+    score:
+      Math.max(
+        0,
+        Math.min(100,score)
+      ),
+
+    probability:top,
+
+    edge,
+
+    gap,
+
+    candidate
+  };
+}
+
+/* ============================================================
+   CALIBRATION
+   ============================================================ */
+
+function getBucket(score){
+
+  if(score < 60)
+    return "50-59";
+
+  if(score < 70)
+    return "60-69";
+
+  if(score < 80)
+    return "70-79";
+
+  if(score < 90)
+    return "80-89";
+
+  return "90-100";
+}
+
+function calibrationFactor(bucket){
+
+  const b =
+    calibrationBuckets[bucket];
+
+  if(!b || b.tests < 30)
+    return 1;
+
+  const rate =
+    b.wins/b.tests;
+
+  /*
+    On ne transforme pas directement
+    le taux en probabilité.
+    C'est seulement une correction.
+  */
+
+  const factor =
+    0.85 +
+    Math.max(
+      0,
+      Math.min(
+        0.20,
+        (rate-BASELINE)*2
+      )
+    );
+
+  return factor;
+}
+
+function calibratedScore(rawScore){
+
+  const bucket =
+    getBucket(rawScore);
+
+  const factor =
+    calibrationFactor(bucket);
+
+  return Math.round(
+    Math.max(
+      0,
+      Math.min(
+        100,
+        rawScore*factor
+      )
+    )
+  );
+}
+
+/* ============================================================
+   PREDICTION
+   ============================================================ */
+
+function createPrediction(){
+
+  if(ticks.length < MIN_TICKS)
+    return null;
+
+  const regime =
+    detectRegime();
+
+  const ens =
+    ensemble();
+
+  const raw =
+    calculateRawScore(
+      ens,
+      regime
+    );
+
+  const calibrated =
+    calibratedScore(
+      raw.score
+    );
+
+  const candidate =
+    raw.candidate;
+
+  const modelRates =
+    {};
+
+  for(const name of Object.keys(modelStats)){
+
+    modelRates[name] =
+      modelRate(name);
+  }
+
+  const realSample =
+    validatedCount;
+
+  const realRate =
+    validatedCount > 0
+      ? wins/validatedCount
+      : 0;
+
+  const lower =
+    wilsonLower(
+      wins,
+      validatedCount
+    );
+
+  /*
+    Statistical Gate strict.
+  */
+
+  const gateScore =
+    calibrated >= 70;
+
+  const gateAgreement =
+    ens.agreement >= 2;
+
+  const gateSample =
+    validatedCount >= 80;
+
+  const gateEdge =
+    realRate >= 0.105;
+
+  const gateWilson =
+    lower >= 0.085;
+
+  const gateRegime =
+    regime.name !== "UNIFORME" &&
+    regime.name !== "FAIBLE-INFO" &&
+    regime.name !== "CHANGEMENT";
+
+  const gateEntropy =
+    regime.entropy < 0.985;
+
+  const finalGate =
+    gateScore &&
+    gateAgreement &&
+    gateSample &&
+    gateEdge &&
+    gateWilson &&
+    gateRegime &&
+    gateEntropy;
+
+  return {
+
+    candidate,
+
+    regime,
+
+    ensemble:ens,
+
+    raw,
+
+    calibrated,
+
+    realSample,
+
+    realRate,
+
+    lower,
+
+    gate:{
+      score:gateScore,
+      agreement:gateAgreement,
+      sample:gateSample,
+      edge:gateEdge,
+      wilson:gateWilson,
+      regime:gateRegime,
+      entropy:gateEntropy,
+      final:finalGate
+    }
+  };
+}
+
+/* ============================================================
+   VALIDATE PREDICTION
+   ============================================================ */
+
+function validatePrediction(prediction,actual){
+
+  if(!prediction)
+    return;
+
+  validatedCount++;
+
+  const finalCandidate =
+    prediction.candidate;
+
+  const finalWin =
+    finalCandidate === actual;
+
+  if(finalWin)
+    wins++;
+  else
+    losses++;
+
+  /*
+    Validation de chaque modèle
+    indépendamment.
+  */
+
+  for(const name of Object.keys(modelStats)){
+
+    const candidate =
+      prediction.ensemble.models[name].candidate;
+
+    if(
+      candidate === undefined ||
+      candidate === null
+    )
+      continue;
+
+    const stat =
+      modelStats[name];
+
+    stat.tests++;
+
+    if(candidate === actual)
+      stat.wins++;
+
+    stat.history.push({
+      candidate,
+      actual,
+      win:
+        candidate === actual
+    });
+
+    if(stat.history.length > 300)
+      stat.history.shift();
+  }
+
+  /*
+    Calibration.
+  */
+
+  const bucket =
+    getBucket(
+      prediction.raw.score
+    );
+
+  calibrationBuckets[bucket].tests++;
+
+  if(finalWin)
+    calibrationBuckets[bucket].wins++;
+
+  /*
+    Shadow Lab.
+    */
+
+  for(let d=0;d<=9;d++){
+
+    const shadow =
+      prediction.ensemble.probs[d];
+
+    const score =
+      Math.round(
+        Math.max(
+          0,
+          Math.min(
+            100,
+            45 +
+            shadow*300
+          )
+        )
+      );
+
+    shadowLab[d].tests++;
+
+    shadowLab[d].scoreSum +=
+      score;
+
+    if(d === actual)
+      shadowLab[d].wins++;
+  }
+
+  /*
+    Signal performance.
+  */
+
+  if(prediction.gate.final){
+
+    signalAccepted++;
+
+    if(finalWin)
+      signalWins++;
+    else
+      signalLosses++;
+  }
+
+  const line =
+    "Pred #" +
+    predictionCount +
+    " → " +
+    finalWin
+      ? "WIN"
+      : "LOSS";
+
+  history.unshift(
+    "Pred #" +
+    predictionCount +
+    " → " +
+    (finalWin ? "WIN":"LOSS") +
+    " | réel=" +
+    actual +
+    " | candidat=" +
+    finalCandidate +
+    " | score=" +
+    prediction.calibrated +
+    " | régime=" +
+    prediction.regime.name +
+    " | gate=" +
+    (
+      prediction.gate.final
+        ? "OPEN"
+        : "BLOCK"
+    )
+  );
+
+  history =
+    history.slice(0,150);
+
+  render();
+
+  log(
+    "Validation " +
+    (finalWin ? "WIN":"LOSS") +
+    " | réel=" +
+    actual +
+    " | candidat=" +
+    finalCandidate
+  );
+}
+
+/* ============================================================
+   RUN ANALYSIS
+   ============================================================ */
+
+function runAnalysis(){
+
+  if(ticks.length < MIN_TICKS){
+
+    renderEmptyAnalysis();
+
+    return;
+  }
+
+  const prediction =
+    createPrediction();
+
+  if(!prediction)
+    return;
+
+  predictionCount++;
+
+  pendingPrediction =
+    prediction;
+
+  renderPrediction(
+    prediction
+  );
+}
+
+/* ============================================================
+   RENDER EMPTY
+   ============================================================ */
+
+function renderEmptyAnalysis(){
+
+  $("candidate").textContent="—";
+  $("regime").textContent="INSUFFISANT";
+  $("rawScore").textContent="—";
+  $("calibratedScore").textContent="—";
+  $("agreement").textContent="—";
+  $("entropy").textContent="—";
+  $("edge").textContent="—";
+  $("sample").textContent=
+    validatedCount;
+
+  $("signalBox").textContent=
+    "PAS ENCORE DE SIGNAL";
+
+  $("signalBox").className=
+    "signal signal-no";
+}
+
+/* ============================================================
+   RENDER PREDICTION
+   ============================================================ */
+
+function renderPrediction(p){
+
+  $("candidate").textContent =
+    p.candidate;
+
+  $("regime").textContent =
+    p.regime.name;
+
+  $("rawScore").textContent =
+    Math.round(p.raw.score) +
+    "/100";
+
+  $("calibratedScore").textContent =
+    p.calibrated +
+    "/100";
+
+  $("agreement").textContent =
+    p.ensemble.agreement +
+    "/4";
+
+  $("entropy").textContent =
+    (p.regime.entropy*100)
+      .toFixed(2) +
+    "%";
+
+  $("edge").textContent =
+    (p.raw.edge*100)
+      .toFixed(2) +
+    "%";
+
+  $("sample").textContent =
+    p.realSample;
+
+  if(p.gate.final){
+
+    $("signalBox").textContent =
+      "🟢 SIGNAL STATISTIQUE — TEST";
+
+    $("signalBox").className =
+      "signal signal-yes";
+
+  }else if(
+    p.calibrated >= 60 &&
+    p.ensemble.agreement >= 2
+  ){
+
+    $("signalBox").textContent =
+      "🟡 SIGNAL INSUFFISANT";
+
+    $("signalBox").className =
+      "signal signal-warn";
+
+  }else{
+
+    $("signalBox").textContent =
+      "🔴 PAS DE SIGNAL — GATE BLOQUÉ";
+
+    $("signalBox").className =
+      "signal signal-no";
+  }
+
+  /*
+    Regime panel
+  */
+
+  $("regimeMain").textContent =
+    p.regime.name;
+
+  $("regimeConfidence").textContent =
+    Math.round(
+      p.regime.confidence*100
+    ) +
+    "%";
+
+  $("entropyValue").textContent =
+    (p.regime.entropy*100)
+      .toFixed(2) +
+    "%";
+
+  $("uniformity").textContent =
+    (p.regime.uniformity*100)
+      .toFixed(2) +
+    "%";
+
+  $("regimeChange").textContent =
+    p.regime.changed
+      ? "OUI"
+      : "NON";
+
+  const streak =
+    getStreak(ticks);
+
+  $("streak").textContent =
+    streak.digit === null
+      ? "—"
+      : streak.digit +
+        " × " +
+        streak.length;
+
+  /*
+    Gate
+  */
+
+  $("gateScore").textContent =
+    p.gate.score ? "OK":"BLOQUÉ";
+
+  $("gateAgreement").textContent =
+    p.gate.agreement ? "OK":"BLOQUÉ";
+
+  $("gateSample").textContent =
+    p.gate.sample ? "OK":"BLOQUÉ";
+
+  $("gateEdge").textContent =
+    p.gate.edge ? "OK":"BLOQUÉ";
+
+  $("gateWilson").textContent =
+    p.gate.wilson ? "OK":"BLOQUÉ";
+
+  $("gateRegime").textContent =
+    p.gate.regime ? "OK":"BLOQUÉ";
+
+  $("gateEntropy").textContent =
+    p.gate.entropy ? "OK":"BLOQUÉ";
+
+  $("gateFinal").textContent =
+    p.gate.final
+      ? "OUVERT"
+      : "BLOQUÉ";
+
+  /*
+    Economic
+  */
+
+  updateEconomicGate(
+    p.raw.probability
+  );
+
+  renderModels(p);
+  renderTransitions();
+  renderSequence(p);
+  renderShadowLab();
+  renderCalibration();
+  renderFrequency();
+}
+
+/* ============================================================
+   ECONOMIC GATE
+   ============================================================ */
+
+function updateEconomicGate(probability){
+
+  const payout =
+    Number(
+      $("payoutInput").value
+    );
+
+  if(
+    !payout ||
+    payout <= 0
+  ){
+
+    $("breakEven").textContent =
+      "—";
+
+    $("modelProbability").textContent =
+      (probability*100)
+        .toFixed(2) +
+      "%";
+
+    $("expectedValue").textContent =
+      "—";
+
+    return;
+  }
+
+  const breakEven =
+    1 / (1+payout);
+
+  const ev =
+    probability*payout -
+    (1-probability);
+
+  $("breakEven").textContent =
+    (breakEven*100)
+      .toFixed(2) +
+    "%";
+
+  $("modelProbability").textContent =
+    (probability*100)
+      .toFixed(2) +
+    "%";
+
+  $("expectedValue").textContent =
+    ev.toFixed(4);
+}
+
+$("payoutInput").addEventListener(
+  "input",
+  function(){
+
+    if(pendingPrediction){
+
+      updateEconomicGate(
+        pendingPrediction.raw.probability
+      );
+    }
+  }
+);
+
+/* ============================================================
+   RENDER MODELS
+   ============================================================ */
+
+function renderModels(p){
+
+  const weights =
+    p.ensemble.weights;
+
+  let html="";
+
+  for(const name of [
+    "GLOBAL",
+    "RECENT",
+    "TRANSITION",
+    "SEQUENCE"
+  ]){
+
+    const s =
+      modelStats[name];
+
+    const rate =
+      s.tests
+        ? s.wins/s.tests
+        : 0;
+
+    const lower =
+      wilsonLower(
+        s.wins,
+        s.tests
+      );
+
+    const candidate =
+      p.ensemble.models[name].candidate;
+
+    html += `
+      <tr>
+        <td>${name}<br>→ ${candidate}</td>
+        <td>${s.tests}</td>
+        <td class="green">${s.wins}</td>
+        <td>${(rate*100).toFixed(1)}%</td>
+        <td>${(lower*100).toFixed(1)}%</td>
+        <td>${(weights[name]*100).toFixed(1)}%</td>
+      </tr>
+    `;
+  }
+
+  $("modelTable").innerHTML =
+    html;
+
+  $("decisionGlobal").textContent =
+    p.ensemble.models.GLOBAL.candidate;
+
+  $("decisionRecent").textContent =
+    p.ensemble.models.RECENT.candidate;
+
+  $("decisionTransition").textContent =
+    p.ensemble.models.TRANSITION.candidate;
+
+  $("decisionSequence").textContent =
+    p.ensemble.models.SEQUENCE.candidate;
+}
+
+/* ============================================================
+   TRANSITIONS
+   ============================================================ */
+
+function renderTransitions(){
+
+  if(ticks.length < 2)
+    return;
+
+  const model =
+    transitionModel();
+
+  let html="";
+
+  for(let d=0;d<=9;d++){
+
+    const row =
+      model.matrix[d];
+
+    const tests =
+      row.reduce(
+        (a,b)=>a+b,
+        0
+      );
+
+    const candidate =
+      tests > 0
+        ? argmax(
+            row.map(
+              c => (c+1)/(tests+10)
+            )
+          )
+        : "—";
+
+    let strength=0;
+
+    if(tests > 0){
+
+      const probs =
+        row.map(
+          c => (c+1)/(tests+10)
+        );
+
+      strength =
+        Math.max(...probs);
+    }
+
+    html += `
+      <tr>
+        <td>${d}</td>
+        <td>${candidate}</td>
+        <td>${(strength*100).toFixed(1)}%</td>
+        <td>${tests}</td>
+      </tr>
+    `;
+  }
+
+  $("transitionTable").innerHTML =
+    html;
+}
+
+/* ============================================================
+   SEQUENCE
+   ============================================================ */
+
+function renderSequence(p){
+
+  const seq =
+    p.ensemble.models.SEQUENCE;
+
+  $("sequenceCurrent").textContent =
+    seq.key;
+
+  $("sequenceCandidate").textContent =
+    seq.candidate;
+
+  $("sequenceTests").textContent =
+    seq.tests;
+
+  const strength =
+    Math.max(
+      ...seq.probs
+    );
+
+  $("sequenceStrength").textContent =
+    (strength*100)
+      .toFixed(1) +
+    "%";
+}
+
+/* ============================================================
+   SHADOW LAB
+   ============================================================ */
+
+function renderShadowLab(){
+
+  let html="";
+
+  for(let d=0;d<=9;d++){
+
+    const s =
+      shadowLab[d];
+
+    const rate =
+      s.tests
+        ? s.wins/s.tests
+        : 0;
+
+    const avgScore =
+      s.tests
+        ? s.scoreSum/s.tests
+        : 0;
+
+    html += `
+      <tr>
+        <td>${d}</td>
+        <td>${avgScore.toFixed(0)}</td>
+        <td>${s.tests}</td>
+        <td class="green">${s.wins}</td>
+        <td>${(rate*100).toFixed(1)}%</td>
+      </tr>
+    `;
+  }
+
+  $("shadowTable").innerHTML =
+    html;
+}
+
+/* ============================================================
+   CALIBRATION
+   ============================================================ */
+
+function renderCalibration(){
+
+  let html="";
+
+  for(const bucket of Object.keys(
+    calibrationBuckets
+  )){
+
+    const b =
+      calibrationBuckets[bucket];
+
+    const rate =
+      b.tests
+        ? b.wins/b.tests
+        : 0;
+
+    html += `
+      <tr>
+        <td>${bucket}</td>
+        <td class="green">${b.wins}</td>
+        <td>${b.tests}</td>
+        <td>${(rate*100).toFixed(1)}%</td>
+      </tr>
+    `;
+  }
+
+  $("calibrationTable").innerHTML =
+    html;
+}
+
+/* ============================================================
+   FREQUENCY
+   ============================================================ */
+
+function renderFrequency(){
+
+  const counts =
+    digitCounts(ticks);
+
+  const total =
+    ticks.length;
+
+  let html="";
+
+  for(let d=0;d<=9;d++){
+
+    const rate =
+      total
+        ? counts[d]/total
+        : 0;
+
+    html += `
+      <div class="box">
+        <div class="label">Chiffre ${d}</div>
+        <div class="value">${counts[d]}</div>
+        <div class="small">
+          ${(rate*100).toFixed(1)}%
+        </div>
+      </div>
+    `;
+  }
+
+  $("frequencyGrid").innerHTML =
+    html;
+}
+
+/* ============================================================
+   RENDER GLOBAL
+   ============================================================ */
+
+function render(){
+
+  const last =
+    ticks[ticks.length-1];
+
+  if(last){
+
+    $("price").textContent =
+      last.price.toFixed(4);
+
+    $("lastDigit").textContent =
+      last.digit;
+  }
+
+  $("tickCount").textContent =
+    ticks.length;
+
+  $("predictions").textContent =
+    predictionCount;
+
+  $("validated").textContent =
+    validatedCount;
+
+  $("wins").textContent =
+    wins;
+
+  $("losses").textContent =
+    losses;
+
+  const rate =
+    validatedCount
+      ? wins/validatedCount
+      : 0;
+
+  $("realRate").textContent =
+    validatedCount
+      ? (rate*100).toFixed(1) + "%"
+      : "—";
+
+  $("realEdge").textContent =
+    validatedCount
+      ? (
+          (rate-BASELINE)*100
+        ).toFixed(2) +
+        "%"
+      : "—";
+
+  $("wilson").textContent =
+    validatedCount
+      ? (
+          wilsonLower(
+            wins,
+            validatedCount
+          )*100
+        ).toFixed(2) +
+        "%"
+      : "—";
+
+  $("acceptedSignals").textContent =
+    signalAccepted;
+
+  $("signalWins").textContent =
+    signalWins;
+
+  $("signalLosses").textContent =
+    signalLosses;
+
+  $("signalRate").textContent =
+    signalAccepted
+      ? (
+          signalWins/
+          signalAccepted*
+          100
+        ).toFixed(1) +
+        "%"
+      : "—";
+
+  $("history").textContent =
+    history.length
+      ? history.join("\n")
+      : "Aucune validation.";
+
+  renderFrequency();
+  renderCalibration();
+  renderShadowLab();
+
+  if(ticks.length >= MIN_TICKS){
+
+    const p =
+      pendingPrediction ||
+      createPrediction();
+
+    if(p)
+      renderPrediction(p);
+
+  }else{
+
+    renderEmptyAnalysis();
+  }
+}
+
+/* ============================================================
+   RESET
+   ============================================================ */
+
+function resetStatistics(){
+
+  predictionCount=0;
+  validatedCount=0;
+
+  wins=0;
+  losses=0;
+
+  signalAccepted=0;
+  signalWins=0;
+  signalLosses=0;
+
+  pendingPrediction=null;
+
+  history=[];
+  logs=[];
+
+  for(const name of Object.keys(modelStats)){
+
+    modelStats[name].tests=0;
+    modelStats[name].wins=0;
+    modelStats[name].candidate=null;
+    modelStats[name].history=[];
+  }
+
+  for(const key of Object.keys(
+    calibrationBuckets
+  )){
+
+    calibrationBuckets[key].tests=0;
+    calibrationBuckets[key].wins=0;
+  }
+
+  for(let d=0;d<=9;d++){
+
+    shadowLab[d].tests=0;
+    shadowLab[d].wins=0;
+    shadowLab[d].scoreSum=0;
+  }
+
+  log(
+    "Statistiques réinitialisées."
+  );
+
+  render();
+}
+
+/* ============================================================
+   START
+   ============================================================ */
+
 log(
-"ERREUR API : "
-+
-(
-data.error.message
-||
-data.error.code
-||
-"Erreur inconnue"
-)
-);
-
-return;
-
-}
-
-
-/*
-HISTORIQUE
-*/
-
-if(
-data.msg_type===
-"history"
-&&
-data.history
-){
-
-const prices=
-data.history.prices||[];
-
-
-log(
-"Historique reçu : "
-+
-prices.length+
-" ticks."
-);
-
-
-ticks=[];
-
-
-prices.forEach(
-price=>{
-
-const d=
-extractDigit(price);
-
-if(
-Number.isInteger(d)
-){
-
-ticks.push(d);
-
-}
-
-});
-
-
-if(
-ticks.length>
-MAX_TICKS
-){
-
-ticks=
-ticks.slice(
--MAX_TICKS
-);
-
-}
-
-
-if(prices.length){
-
-const lastPrice=
-prices[
-prices.length-1
-];
-
-
-updateUI(
-lastPrice,
-extractDigit(lastPrice)
-);
-
-
-log(
-"Historique R_75 chargé."
-);
-
-}
-
-return;
-
-}
-
-
-/*
-LIVE TICK
-*/
-
-if(
-data.msg_type===
-"tick"
-&&
-data.tick
-){
-
-setStatus(
-"Connecté — réception des ticks",
-"ok"
-);
-
-
-processTick(
-data.tick
-);
-
-
-return;
-
-}
-
-
-/*
-SUBSCRIPTION
-*/
-
-if(
-data.subscription
-){
-
-log(
-"Subscription active."
-);
-
-}
-
-};
-
-
-/* =====================================================
-ERROR
-===================================================== */
-
-ws.onerror=
-function(){
-
-setStatus(
-"Erreur WebSocket",
-"error"
+  "Prediction R75 V7.0 démarrage..."
 );
 
 log(
-"Erreur WebSocket."
-);
-
-};
-
-
-/* =====================================================
-CLOSE
-===================================================== */
-
-ws.onclose=
-function(){
-
-setStatus(
-"Connexion fermée",
-"error"
+  "Mode TEST uniquement."
 );
 
 log(
-"WebSocket fermé."
+  "Aucun ordre automatique."
 );
-
-
-reconnectTimer=
-setTimeout(
-connectDeriv,
-5000
-);
-
-};
-
-}
-
-
-/* =====================================================
-RESET
-===================================================== */
-
-function resetStats(){
-
-ticks=[];
-
-predictions=0;
-
-validated=0;
-
-wins=0;
-
-losses=0;
-
-lastPrediction=null;
-
-historyRows=[];
-
-
-shadowStats={
-
-signals:0,
-
-validated:0,
-
-wins:0,
-
-losses:0
-
-};
-
-
-acceptedStats={
-
-signals:0,
-
-validated:0,
-
-wins:0,
-
-losses:0
-
-};
-
-
-scoreStats={
-
-"70-79":{
-tests:0,
-wins:0
-},
-
-"80-89":{
-tests:0,
-wins:0
-},
-
-"90-100":{
-tests:0,
-wins:0
-}
-
-};
-
-
-agreementStats={
-
-2:{
-tests:0,
-wins:0
-},
-
-3:{
-tests:0,
-wins:0
-}
-
-};
-
-
-digitStats={};
-
-for(
-let d=0;
-d<10;
-d++
-){
-
-digitStats[d]={
-tests:0,
-wins:0
-};
-
-}
-
-
-dominantStats={
-
-GLOBAL:{
-tests:0,
-wins:0
-},
-
-RECENT:{
-tests:0,
-wins:0
-},
-
-TRANSITION:{
-tests:0,
-wins:0
-}
-
-};
-
-
-configStats={};
-
-
-modelStats={
-
-global:{
-wins:0,
-total:0
-},
-
-recent:{
-wins:0,
-total:0
-},
-
-transition:{
-wins:0,
-total:0
-}
-
-};
-
-
-calibrationBuckets={
-
-"50-59":{
-wins:0,
-total:0
-},
-
-"60-69":{
-wins:0,
-total:0
-},
-
-"70-79":{
-wins:0,
-total:0
-},
-
-"80-89":{
-wins:0,
-total:0
-},
-
-"90-100":{
-wins:0,
-total:0
-}
-
-};
-
-
-$("price")
-.textContent="—";
-
-
-$("lastDigit")
-.textContent="—";
-
-
-updateUI();
-
-
-log(
-"Statistiques V6.1 réinitialisées."
-);
-
-}
-
-
-/* =====================================================
-START
-===================================================== */
 
 connectDeriv();
 
 </script>
 
 </body>
-
 </html>
