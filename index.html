@@ -2,7 +2,9 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+
 <title>Prediction R75 V7.0</title>
 
 <style>
@@ -64,10 +66,6 @@ h1{
   background:#b51e27;
 }
 
-.warning{
-  background:#8d6813;
-}
-
 .grid{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -99,11 +97,21 @@ h1{
   color:#a8bfce;
 }
 
-.green{color:#28e77a}
-.red{color:#ff5360}
-.yellow{color:#ffd34e}
-.blue{color:#57b8ff}
-.white{color:#fff}
+.green{
+  color:#28e77a;
+}
+
+.red{
+  color:#ff5360;
+}
+
+.yellow{
+  color:#ffd34e;
+}
+
+.blue{
+  color:#57b8ff;
+}
 
 .signal{
   text-align:center;
@@ -126,20 +134,6 @@ h1{
   background:#188544;
 }
 
-.progress{
-  height:7px;
-  background:#06131e;
-  border-radius:5px;
-  overflow:hidden;
-  margin-top:4px;
-}
-
-.progress > div{
-  height:100%;
-  width:0%;
-  background:#2ca8ff;
-}
-
 table{
   width:100%;
   border-collapse:collapse;
@@ -154,19 +148,6 @@ th,td{
 
 th{
   background:#0d3045;
-}
-
-textarea,
-pre{
-  width:100%;
-  background:#04131e;
-  color:#b9d6e8;
-  border:1px solid #12384d;
-  border-radius:5px;
-  padding:5px;
-  font-size:8px;
-  white-space:pre-wrap;
-  word-break:break-word;
 }
 
 button{
@@ -200,10 +181,14 @@ button:active{
   font-size:8px;
 }
 
-hr{
-  border:0;
-  border-top:1px solid #174258;
-  margin:5px 0;
+input{
+  width:90%;
+  background:#061522;
+  color:#fff;
+  border:1px solid #17445d;
+  border-radius:4px;
+  padding:4px;
+  text-align:center;
 }
 </style>
 </head>
@@ -214,15 +199,21 @@ hr{
 
 <h1>Prediction R75 V7.0</h1>
 
-<div id="connectionStatus" class="status disconnected">
+<div id="connectionStatus"
+     class="status disconnected">
   🔴 Connexion fermée
 </div>
 
-<!-- MARCHE -->
+<!-- ======================================================
+     MARCHE
+====================================================== -->
+
 <div class="card">
+
   <div class="title">📊 Marché</div>
 
   <div class="grid">
+
     <div class="box">
       <div class="label">Marché</div>
       <div class="value">Volatility 75</div>
@@ -243,14 +234,22 @@ hr{
       <div class="label">Ticks</div>
       <div id="tickCount" class="value">0</div>
     </div>
+
   </div>
 </div>
 
-<!-- ANALYSE -->
+<!-- ======================================================
+     ANALYSE
+====================================================== -->
+
 <div class="card">
-  <div class="title">🧠 ANALYSE V7.0 — CONTEXT ENGINE</div>
+
+  <div class="title">
+    🧠 ANALYSE V7.0 — CONTEXT ENGINE
+  </div>
 
   <div class="grid">
+
     <div class="box">
       <div class="label">Candidat</div>
       <div id="candidate" class="value">—</div>
@@ -290,23 +289,31 @@ hr{
       <div class="label">Échantillon</div>
       <div id="sample" class="value">—</div>
     </div>
+
   </div>
 
-  <div id="signalBox" class="signal signal-no">
+  <div id="signalBox"
+       class="signal signal-no">
     PAS DE SIGNAL
   </div>
 
   <div class="note">
-    Le score /100 est un indicateur interne. Ce n'est PAS une probabilité
-    garantie du prochain chiffre.
+    Le score /100 est un indicateur interne.
+    Ce n'est PAS une probabilité garantie du prochain chiffre.
   </div>
+
 </div>
 
-<!-- REGIME -->
+<!-- ======================================================
+     REGIME
+====================================================== -->
+
 <div class="card">
+
   <div class="title">🌡️ REGIME ENGINE</div>
 
   <div class="grid">
+
     <div class="box">
       <div class="label">Régime actuel</div>
       <div id="regimeMain" class="value">—</div>
@@ -336,19 +343,21 @@ hr{
       <div class="label">Streak actuel</div>
       <div id="streak" class="value">—</div>
     </div>
+
   </div>
 
-  <div class="note">
-    Le moteur préfère bloquer lorsque les données sont trop proches d'une
-    distribution uniforme ou lorsque le régime vient de changer.
-  </div>
 </div>
 
-<!-- VALIDATION -->
+<!-- ======================================================
+     VALIDATION
+====================================================== -->
+
 <div class="card">
+
   <div class="title">📈 VALIDATION WALK-FORWARD</div>
 
   <div class="grid">
+
     <div class="box">
       <div class="label">Prédictions</div>
       <div id="predictions" class="value">0</div>
@@ -388,14 +397,23 @@ hr{
       <div class="label">Wilson inférieur</div>
       <div id="wilson" class="value">—</div>
     </div>
+
   </div>
+
 </div>
 
-<!-- MODELES -->
+<!-- ======================================================
+     MODELES
+====================================================== -->
+
 <div class="card">
-  <div class="title">🤖 PERFORMANCE DES MODÈLES</div>
+
+  <div class="title">
+    🤖 PERFORMANCE DES MODÈLES
+  </div>
 
   <table>
+
     <thead>
       <tr>
         <th>Modèle</th>
@@ -408,21 +426,30 @@ hr{
     </thead>
 
     <tbody id="modelTable"></tbody>
+
   </table>
 
   <div style="margin-top:5px">
+
     <span class="badge">GLOBAL</span>
     <span class="badge">RECENT</span>
     <span class="badge">TRANSITION</span>
     <span class="badge">SEQUENCE</span>
+
   </div>
+
 </div>
 
-<!-- DECISION -->
+<!-- ======================================================
+     DECISION
+====================================================== -->
+
 <div class="card">
+
   <div class="title">🎯 DÉCISION DES MODÈLES</div>
 
   <div class="grid">
+
     <div class="box">
       <div class="label">GLOBAL</div>
       <div id="decisionGlobal" class="value">—</div>
@@ -442,14 +469,23 @@ hr{
       <div class="label">SEQUENCE</div>
       <div id="decisionSequence" class="value">—</div>
     </div>
+
   </div>
+
 </div>
 
-<!-- TRANSITION -->
+<!-- ======================================================
+     TRANSITION
+====================================================== -->
+
 <div class="card">
-  <div class="title">🔗 TRANSITION — DERNIER CHIFFRE</div>
+
+  <div class="title">
+    🔗 TRANSITION — DERNIER CHIFFRE
+  </div>
 
   <table>
+
     <thead>
       <tr>
         <th>Dernier</th>
@@ -460,14 +496,23 @@ hr{
     </thead>
 
     <tbody id="transitionTable"></tbody>
+
   </table>
+
 </div>
 
-<!-- SEQUENCE -->
+<!-- ======================================================
+     SEQUENCE
+====================================================== -->
+
 <div class="card">
-  <div class="title">🧩 TRANSITION NIVEAU 2 — SÉQUENCE</div>
+
+  <div class="title">
+    🧩 TRANSITION NIVEAU 2 — SÉQUENCE
+  </div>
 
   <div class="grid">
+
     <div class="box">
       <div class="label">Séquence actuelle</div>
       <div id="sequenceCurrent" class="value">—</div>
@@ -487,22 +532,34 @@ hr{
       <div class="label">Force séquence</div>
       <div id="sequenceStrength" class="value">—</div>
     </div>
+
   </div>
+
 </div>
 
-<!-- ECONOMIC -->
+<!-- ======================================================
+     ECONOMIC
+====================================================== -->
+
 <div class="card">
-  <div class="title">💰 ECONOMIC GATE — TEST UNIQUEMENT</div>
+
+  <div class="title">
+    💰 ECONOMIC GATE — TEST UNIQUEMENT
+  </div>
 
   <div class="grid">
+
     <div class="box">
       <div class="label">Payout théorique</div>
-      <input id="payoutInput"
-             type="number"
-             min="0"
-             step="0.01"
-             value="0"
-             style="width:90%;background:#061522;color:#fff;border:1px solid #17445d;border-radius:4px;padding:4px;text-align:center;">
+
+      <input
+        id="payoutInput"
+        type="number"
+        min="0"
+        step="0.01"
+        value="0"
+      >
+
     </div>
 
     <div class="box">
@@ -519,19 +576,27 @@ hr{
       <div class="label">EV théorique</div>
       <div id="expectedValue" class="value">—</div>
     </div>
+
   </div>
 
   <div class="note">
-    Le payout doit être renseigné manuellement. Cette valeur ne déclenche
-    aucun ordre et ne constitue pas une recommandation de trading.
+    Aucun ordre n'est envoyé.
   </div>
+
 </div>
 
-<!-- STATISTICAL GATE -->
+<!-- ======================================================
+     STATISTICAL GATE
+====================================================== -->
+
 <div class="card">
-  <div class="title">🚦 STATISTICAL GATE</div>
+
+  <div class="title">
+    🚦 STATISTICAL GATE
+  </div>
 
   <div class="grid">
+
     <div class="box">
       <div class="label">Score ≥ 70</div>
       <div id="gateScore" class="value">—</div>
@@ -569,16 +634,27 @@ hr{
 
     <div class="box">
       <div class="label">Gate final</div>
-      <div id="gateFinal" class="value">BLOQUÉ</div>
+      <div id="gateFinal" class="value">
+        BLOQUÉ
+      </div>
     </div>
+
   </div>
+
 </div>
 
-<!-- CALIBRATION -->
+<!-- ======================================================
+     CALIBRATION
+====================================================== -->
+
 <div class="card">
-  <div class="title">🧪 CALIBRATION DU SCORE BRUT</div>
+
+  <div class="title">
+    🧪 CALIBRATION DU SCORE BRUT
+  </div>
 
   <table>
+
     <thead>
       <tr>
         <th>Bucket</th>
@@ -587,19 +663,25 @@ hr{
         <th>Taux</th>
       </tr>
     </thead>
+
     <tbody id="calibrationTable"></tbody>
+
   </table>
 
-  <div class="note">
-    Calibration basée uniquement sur les résultats observés hors échantillon.
-  </div>
 </div>
 
-<!-- SHADOW LAB -->
+<!-- ======================================================
+     SHADOW LAB
+====================================================== -->
+
 <div class="card">
-  <div class="title">🧪 SHADOW LAB — CANDIDATS</div>
+
+  <div class="title">
+    🧪 SHADOW LAB — CANDIDATS
+  </div>
 
   <table>
+
     <thead>
       <tr>
         <th>Chiffre</th>
@@ -611,25 +693,39 @@ hr{
     </thead>
 
     <tbody id="shadowTable"></tbody>
+
   </table>
 
-  <div class="note">
-    Tous les candidats sont testés en simulation. Aucun ordre réel.
+</div>
+
+<!-- ======================================================
+     FREQUENCES
+====================================================== -->
+
+<div class="card">
+
+  <div class="title">
+    🔢 FRÉQUENCE DES CHIFFRES
   </div>
+
+  <div id="frequencyGrid"
+       class="grid">
+  </div>
+
 </div>
 
-<!-- FREQUENCES -->
-<div class="card">
-  <div class="title">🔢 FRÉQUENCE DES CHIFFRES</div>
+<!-- ======================================================
+     SIGNAL PERFORMANCE
+====================================================== -->
 
-  <div id="frequencyGrid" class="grid"></div>
-</div>
-
-<!-- PERFORMANCE SIGNAL -->
 <div class="card">
-  <div class="title">🚨 PERFORMANCE DES SIGNAUX ACCEPTÉS</div>
+
+  <div class="title">
+    🚨 PERFORMANCE DES SIGNAUX ACCEPTÉS
+  </div>
 
   <div class="grid">
+
     <div class="box">
       <div class="label">Signaux acceptés</div>
       <div id="acceptedSignals" class="value">0</div>
@@ -637,85 +733,139 @@ hr{
 
     <div class="box">
       <div class="label">WIN signal</div>
-      <div id="signalWins" class="value green">0</div>
+      <div id="signalWins"
+           class="value green">
+        0
+      </div>
     </div>
 
     <div class="box">
       <div class="label">LOSS signal</div>
-      <div id="signalLosses" class="value red">0</div>
+      <div id="signalLosses"
+           class="value red">
+        0
+      </div>
     </div>
 
     <div class="box">
       <div class="label">Taux signal</div>
-      <div id="signalRate" class="value">—</div>
+      <div id="signalRate"
+           class="value">
+        —
+      </div>
     </div>
+
   </div>
+
 </div>
 
-<!-- MOTEUR -->
+<!-- ======================================================
+     MOTEUR
+====================================================== -->
+
 <div class="card">
-  <div class="title">🧠 MOTEUR V7.0</div>
+
+  <div class="title">
+    🧠 MOTEUR V7.0
+  </div>
 
   <div class="note">
+
     ✓ Walk-forward strict<br>
     ✓ Validation avant ajout du tick<br>
-    ✓ Régime de marché statistique<br>
-    ✓ Entropie / uniformité<br>
+    ✓ Régime statistique<br>
+    ✓ Entropie<br>
     ✓ Global + Recent<br>
     ✓ Transition niveau 1<br>
     ✓ Transition niveau 2<br>
-    ✓ Analyse des séquences<br>
+    ✓ Séquences<br>
     ✓ Ensemble adaptatif<br>
-    ✓ Calibration indépendante<br>
+    ✓ Calibration<br>
     ✓ Statistical Gate<br>
-    ✓ Benchmark baseline 10%<br>
-    ✓ Economic Gate informatif<br>
     ✓ Shadow Lab<br>
     ✓ Aucun ordre automatique<br>
     ✓ Aucun martingale
+
   </div>
+
 </div>
 
-<button onclick="connectDeriv()">🔄 Reconnecter à Deriv</button>
-<button onclick="resetStatistics()">♻️ Réinitialiser les statistiques</button>
+<button onclick="connectDeriv()">
+  🔄 Reconnecter à Deriv
+</button>
+
+<button onclick="resetStatistics()">
+  ♻️ Réinitialiser les statistiques
+</button>
+
+<!-- ======================================================
+     AVERTISSEMENT
+====================================================== -->
 
 <div class="card">
-  <div class="title">⚠️ AVERTISSEMENT</div>
+
+  <div class="title">
+    ⚠️ AVERTISSEMENT
+  </div>
 
   <div class="note">
+
     Une fréquence historique ne garantit pas le prochain chiffre.
     Une performance passée ne garantit pas une performance future.
-    Le modèle peut rester volontairement silencieux lorsqu'il ne possède
-    pas suffisamment de preuves statistiques.
+    Le modèle peut rester silencieux lorsqu'il n'a pas assez de
+    preuves statistiques.
+
   </div>
+
 </div>
 
-<!-- HISTORIQUE -->
+<!-- ======================================================
+     HISTORIQUE
+====================================================== -->
+
 <div class="card">
-  <div class="title">📜 HISTORIQUE DES VALIDATIONS</div>
-  <pre id="history">Aucune validation.</pre>
+
+  <div class="title">
+    📜 HISTORIQUE DES VALIDATIONS
+  </div>
+
+  <pre id="history">
+Aucune validation.
+  </pre>
+
 </div>
 
-<!-- LOG -->
+<!-- ======================================================
+     JOURNAL
+====================================================== -->
+
 <div class="card">
-  <div class="title">🛠️ JOURNAL TECHNIQUE</div>
+
+  <div class="title">
+    🛠️ JOURNAL TECHNIQUE
+  </div>
+
   <pre id="log"></pre>
+
 </div>
 
 </div>
+
 
 <script>
 
-/* ============================================================
-   PREDICTION R75 V7.0
-   CONTEXT + REGIME + SHADOW LAB
-   TEST ONLY — NO REAL ORDERS
-   ============================================================ */
+/* ==========================================================
+   V7.0
+   CORRECTION API :
+   ticks_history NE contient PLUS subscribe.
+   ticks conserve subscribe:1.
+   ========================================================== */
 
 const WS_URL =
-  "wss://api.derivws.com/trading/v1/options/ws/public";
+"wss://api.derivws.com/trading/v1/options/ws/public";
 
-const SYMBOL_REQUESTED = "R_75";
+const SYMBOL_REQUESTED =
+"R_75";
 
 const HISTORY_SIZE = 100;
 const RECENT_SIZE = 30;
@@ -724,13 +874,18 @@ const BASELINE = 0.10;
 
 let ws = null;
 let reconnectTimer = null;
-let currentSymbol = SYMBOL_REQUESTED;
+
+let currentSymbol =
+SYMBOL_REQUESTED;
 
 let ticks = [];
-let pendingPrediction = null;
+
+let pendingPrediction =
+null;
 
 let predictionCount = 0;
 let validatedCount = 0;
+
 let wins = 0;
 let losses = 0;
 
@@ -741,11 +896,13 @@ let signalLosses = 0;
 let logs = [];
 let history = [];
 
-/* ============================================================
+
+/* ==========================================================
    MODEL STATS
-   ============================================================ */
+========================================================== */
 
 const modelStats = {
+
   GLOBAL:{
     tests:0,
     wins:0,
@@ -773,89 +930,148 @@ const modelStats = {
     candidate:null,
     history:[]
   }
+
 };
 
-/* ============================================================
+
+/* ==========================================================
    CALIBRATION
-   ============================================================ */
+========================================================== */
 
 const calibrationBuckets = {
-  "50-59":{tests:0,wins:0},
-  "60-69":{tests:0,wins:0},
-  "70-79":{tests:0,wins:0},
-  "80-89":{tests:0,wins:0},
-  "90-100":{tests:0,wins:0}
+
+  "50-59":{
+    tests:0,
+    wins:0
+  },
+
+  "60-69":{
+    tests:0,
+    wins:0
+  },
+
+  "70-79":{
+    tests:0,
+    wins:0
+  },
+
+  "80-89":{
+    tests:0,
+    wins:0
+  },
+
+  "90-100":{
+    tests:0,
+    wins:0
+  }
+
 };
 
-/* ============================================================
+
+/* ==========================================================
    SHADOW LAB
-   ============================================================ */
+========================================================== */
 
 const shadowLab = {};
 
 for(let d=0; d<=9; d++){
+
   shadowLab[d] = {
+
     tests:0,
     wins:0,
     scoreSum:0
+
   };
+
 }
 
-/* ============================================================
+
+/* ==========================================================
    DOM
-   ============================================================ */
+========================================================== */
 
 function $(id){
+
   return document.getElementById(id);
+
 }
 
-/* ============================================================
-   LOG
-   ============================================================ */
 
-function log(msg){
+/* ==========================================================
+   LOG
+========================================================== */
+
+function log(message){
 
   const time =
-    new Date().toLocaleTimeString("fr-FR");
+  new Date().toLocaleTimeString("fr-FR");
 
   logs.unshift(
-    time + " — " + msg
+    time +
+    " — " +
+    message
   );
 
-  logs = logs.slice(0,80);
+  logs =
+  logs.slice(0,100);
 
   $("log").textContent =
-    logs.join("\n");
+  logs.join("\n");
+
 }
 
-/* ============================================================
-   CONNECTION
-   ============================================================ */
 
-function setConnection(ok,text){
+/* ==========================================================
+   CONNECTION STATUS
+========================================================== */
 
-  const el = $("connectionStatus");
+function setConnection(
+  connected,
+  text
+){
 
-  el.className =
-    "status " + (ok ? "connected":"disconnected");
+  const element =
+  $("connectionStatus");
 
-  el.textContent =
-    ok
-      ? "🟢 " + text
-      : "🔴 " + text;
+  element.className =
+  "status " +
+  (
+    connected
+    ? "connected"
+    : "disconnected"
+  );
+
+  element.textContent =
+  (
+    connected
+    ? "🟢 "
+    : "🔴 "
+  ) +
+  text;
+
 }
 
-/* ============================================================
+
+/* ==========================================================
    CONNECT
-   ============================================================ */
+========================================================== */
 
 function connectDeriv(){
 
   try{
 
     if(ws){
-      try{ ws.close(); }catch(e){}
+
+      try{
+        ws.close();
+      }catch(e){}
+
     }
+
+    clearTimeout(
+      reconnectTimer
+    );
 
     setConnection(
       false,
@@ -867,11 +1083,17 @@ function connectDeriv(){
     );
 
     ws =
-      new WebSocket(WS_URL);
+    new WebSocket(
+      WS_URL
+    );
 
-    ws.onopen = function(){
 
-      log("WebSocket connecté.");
+    ws.onopen =
+    function(){
+
+      log(
+        "WebSocket connecté."
+      );
 
       setConnection(
         true,
@@ -879,16 +1101,23 @@ function connectDeriv(){
       );
 
       requestActiveSymbols();
+
     };
 
-    ws.onmessage = function(event){
+
+    ws.onmessage =
+    function(event){
 
       try{
 
         const data =
-          JSON.parse(event.data);
+        JSON.parse(
+          event.data
+        );
 
-        handleMessage(data);
+        handleMessage(
+          data
+        );
 
       }catch(error){
 
@@ -896,31 +1125,46 @@ function connectDeriv(){
           "Erreur JSON: " +
           error.message
         );
+
       }
+
     };
 
-    ws.onerror = function(){
 
-      log("WebSocket error.");
+    ws.onerror =
+    function(){
+
+      log(
+        "WebSocket error."
+      );
+
     };
 
-    ws.onclose = function(){
+
+    ws.onclose =
+    function(){
 
       setConnection(
         false,
         "Connexion fermée"
       );
 
-      log("WebSocket fermé.");
+      log(
+        "WebSocket fermé."
+      );
 
-      clearTimeout(reconnectTimer);
+      clearTimeout(
+        reconnectTimer
+      );
 
       reconnectTimer =
-        setTimeout(
-          connectDeriv,
-          5000
-        );
+      setTimeout(
+        connectDeriv,
+        5000
+      );
+
     };
+
 
   }catch(error){
 
@@ -928,71 +1172,80 @@ function connectDeriv(){
       "Erreur connexion: " +
       error.message
     );
+
   }
+
 }
 
-/* ============================================================
+
+/* ==========================================================
    ACTIVE SYMBOLS
-   ============================================================ */
+========================================================== */
 
 function requestActiveSymbols(){
 
-  if(!ws || ws.readyState !== WebSocket.OPEN)
+  if(
+    !ws ||
+    ws.readyState !==
+    WebSocket.OPEN
+  ){
+
     return;
+  }
+
 
   ws.send(
     JSON.stringify({
+
       active_symbols:"brief",
+
       req_id:1
+
     })
   );
+
 
   log(
     "Recherche du symbole R_75..."
   );
+
 }
 
-/* ============================================================
+
+/* ==========================================================
    FIND R75
-   ============================================================ */
+========================================================== */
 
 function findR75Symbol(data){
 
-  if(!data || !Array.isArray(data.active_symbols))
+  if(
+    !data ||
+    !Array.isArray(
+      data.active_symbols
+    )
+  ){
+
     return null;
+  }
+
 
   const list =
-    data.active_symbols;
+  data.active_symbols;
+
 
   let found =
-    list.find(item =>
-      item &&
-      (
-        item.underlying_symbol === "R_75" ||
-        item.symbol === "R_75"
-      )
-    );
+  list.find(
+    item =>
+    item &&
+    (
+      item.underlying_symbol ===
+      "R_75"
+      ||
+      item.symbol ===
+      "R_75"
+    )
+  );
 
-  if(found)
-    return (
-      found.underlying_symbol ||
-      found.symbol
-    );
-
-  found =
-    list.find(item => {
-
-      const name =
-        String(
-          item.underlying_symbol_name ||
-          item.display_name ||
-          ""
-        ).toLowerCase();
-
-      return (
-        name.includes("volatility 75")
-      );
-    });
 
   if(found){
 
@@ -1000,164 +1253,327 @@ function findR75Symbol(data){
       found.underlying_symbol ||
       found.symbol
     );
+
   }
 
+
+  found =
+  list.find(
+    item => {
+
+      const name =
+      String(
+        item.underlying_symbol_name ||
+        item.display_name ||
+        ""
+      ).toLowerCase();
+
+      return name.includes(
+        "volatility 75"
+      );
+
+    }
+  );
+
+
+  if(found){
+
+    return (
+      found.underlying_symbol ||
+      found.symbol
+    );
+
+  }
+
+
   return null;
+
 }
 
-/* ============================================================
-   REQUEST HISTORY
-   ============================================================ */
+
+/* ==========================================================
+   HISTORY REQUEST
+========================================================== */
 
 function requestHistory(){
 
-  if(!ws || ws.readyState !== WebSocket.OPEN)
+  if(
+    !ws ||
+    ws.readyState !==
+    WebSocket.OPEN
+  ){
+
     return;
+  }
+
+
+  /*
+    CORRECTION IMPORTANTE :
+
+    PAS DE subscribe:0 ICI.
+
+    C'est cette modification qui corrige
+    l'erreur visible dans ton journal :
+    "Invalid field: subscribe"
+  */
+
+  const request = {
+
+    ticks_history:
+    currentSymbol,
+
+    count:
+    HISTORY_SIZE,
+
+    end:
+    "latest",
+
+    style:
+    "ticks",
+
+    req_id:
+    2
+
+  };
+
 
   ws.send(
-    JSON.stringify({
-      ticks_history:currentSymbol,
-      count:HISTORY_SIZE,
-      end:"latest",
-      style:"ticks",
-      subscribe:0,
-      req_id:2
-    })
+    JSON.stringify(
+      request
+    )
   );
 
+
   log(
-    "Demande historique " +
+    "Historique demandé : " +
     HISTORY_SIZE +
     " ticks."
   );
+
 }
 
-/* ============================================================
-   SUBSCRIBE
-   ============================================================ */
+
+/* ==========================================================
+   LIVE TICKS
+========================================================== */
 
 function subscribeTicks(){
 
-  if(!ws || ws.readyState !== WebSocket.OPEN)
+  if(
+    !ws ||
+    ws.readyState !==
+    WebSocket.OPEN
+  ){
+
     return;
+  }
+
+
+  /*
+    subscribe est utilisé UNIQUEMENT
+    pour le flux temps réel.
+  */
+
+  const request = {
+
+    ticks:
+    currentSymbol,
+
+    subscribe:
+    1,
+
+    req_id:
+    3
+
+  };
+
 
   ws.send(
-    JSON.stringify({
-      ticks:currentSymbol,
-      subscribe:1,
-      req_id:3
-    })
+    JSON.stringify(
+      request
+    )
   );
 
+
   log(
-    "Abonnement aux ticks " +
+    "Abonnement temps réel : " +
     currentSymbol
   );
+
 
   setConnection(
     true,
     "Connecté — réception des ticks"
   );
+
 }
 
-/* ============================================================
+
+/* ==========================================================
    MESSAGE HANDLER
-   ============================================================ */
+========================================================== */
 
 function handleMessage(data){
 
   if(data.error){
 
+    let message =
+    "Erreur API";
+
+    if(
+      data.error.message
+    ){
+
+      message =
+      data.error.message;
+
+    }else if(
+      data.error.code
+    ){
+
+      message =
+      data.error.code;
+
+    }
+
     log(
-      "API error: " +
-      (
-        data.error.message ||
-        data.error.code ||
-        "erreur inconnue"
-      )
+      "API : " +
+      message
     );
 
     return;
+
   }
 
-  if(data.msg_type === "active_symbols"){
+
+  if(
+    data.msg_type ===
+    "active_symbols"
+  ){
 
     const found =
-      findR75Symbol(data);
+    findR75Symbol(
+      data
+    );
+
 
     if(!found){
 
       log(
-        "R_75 introuvable dans active_symbols."
+        "R_75 introuvable."
       );
 
       return;
     }
 
+
     currentSymbol =
-      found;
+    found;
+
 
     log(
-      "Symbole utilisé: " +
+      "Symbole utilisé : " +
       currentSymbol
     );
+
 
     requestHistory();
 
     return;
+
   }
 
-  if(data.msg_type === "history"){
 
-    processHistory(data);
+  if(
+    data.msg_type ===
+    "history"
+  ){
+
+    processHistory(
+      data
+    );
+
+    /*
+      L'historique est maintenant chargé.
+      Ensuite seulement on démarre
+      le flux temps réel.
+    */
 
     subscribeTicks();
 
     return;
+
   }
 
-  if(data.msg_type === "tick"){
 
-    processTick(data.tick);
+  if(
+    data.msg_type ===
+    "tick"
+  ){
+
+    processTick(
+      data.tick
+    );
 
     return;
+
   }
+
 }
 
-/* ============================================================
+
+/* ==========================================================
    DIGIT
-   ============================================================ */
+========================================================== */
 
-function extractDigit(quote){
+function extractDigit(
+  quote
+){
 
-  const str =
-    String(quote);
+  const string =
+  String(
+    quote
+  );
 
   const cleaned =
-    str.replace(/[^0-9]/g,"");
+  string.replace(
+    /[^0-9]/g,
+    ""
+  );
 
-  if(!cleaned.length)
+
+  if(
+    !cleaned.length
+  ){
+
     return null;
+  }
+
 
   return Number(
     cleaned.charAt(
       cleaned.length - 1
     )
   );
+
 }
 
-/* ============================================================
-   HISTORY
-   ============================================================ */
+
+/* ==========================================================
+   PROCESS HISTORY
+========================================================== */
 
 function processHistory(data){
 
   ticks = [];
 
+
   if(
     !data ||
     !data.history ||
-    !Array.isArray(data.history.prices)
+    !Array.isArray(
+      data.history.prices
+    )
   ){
 
     log(
@@ -1167,67 +1583,125 @@ function processHistory(data){
     return;
   }
 
+
   const prices =
-    data.history.prices;
+  data.history.prices;
+
 
   const times =
-    Array.isArray(data.history.times)
-      ? data.history.times
-      : [];
+  Array.isArray(
+    data.history.times
+  )
+  ?
+  data.history.times
+  :
+  [];
 
-  for(let i=0;i<prices.length;i++){
+
+  for(
+    let i=0;
+    i<prices.length;
+    i++
+  ){
 
     const digit =
-      extractDigit(prices[i]);
+    extractDigit(
+      prices[i]
+    );
 
-    if(digit === null)
+
+    if(
+      digit === null
+    ){
+
       continue;
+    }
+
 
     ticks.push({
-      price:Number(prices[i]),
+
+      price:
+      Number(
+        prices[i]
+      ),
+
+      digit:
       digit,
-      epoch:times[i] || Date.now()/1000
+
+      epoch:
+      times[i] ||
+      Date.now()/1000
+
     });
+
   }
 
+
   ticks =
-    ticks.slice(-HISTORY_SIZE);
+  ticks.slice(
+    -HISTORY_SIZE
+  );
+
 
   log(
-    "Historique chargé: " +
+    "Historique chargé : " +
     ticks.length +
     " ticks."
   );
 
+
   render();
+
   runAnalysis();
+
 }
 
-/* ============================================================
-   LIVE TICK
-   ============================================================ */
 
-function processTick(tick){
+/* ==========================================================
+   PROCESS LIVE TICK
+========================================================== */
 
-  if(!tick || tick.quote === undefined)
+function processTick(
+  tick
+){
+
+  if(
+    !tick ||
+    tick.quote === undefined
+  ){
+
     return;
+  }
+
 
   const price =
-    Number(tick.quote);
+  Number(
+    tick.quote
+  );
+
 
   const digit =
-    extractDigit(price);
+  extractDigit(
+    price
+  );
 
-  if(digit === null)
+
+  if(
+    digit === null
+  ){
+
     return;
+  }
+
 
   /*
-    IMPORTANT:
-    validation AVANT ajout du nouveau tick.
-    Cela empêche la fuite de données.
+    VALIDATION AVANT AJOUT
+    DU NOUVEAU TICK.
   */
 
-  if(pendingPrediction){
+  if(
+    pendingPrediction
+  ){
 
     validatePrediction(
       pendingPrediction,
@@ -1235,166 +1709,300 @@ function processTick(tick){
     );
 
     pendingPrediction =
-      null;
+    null;
+
   }
+
 
   ticks.push({
+
+    price:
     price,
+
+    digit:
     digit,
+
     epoch:
-      Number(tick.epoch) ||
-      Date.now()/1000
+    Number(
+      tick.epoch
+    ) ||
+    Date.now()/1000
+
   });
 
-  if(ticks.length > HISTORY_SIZE){
+
+  if(
+    ticks.length >
+    HISTORY_SIZE
+  ){
 
     ticks =
-      ticks.slice(-HISTORY_SIZE);
+    ticks.slice(
+      -HISTORY_SIZE
+    );
+
   }
 
+
   render();
+
   runAnalysis();
+
 }
 
-/* ============================================================
-   COUNTS
-   ============================================================ */
 
-function digitCounts(list){
+/* ==========================================================
+   DIGIT COUNTS
+========================================================== */
+
+function digitCounts(
+  list
+){
 
   const counts =
-    Array(10).fill(0);
+  Array(10).fill(0);
 
-  for(const item of list){
+
+  for(
+    const item of list
+  ){
 
     if(
       item &&
-      Number.isInteger(item.digit) &&
+      Number.isInteger(
+        item.digit
+      ) &&
       item.digit >= 0 &&
       item.digit <= 9
     ){
 
-      counts[item.digit]++;
+      counts[
+        item.digit
+      ]++;
+
     }
+
   }
+
 
   return counts;
+
 }
 
-/* ============================================================
-   PROBABILITIES WITH LAPLACE
-   ============================================================ */
 
-function probabilities(list,alpha=1){
+/* ==========================================================
+   PROBABILITIES
+========================================================== */
+
+function probabilities(
+  list,
+  alpha=1
+){
 
   const counts =
-    digitCounts(list);
+  digitCounts(
+    list
+  );
+
 
   const total =
-    list.length + alpha*10;
+  list.length +
+  alpha*10;
+
 
   return counts.map(
-    c => (c + alpha) / total
+    count =>
+    (
+      count + alpha
+    ) /
+    total
   );
+
 }
 
-/* ============================================================
+
+/* ==========================================================
    ARGMAX
-   ============================================================ */
+========================================================== */
 
-function argmax(arr){
+function argmax(
+  array
+){
 
-  let index=0;
+  let index = 0;
 
-  for(let i=1;i<arr.length;i++){
 
-    if(arr[i] > arr[index])
+  for(
+    let i=1;
+    i<array.length;
+    i++
+  ){
+
+    if(
+      array[i] >
+      array[index]
+    ){
+
       index=i;
+
+    }
+
   }
 
+
   return index;
+
 }
 
-/* ============================================================
+
+/* ==========================================================
    ENTROPY
-   ============================================================ */
+========================================================== */
 
-function entropyNormalized(list){
+function entropyNormalized(
+  list
+){
 
-  if(!list.length)
+  if(
+    !list.length
+  ){
+
     return 1;
+  }
+
 
   const counts =
-    digitCounts(list);
+  digitCounts(
+    list
+  );
+
 
   const n =
-    list.length;
+  list.length;
+
 
   let h=0;
 
-  for(const c of counts){
 
-    if(c<=0)
+  for(
+    const count of counts
+  ){
+
+    if(
+      count <= 0
+    ){
+
       continue;
+    }
+
 
     const p =
-      c/n;
+    count/n;
+
 
     h -=
-      p * Math.log2(p);
+    p *
+    Math.log2(
+      p
+    );
+
   }
 
-  return h / Math.log2(10);
+
+  return (
+    h /
+    Math.log2(10)
+  );
+
 }
 
-/* ============================================================
+
+/* ==========================================================
    UNIFORMITY
-   ============================================================ */
+========================================================== */
 
-function uniformity(list){
+function uniformity(
+  list
+){
 
-  if(!list.length)
+  if(
+    !list.length
+  ){
+
     return 1;
+  }
+
 
   const counts =
-    digitCounts(list);
+  digitCounts(
+    list
+  );
+
 
   const expected =
-    list.length / 10;
+  list.length /
+  10;
+
 
   let deviation=0;
 
-  for(const c of counts){
+
+  for(
+    const count of counts
+  ){
 
     deviation +=
-      Math.abs(c-expected);
+    Math.abs(
+      count -
+      expected
+    );
+
   }
 
+
   deviation /=
-    list.length * 2;
+  list.length * 2;
+
 
   return Math.max(
     0,
-    Math.min(1,deviation)
+    Math.min(
+      1,
+      deviation
+    )
   );
+
 }
 
-/* ============================================================
+
+/* ==========================================================
    STREAK
-   ============================================================ */
+========================================================== */
 
-function getStreak(list){
+function getStreak(
+  list
+){
 
-  if(!list.length)
+  if(
+    !list.length
+  ){
+
     return {
       digit:null,
       length:0
     };
 
+  }
+
+
   const last =
-    list[list.length-1].digit;
+  list[
+    list.length-1
+  ].digit;
+
 
   let length=1;
+
 
   for(
     let i=list.length-2;
@@ -1402,470 +2010,760 @@ function getStreak(list){
     i--
   ){
 
-    if(list[i].digit === last)
+    if(
+      list[i].digit ===
+      last
+    ){
+
       length++;
-    else
+
+    }else{
+
       break;
+
+    }
+
   }
 
+
   return {
+
     digit:last,
-    length
+    length:length
+
   };
+
 }
 
-/* ============================================================
-   REGIME ENGINE
-   ============================================================ */
+
+/* ==========================================================
+   REGIME
+========================================================== */
 
 function detectRegime(){
 
-  if(ticks.length < 40){
+  if(
+    ticks.length < 40
+  ){
 
     return {
+
       name:"INSUFFISANT",
+
       confidence:0,
+
       entropy:1,
+
       uniformity:1,
+
       changed:false
+
     };
+
   }
 
-  const global =
-    ticks.slice(-100);
 
   const recent =
-    ticks.slice(-30);
+  ticks.slice(
+    -30
+  );
+
 
   const old =
-    ticks.slice(-60,-30);
+  ticks.slice(
+    -60,
+    -30
+  );
 
-  const eRecent =
-    entropyNormalized(recent);
 
-  const eOld =
-    entropyNormalized(old);
+  const recentEntropy =
+  entropyNormalized(
+    recent
+  );
 
-  const uRecent =
-    uniformity(recent);
 
-  const change =
-    Math.abs(
-      eRecent - eOld
-    ) > 0.12 ||
-    Math.abs(
-      uRecent -
-      uniformity(old)
-    ) > 0.12;
+  const oldEntropy =
+  entropyNormalized(
+    old
+  );
+
+
+  const recentUniformity =
+  uniformity(
+    recent
+  );
+
+
+  const oldUniformity =
+  uniformity(
+    old
+  );
+
+
+  const changed =
+  Math.abs(
+    recentEntropy -
+    oldEntropy
+  ) > 0.12
+  ||
+  Math.abs(
+    recentUniformity -
+    oldUniformity
+  ) > 0.12;
+
 
   let name =
-    "STABLE";
+  "STABLE";
+
 
   let confidence =
-    1 - Math.abs(
-      eRecent - 0.90
-    );
+  1 -
+  Math.abs(
+    recentEntropy -
+    0.90
+  );
 
-  /*
-    Entropie proche de 1 =
-    distribution proche de l'uniforme.
-  */
-
-  if(eRecent > 0.985){
-
-    name =
-      "UNIFORME";
-  }
-
-  else if(change){
-
-    name =
-      "TRANSITION";
-  }
-
-  else if(eRecent < 0.78){
-
-    name =
-      "CONCENTRÉ";
-  }
-
-  else if(eRecent > 0.94){
-
-    name =
-      "FAIBLE-INFO";
-  }
-
-  else{
-
-    name =
-      "STABLE";
-  }
 
   if(
-    ticks.length >= 70 &&
-    Math.abs(
-      entropyNormalized(
-        ticks.slice(-20)
-      ) -
-      entropyNormalized(
-        ticks.slice(-40,-20)
-      )
-    ) > 0.16
+    recentEntropy >
+    0.985
   ){
 
     name =
-      "CHANGEMENT";
+    "UNIFORME";
+
   }
 
+  else if(
+    changed
+  ){
+
+    name =
+    "TRANSITION";
+
+  }
+
+  else if(
+    recentEntropy <
+    0.78
+  ){
+
+    name =
+    "CONCENTRÉ";
+
+  }
+
+  else if(
+    recentEntropy >
+    0.94
+  ){
+
+    name =
+    "FAIBLE-INFO";
+
+  }
+
+
   return {
-    name,
+
+    name:name,
+
     confidence:
-      Math.max(
-        0,
-        Math.min(1,confidence)
-      ),
-    entropy:eRecent,
-    uniformity:uRecent,
-    changed:change
+    Math.max(
+      0,
+      Math.min(
+        1,
+        confidence
+      )
+    ),
+
+    entropy:
+    recentEntropy,
+
+    uniformity:
+    recentUniformity,
+
+    changed:
+    changed
+
   };
+
 }
 
-/* ============================================================
+
+/* ==========================================================
    GLOBAL MODEL
-   ============================================================ */
+========================================================== */
 
 function globalModel(){
 
   const list =
-    ticks.slice(-100);
+  ticks.slice(
+    -100
+  );
 
-  const p =
-    probabilities(list);
+
+  const probs =
+  probabilities(
+    list
+  );
+
 
   return {
-    candidate:argmax(p),
-    probs:p
+
+    candidate:
+    argmax(
+      probs
+    ),
+
+    probs:
+    probs
+
   };
+
 }
 
-/* ============================================================
+
+/* ==========================================================
    RECENT MODEL
-   ============================================================ */
+========================================================== */
 
 function recentModel(){
 
   const list =
-    ticks.slice(-RECENT_SIZE);
+  ticks.slice(
+    -RECENT_SIZE
+  );
 
-  const p =
-    probabilities(list);
+
+  const probs =
+  probabilities(
+    list
+  );
+
 
   return {
-    candidate:argmax(p),
-    probs:p
+
+    candidate:
+    argmax(
+      probs
+    ),
+
+    probs:
+    probs
+
   };
+
 }
 
-/* ============================================================
-   TRANSITION LEVEL 1
-   ============================================================ */
+
+/* ==========================================================
+   TRANSITION MODEL
+========================================================== */
 
 function transitionModel(){
 
   const matrix =
-    Array.from(
-      {length:10},
-      () => Array(10).fill(0)
-    );
+  Array.from(
+    {
+      length:10
+    },
+    () =>
+    Array(10).fill(0)
+  );
 
-  for(let i=1;i<ticks.length;i++){
 
-    const prev =
-      ticks[i-1].digit;
+  for(
+    let i=1;
+    i<ticks.length;
+    i++
+  ){
+
+    const previous =
+    ticks[i-1].digit;
+
 
     const next =
-      ticks[i].digit;
+    ticks[i].digit;
 
-    matrix[prev][next]++;
+
+    matrix[
+      previous
+    ][
+      next
+    ]++;
+
   }
 
-  if(ticks.length < 2){
+
+  if(
+    ticks.length < 2
+  ){
 
     return {
+
       candidate:0,
-      probs:Array(10).fill(.1),
-      matrix
+
+      probs:
+      Array(10).fill(.1),
+
+      matrix:matrix
+
     };
+
   }
 
+
   const last =
-    ticks[ticks.length-1].digit;
+  ticks[
+    ticks.length-1
+  ].digit;
+
 
   const row =
-    matrix[last];
+  matrix[last];
+
 
   const total =
-    row.reduce(
-      (a,b)=>a+b,
-      0
-    );
+  row.reduce(
+    (a,b) =>
+    a+b,
+    0
+  );
+
 
   const probs =
-    row.map(
-      c => (c+1)/(total+10)
-    );
+  row.map(
+    count =>
+    (
+      count+1
+    ) /
+    (
+      total+10
+    )
+  );
+
 
   return {
-    candidate:argmax(probs),
+
+    candidate:
+    argmax(
+      probs
+    ),
+
+    probs:
     probs,
+
+    matrix:
     matrix
+
   };
+
 }
 
-/* ============================================================
-   TRANSITION LEVEL 2 / SEQUENCE
-   ============================================================ */
+
+/* ==========================================================
+   SEQUENCE MODEL
+========================================================== */
 
 function sequenceModel(){
 
   const map = {};
 
-  /*
-    deux derniers chiffres
-    -> prochain chiffre
-  */
 
-  for(let i=2;i<ticks.length;i++){
+  for(
+    let i=2;
+    i<ticks.length;
+    i++
+  ){
 
     const a =
-      ticks[i-2].digit;
+    ticks[i-2].digit;
+
 
     const b =
-      ticks[i-1].digit;
+    ticks[i-1].digit;
+
 
     const key =
-      a + "," + b;
+    a +
+    "," +
+    b;
 
-    if(!map[key])
+
+    if(
+      !map[key]
+    ){
+
       map[key] =
-        Array(10).fill(0);
+      Array(10).fill(0);
 
-    map[key][ticks[i].digit]++;
+    }
+
+
+    map[key][
+      ticks[i].digit
+    ]++;
+
   }
 
-  if(ticks.length < 3){
+
+  if(
+    ticks.length < 3
+  ){
 
     return {
+
       candidate:0,
-      probs:Array(10).fill(.1),
+
+      probs:
+      Array(10).fill(.1),
+
       tests:0,
+
       key:"—"
+
     };
+
   }
 
+
   const a =
-    ticks[ticks.length-2].digit;
+  ticks[
+    ticks.length-2
+  ].digit;
+
 
   const b =
-    ticks[ticks.length-1].digit;
+  ticks[
+    ticks.length-1
+  ].digit;
+
 
   const key =
-    a + "," + b;
+  a +
+  "," +
+  b;
+
 
   const row =
-    map[key] ||
-    Array(10).fill(0);
+  map[key] ||
+  Array(10).fill(0);
+
 
   const total =
-    row.reduce(
-      (x,y)=>x+y,
-      0
-    );
+  row.reduce(
+    (a,b) =>
+    a+b,
+    0
+  );
+
 
   const probs =
-    row.map(
-      c => (c+1)/(total+10)
-    );
+  row.map(
+    count =>
+    (
+      count+1
+    ) /
+    (
+      total+10
+    )
+  );
+
 
   return {
-    candidate:argmax(probs),
+
+    candidate:
+    argmax(
+      probs
+    ),
+
+    probs:
     probs,
-    tests:total,
+
+    tests:
+    total,
+
+    key:
     key
+
   };
+
 }
 
-/* ============================================================
-   MODEL WEIGHT
-   ============================================================ */
 
-function wilsonLower(wins,tests){
+/* ==========================================================
+   WILSON
+========================================================== */
 
-  if(!tests)
+function wilsonLower(
+  winsValue,
+  tests
+){
+
+  if(
+    !tests
+  ){
+
     return 0;
+  }
 
-  const z=1.96;
 
-  const p=
-    wins/tests;
+  const z =
+  1.96;
 
-  const denominator=
-    1 + z*z/tests;
 
-  const center=
-    p + z*z/(2*tests);
+  const p =
+  winsValue /
+  tests;
 
-  const margin=
-    z *
-    Math.sqrt(
-      (
-        p*(1-p) +
-        z*z/(4*tests)
-      ) / tests
-    );
+
+  const denominator =
+  1 +
+  z*z/tests;
+
+
+  const center =
+  p +
+  z*z/
+  (2*tests);
+
+
+  const margin =
+  z *
+  Math.sqrt(
+    (
+      p*(1-p) +
+      z*z/(4*tests)
+    ) /
+    tests
+  );
+
 
   return Math.max(
     0,
-    (center-margin) /
+    (
+      center-margin
+    ) /
     denominator
   );
+
 }
 
-function modelRate(name){
 
-  const s =
-    modelStats[name];
+/* ==========================================================
+   MODEL RATE
+========================================================== */
 
-  if(s.tests<=0)
+function modelRate(
+  name
+){
+
+  const stat =
+  modelStats[name];
+
+
+  if(
+    stat.tests <= 0
+  ){
+
     return BASELINE;
+  }
 
-  return s.wins/s.tests;
-}
-
-function modelWeight(name){
-
-  const s =
-    modelStats[name];
-
-  if(s.tests < 30)
-    return 0.25;
-
-  const rate =
-    modelRate(name);
-
-  const stability =
-    wilsonLower(
-      s.wins,
-      s.tests
-    );
-
-  /*
-    On donne davantage de poids
-    aux modèles réellement validés.
-  */
-
-  const quality =
-    Math.max(
-      0,
-      rate - BASELINE
-    ) * 4;
-
-  const stable =
-    Math.max(
-      0,
-      stability - BASELINE
-    ) * 5;
 
   return (
-    0.25 +
+    stat.wins /
+    stat.tests
+  );
+
+}
+
+
+/* ==========================================================
+   MODEL WEIGHT
+========================================================== */
+
+function modelWeight(
+  name
+){
+
+  const stat =
+  modelStats[name];
+
+
+  if(
+    stat.tests < 30
+  ){
+
+    return .25;
+  }
+
+
+  const rate =
+  modelRate(
+    name
+  );
+
+
+  const stability =
+  wilsonLower(
+    stat.wins,
+    stat.tests
+  );
+
+
+  const quality =
+  Math.max(
+    0,
+    rate -
+    BASELINE
+  ) * 4;
+
+
+  const stable =
+  Math.max(
+    0,
+    stability -
+    BASELINE
+  ) * 5;
+
+
+  return (
+    .25 +
     quality +
     stable
   );
+
 }
 
-/* ============================================================
-   NORMALIZE WEIGHTS
-   ============================================================ */
+
+/* ==========================================================
+   WEIGHTS
+========================================================== */
 
 function getWeights(){
 
-  const names =
-    [
-      "GLOBAL",
-      "RECENT",
-      "TRANSITION",
-      "SEQUENCE"
-    ];
+  const names = [
+
+    "GLOBAL",
+    "RECENT",
+    "TRANSITION",
+    "SEQUENCE"
+
+  ];
+
 
   let weights =
-    names.map(modelWeight);
+  names.map(
+    modelWeight
+  );
 
-  /*
-    Empêcher un seul modèle
-    de dominer complètement.
-  */
 
   weights =
-    weights.map(
-      w => Math.min(w,1.8)
-    );
+  weights.map(
+    weight =>
+    Math.min(
+      weight,
+      1.8
+    )
+  );
+
 
   const total =
-    weights.reduce(
-      (a,b)=>a+b,
-      0
-    );
+  weights.reduce(
+    (a,b) =>
+    a+b,
+    0
+  );
+
 
   return {
-    GLOBAL:weights[0]/total,
-    RECENT:weights[1]/total,
-    TRANSITION:weights[2]/total,
-    SEQUENCE:weights[3]/total
+
+    GLOBAL:
+    weights[0] /
+    total,
+
+    RECENT:
+    weights[1] /
+    total,
+
+    TRANSITION:
+    weights[2] /
+    total,
+
+    SEQUENCE:
+    weights[3] /
+    total
+
   };
+
 }
 
-/* ============================================================
+
+/* ==========================================================
    ENSEMBLE
-   ============================================================ */
+========================================================== */
 
 function ensemble(){
 
   const models = {
 
-    GLOBAL:globalModel(),
+    GLOBAL:
+    globalModel(),
 
-    RECENT:recentModel(),
+    RECENT:
+    recentModel(),
 
-    TRANSITION:transitionModel(),
+    TRANSITION:
+    transitionModel(),
 
-    SEQUENCE:sequenceModel()
+    SEQUENCE:
+    sequenceModel()
+
   };
 
+
   const weights =
-    getWeights();
+  getWeights();
+
 
   const combined =
-    Array(10).fill(0);
+  Array(10).fill(0);
 
-  for(const name of Object.keys(models)){
 
-    const p =
-      models[name].probs;
+  for(
+    const name of
+    Object.keys(models)
+  ){
 
-    for(let d=0;d<10;d++){
+    for(
+      let d=0;
+      d<10;
+      d++
+    ){
 
       combined[d] +=
-        p[d] *
-        weights[name];
+      models[name].probs[d] *
+      weights[name];
+
     }
+
   }
 
+
   const candidate =
-    argmax(combined);
+  argmax(
+    combined
+  );
+
 
   let agreement=0;
 
-  for(const name of Object.keys(models)){
+
+  for(
+    const name of
+    Object.keys(models)
+  ){
 
     if(
       models[name].candidate ===
@@ -1873,681 +2771,1035 @@ function ensemble(){
     ){
 
       agreement++;
+
     }
 
+
     modelStats[name].candidate =
-      models[name].candidate;
+    models[name].candidate;
+
   }
 
+
   return {
+
+    models:
     models,
+
+    weights:
     weights,
-    probs:combined,
+
+    probs:
+    combined,
+
+    candidate:
     candidate,
+
+    agreement:
     agreement
+
   };
+
 }
 
-/* ============================================================
-   SCORE
-   ============================================================ */
+
+/* ==========================================================
+   RAW SCORE
+========================================================== */
 
 function calculateRawScore(
-  ensembleResult,
+  result,
   regime
 ){
 
   const candidate =
-    ensembleResult.candidate;
+  result.candidate;
 
-  const p =
-    ensembleResult.probs;
+
+  const probs =
+  result.probs;
+
 
   const sorted =
-    [...p].sort(
-      (a,b)=>b-a
-    );
+  [...probs].sort(
+    (a,b) =>
+    b-a
+  );
+
 
   const top =
-    sorted[0];
+  sorted[0];
+
 
   const second =
-    sorted[1];
+  sorted[1];
+
 
   const gap =
-    Math.max(
-      0,
-      top-second
-    );
+  Math.max(
+    0,
+    top-second
+  );
+
 
   const edge =
-    top - BASELINE;
+  top -
+  BASELINE;
 
-  const agreement =
-    ensembleResult.agreement;
 
   const agreementScore =
-    agreement / 4;
+  result.agreement /
+  4;
+
 
   const edgeScore =
-    Math.max(
-      0,
-      Math.min(
-        1,
-        edge / 0.12
-      )
-    );
+  Math.max(
+    0,
+    Math.min(
+      1,
+      edge /
+      .12
+    )
+  );
+
 
   const gapScore =
-    Math.max(
-      0,
-      Math.min(
-        1,
-        gap / 0.10
-      )
-    );
+  Math.max(
+    0,
+    Math.min(
+      1,
+      gap /
+      .10
+    )
+  );
+
 
   let score =
-    45 +
-    agreementScore*20 +
-    edgeScore*25 +
-    gapScore*10;
+  45 +
+  agreementScore*20 +
+  edgeScore*25 +
+  gapScore*10;
 
-  /*
-    Pénalité en régime peu informatif.
-  */
 
   if(
-    regime.name === "UNIFORME" ||
-    regime.name === "FAIBLE-INFO"
+    regime.name ===
+    "UNIFORME"
   ){
 
     score -= 15;
+
   }
 
+
   if(
-    regime.name === "CHANGEMENT"
+    regime.name ===
+    "FAIBLE-INFO"
+  ){
+
+    score -= 15;
+
+  }
+
+
+  if(
+    regime.name ===
+    "CHANGEMENT"
   ){
 
     score -= 12;
+
   }
 
+
+  if(
+    regime.name ===
+    "TRANSITION"
+  ){
+
+    score -= 8;
+
+  }
+
+
   return {
+
     score:
-      Math.max(
-        0,
-        Math.min(100,score)
-      ),
-
-    probability:top,
-
-    edge,
-
-    gap,
-
-    candidate
-  };
-}
-
-/* ============================================================
-   CALIBRATION
-   ============================================================ */
-
-function getBucket(score){
-
-  if(score < 60)
-    return "50-59";
-
-  if(score < 70)
-    return "60-69";
-
-  if(score < 80)
-    return "70-79";
-
-  if(score < 90)
-    return "80-89";
-
-  return "90-100";
-}
-
-function calibrationFactor(bucket){
-
-  const b =
-    calibrationBuckets[bucket];
-
-  if(!b || b.tests < 30)
-    return 1;
-
-  const rate =
-    b.wins/b.tests;
-
-  /*
-    On ne transforme pas directement
-    le taux en probabilité.
-    C'est seulement une correction.
-  */
-
-  const factor =
-    0.85 +
     Math.max(
       0,
       Math.min(
-        0.20,
-        (rate-BASELINE)*2
+        100,
+        score
       )
-    );
+    ),
 
-  return factor;
+    probability:
+    top,
+
+    edge:
+    edge,
+
+    gap:
+    gap,
+
+    candidate:
+    candidate
+
+  };
+
 }
 
-function calibratedScore(rawScore){
 
-  const bucket =
-    getBucket(rawScore);
+/* ==========================================================
+   BUCKET
+========================================================== */
+
+function getBucket(
+  score
+){
+
+  if(
+    score < 60
+  ){
+
+    return "50-59";
+  }
+
+
+  if(
+    score < 70
+  ){
+
+    return "60-69";
+  }
+
+
+  if(
+    score < 80
+  ){
+
+    return "70-79";
+  }
+
+
+  if(
+    score < 90
+  ){
+
+    return "80-89";
+  }
+
+
+  return "90-100";
+
+}
+
+
+/* ==========================================================
+   CALIBRATION FACTOR
+========================================================== */
+
+function calibrationFactor(
+  bucket
+){
+
+  const b =
+  calibrationBuckets[
+    bucket
+  ];
+
+
+  if(
+    !b ||
+    b.tests < 30
+  ){
+
+    return 1;
+  }
+
+
+  const rate =
+  b.wins /
+  b.tests;
+
 
   const factor =
-    calibrationFactor(bucket);
+  0.85 +
+  Math.max(
+    0,
+    Math.min(
+      .20,
+      (rate -
+      BASELINE) * 2
+    )
+  );
+
+
+  return factor;
+
+}
+
+
+/* ==========================================================
+   CALIBRATED SCORE
+========================================================== */
+
+function calibratedScore(
+  rawScore
+){
+
+  const bucket =
+  getBucket(
+    rawScore
+  );
+
+
+  const factor =
+  calibrationFactor(
+    bucket
+  );
+
 
   return Math.round(
     Math.max(
       0,
       Math.min(
         100,
-        rawScore*factor
+        rawScore *
+        factor
       )
     )
   );
+
 }
 
-/* ============================================================
-   PREDICTION
-   ============================================================ */
+
+/* ==========================================================
+   CREATE PREDICTION
+========================================================== */
 
 function createPrediction(){
 
-  if(ticks.length < MIN_TICKS)
+  if(
+    ticks.length <
+    MIN_TICKS
+  ){
+
     return null;
-
-  const regime =
-    detectRegime();
-
-  const ens =
-    ensemble();
-
-  const raw =
-    calculateRawScore(
-      ens,
-      regime
-    );
-
-  const calibrated =
-    calibratedScore(
-      raw.score
-    );
-
-  const candidate =
-    raw.candidate;
-
-  const modelRates =
-    {};
-
-  for(const name of Object.keys(modelStats)){
-
-    modelRates[name] =
-      modelRate(name);
   }
 
-  const realSample =
-    validatedCount;
+
+  const regime =
+  detectRegime();
+
+
+  const ens =
+  ensemble();
+
+
+  const raw =
+  calculateRawScore(
+    ens,
+    regime
+  );
+
+
+  const calibrated =
+  calibratedScore(
+    raw.score
+  );
+
 
   const realRate =
-    validatedCount > 0
-      ? wins/validatedCount
-      : 0;
+  validatedCount > 0
+  ?
+  wins /
+  validatedCount
+  :
+  0;
+
 
   const lower =
-    wilsonLower(
-      wins,
-      validatedCount
-    );
+  wilsonLower(
+    wins,
+    validatedCount
+  );
 
-  /*
-    Statistical Gate strict.
-  */
 
-  const gateScore =
-    calibrated >= 70;
+  const gate = {
 
-  const gateAgreement =
-    ens.agreement >= 2;
+    score:
+    calibrated >= 70,
 
-  const gateSample =
-    validatedCount >= 80;
+    agreement:
+    ens.agreement >= 2,
 
-  const gateEdge =
-    realRate >= 0.105;
+    sample:
+    validatedCount >= 80,
 
-  const gateWilson =
-    lower >= 0.085;
+    edge:
+    realRate >= .105,
 
-  const gateRegime =
-    regime.name !== "UNIFORME" &&
-    regime.name !== "FAIBLE-INFO" &&
-    regime.name !== "CHANGEMENT";
+    wilson:
+    lower >= .085,
 
-  const gateEntropy =
-    regime.entropy < 0.985;
+    regime:
+    regime.name !==
+    "UNIFORME" &&
+    regime.name !==
+    "FAIBLE-INFO" &&
+    regime.name !==
+    "CHANGEMENT",
 
-  const finalGate =
-    gateScore &&
-    gateAgreement &&
-    gateSample &&
-    gateEdge &&
-    gateWilson &&
-    gateRegime &&
-    gateEntropy;
+    entropy:
+    regime.entropy <
+    .985
+
+  };
+
+
+  gate.final =
+  gate.score &&
+  gate.agreement &&
+  gate.sample &&
+  gate.edge &&
+  gate.wilson &&
+  gate.regime &&
+  gate.entropy;
+
 
   return {
 
-    candidate,
+    candidate:
+    raw.candidate,
 
+    regime:
     regime,
 
-    ensemble:ens,
+    ensemble:
+    ens,
 
+    raw:
     raw,
 
+    calibrated:
     calibrated,
 
-    realSample,
+    realSample:
+    validatedCount,
 
+    realRate:
     realRate,
 
+    lower:
     lower,
 
-    gate:{
-      score:gateScore,
-      agreement:gateAgreement,
-      sample:gateSample,
-      edge:gateEdge,
-      wilson:gateWilson,
-      regime:gateRegime,
-      entropy:gateEntropy,
-      final:finalGate
-    }
+    gate:
+    gate
+
   };
+
 }
 
-/* ============================================================
-   VALIDATE PREDICTION
-   ============================================================ */
 
-function validatePrediction(prediction,actual){
+/* ==========================================================
+   VALIDATION
+========================================================== */
 
-  if(!prediction)
-    return;
+function validatePrediction(
+  prediction,
+  actual
+){
 
   validatedCount++;
 
-  const finalCandidate =
-    prediction.candidate;
 
   const finalWin =
-    finalCandidate === actual;
+  prediction.candidate ===
+  actual;
 
-  if(finalWin)
+
+  if(
+    finalWin
+  ){
+
     wins++;
-  else
+
+  }else{
+
     losses++;
 
+  }
+
+
   /*
-    Validation de chaque modèle
-    indépendamment.
+    Validation indépendante
+    des 4 modèles.
   */
 
-  for(const name of Object.keys(modelStats)){
+  for(
+    const name of
+    Object.keys(modelStats)
+  ){
 
     const candidate =
-      prediction.ensemble.models[name].candidate;
+    prediction
+    .ensemble
+    .models[name]
+    .candidate;
 
-    if(
-      candidate === undefined ||
-      candidate === null
-    )
-      continue;
 
     const stat =
-      modelStats[name];
+    modelStats[name];
+
 
     stat.tests++;
 
-    if(candidate === actual)
+
+    if(
+      candidate ===
+      actual
+    ){
+
       stat.wins++;
 
+    }
+
+
     stat.history.push({
+
+      candidate:
       candidate,
+
+      actual:
       actual,
+
       win:
-        candidate === actual
+      candidate ===
+      actual
+
     });
 
-    if(stat.history.length > 300)
+
+    if(
+      stat.history.length >
+      300
+    ){
+
       stat.history.shift();
+
+    }
+
   }
 
+
   /*
-    Calibration.
+    Calibration
   */
 
   const bucket =
-    getBucket(
-      prediction.raw.score
-    );
+  getBucket(
+    prediction.raw.score
+  );
 
-  calibrationBuckets[bucket].tests++;
 
-  if(finalWin)
-    calibrationBuckets[bucket].wins++;
+  calibrationBuckets[
+    bucket
+  ].tests++;
+
+
+  if(
+    finalWin
+  ){
+
+    calibrationBuckets[
+      bucket
+    ].wins++;
+
+  }
+
 
   /*
-    Shadow Lab.
-    */
+    Shadow Lab
+  */
 
-  for(let d=0;d<=9;d++){
+  for(
+    let d=0;
+    d<=9;
+    d++
+  ){
 
-    const shadow =
-      prediction.ensemble.probs[d];
+    const probability =
+    prediction
+    .ensemble
+    .probs[d];
+
 
     const score =
-      Math.round(
-        Math.max(
-          0,
-          Math.min(
-            100,
-            45 +
-            shadow*300
-          )
+    Math.round(
+      Math.max(
+        0,
+        Math.min(
+          100,
+          45 +
+          probability*300
         )
-      );
+      )
+    );
+
 
     shadowLab[d].tests++;
 
     shadowLab[d].scoreSum +=
-      score;
+    score;
 
-    if(d === actual)
+
+    if(
+      d === actual
+    ){
+
       shadowLab[d].wins++;
+
+    }
+
   }
 
+
   /*
-    Signal performance.
+    Signal performance
   */
 
-  if(prediction.gate.final){
+  if(
+    prediction.gate.final
+  ){
 
     signalAccepted++;
 
-    if(finalWin)
+
+    if(
+      finalWin
+    ){
+
       signalWins++;
-    else
+
+    }else{
+
       signalLosses++;
+
+    }
+
   }
 
-  const line =
-    "Pred #" +
-    predictionCount +
-    " → " +
-    finalWin
-      ? "WIN"
-      : "LOSS";
 
   history.unshift(
+
     "Pred #" +
     predictionCount +
+
     " → " +
-    (finalWin ? "WIN":"LOSS") +
+
+    (
+      finalWin
+      ?
+      "WIN"
+      :
+      "LOSS"
+    ) +
+
     " | réel=" +
     actual +
+
     " | candidat=" +
-    finalCandidate +
+    prediction.candidate +
+
     " | score=" +
     prediction.calibrated +
+
     " | régime=" +
     prediction.regime.name +
+
     " | gate=" +
+
     (
       prediction.gate.final
-        ? "OPEN"
-        : "BLOCK"
+      ?
+      "OPEN"
+      :
+      "BLOCK"
     )
+
   );
 
+
   history =
-    history.slice(0,150);
+  history.slice(
+    0,
+    150
+  );
+
+
+  log(
+
+    "Validation " +
+
+    (
+      finalWin
+      ?
+      "WIN"
+      :
+      "LOSS"
+    ) +
+
+    " | réel=" +
+    actual +
+
+    " | candidat=" +
+    prediction.candidate
+
+  );
+
 
   render();
 
-  log(
-    "Validation " +
-    (finalWin ? "WIN":"LOSS") +
-    " | réel=" +
-    actual +
-    " | candidat=" +
-    finalCandidate
-  );
 }
 
-/* ============================================================
+
+/* ==========================================================
    RUN ANALYSIS
-   ============================================================ */
+========================================================== */
 
 function runAnalysis(){
 
-  if(ticks.length < MIN_TICKS){
+  if(
+    ticks.length <
+    MIN_TICKS
+  ){
 
     renderEmptyAnalysis();
 
     return;
   }
 
-  const prediction =
-    createPrediction();
 
-  if(!prediction)
+  const prediction =
+  createPrediction();
+
+
+  if(
+    !prediction
+  ){
+
     return;
+  }
+
 
   predictionCount++;
 
+
   pendingPrediction =
-    prediction;
+  prediction;
+
 
   renderPrediction(
     prediction
   );
+
 }
 
-/* ============================================================
-   RENDER EMPTY
-   ============================================================ */
+
+/* ==========================================================
+   EMPTY
+========================================================== */
 
 function renderEmptyAnalysis(){
 
-  $("candidate").textContent="—";
-  $("regime").textContent="INSUFFISANT";
-  $("rawScore").textContent="—";
-  $("calibratedScore").textContent="—";
-  $("agreement").textContent="—";
-  $("entropy").textContent="—";
-  $("edge").textContent="—";
-  $("sample").textContent=
-    validatedCount;
-
-  $("signalBox").textContent=
-    "PAS ENCORE DE SIGNAL";
-
-  $("signalBox").className=
-    "signal signal-no";
-}
-
-/* ============================================================
-   RENDER PREDICTION
-   ============================================================ */
-
-function renderPrediction(p){
-
   $("candidate").textContent =
-    p.candidate;
+  "—";
 
   $("regime").textContent =
-    p.regime.name;
+  "INSUFFISANT";
 
   $("rawScore").textContent =
-    Math.round(p.raw.score) +
-    "/100";
+  "—";
 
   $("calibratedScore").textContent =
-    p.calibrated +
-    "/100";
+  "—";
 
   $("agreement").textContent =
-    p.ensemble.agreement +
-    "/4";
+  "—";
 
   $("entropy").textContent =
-    (p.regime.entropy*100)
-      .toFixed(2) +
-    "%";
+  "—";
 
   $("edge").textContent =
-    (p.raw.edge*100)
-      .toFixed(2) +
-    "%";
+  "—";
 
   $("sample").textContent =
-    p.realSample;
+  validatedCount;
 
-  if(p.gate.final){
+
+  $("signalBox").textContent =
+  "PAS ENCORE DE SIGNAL";
+
+
+  $("signalBox").className =
+  "signal signal-no";
+
+}
+
+
+/* ==========================================================
+   RENDER PREDICTION
+========================================================== */
+
+function renderPrediction(
+  p
+){
+
+  $("candidate").textContent =
+  p.candidate;
+
+
+  $("regime").textContent =
+  p.regime.name;
+
+
+  $("rawScore").textContent =
+  Math.round(
+    p.raw.score
+  ) +
+  "/100";
+
+
+  $("calibratedScore").textContent =
+  p.calibrated +
+  "/100";
+
+
+  $("agreement").textContent =
+  p.ensemble.agreement +
+  "/4";
+
+
+  $("entropy").textContent =
+  (
+    p.regime.entropy*100
+  ).toFixed(2) +
+  "%";
+
+
+  $("edge").textContent =
+  (
+    p.raw.edge*100
+  ).toFixed(2) +
+  "%";
+
+
+  $("sample").textContent =
+  p.realSample;
+
+
+  if(
+    p.gate.final
+  ){
 
     $("signalBox").textContent =
-      "🟢 SIGNAL STATISTIQUE — TEST";
+    "🟢 SIGNAL STATISTIQUE — TEST";
 
     $("signalBox").className =
-      "signal signal-yes";
+    "signal signal-yes";
 
-  }else if(
+  }
+
+  else if(
     p.calibrated >= 60 &&
     p.ensemble.agreement >= 2
   ){
 
     $("signalBox").textContent =
-      "🟡 SIGNAL INSUFFISANT";
+    "🟡 SIGNAL INSUFFISANT";
 
     $("signalBox").className =
-      "signal signal-warn";
+    "signal signal-warn";
 
-  }else{
-
-    $("signalBox").textContent =
-      "🔴 PAS DE SIGNAL — GATE BLOQUÉ";
-
-    $("signalBox").className =
-      "signal signal-no";
   }
 
+  else{
+
+    $("signalBox").textContent =
+    "🔴 PAS DE SIGNAL — GATE BLOQUÉ";
+
+    $("signalBox").className =
+    "signal signal-no";
+
+  }
+
+
   /*
-    Regime panel
+    Regime
   */
 
   $("regimeMain").textContent =
-    p.regime.name;
+  p.regime.name;
+
 
   $("regimeConfidence").textContent =
-    Math.round(
-      p.regime.confidence*100
-    ) +
-    "%";
+  Math.round(
+    p.regime.confidence*100
+  ) +
+  "%";
+
 
   $("entropyValue").textContent =
-    (p.regime.entropy*100)
-      .toFixed(2) +
-    "%";
+  (
+    p.regime.entropy*100
+  ).toFixed(2) +
+  "%";
+
 
   $("uniformity").textContent =
-    (p.regime.uniformity*100)
-      .toFixed(2) +
-    "%";
+  (
+    p.regime.uniformity*100
+  ).toFixed(2) +
+  "%";
+
 
   $("regimeChange").textContent =
-    p.regime.changed
-      ? "OUI"
-      : "NON";
+  p.regime.changed
+  ?
+  "OUI"
+  :
+  "NON";
+
 
   const streak =
-    getStreak(ticks);
+  getStreak(
+    ticks
+  );
+
 
   $("streak").textContent =
-    streak.digit === null
-      ? "—"
-      : streak.digit +
-        " × " +
-        streak.length;
+  streak.digit === null
+  ?
+  "—"
+  :
+  streak.digit +
+  " × " +
+  streak.length;
+
 
   /*
-    Gate
+    Gates
   */
 
   $("gateScore").textContent =
-    p.gate.score ? "OK":"BLOQUÉ";
+  p.gate.score
+  ?
+  "OK"
+  :
+  "BLOQUÉ";
+
 
   $("gateAgreement").textContent =
-    p.gate.agreement ? "OK":"BLOQUÉ";
+  p.gate.agreement
+  ?
+  "OK"
+  :
+  "BLOQUÉ";
+
 
   $("gateSample").textContent =
-    p.gate.sample ? "OK":"BLOQUÉ";
+  p.gate.sample
+  ?
+  "OK"
+  :
+  "BLOQUÉ";
+
 
   $("gateEdge").textContent =
-    p.gate.edge ? "OK":"BLOQUÉ";
+  p.gate.edge
+  ?
+  "OK"
+  :
+  "BLOQUÉ";
+
 
   $("gateWilson").textContent =
-    p.gate.wilson ? "OK":"BLOQUÉ";
+  p.gate.wilson
+  ?
+  "OK"
+  :
+  "BLOQUÉ";
+
 
   $("gateRegime").textContent =
-    p.gate.regime ? "OK":"BLOQUÉ";
+  p.gate.regime
+  ?
+  "OK"
+  :
+  "BLOQUÉ";
+
 
   $("gateEntropy").textContent =
-    p.gate.entropy ? "OK":"BLOQUÉ";
+  p.gate.entropy
+  ?
+  "OK"
+  :
+  "BLOQUÉ";
+
 
   $("gateFinal").textContent =
-    p.gate.final
-      ? "OUVERT"
-      : "BLOQUÉ";
+  p.gate.final
+  ?
+  "OUVERT"
+  :
+  "BLOQUÉ";
 
-  /*
-    Economic
-  */
 
   updateEconomicGate(
     p.raw.probability
   );
 
-  renderModels(p);
+
+  renderModels(
+    p
+  );
+
+
   renderTransitions();
-  renderSequence(p);
+
+  renderSequence(
+    p
+  );
+
   renderShadowLab();
+
   renderCalibration();
+
   renderFrequency();
+
 }
 
-/* ============================================================
-   ECONOMIC GATE
-   ============================================================ */
 
-function updateEconomicGate(probability){
+/* ==========================================================
+   ECONOMIC
+========================================================== */
+
+function updateEconomicGate(
+  probability
+){
 
   const payout =
-    Number(
-      $("payoutInput").value
-    );
+  Number(
+    $("payoutInput").value
+  );
+
+
+  $("modelProbability").textContent =
+  (
+    probability*100
+  ).toFixed(2) +
+  "%";
+
 
   if(
     !payout ||
@@ -2555,473 +3807,750 @@ function updateEconomicGate(probability){
   ){
 
     $("breakEven").textContent =
-      "—";
-
-    $("modelProbability").textContent =
-      (probability*100)
-        .toFixed(2) +
-      "%";
+    "—";
 
     $("expectedValue").textContent =
-      "—";
+    "—";
 
     return;
   }
 
+
   const breakEven =
-    1 / (1+payout);
+  1 /
+  (
+    1 +
+    payout
+  );
+
 
   const ev =
-    probability*payout -
-    (1-probability);
+  probability*payout -
+  (1-probability);
+
 
   $("breakEven").textContent =
-    (breakEven*100)
-      .toFixed(2) +
-    "%";
+  (
+    breakEven*100
+  ).toFixed(2) +
+  "%";
 
-  $("modelProbability").textContent =
-    (probability*100)
-      .toFixed(2) +
-    "%";
 
   $("expectedValue").textContent =
-    ev.toFixed(4);
+  ev.toFixed(4);
+
 }
 
-$("payoutInput").addEventListener(
+
+$("payoutInput")
+.addEventListener(
   "input",
   function(){
 
-    if(pendingPrediction){
+    if(
+      pendingPrediction
+    ){
 
       updateEconomicGate(
-        pendingPrediction.raw.probability
+        pendingPrediction
+        .raw
+        .probability
       );
+
     }
+
   }
 );
 
-/* ============================================================
-   RENDER MODELS
-   ============================================================ */
 
-function renderModels(p){
+/* ==========================================================
+   MODELS TABLE
+========================================================== */
+
+function renderModels(
+  p
+){
 
   const weights =
-    p.ensemble.weights;
+  p.ensemble.weights;
+
 
   let html="";
 
-  for(const name of [
-    "GLOBAL",
-    "RECENT",
-    "TRANSITION",
-    "SEQUENCE"
-  ]){
 
-    const s =
-      modelStats[name];
+  for(
+    const name of [
+      "GLOBAL",
+      "RECENT",
+      "TRANSITION",
+      "SEQUENCE"
+    ]
+  ){
+
+    const stat =
+    modelStats[name];
+
 
     const rate =
-      s.tests
-        ? s.wins/s.tests
-        : 0;
+    stat.tests
+    ?
+    stat.wins /
+    stat.tests
+    :
+    0;
+
 
     const lower =
-      wilsonLower(
-        s.wins,
-        s.tests
-      );
+    wilsonLower(
+      stat.wins,
+      stat.tests
+    );
+
 
     const candidate =
-      p.ensemble.models[name].candidate;
+    p.ensemble
+    .models[name]
+    .candidate;
+
 
     html += `
+
       <tr>
-        <td>${name}<br>→ ${candidate}</td>
-        <td>${s.tests}</td>
-        <td class="green">${s.wins}</td>
-        <td>${(rate*100).toFixed(1)}%</td>
-        <td>${(lower*100).toFixed(1)}%</td>
-        <td>${(weights[name]*100).toFixed(1)}%</td>
+
+        <td>
+          ${name}<br>
+          → ${candidate}
+        </td>
+
+        <td>
+          ${stat.tests}
+        </td>
+
+        <td class="green">
+          ${stat.wins}
+        </td>
+
+        <td>
+          ${(rate*100).toFixed(1)}%
+        </td>
+
+        <td>
+          ${(lower*100).toFixed(1)}%
+        </td>
+
+        <td>
+          ${(weights[name]*100).toFixed(1)}%
+        </td>
+
       </tr>
+
     `;
+
   }
 
+
   $("modelTable").innerHTML =
-    html;
+  html;
+
 
   $("decisionGlobal").textContent =
-    p.ensemble.models.GLOBAL.candidate;
+  p.ensemble
+  .models
+  .GLOBAL
+  .candidate;
+
 
   $("decisionRecent").textContent =
-    p.ensemble.models.RECENT.candidate;
+  p.ensemble
+  .models
+  .RECENT
+  .candidate;
+
 
   $("decisionTransition").textContent =
-    p.ensemble.models.TRANSITION.candidate;
+  p.ensemble
+  .models
+  .TRANSITION
+  .candidate;
+
 
   $("decisionSequence").textContent =
-    p.ensemble.models.SEQUENCE.candidate;
+  p.ensemble
+  .models
+  .SEQUENCE
+  .candidate;
+
 }
 
-/* ============================================================
-   TRANSITIONS
-   ============================================================ */
+
+/* ==========================================================
+   TRANSITION TABLE
+========================================================== */
 
 function renderTransitions(){
 
-  if(ticks.length < 2)
+  if(
+    ticks.length < 2
+  ){
+
     return;
+  }
+
 
   const model =
-    transitionModel();
+  transitionModel();
+
 
   let html="";
 
-  for(let d=0;d<=9;d++){
+
+  for(
+    let d=0;
+    d<=9;
+    d++
+  ){
 
     const row =
-      model.matrix[d];
+    model.matrix[d];
+
 
     const tests =
-      row.reduce(
-        (a,b)=>a+b,
-        0
-      );
-
-    const candidate =
-      tests > 0
-        ? argmax(
-            row.map(
-              c => (c+1)/(tests+10)
-            )
-          )
-        : "—";
-
-    let strength=0;
-
-    if(tests > 0){
-
-      const probs =
-        row.map(
-          c => (c+1)/(tests+10)
-        );
-
-      strength =
-        Math.max(...probs);
-    }
-
-    html += `
-      <tr>
-        <td>${d}</td>
-        <td>${candidate}</td>
-        <td>${(strength*100).toFixed(1)}%</td>
-        <td>${tests}</td>
-      </tr>
-    `;
-  }
-
-  $("transitionTable").innerHTML =
-    html;
-}
-
-/* ============================================================
-   SEQUENCE
-   ============================================================ */
-
-function renderSequence(p){
-
-  const seq =
-    p.ensemble.models.SEQUENCE;
-
-  $("sequenceCurrent").textContent =
-    seq.key;
-
-  $("sequenceCandidate").textContent =
-    seq.candidate;
-
-  $("sequenceTests").textContent =
-    seq.tests;
-
-  const strength =
-    Math.max(
-      ...seq.probs
+    row.reduce(
+      (a,b) =>
+      a+b,
+      0
     );
 
-  $("sequenceStrength").textContent =
-    (strength*100)
-      .toFixed(1) +
-    "%";
+
+    const probs =
+    row.map(
+      count =>
+      (
+        count+1
+      ) /
+      (
+        tests+10
+      )
+    );
+
+
+    const candidate =
+    tests > 0
+    ?
+    argmax(
+      probs
+    )
+    :
+    "—";
+
+
+    const strength =
+    tests > 0
+    ?
+    Math.max(
+      ...probs
+    )
+    :
+    0;
+
+
+    html += `
+
+      <tr>
+
+        <td>${d}</td>
+
+        <td>${candidate}</td>
+
+        <td>
+          ${(strength*100).toFixed(1)}%
+        </td>
+
+        <td>${tests}</td>
+
+      </tr>
+
+    `;
+
+  }
+
+
+  $("transitionTable")
+  .innerHTML =
+  html;
+
 }
 
-/* ============================================================
-   SHADOW LAB
-   ============================================================ */
+
+/* ==========================================================
+   SEQUENCE RENDER
+========================================================== */
+
+function renderSequence(
+  p
+){
+
+  const model =
+  p.ensemble
+  .models
+  .SEQUENCE;
+
+
+  $("sequenceCurrent")
+  .textContent =
+  model.key;
+
+
+  $("sequenceCandidate")
+  .textContent =
+  model.candidate;
+
+
+  $("sequenceTests")
+  .textContent =
+  model.tests;
+
+
+  $("sequenceStrength")
+  .textContent =
+  (
+    Math.max(
+      ...model.probs
+    )*100
+  ).toFixed(1) +
+  "%";
+
+}
+
+
+/* ==========================================================
+   SHADOW
+========================================================== */
 
 function renderShadowLab(){
 
   let html="";
 
-  for(let d=0;d<=9;d++){
 
-    const s =
-      shadowLab[d];
+  for(
+    let d=0;
+    d<=9;
+    d++
+  ){
+
+    const stat =
+    shadowLab[d];
+
 
     const rate =
-      s.tests
-        ? s.wins/s.tests
-        : 0;
+    stat.tests
+    ?
+    stat.wins /
+    stat.tests
+    :
+    0;
 
-    const avgScore =
-      s.tests
-        ? s.scoreSum/s.tests
-        : 0;
+
+    const average =
+    stat.tests
+    ?
+    stat.scoreSum /
+    stat.tests
+    :
+    0;
+
 
     html += `
+
       <tr>
+
         <td>${d}</td>
-        <td>${avgScore.toFixed(0)}</td>
-        <td>${s.tests}</td>
-        <td class="green">${s.wins}</td>
-        <td>${(rate*100).toFixed(1)}%</td>
+
+        <td>
+          ${average.toFixed(0)}
+        </td>
+
+        <td>
+          ${stat.tests}
+        </td>
+
+        <td class="green">
+          ${stat.wins}
+        </td>
+
+        <td>
+          ${(rate*100).toFixed(1)}%
+        </td>
+
       </tr>
+
     `;
+
   }
 
-  $("shadowTable").innerHTML =
-    html;
+
+  $("shadowTable")
+  .innerHTML =
+  html;
+
 }
 
-/* ============================================================
+
+/* ==========================================================
    CALIBRATION
-   ============================================================ */
+========================================================== */
 
 function renderCalibration(){
 
   let html="";
 
-  for(const bucket of Object.keys(
-    calibrationBuckets
-  )){
 
-    const b =
-      calibrationBuckets[bucket];
+  for(
+    const bucket of
+    Object.keys(
+      calibrationBuckets
+    )
+  ){
+
+    const stat =
+    calibrationBuckets[
+      bucket
+    ];
+
 
     const rate =
-      b.tests
-        ? b.wins/b.tests
-        : 0;
+    stat.tests
+    ?
+    stat.wins /
+    stat.tests
+    :
+    0;
+
 
     html += `
+
       <tr>
+
         <td>${bucket}</td>
-        <td class="green">${b.wins}</td>
-        <td>${b.tests}</td>
-        <td>${(rate*100).toFixed(1)}%</td>
+
+        <td class="green">
+          ${stat.wins}
+        </td>
+
+        <td>
+          ${stat.tests}
+        </td>
+
+        <td>
+          ${(rate*100).toFixed(1)}%
+        </td>
+
       </tr>
+
     `;
+
   }
 
-  $("calibrationTable").innerHTML =
-    html;
+
+  $("calibrationTable")
+  .innerHTML =
+  html;
+
 }
 
-/* ============================================================
+
+/* ==========================================================
    FREQUENCY
-   ============================================================ */
+========================================================== */
 
 function renderFrequency(){
 
   const counts =
-    digitCounts(ticks);
+  digitCounts(
+    ticks
+  );
+
 
   const total =
-    ticks.length;
+  ticks.length;
+
 
   let html="";
 
-  for(let d=0;d<=9;d++){
+
+  for(
+    let d=0;
+    d<=9;
+    d++
+  ){
 
     const rate =
-      total
-        ? counts[d]/total
-        : 0;
+    total
+    ?
+    counts[d] /
+    total
+    :
+    0;
+
 
     html += `
+
       <div class="box">
-        <div class="label">Chiffre ${d}</div>
-        <div class="value">${counts[d]}</div>
+
+        <div class="label">
+          Chiffre ${d}
+        </div>
+
+        <div class="value">
+          ${counts[d]}
+        </div>
+
         <div class="small">
           ${(rate*100).toFixed(1)}%
         </div>
+
       </div>
+
     `;
+
   }
 
-  $("frequencyGrid").innerHTML =
-    html;
+
+  $("frequencyGrid")
+  .innerHTML =
+  html;
+
 }
 
-/* ============================================================
-   RENDER GLOBAL
-   ============================================================ */
+
+/* ==========================================================
+   GLOBAL RENDER
+========================================================== */
 
 function render(){
 
   const last =
-    ticks[ticks.length-1];
+  ticks[
+    ticks.length-1
+  ];
+
 
   if(last){
 
-    $("price").textContent =
-      last.price.toFixed(4);
+    $("price")
+    .textContent =
+    last.price.toFixed(4);
 
-    $("lastDigit").textContent =
-      last.digit;
+
+    $("lastDigit")
+    .textContent =
+    last.digit;
+
   }
 
-  $("tickCount").textContent =
-    ticks.length;
 
-  $("predictions").textContent =
-    predictionCount;
+  $("tickCount")
+  .textContent =
+  ticks.length;
 
-  $("validated").textContent =
+
+  $("predictions")
+  .textContent =
+  predictionCount;
+
+
+  $("validated")
+  .textContent =
+  validatedCount;
+
+
+  $("wins")
+  .textContent =
+  wins;
+
+
+  $("losses")
+  .textContent =
+  losses;
+
+
+  if(
+    validatedCount > 0
+  ){
+
+    const rate =
+    wins /
     validatedCount;
 
-  $("wins").textContent =
-    wins;
 
-  $("losses").textContent =
-    losses;
+    $("realRate")
+    .textContent =
+    (
+      rate*100
+    ).toFixed(1) +
+    "%";
 
-  const rate =
-    validatedCount
-      ? wins/validatedCount
-      : 0;
 
-  $("realRate").textContent =
-    validatedCount
-      ? (rate*100).toFixed(1) + "%"
-      : "—";
+    $("realEdge")
+    .textContent =
+    (
+      (rate -
+      BASELINE)*100
+    ).toFixed(2) +
+    "%";
 
-  $("realEdge").textContent =
-    validatedCount
-      ? (
-          (rate-BASELINE)*100
-        ).toFixed(2) +
-        "%"
-      : "—";
 
-  $("wilson").textContent =
-    validatedCount
-      ? (
-          wilsonLower(
-            wins,
-            validatedCount
-          )*100
-        ).toFixed(2) +
-        "%"
-      : "—";
+    $("wilson")
+    .textContent =
+    (
+      wilsonLower(
+        wins,
+        validatedCount
+      )*100
+    ).toFixed(2) +
+    "%";
 
-  $("acceptedSignals").textContent =
-    signalAccepted;
+  }
 
-  $("signalWins").textContent =
-    signalWins;
 
-  $("signalLosses").textContent =
-    signalLosses;
+  $("acceptedSignals")
+  .textContent =
+  signalAccepted;
 
-  $("signalRate").textContent =
-    signalAccepted
-      ? (
-          signalWins/
-          signalAccepted*
-          100
-        ).toFixed(1) +
-        "%"
-      : "—";
 
-  $("history").textContent =
-    history.length
-      ? history.join("\n")
-      : "Aucune validation.";
+  $("signalWins")
+  .textContent =
+  signalWins;
+
+
+  $("signalLosses")
+  .textContent =
+  signalLosses;
+
+
+  $("signalRate")
+  .textContent =
+  signalAccepted
+  ?
+  (
+    signalWins /
+    signalAccepted *
+    100
+  ).toFixed(1) +
+  "%"
+  :
+  "—";
+
+
+  $("history")
+  .textContent =
+  history.length
+  ?
+  history.join("\n")
+  :
+  "Aucune validation.";
+
 
   renderFrequency();
+
   renderCalibration();
+
   renderShadowLab();
 
-  if(ticks.length >= MIN_TICKS){
-
-    const p =
-      pendingPrediction ||
-      createPrediction();
-
-    if(p)
-      renderPrediction(p);
-
-  }else{
-
-    renderEmptyAnalysis();
-  }
 }
 
-/* ============================================================
+
+/* ==========================================================
    RESET
-   ============================================================ */
+========================================================== */
 
 function resetStatistics(){
 
   predictionCount=0;
+
   validatedCount=0;
 
   wins=0;
+
   losses=0;
 
   signalAccepted=0;
+
   signalWins=0;
+
   signalLosses=0;
 
   pendingPrediction=null;
 
   history=[];
+
   logs=[];
 
-  for(const name of Object.keys(modelStats)){
+
+  for(
+    const name of
+    Object.keys(
+      modelStats
+    )
+  ){
 
     modelStats[name].tests=0;
+
     modelStats[name].wins=0;
+
     modelStats[name].candidate=null;
+
     modelStats[name].history=[];
+
   }
 
-  for(const key of Object.keys(
-    calibrationBuckets
-  )){
 
-    calibrationBuckets[key].tests=0;
-    calibrationBuckets[key].wins=0;
+  for(
+    const bucket of
+    Object.keys(
+      calibrationBuckets
+    )
+  ){
+
+    calibrationBuckets[
+      bucket
+    ].tests=0;
+
+    calibrationBuckets[
+      bucket
+    ].wins=0;
+
   }
 
-  for(let d=0;d<=9;d++){
+
+  for(
+    let d=0;
+    d<=9;
+    d++
+  ){
 
     shadowLab[d].tests=0;
+
     shadowLab[d].wins=0;
+
     shadowLab[d].scoreSum=0;
+
   }
+
 
   log(
     "Statistiques réinitialisées."
   );
 
+
   render();
+
 }
 
-/* ============================================================
+
+/* ==========================================================
    START
-   ============================================================ */
+========================================================== */
 
 log(
   "Prediction R75 V7.0 démarrage..."
@@ -3033,6 +4562,10 @@ log(
 
 log(
   "Aucun ordre automatique."
+);
+
+log(
+  "Correction API : subscribe retiré de ticks_history."
 );
 
 connectDeriv();
