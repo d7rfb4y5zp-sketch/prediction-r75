@@ -3,189 +3,230 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Prediction R75 — V7.7</title>
+
+<title>Prediction R75 — V8 FINAL VALIDATION ENGINE</title>
 
 <style>
-*{box-sizing:border-box}
+
+*{
+box-sizing:border-box;
+}
 
 body{
 margin:0;
-background:#07111f;
-color:#e8eef7;
-font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif
+background:#06101c;
+color:#eaf1fb;
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
 }
 
 .container{
 max-width:1100px;
 margin:auto;
-padding:10px
+padding:9px;
 }
 
 h1{
-font-size:21px;
-margin:0 0 3px
+font-size:20px;
+margin:0 0 3px;
 }
 
 .subtitle{
-font-size:11px;
-color:#8ea0b8;
-margin-bottom:10px
+font-size:10px;
+color:#8fa2bb;
+margin-bottom:9px;
 }
 
 .status{
-padding:10px;
-background:#101d30;
+background:#101e31;
+border:1px solid #1d324a;
 border-radius:9px;
+padding:9px;
+font-size:11px;
+font-weight:700;
 margin-bottom:9px;
-font-size:12px;
-font-weight:700
 }
 
-.green{color:#42e6a4}
+.green{color:#39e59d}
+.red{color:#ff6666}
 .orange{color:#ffc857}
-.red{color:#ff6b6b}
 
 .grid{
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-gap:9px
+gap:8px;
 }
 
 .card{
-background:#0d1a2b;
-border:1px solid #1c3048;
-border-radius:12px;
-padding:11px;
-margin-bottom:9px
+background:#0c1a2a;
+border:1px solid #1b3048;
+border-radius:11px;
+padding:10px;
+margin-bottom:8px;
 }
 
 .card h2{
-font-size:13px;
-margin:0 0 9px
-}
-
-.big{
-font-size:40px;
-font-weight:800;
-text-align:center;
-margin:3px
+font-size:12px;
+margin:0 0 8px;
 }
 
 .row{
 display:flex;
 justify-content:space-between;
-gap:7px;
+gap:8px;
 padding:5px 0;
-border-bottom:1px solid #17283d;
-font-size:11px
+border-bottom:1px solid #182a40;
+font-size:10px;
 }
 
 .row:last-child{
-border-bottom:0
+border-bottom:0;
 }
 
 .label{
-color:#8ea0b8
+color:#91a4bd;
+}
+
+.big{
+font-size:39px;
+font-weight:800;
+text-align:center;
+margin:2px 0;
 }
 
 .badge{
 display:inline-block;
-padding:3px 7px;
+background:#182c44;
 border-radius:999px;
-background:#172b43;
-font-size:9px
+padding:3px 7px;
+font-size:8px;
+}
+
+.center{
+text-align:center;
 }
 
 .small{
 font-size:9px;
 line-height:1.45;
-color:#8295ad
+color:#8498b2;
 }
 
-table{
-width:100%;
-border-collapse:collapse;
-font-size:9px
+.warning{
+background:#2a200f;
+border:1px solid #60471a;
+color:#ffd66b;
+padding:7px;
+border-radius:7px;
+font-size:9px;
+margin-top:7px;
 }
 
-th,td{
-padding:5px 3px;
-border-bottom:1px solid #1b2c42;
-text-align:right
+.ok{
+background:#09261d;
+border:1px solid #18523c;
+color:#65efb5;
+padding:7px;
+border-radius:7px;
+font-size:9px;
+margin-top:7px;
 }
 
-th:first-child,
-td:first-child{
-text-align:left
-}
-
-th{
-color:#91a6c1
+.fail{
+background:#2a1115;
+border:1px solid #5d252d;
+color:#ff8585;
+padding:7px;
+border-radius:7px;
+font-size:9px;
+margin-top:7px;
 }
 
 .digits{
 display:grid;
 grid-template-columns:repeat(10,1fr);
-gap:3px
+gap:3px;
 }
 
 .digit{
-background:#13243a;
+background:#12243a;
 border-radius:6px;
+padding:5px 2px;
 text-align:center;
-padding:5px 2px
 }
 
 .digit b{
 display:block;
-font-size:12px
+font-size:11px;
 }
 
-.warning{
-background:#2a2010;
-border:1px solid #59451c;
-color:#ffd978;
-padding:8px;
-border-radius:8px;
+.digit span{
 font-size:9px;
-margin-top:7px
+color:#9db0c8;
 }
 
-.ok{
-background:#0b251d;
-border:1px solid #174c39;
-color:#6ef0bb;
-padding:8px;
-border-radius:8px;
-font-size:9px;
-margin-top:7px
+table{
+width:100%;
+border-collapse:collapse;
+font-size:8.5px;
+}
+
+th,td{
+padding:5px 3px;
+border-bottom:1px solid #182a40;
+text-align:right;
+}
+
+th:first-child,
+td:first-child{
+text-align:left;
+}
+
+th{
+color:#91a5bf;
+font-weight:600;
 }
 
 .log{
-max-height:230px;
-overflow:auto;
-background:#06101c;
-border-radius:8px;
-padding:8px;
+background:#050e18;
+border-radius:7px;
+padding:7px;
 font-family:monospace;
-font-size:9px;
-white-space:pre-wrap
+font-size:8px;
+line-height:1.45;
+max-height:240px;
+overflow:auto;
+white-space:pre-wrap;
 }
 
 button{
 width:100%;
 border:0;
-border-radius:8px;
+border-radius:7px;
 padding:10px;
-background:#1b6ef3;
+background:#176cf0;
 color:white;
 font-weight:700;
-margin-top:7px
+margin-top:7px;
 }
 
-@media(max-width:600px){
-.container{padding:7px}
+button.secondary{
+background:#26384e;
 }
+
+.gateChecks{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:5px;
+margin-top:7px;
+}
+
+.check{
+background:#101f32;
+border-radius:6px;
+padding:6px;
+font-size:8px;
+}
+
 </style>
 </head>
 
@@ -193,10 +234,10 @@ margin-top:7px
 
 <div class="container">
 
-<h1>Prediction R75 — V7.7</h1>
+<h1>Prediction R75 — V8</h1>
 
 <div class="subtitle">
-META SELECTOR • TRUE WALK-FORWARD • STATISTICAL VALIDATION • TEST ONLY
+FINAL VALIDATION ENGINE • TRUE WALK-FORWARD • META SELECTOR 2.0 • TEST ONLY
 </div>
 
 <div id="status" class="status orange">
@@ -238,24 +279,24 @@ MARCHÉ
 
 
 <!-- =====================================================
-META SELECTOR
+PREDICTION
 ===================================================== -->
 
 <div class="card">
 
-<h2>🧠 META SELECTOR V7.7</h2>
+<h2>🧠 PRÉDICTION V8 — META SELECTOR 2.0</h2>
 
 <div class="big" id="candidate">—</div>
 
-<div style="text-align:center">
+<div class="center">
 <span class="badge" id="selectedModel">
 Modèle —
 </span>
 </div>
 
 <div class="row">
-<span class="label">Score Meta</span>
-<b id="metaScore">—</b>
+<span class="label">Score brut</span>
+<b id="rawScore">—</b>
 </div>
 
 <div class="row">
@@ -275,6 +316,8 @@ Modèle —
 
 </div>
 
+</div>
+
 
 <!-- =====================================================
 GATE
@@ -282,11 +325,11 @@ GATE
 
 <div class="card">
 
-<h2>GATE V7.7</h2>
+<h2>🔒 GATE V8 — VALIDATION STATISTIQUE</h2>
 
 <div class="row">
 <span class="label">État</span>
-<b id="gate" class="red">FERMÉ</b>
+<b id="gateState" class="red">FERMÉ</b>
 </div>
 
 <div class="row">
@@ -304,20 +347,43 @@ GATE
 <b id="gateWilson">—</b>
 </div>
 
+<div class="gateChecks">
+
+<div class="check" id="checkTests">
+Tests : —
+</div>
+
+<div class="check" id="checkRate">
+Taux : —
+</div>
+
+<div class="check" id="checkWilson">
+Wilson : —
+</div>
+
+<div class="check" id="checkAgreement">
+Accord : —
+</div>
+
+<div class="check" id="checkCalibration">
+Calibration : —
+</div>
+
+<div class="check" id="checkRolling">
+Rolling : —
+</div>
+
+</div>
+
 <div class="warning">
-⚠️ Le Gate n'envoie aucune transaction.
-V7.7 reste un laboratoire statistique TEST ONLY.
+⚠️ V8 n'envoie aucune transaction. Le Gate est uniquement statistique.
 </div>
 
 </div>
-
-</div>
-
-<br>
 
 
 <!-- =====================================================
-FREQUENCES / CONTEXTE
+FRÉQUENCE + CONTEXTE
 ===================================================== -->
 
 <div class="grid">
@@ -351,15 +417,18 @@ FREQUENCES / CONTEXTE
 </div>
 
 <div class="row">
-<span class="label">Changement régime</span>
+<span class="label">Régime</span>
 <b id="regime">—</b>
 </div>
 
+<div class="row">
+<span class="label">Contexte</span>
+<b id="context">—</b>
 </div>
 
 </div>
 
-<br>
+</div>
 
 
 <!-- =====================================================
@@ -368,20 +437,19 @@ TRUE WALK FORWARD
 
 <div class="card">
 
-<h2>TRUE WALK-FORWARD BENCHMARK</h2>
+<h2>🔬 TRUE WALK-FORWARD BENCHMARK</h2>
 
 <p class="small">
-Chaque ligne est évaluée chronologiquement.
-Pour prédire le tick suivant, le système utilise uniquement
-les ticks disponibles avant ce tick. Aucun résultat futur
-n'est utilisé pour fabriquer une prédiction passée.
+Pour chaque position historique, la prédiction est calculée
+uniquement avec les données disponibles avant le tick cible.
+Le résultat du tick cible n'est utilisé qu'après la prédiction.
 </p>
 
 <table>
 
 <thead>
 <tr>
-<th>Modèle</th>
+<th>Système</th>
 <th>Tests</th>
 <th>Wins</th>
 <th>Taux</th>
@@ -394,21 +462,19 @@ n'est utilisé pour fabriquer une prédiction passée.
 </table>
 
 <div class="ok">
-✅ Benchmark walk-forward réel.
+✅ Benchmark déterministe et walk-forward.
 </div>
 
 </div>
-
-<br>
 
 
 <!-- =====================================================
-META VS ENSEMBLES
+COMPARAISON
 ===================================================== -->
 
 <div class="card">
 
-<h2>COMPARAISON DES SYSTÈMES</h2>
+<h2>⚔️ COMPARAISON DES SYSTÈMES</h2>
 
 <table>
 
@@ -428,18 +494,16 @@ META VS ENSEMBLES
 
 </div>
 
-<br>
-
 
 <!-- =====================================================
-META PERFORMANCE
+META WALK FORWARD
 ===================================================== -->
 
 <div class="grid">
 
 <div class="card">
 
-<h2>META SELECTOR — WALK-FORWARD</h2>
+<h2>🧠 META SELECTOR — WALK-FORWARD</h2>
 
 <div class="row">
 <span class="label">Tests</span>
@@ -471,13 +535,13 @@ META PERFORMANCE
 
 <div class="card">
 
-<h2>MODÈLE SÉLECTIONNÉ</h2>
+<h2>MODÈLE SÉLECTIONNÉ PAR META</h2>
 
 <table>
 
 <thead>
 <tr>
-<th>Modèle</th>
+<th>Système</th>
 <th>Sélections</th>
 <th>Wins</th>
 <th>Taux</th>
@@ -492,16 +556,14 @@ META PERFORMANCE
 
 </div>
 
-<br>
-
 
 <!-- =====================================================
-POIDS META
+PERFORMANCE MODÈLES
 ===================================================== -->
 
 <div class="card">
 
-<h2>POIDS / PERFORMANCE DES MODÈLES</h2>
+<h2>PERFORMANCE DES 4 MODÈLES</h2>
 
 <table>
 
@@ -509,7 +571,6 @@ POIDS META
 <tr>
 <th>Modèle</th>
 <th>Candidate</th>
-<th>Poids</th>
 <th>Tests</th>
 <th>Wins</th>
 <th>Taux</th>
@@ -523,11 +584,9 @@ POIDS META
 
 </div>
 
-<br>
-
 
 <!-- =====================================================
-PERFORMANCE CONTEXTE
+CONTEXTE
 ===================================================== -->
 
 <div class="card">
@@ -552,11 +611,9 @@ PERFORMANCE CONTEXTE
 
 </div>
 
-<br>
-
 
 <!-- =====================================================
-PERFORMANCE CHIFFRE
+CHIFFRES
 ===================================================== -->
 
 <div class="card">
@@ -581,18 +638,14 @@ PERFORMANCE CHIFFRE
 
 </div>
 
-<br>
-
 
 <!-- =====================================================
 SCORE
 ===================================================== -->
 
-<div class="grid">
-
 <div class="card">
 
-<h2>PERFORMANCE PAR SCORE META</h2>
+<h2>CALIBRATION — PERFORMANCE PAR SCORE</h2>
 
 <table>
 
@@ -612,6 +665,10 @@ SCORE
 
 </div>
 
+
+<!-- =====================================================
+ACCORD
+===================================================== -->
 
 <div class="card">
 
@@ -635,9 +692,34 @@ SCORE
 
 </div>
 
-</div>
 
-<br>
+<!-- =====================================================
+POIDS
+===================================================== -->
+
+<div class="card">
+
+<h2>POIDS DES MODÈLES — ÉTAT ACTUEL</h2>
+
+<table>
+
+<thead>
+<tr>
+<th>Modèle</th>
+<th>Candidate</th>
+<th>Poids</th>
+<th>Tests</th>
+<th>Wins</th>
+<th>Taux</th>
+<th>Wilson</th>
+</tr>
+</thead>
+
+<tbody id="weightTable"></tbody>
+
+</table>
+
+</div>
 
 
 <!-- =====================================================
@@ -654,8 +736,6 @@ En attente…
 
 </div>
 
-<br>
-
 
 <!-- =====================================================
 JOURNAL
@@ -666,11 +746,15 @@ JOURNAL
 <h2>JOURNAL API</h2>
 
 <div id="log" class="log">
-Initialisation V7.7…
+Initialisation V8…
 </div>
 
 <button onclick="clearLogs()">
 EFFACER LE JOURNAL
+</button>
+
+<button class="secondary" onclick="resetAnalysis()">
+RÉINITIALISER L'ANALYSE
 </button>
 
 </div>
@@ -689,7 +773,7 @@ const WS_URL =
 
 const SYMBOL = "R_75";
 
-const HISTORY_COUNT = 700;
+const HISTORY_COUNT = 1000;
 
 const WINDOW = 100;
 
@@ -706,19 +790,19 @@ const LAPLACE = 1;
 
 let ws = null;
 
-let ticksReceived = 0;
-
 let prices = [];
 
 let digits = [];
 
-let predictionHistory = [];
+let ticksReceived = 0;
 
-let benchmarkResults = null;
+let benchmark = null;
+
+let predictionHistory = [];
 
 
 /* =========================================================
-UTILITAIRES
+LOG
 ========================================================= */
 
 function log(message){
@@ -730,13 +814,14 @@ const time =
 new Date().toLocaleTimeString();
 
 el.textContent =
-"[" + time + "] " +
-message +
-"\n" +
+"["+
+time+
+"] "+
+message+
+"\n"+
 el.textContent;
 
 }
-
 
 function clearLogs(){
 
@@ -746,6 +831,71 @@ document.getElementById("log").textContent =
 }
 
 
+/* =========================================================
+RESET
+========================================================= */
+
+function resetAnalysis(){
+
+prices=[];
+
+digits=[];
+
+benchmark=null;
+
+predictionHistory=[];
+
+document.getElementById(
+"predictionHistory"
+).textContent="En attente…";
+
+document.getElementById(
+"benchmarkTable"
+).innerHTML="";
+
+document.getElementById(
+"systemTable"
+).innerHTML="";
+
+document.getElementById(
+"modelTable"
+).innerHTML="";
+
+document.getElementById(
+"selectionTable"
+).innerHTML="";
+
+document.getElementById(
+"contextTable"
+).innerHTML="";
+
+document.getElementById(
+"digitTable"
+).innerHTML="";
+
+document.getElementById(
+"scoreTable"
+).innerHTML="";
+
+document.getElementById(
+"agreementTable"
+).innerHTML="";
+
+document.getElementById(
+"weightTable"
+).innerHTML="";
+
+log(
+"Analyse V8 réinitialisée."
+);
+
+}
+
+
+/* =========================================================
+UTILITAIRES
+========================================================= */
+
 function clamp(x,min,max){
 
 return Math.max(
@@ -754,29 +904,6 @@ Math.min(max,x)
 );
 
 }
-
-
-function digitFromQuote(quote){
-
-const s =
-String(quote);
-
-const clean =
-s.replace(/[^0-9]/g,"");
-
-if(!clean)
-return null;
-
-return Number(
-clean.slice(-1)
-);
-
-}
-
-
-/* =========================================================
-STATISTIQUES
-========================================================= */
 
 function rate(s){
 
@@ -797,14 +924,17 @@ const z=1.96;
 
 const p=wins/total;
 
-const denominator =
-1+z*z/total;
+const den=
+1+
+z*z/total;
 
-const centre =
-p+z*z/(2*total);
+const centre=
+p+
+z*z/(2*total);
 
-const margin =
-z*Math.sqrt(
+const margin=
+z*
+Math.sqrt(
 (
 p*(1-p)+
 z*z/(4*total)
@@ -813,19 +943,35 @@ z*z/(4*total)
 
 return (
 (centre-margin)/
-denominator
+den
 )*100;
 
 }
 
 
+function digitFromQuote(quote){
+
+const clean=
+String(quote)
+.replace(/[^0-9]/g,"");
+
+if(!clean)
+return null;
+
+return Number(
+clean.slice(-1)
+);
+
+}
+
+
 /* =========================================================
-FREQUENCES
+FRÉQUENCE
 ========================================================= */
 
 function frequency(arr){
 
-const f =
+const f=
 Array(10).fill(0);
 
 for(const d of arr){
@@ -856,7 +1002,7 @@ function entropy(arr){
 if(!arr.length)
 return 0;
 
-const f =
+const f=
 frequency(arr);
 
 let h=0;
@@ -865,9 +1011,12 @@ for(const n of f){
 
 if(n>0){
 
-const p=n/arr.length;
+const p=
+n/arr.length;
 
-h-=p*Math.log2(p);
+h-=
+p*
+Math.log2(p);
 
 }
 
@@ -887,10 +1036,10 @@ function uniformity(arr){
 if(!arr.length)
 return 0;
 
-const f =
+const f=
 frequency(arr);
 
-const expected =
+const expected=
 arr.length/10;
 
 let error=0;
@@ -918,15 +1067,15 @@ return clamp(
 STREAK
 ========================================================= */
 
-function currentStreak(arr){
+function streak(arr){
 
 if(!arr.length)
 return 0;
 
-const last =
+const last=
 arr[arr.length-1];
 
-let count=0;
+let n=0;
 
 for(
 let i=arr.length-1;
@@ -936,7 +1085,7 @@ i--
 
 if(arr[i]===last){
 
-count++;
+n++;
 
 }else{
 
@@ -946,7 +1095,62 @@ break;
 
 }
 
-return count;
+return n;
+
+}
+
+
+/* =========================================================
+RÉGIME
+========================================================= */
+
+function regimeChange(arr){
+
+if(arr.length<60)
+return false;
+
+const oldH=
+entropy(
+arr.slice(-60,-30)
+);
+
+const newH=
+entropy(
+arr.slice(-30)
+);
+
+return Math.abs(
+newH-oldH
+)>0.25;
+
+}
+
+
+/* =========================================================
+CONTEXTE
+========================================================= */
+
+function getContext(arr){
+
+const u=
+uniformity(arr);
+
+const s=
+streak(arr);
+
+const r=
+regimeChange(arr);
+
+if(r)
+return "Régime change";
+
+if(s>=4)
+return "Streak élevé";
+
+if(u>=85)
+return "Forte uniformité";
+
+return "Normal";
 
 }
 
@@ -955,16 +1159,16 @@ return count;
 GLOBAL
 ========================================================= */
 
-function predictGlobal(history){
+function globalModel(arr){
 
-const f =
-frequency(history);
+const f=
+frequency(arr);
 
-const probs =
+const probs=
 f.map(
-n =>
+n=>
 (n+LAPLACE)/
-(history.length+10*LAPLACE)
+(arr.length+10*LAPLACE)
 );
 
 let candidate=0;
@@ -984,8 +1188,7 @@ candidate=d;
 
 return {
 candidate,
-probs,
-counts:f
+probs
 };
 
 }
@@ -995,10 +1198,10 @@ counts:f
 RECENT
 ========================================================= */
 
-function predictRecent(history){
+function recentModel(arr){
 
-return predictGlobal(
-history.slice(-RECENT_WINDOW)
+return globalModel(
+arr.slice(-RECENT_WINDOW)
 );
 
 }
@@ -1008,34 +1211,31 @@ history.slice(-RECENT_WINDOW)
 TRANSITION
 ========================================================= */
 
-function predictTransition(history){
+function transitionModel(arr){
 
-if(history.length<2){
+if(arr.length<2)
+return globalModel(arr);
 
-return predictGlobal(history);
+const last=
+arr[arr.length-1];
 
-}
-
-const last =
-history[history.length-1];
-
-const counts =
+const counts=
 Array(10).fill(0);
 
 let total=0;
 
 for(
 let i=1;
-i<history.length;
+i<arr.length;
 i++
 ){
 
 if(
-history[i-1]===last
+arr[i-1]===last
 ){
 
 counts[
-history[i]
+arr[i]
 ]++;
 
 total++;
@@ -1044,15 +1244,12 @@ total++;
 
 }
 
-if(total===0){
+if(total===0)
+return recentModel(arr);
 
-return predictRecent(history);
-
-}
-
-const probs =
+const probs=
 counts.map(
-n =>
+n=>
 (n+LAPLACE)/
 (total+10*LAPLACE)
 );
@@ -1074,8 +1271,7 @@ candidate=d;
 
 return {
 candidate,
-probs,
-counts
+probs
 };
 
 }
@@ -1085,38 +1281,35 @@ counts
 SEQUENCE
 ========================================================= */
 
-function predictSequence(history){
+function sequenceModel(arr){
 
-if(history.length<3){
+if(arr.length<3)
+return transitionModel(arr);
 
-return predictTransition(history);
+const a=
+arr[arr.length-2];
 
-}
+const b=
+arr[arr.length-1];
 
-const a =
-history[history.length-2];
-
-const b =
-history[history.length-1];
-
-const counts =
+const counts=
 Array(10).fill(0);
 
 let total=0;
 
 for(
 let i=2;
-i<history.length;
+i<arr.length;
 i++
 ){
 
 if(
-history[i-2]===a &&
-history[i-1]===b
+arr[i-2]===a &&
+arr[i-1]===b
 ){
 
 counts[
-history[i]
+arr[i]
 ]++;
 
 total++;
@@ -1125,15 +1318,12 @@ total++;
 
 }
 
-if(total===0){
+if(total===0)
+return transitionModel(arr);
 
-return predictTransition(history);
-
-}
-
-const probs =
+const probs=
 counts.map(
-n =>
+n=>
 (n+LAPLACE)/
 (total+10*LAPLACE)
 );
@@ -1155,32 +1345,31 @@ candidate=d;
 
 return {
 candidate,
-probs,
-counts
+probs
 };
 
 }
 
 
 /* =========================================================
-OBTENIR LES 4 PRÉDICTIONS
+LES 4 MODÈLES
 ========================================================= */
 
-function getModels(history){
+function getFourModels(arr){
 
 return {
 
 Global:
-predictGlobal(history),
+globalModel(arr),
 
 Recent:
-predictRecent(history),
+recentModel(arr),
 
 Transition:
-predictTransition(history),
+transitionModel(arr),
 
 Sequence:
-predictSequence(history)
+sequenceModel(arr)
 
 };
 
@@ -1188,7 +1377,7 @@ predictSequence(history)
 
 
 /* =========================================================
-POIDS ADAPTATIFS
+POIDS À PARTIR DU PASSÉ
 ========================================================= */
 
 function calculateWeights(stats){
@@ -1206,32 +1395,29 @@ let total=0;
 
 for(const name of names){
 
-const s =
+const s=
 stats[name];
 
-if(
-!s ||
-s.tests<30
-){
+if(!s || s.tests<30){
 
 raw[name]=1;
 
 }else{
 
-const lower =
+const lower=
 wilsonLower(
 s.wins,
 s.tests
 );
 
-const confidence =
+const confidence=
 clamp(
 s.tests/300,
 0,
 1
 );
 
-const evidence =
+const evidence=
 10+
 (lower-10)*
 confidence;
@@ -1266,28 +1452,27 @@ return weights;
 ENSEMBLE V1
 ========================================================= */
 
-function ensembleV1(
-history,
-weights
-){
+function ensembleV1(arr,weights){
 
-const models =
-getModels(history);
+const models=
+getFourModels(arr);
 
-const combined =
+const combined=
 Array(10).fill(0);
 
 for(
-const name of Object.keys(models)
+const name of
+Object.keys(models)
 ){
 
-const w =
-weights[name] || .25;
+const w=
+weights[name]||0.25;
 
 for(let d=0;d<10;d++){
 
 combined[d]+=
-w*models[name].probs[d];
+w*
+models[name].probs[d];
 
 }
 
@@ -1308,24 +1493,21 @@ candidate=d;
 
 }
 
-const sorted =
+const sorted=
 [...combined]
 .sort((a,b)=>b-a);
 
-const gap =
-(sorted[0]-(sorted[1]||0))*100;
-
-const score =
-clamp(
-50+gap*5,
-0,
-100
-);
+const gap=
+(
+sorted[0]-
+(sorted[1]||0)
+)*100;
 
 let agreement=0;
 
 for(
-const name of Object.keys(models)
+const name of
+Object.keys(models)
 ){
 
 if(
@@ -1339,44 +1521,48 @@ agreement++;
 
 }
 
+const score=
+clamp(
+50+
+gap*5,
+0,
+100
+);
+
 return {
-models,
 candidate,
-gap,
 score,
+gap,
 agreement,
-probs:combined
+probs:combined,
+models
 };
 
 }
 
 
 /* =========================================================
-ENSEMBLE V2
+ENSEMBLE V2 — VOTE
 ========================================================= */
 
-function ensembleV2(
-history,
-weights
-){
+function ensembleV2(arr,weights){
 
-const models =
-getModels(history);
+const models=
+getFourModels(arr);
 
-const votes =
+const votes=
 Array(10).fill(0);
 
 for(
-const name of Object.keys(models)
+const name of
+Object.keys(models)
 ){
 
-const candidate =
+const d=
 models[name].candidate;
 
-const w =
-weights[name] || .25;
-
-votes[candidate]+=w;
+votes[d]+=
+weights[name]||0.25;
 
 }
 
@@ -1395,30 +1581,21 @@ candidate=d;
 
 }
 
-const sorted =
+const sorted=
 [...votes]
 .sort((a,b)=>b-a);
 
-const best =
-sorted[0]||0;
-
-const second =
-sorted[1]||0;
-
-const gap =
-(best-second)*100;
-
-const score =
-clamp(
-50+(best-second)*100,
-0,
-100
-);
+const gap=
+(
+sorted[0]-
+(sorted[1]||0)
+)*100;
 
 let agreement=0;
 
 for(
-const name of Object.keys(models)
+const name of
+Object.keys(models)
 ){
 
 if(
@@ -1432,29 +1609,34 @@ agreement++;
 
 }
 
-return {
-models,
-candidate,
+const score=
+clamp(
+50+
 gap,
+0,
+100
+);
+
+return {
+candidate,
 score,
+gap,
 agreement,
-votes
+votes,
+models
 };
 
 }
 
 
 /* =========================================================
-META SELECTOR
+META SELECTOR 2.0
 ========================================================= */
 
-function metaSelect(
-history,
-pastStats
-){
+function metaSelect(arr,past){
 
-const models =
-getModels(history);
+const four=
+getFourModels(arr);
 
 const names=[
 "Global",
@@ -1463,157 +1645,122 @@ const names=[
 "Sequence"
 ];
 
-
-/*
-Les scores de confiance sont construits
-uniquement à partir des performances passées.
-*/
-
-const weights =
-calculateWeights(
-pastStats
-);
+const weights=
+calculateWeights(past);
 
 
 /*
-Bonus de contexte.
-
-L'objectif n'est PAS de prétendre
-qu'un contexte prédit le futur.
-
-Il sert uniquement à départager
-les modèles lorsqu'ils sont proches.
+Contexte actuel.
 */
 
-const arr =
-history.slice(-100);
-
-const h =
-entropy(arr);
-
-const u =
-uniformity(arr);
-
-const streak =
-currentStreak(arr);
+const ctx=
+getContext(arr);
 
 
 /*
-Détection prudente du régime.
+Pour chaque modèle :
+
+1. performance globale passée
+2. performance dans le contexte passé
+3. shrinkage vers 10%
 */
 
-let regimeFactor=1;
-
-if(
-arr.length>=60
-){
-
-const recentH =
-entropy(arr.slice(-30));
-
-const oldH =
-entropy(arr.slice(-60,-30));
-
-if(
-Math.abs(recentH-oldH)>0.25
-){
-
-regimeFactor=0.95;
-
-}
-
-}
-
-
-/*
-Score de chaque modèle.
-*/
-
-const modelScores={};
+const scores={};
 
 for(const name of names){
 
-const s =
-pastStats[name];
+const global=
+past[name]||
+{
+tests:0,
+wins:0
+};
 
-let performance=10;
+const globalRate=
+rate(global);
 
-if(
-s &&
-s.tests>0
-){
-
-performance =
-rate(s);
-
-}
-
-
-/*
-Shrinkage vers 10%.
-*/
-
-const confidence =
-s
-? clamp(s.tests/300,0,1)
-:0;
-
-const empirical =
-10+
-(performance-10)*
-confidence;
-
-
-/*
-Poids historique.
-*/
-
-let score =
-empirical*
-(
-weights[name]||.25
+const globalConfidence=
+clamp(
+global.tests/300,
+0,
+1
 );
 
-
-/*
-Petit facteur de stabilité.
-*/
-
-if(
-streak>=4
-){
-
-score*=0.98;
-
-}
-
-if(
-u<60
-){
-
-score*=1.01;
-
-}
-
-score*=regimeFactor;
-
-modelScores[name]=score;
-
-}
+const globalEvidence=
+10+
+(
+globalRate-10
+)*
+globalConfidence;
 
 
 /*
-Sélection du meilleur modèle.
+Statistiques contextuelles.
 */
 
-let selected =
+const contextData=
+past.context &&
+past.context[ctx] &&
+past.context[ctx][name]
+?
+past.context[ctx][name]
+:null;
+
+let contextEvidence=
+globalEvidence;
+
+if(
+contextData &&
+contextData.tests>=25
+){
+
+const contextRate=
+rate(contextData);
+
+const contextConfidence=
+clamp(
+contextData.tests/100,
+0,
+1
+);
+
+contextEvidence=
+globalEvidence+
+(
+contextRate-globalEvidence
+)*
+contextConfidence;
+
+}
+
+
+/*
+Combinaison prudente.
+*/
+
+scores[name]=
+contextEvidence*
+(
+0.65+
+0.35*
+(weights[name]||0.25)*4
+);
+
+}
+
+
+/*
+Choix du modèle.
+*/
+
+let selected=
 names[0];
 
 for(const name of names){
 
 if(
-modelScores[name]>
-modelScores[selected]
+scores[name]>
+scores[selected]
 ){
 
 selected=name;
@@ -1624,40 +1771,36 @@ selected=name;
 
 
 /*
-Si les données sont insuffisantes,
-on garde Global comme référence.
+Si données insuffisantes,
+Global reste la référence.
 */
 
-const totalTests =
+const totalPast=
 names.reduce(
 (sum,name)=>
 sum+
 (
-pastStats[name]
+past[name]
 ?
-pastStats[name].tests
+past[name].tests
 :0
 ),
 0
 );
 
-if(totalTests<120){
+if(totalPast<120){
 
 selected="Global";
 
 }
 
 
-/*
-Candidat final.
-*/
-
-const candidate =
-models[selected].candidate;
+const candidate=
+four[selected].candidate;
 
 
 /*
-Accord des quatre modèles.
+Accord des 4 modèles.
 */
 
 let agreement=0;
@@ -1665,7 +1808,7 @@ let agreement=0;
 for(const name of names){
 
 if(
-models[name].candidate===
+four[name].candidate===
 candidate
 ){
 
@@ -1677,45 +1820,56 @@ agreement++;
 
 
 /*
-Écart Meta.
+Écart entre meilleur et second
+score Meta.
 */
 
-const sorted =
-Object.values(modelScores)
+const sorted=
+Object.values(scores)
 .sort((a,b)=>b-a);
 
-const best =
-sorted[0]||0;
+const best=
+sorted[0]||10;
 
-const second =
-sorted[1]||0;
+const second=
+sorted[1]||10;
 
-const gap =
-best-second;
+const gap=
+Math.max(
+0,
+best-second
+);
 
 
 /*
-Score Meta.
+Score V8.
+
+Ce score n'est PAS une probabilité.
 */
 
-const score =
+const agreementBoost=
+agreement*5;
+
+const score=
 clamp(
-50+gap*5,
+50+
+gap*2+
+agreementBoost,
 0,
 100
 );
 
 return {
 
-models,
+four,
 
 selected,
 
 candidate,
 
-weights,
+scores,
 
-modelScores,
+weights,
 
 score,
 
@@ -1723,11 +1877,7 @@ gap,
 
 agreement,
 
-entropy:h,
-
-uniformity:u,
-
-streak
+context:ctx
 
 };
 
@@ -1735,12 +1885,51 @@ streak
 
 
 /* =========================================================
-TRUE WALK FORWARD V7.7
+BUCKET SCORE
 ========================================================= */
 
-function trueWalkForward(data){
+function scoreBucket(score){
 
-const names=[
+if(score>=90)
+return "90-100";
+
+if(score>=80)
+return "80-89";
+
+if(score>=70)
+return "70-79";
+
+if(score>=60)
+return "60-69";
+
+return "50-59";
+
+}
+
+
+/* =========================================================
+RÉSULTATS VIDES
+========================================================= */
+
+function emptyStats(){
+
+return {
+tests:0,
+wins:0,
+history:[]
+};
+
+}
+
+
+/* =========================================================
+TRUE WALK-FORWARD V8
+========================================================= */
+
+function runTrueWalkForward(data){
+
+const systems=[
+"Random",
 "Global",
 "Recent",
 "Transition",
@@ -1752,125 +1941,114 @@ const names=[
 
 const results={};
 
-for(const name of names){
+for(const name of systems){
 
-results[name]={
-tests:0,
-wins:0,
-history:[]
-};
+results[name]=
+emptyStats();
 
 }
 
 
 /*
-Stats passés utilisés par Meta.
+Performance passée des quatre modèles.
+
+IMPORTANT :
+
+ces données contiennent uniquement
+les observations déjà rencontrées.
 */
 
-const pastStats={
+const past={
 
-Global:{tests:0,wins:0},
+Global:emptyStats(),
 
-Recent:{tests:0,wins:0},
+Recent:emptyStats(),
 
-Transition:{tests:0,wins:0},
+Transition:emptyStats(),
 
-Sequence:{tests:0,wins:0}
+Sequence:emptyStats(),
+
+context:{}
 
 };
 
 
 /*
-Stats détaillées Meta.
+Statistiques Meta.
 */
 
 const selectedStats={
 
-Global:{tests:0,wins:0},
+Global:emptyStats(),
 
-Recent:{tests:0,wins:0},
+Recent:emptyStats(),
 
-Transition:{tests:0,wins:0},
+Transition:emptyStats(),
 
-Sequence:{tests:0,wins:0}
-
+Sequence:emptyStats()
 };
 
 
-const byDigit=
-Array.from(
-{length:10},
-()=>({
-tests:0,
-wins:0
-})
-);
-
-
-const byScore={
-
-"50-59":{
-tests:0,
-wins:0
-},
-
-"60-69":{
-tests:0,
-wins:0
-},
-
-"70-79":{
-tests:0,
-wins:0
-},
-
-"80-89":{
-tests:0,
-wins:0
-},
-
-"90-100":{
-tests:0,
-wins:0
-}
-
-};
-
-
-const byAgreement={
-
-1:{tests:0,wins:0},
-
-2:{tests:0,wins:0},
-
-3:{tests:0,wins:0},
-
-4:{tests:0,wins:0}
-
-};
-
+/*
+Meta par contexte.
+*/
 
 const contextStats={
 
-"Normal":{
-tests:0,
-wins:0
-},
+"Normal":emptyStats(),
 
-"Régime change":{
-tests:0,
-wins:0
-},
+"Régime change":emptyStats(),
 
-"Forte uniformité":{
-tests:0,
-wins:0
-},
+"Forte uniformité":emptyStats(),
 
-"Streak élevé":{
-tests:0,
-wins:0
-}
+"Streak élevé":emptyStats()
+
+};
+
+
+/*
+Meta par chiffre.
+*/
+
+const digitStats=
+Array.from(
+{length:10},
+()=>emptyStats()
+);
+
+
+/*
+Meta par score.
+*/
+
+const scoreStats={
+
+"50-59":emptyStats(),
+
+"60-69":emptyStats(),
+
+"70-79":emptyStats(),
+
+"80-89":emptyStats(),
+
+"90-100":emptyStats()
+
+};
+
+
+/*
+Meta par accord.
+*/
+
+const agreementStats={
+
+1:emptyStats(),
+
+2:emptyStats(),
+
+3:emptyStats(),
+
+4:emptyStats()
 
 };
 
@@ -1879,9 +2057,9 @@ wins:0
 Random déterministe.
 */
 
-let seed=123456789;
+let seed=731923;
 
-function seededRandom(){
+function randomDigit(){
 
 seed=
 (
@@ -1889,7 +2067,9 @@ seed*1664525+
 1013904223
 )>>>0;
 
-return seed/4294967296;
+return Math.floor(
+(seed/4294967296)*10
+);
 
 }
 
@@ -1906,7 +2086,10 @@ i++
 
 const train=
 data.slice(
-Math.max(0,i-WINDOW),
+Math.max(
+0,
+i-WINDOW
+),
 i
 );
 
@@ -1923,39 +2106,66 @@ continue;
 
 
 /*
-Prédictions avant observation
-du tick réel.
+Créer les stats de contexte
+disponibles AVANT le tick cible.
 */
 
-const models=
-getModels(train);
+const currentContext=
+getContext(train);
 
+past.context=
+past.context||{};
+
+if(
+!past.context[currentContext]
+){
+
+past.context[currentContext]={};
+
+}
+
+for(
+const name of
+[
+"Global",
+"Recent",
+"Transition",
+"Sequence"
+]
+){
+
+if(
+!past.context[currentContext][name]
+){
+
+past.context[currentContext][name]=
+emptyStats();
+
+}
+
+}
+
+
+/*
+Calcul des prédictions.
+
+AUCUN accès à data[i].
+*/
+
+const four=
+getFourModels(train);
 
 const weights=
-calculateWeights(
-pastStats
-);
-
+calculateWeights(past);
 
 const v1=
-ensembleV1(
-train,
-weights
-);
-
+ensembleV1(train,weights);
 
 const v2=
-ensembleV2(
-train,
-weights
-);
-
+ensembleV2(train,weights);
 
 const meta=
-metaSelect(
-train,
-pastStats
-);
+metaSelect(train,past);
 
 
 /*
@@ -1965,16 +2175,16 @@ Prédictions.
 const predictions={
 
 Global:
-models.Global.candidate,
+four.Global.candidate,
 
 Recent:
-models.Recent.candidate,
+four.Recent.candidate,
 
 Transition:
-models.Transition.candidate,
+four.Transition.candidate,
 
 Sequence:
-models.Sequence.candidate,
+four.Sequence.candidate,
 
 EnsembleV1:
 v1.candidate,
@@ -1989,15 +2199,14 @@ meta.candidate
 
 
 /*
-Évaluation.
+Évaluer après observation.
 */
 
-for(
-const name of names
-){
+for(const name of systems){
 
 const win=
-predictions[name]===actual;
+predictions[name]===
+actual;
 
 results[name].tests++;
 
@@ -2015,7 +2224,8 @@ win?1:0
 
 
 /*
-Mise à jour APRÈS observation.
+Mettre à jour le passé des quatre modèles
+APRÈS avoir vu le tick réel.
 */
 
 for(
@@ -2028,14 +2238,32 @@ const name of
 ]
 ){
 
-pastStats[name].tests++;
-
-if(
+const win=
 predictions[name]===
-actual
-){
+actual;
 
-pastStats[name].wins++;
+past[name].tests++;
+
+if(win){
+
+past[name].wins++;
+
+}
+
+past[name].history.push(
+win?1:0
+);
+
+
+/*
+Contexte.
+*/
+
+past.context[currentContext][name].tests++;
+
+if(win){
+
+past.context[currentContext][name].wins++;
 
 }
 
@@ -2043,38 +2271,63 @@ pastStats[name].wins++;
 
 
 /*
-Quel modèle le Meta a-t-il choisi ?
+Quel modèle Meta a choisi ?
 */
 
 const selected=
 meta.selected;
 
+const metaWin=
+meta.candidate===
+actual;
+
 selectedStats[selected].tests++;
 
-if(
-meta.candidate===
-actual
-){
+if(metaWin){
 
 selectedStats[selected].wins++;
 
 }
 
+selectedStats[selected].history.push(
+metaWin?1:0
+);
+
 
 /*
-Par chiffre.
+Contexte Meta.
 */
 
-byDigit[
+contextStats[
+currentContext
+].tests++;
+
+if(metaWin){
+
+contextStats[
+currentContext
+].wins++;
+
+}
+
+contextStats[
+currentContext
+].history.push(
+metaWin?1:0
+);
+
+
+/*
+Chiffre.
+*/
+
+digitStats[
 meta.candidate
 ].tests++;
 
-if(
-meta.candidate===
-actual
-){
+if(metaWin){
 
-byDigit[
+digitStats[
 meta.candidate
 ].wins++;
 
@@ -2085,37 +2338,19 @@ meta.candidate
 Score.
 */
 
-let scoreBucket="50-59";
+const bucket=
+scoreBucket(
+meta.score
+);
 
-if(meta.score>=90){
-
-scoreBucket="90-100";
-
-}else if(meta.score>=80){
-
-scoreBucket="80-89";
-
-}else if(meta.score>=70){
-
-scoreBucket="70-79";
-
-}else if(meta.score>=60){
-
-scoreBucket="60-69";
-
-}
-
-byScore[
-scoreBucket
+scoreStats[
+bucket
 ].tests++;
 
-if(
-meta.candidate===
-actual
-){
+if(metaWin){
 
-byScore[
-scoreBucket
+scoreStats[
+bucket
 ].wins++;
 
 }
@@ -2125,67 +2360,21 @@ scoreBucket
 Accord.
 */
 
-const agreement=
+const a=
 clamp(
 meta.agreement,
 1,
 4
 );
 
-byAgreement[
-agreement
+agreementStats[
+a
 ].tests++;
 
-if(
-meta.candidate===
-actual
-){
+if(metaWin){
 
-byAgreement[
-agreement
-].wins++;
-
-}
-
-
-/*
-CONTEXTE
-*/
-
-let context="Normal";
-
-if(
-meta.regimeFactor &&
-meta.regimeFactor<1
-){
-
-context="Régime change";
-
-}else if(
-meta.uniformity>=85
-){
-
-context="Forte uniformité";
-
-}else if(
-meta.streak>=4
-){
-
-context="Streak élevé";
-
-}
-
-contextStats[
-context
-].tests++;
-
-if(
-meta.candidate===
-actual
-){
-
-contextStats[
-context
+agreementStats[
+a
 ].wins++;
 
 }
@@ -2194,14 +2383,12 @@ context
 
 
 /*
-RANDOM DÉTERMINISTE
+RANDOM est calculé séparément,
+avec la même longueur d'échantillon.
 */
 
-results.Random={
-tests:0,
-wins:0,
-history:[]
-};
+results.Random=
+emptyStats();
 
 for(
 let i=MIN_WALK_FORWARD;
@@ -2211,12 +2398,16 @@ i++
 
 const train=
 data.slice(
-Math.max(0,i-WINDOW),
+Math.max(
+0,
+i-WINDOW
+),
 i
 );
 
 if(
-train.length<MIN_WALK_FORWARD
+train.length<
+MIN_WALK_FORWARD
 ){
 
 continue;
@@ -2226,13 +2417,11 @@ continue;
 const actual=
 data[i];
 
-const randomDigit=
-Math.floor(
-seededRandom()*10
-);
+const guess=
+randomDigit();
 
 const win=
-randomDigit===actual;
+guess===actual;
 
 results.Random.tests++;
 
@@ -2255,13 +2444,13 @@ results,
 
 selectedStats,
 
-byDigit,
+contextStats,
 
-byScore,
+digitStats,
 
-byAgreement,
+scoreStats,
 
-contextStats
+agreementStats
 
 };
 
@@ -2269,13 +2458,10 @@ contextStats
 
 
 /* =========================================================
-AFFICHAGE BENCHMARK
+RENDER BENCHMARK
 ========================================================= */
 
 function renderBenchmark(){
-
-if(!benchmarkResults)
-return;
 
 const table=
 document.getElementById(
@@ -2298,13 +2484,15 @@ const order=[
 for(const name of order){
 
 const s=
-benchmarkResults.results[name];
+benchmark.results[name];
 
 const label=
 name==="EnsembleV1"
 ?"Ensemble V1":
 name==="EnsembleV2"
 ?"Ensemble V2":
+name==="Meta"
+?"META SELECTOR":
 name;
 
 const tr=
@@ -2326,7 +2514,7 @@ table.appendChild(tr);
 
 
 /* =========================================================
-TABLEAU SYSTÈMES
+SYSTEM TABLE
 ========================================================= */
 
 function renderSystems(){
@@ -2338,7 +2526,7 @@ document.getElementById(
 
 table.innerHTML="";
 
-const names=[
+const order=[
 ["Global","Global"],
 ["Recent","Recent"],
 ["Transition","Transition"],
@@ -2348,12 +2536,10 @@ const names=[
 ["META SELECTOR","Meta"]
 ];
 
-for(const item of names){
+for(const item of order){
 
 const s=
-benchmarkResults.results[
-item[1]
-];
+benchmark.results[item[1]];
 
 const tr=
 document.createElement("tr");
@@ -2374,21 +2560,23 @@ table.appendChild(tr);
 
 
 /* =========================================================
-META PERFORMANCE
+META
 ========================================================= */
 
 function renderMeta(){
 
 const s=
-benchmarkResults.results.Meta;
+benchmark.results.Meta;
 
 document.getElementById(
 "metaTests"
-).textContent=s.tests;
+).textContent=
+s.tests;
 
 document.getElementById(
 "metaWins"
-).textContent=s.wins;
+).textContent=
+s.wins;
 
 document.getElementById(
 "metaRate"
@@ -2403,11 +2591,11 @@ s.wins,
 s.tests
 ).toFixed(1)+"%";
 
-const last50=
+const last=
 s.history.slice(-50);
 
-const wins50=
-last50.reduce(
+const wins=
+last.reduce(
 (a,b)=>a+b,
 0
 );
@@ -2415,23 +2603,23 @@ last50.reduce(
 document.getElementById(
 "rolling50"
 ).textContent=
-(
-last50.length
+last.length
 ?
-wins50/last50.length*100
-:0
+(
+wins/last.length*100
 ).toFixed(1)+
 "% ("+
-wins50+
+wins+
 "/"+
-last50.length+
-")";
+last.length+
+")"
+:"—";
 
 }
 
 
 /* =========================================================
-SÉLECTIONS META
+SELECTIONS
 ========================================================= */
 
 function renderSelections(){
@@ -2454,7 +2642,7 @@ const name of
 ){
 
 const s=
-benchmarkResults.selectedStats[name];
+benchmark.selectedStats[name];
 
 const tr=
 document.createElement("tr");
@@ -2474,7 +2662,7 @@ table.appendChild(tr);
 
 
 /* =========================================================
-MODÈLES
+MODELS
 ========================================================= */
 
 function renderModels(current){
@@ -2486,41 +2674,85 @@ document.getElementById(
 
 table.innerHTML="";
 
-const names=[
+for(
+const name of
+[
 "Global",
 "Recent",
 "Transition",
 "Sequence"
-];
-
-const stats={};
-
-for(const name of names){
+]
+){
 
 const s=
-benchmarkResults.results[name];
-
-stats[name]={
-tests:s.tests,
-wins:s.wins
-};
-
-}
-
-const weights=
-calculateWeights(stats);
-
-for(const name of names){
-
-const s=
-benchmarkResults.results[name];
+benchmark.results[name];
 
 const tr=
 document.createElement("tr");
 
 tr.innerHTML=`
 <td>${name}</td>
-<td>${current.models[name].candidate}</td>
+<td>${current.four[name].candidate}</td>
+<td>${s.tests}</td>
+<td>${s.wins}</td>
+<td>${rate(s).toFixed(1)}%</td>
+<td>${wilsonLower(s.wins,s.tests).toFixed(1)}%</td>
+`;
+
+table.appendChild(tr);
+
+}
+
+}
+
+
+/* =========================================================
+POIDS
+========================================================= */
+
+function renderWeights(current){
+
+const table=
+document.getElementById(
+"weightTable"
+);
+
+table.innerHTML="";
+
+const stats={};
+
+for(
+const name of
+[
+"Global",
+"Recent",
+"Transition",
+"Sequence"
+]
+){
+
+stats[name]=
+benchmark.results[name];
+
+}
+
+const weights=
+calculateWeights(stats);
+
+for(
+const name of
+Object.keys(weights)
+){
+
+const s=
+benchmark.results[name];
+
+const tr=
+document.createElement("tr");
+
+tr.innerHTML=`
+<td>${name}</td>
+<td>${current.four[name].candidate}</td>
 <td>${(weights[name]*100).toFixed(1)}%</td>
 <td>${s.tests}</td>
 <td>${s.wins}</td>
@@ -2536,7 +2768,51 @@ table.appendChild(tr);
 
 
 /* =========================================================
-CHIFFRES
+CONTEXTE
+========================================================= */
+
+function renderContext(){
+
+const table=
+document.getElementById(
+"contextTable"
+);
+
+table.innerHTML="";
+
+for(
+const key of
+[
+"Normal",
+"Régime change",
+"Forte uniformité",
+"Streak élevé"
+]
+){
+
+const s=
+benchmark.contextStats[key];
+
+const tr=
+document.createElement("tr");
+
+tr.innerHTML=`
+<td>${key}</td>
+<td>${s.tests}</td>
+<td>${s.wins}</td>
+<td>${rate(s).toFixed(1)}%</td>
+<td>${wilsonLower(s.wins,s.tests).toFixed(1)}%</td>
+`;
+
+table.appendChild(tr);
+
+}
+
+}
+
+
+/* =========================================================
+DIGITS
 ========================================================= */
 
 function renderDigits(){
@@ -2551,7 +2827,7 @@ table.innerHTML="";
 for(let d=0;d<10;d++){
 
 const s=
-benchmarkResults.byDigit[d];
+benchmark.digitStats[d];
 
 const tr=
 document.createElement("tr");
@@ -2575,7 +2851,7 @@ table.appendChild(tr);
 SCORE
 ========================================================= */
 
-function renderScore(){
+function renderScores(){
 
 const table=
 document.getElementById(
@@ -2585,13 +2861,18 @@ document.getElementById(
 table.innerHTML="";
 
 for(
-const key of Object.keys(
-benchmarkResults.byScore
-)
+const key of
+[
+"50-59",
+"60-69",
+"70-79",
+"80-89",
+"90-100"
+]
 ){
 
 const s=
-benchmarkResults.byScore[key];
+benchmark.scoreStats[key];
 
 const tr=
 document.createElement("tr");
@@ -2615,7 +2896,7 @@ table.appendChild(tr);
 ACCORD
 ========================================================= */
 
-function renderAgreement(){
+function renderAgreements(){
 
 const table=
 document.getElementById(
@@ -2627,7 +2908,7 @@ table.innerHTML="";
 for(let a=1;a<=4;a++){
 
 const s=
-benchmarkResults.byAgreement[a];
+benchmark.agreementStats[a];
 
 const tr=
 document.createElement("tr");
@@ -2648,56 +2929,15 @@ table.appendChild(tr);
 
 
 /* =========================================================
-CONTEXTE
-========================================================= */
-
-function renderContextStats(){
-
-const table=
-document.getElementById(
-"contextTable"
-);
-
-table.innerHTML="";
-
-for(
-const key of Object.keys(
-benchmarkResults.contextStats
-)
-){
-
-const s=
-benchmarkResults.contextStats[key];
-
-const tr=
-document.createElement("tr");
-
-tr.innerHTML=`
-<td>${key}</td>
-<td>${s.tests}</td>
-<td>${s.wins}</td>
-<td>${rate(s).toFixed(1)}%</td>
-<td>${wilsonLower(s.wins,s.tests).toFixed(1)}%</td>
-`;
-
-table.appendChild(tr);
-
-}
-
-}
-
-
-/* =========================================================
 FRÉQUENCES
 ========================================================= */
 
 function renderFrequencies(){
 
-const arr=
-digits.slice(-100);
-
 const f=
-frequency(arr);
+frequency(
+digits.slice(-100)
+);
 
 const box=
 document.getElementById(
@@ -2734,93 +2974,83 @@ function renderLiveContext(){
 const arr=
 digits.slice(-100);
 
+if(!arr.length)
+return;
+
+const h=
+entropy(arr);
+
+const u=
+uniformity(arr);
+
+const s=
+streak(arr);
+
+const r=
+regimeChange(arr);
+
+const c=
+getContext(arr);
+
 document.getElementById(
 "entropy"
 ).textContent=
-entropy(arr).toFixed(3);
+h.toFixed(3);
 
 document.getElementById(
 "uniformity"
 ).textContent=
-uniformity(arr).toFixed(1)+"%";
+u.toFixed(1)+"%";
 
 document.getElementById(
 "streak"
 ).textContent=
-currentStreak(arr);
-
-if(arr.length>=60){
-
-const h1=
-entropy(
-arr.slice(-30)
-);
-
-const h2=
-entropy(
-arr.slice(-60,-30)
-);
+s;
 
 document.getElementById(
 "regime"
 ).textContent=
-Math.abs(h1-h2)>0.25
+r
 ?"⚠️ OUI"
 :"NON";
 
-}else{
-
 document.getElementById(
-"regime"
-).textContent="—";
-
-}
+"context"
+).textContent=
+c;
 
 }
 
 
 /* =========================================================
-CALIBRATION
+CALIBRATION RÉELLE
 ========================================================= */
 
-function empiricalCalibration(
-prediction
-){
+function calculateCalibration(score){
 
-if(!benchmarkResults)
+if(!benchmark)
 return 50;
 
-let bucket="50-59";
-
-if(prediction.score>=90){
-
-bucket="90-100";
-
-}else if(prediction.score>=80){
-
-bucket="80-89";
-
-}else if(prediction.score>=70){
-
-bucket="70-79";
-
-}else if(prediction.score>=60){
-
-bucket="60-69";
-
-}
+const bucket=
+scoreBucket(score);
 
 const s=
-benchmarkResults.byScore[bucket];
+benchmark.scoreStats[bucket];
 
 if(
 !s ||
-s.tests<20
+s.tests<30
 ){
 
 return 50;
 
 }
+
+
+/*
+On compare le taux empirique
+au niveau de référence 10%.
+*/
 
 const empirical=
 rate(s);
@@ -2832,14 +3062,23 @@ s.tests/200,
 1
 );
 
-const adjusted=
+const evidence=
 10+
-(empirical-10)*
+(
+empirical-10
+)*
 confidence;
+
+
+/*
+Transformation en indice 0-100.
+
+Ce n'est PAS une probabilité.
+*/
 
 return clamp(
 50+
-(adjusted-10)*5,
+(evidence-10)*5,
 0,
 100
 );
@@ -2853,62 +3092,196 @@ GATE
 
 function updateGate(meta){
 
-if(!benchmarkResults)
+if(!benchmark)
 return;
 
 const s=
-benchmarkResults.results.Meta;
+benchmark.results.Meta;
 
-const tests=s.tests;
+const tests=
+s.tests;
 
-const r=rate(s);
+const realRate=
+rate(s);
 
-const w=
+const lower=
 wilsonLower(
 s.wins,
 s.tests
 );
 
-const open=
-tests>=500 &&
-r>=10.5 &&
-w>=8.5 &&
-meta.agreement>=3 &&
-meta.score>=70;
+const rolling=
+s.history.slice(-50);
 
-const el=
-document.getElementById(
-"gate"
+const rollingWins=
+rolling.reduce(
+(a,b)=>a+b,
+0
 );
 
-if(open){
+const rollingRate=
+rolling.length
+?
+rollingWins/rolling.length*100
+:0;
 
-el.textContent=
-"OUVERT POUR ANALYSE";
 
-el.className="orange";
+/*
+Conditions.
+*/
 
-}else{
+const cTests=
+tests>=500;
 
-el.textContent="FERMÉ";
+const cRate=
+realRate>=10.5;
 
-el.className="red";
+const cWilson=
+lower>=8.5;
 
-}
+const cAgreement=
+meta.agreement>=3;
+
+const cCalibration=
+calculateCalibration(
+meta.score
+)>=55;
+
+const cRolling=
+rolling.length>=50 &&
+rollingRate>=10;
+
+
+/*
+Gate final.
+
+IMPORTANT :
+aucune transaction n'est déclenchée.
+*/
+
+const open=
+cTests &&
+cRate &&
+cWilson &&
+cAgreement &&
+cCalibration &&
+cRolling;
+
+
+/*
+État.
+*/
+
+const state=
+document.getElementById(
+"gateState"
+);
+
+state.textContent=
+open
+?"VALIDATION OK"
+:"FERMÉ";
+
+state.className=
+open
+?"orange"
+:"red";
+
+
+/*
+Valeurs.
+*/
 
 document.getElementById(
 "gateTests"
-).textContent=tests;
+).textContent=
+tests;
 
 document.getElementById(
 "gateRate"
 ).textContent=
-r.toFixed(1)+"%";
+realRate.toFixed(1)+"%";
 
 document.getElementById(
 "gateWilson"
 ).textContent=
-w.toFixed(1)+"%";
+lower.toFixed(1)+"%";
+
+
+/*
+Checks.
+*/
+
+setCheck(
+"checkTests",
+"Tests",
+cTests,
+tests+" / 500"
+);
+
+setCheck(
+"checkRate",
+"Taux",
+cRate,
+realRate.toFixed(1)+"% / 10.5%"
+);
+
+setCheck(
+"checkWilson",
+"Wilson",
+cWilson,
+lower.toFixed(1)+"% / 8.5%"
+);
+
+setCheck(
+"checkAgreement",
+"Accord",
+cAgreement,
+meta.agreement+"/4"
+);
+
+setCheck(
+"checkCalibration",
+"Calibration",
+cCalibration,
+calculateCalibration(meta.score).toFixed(1)+
+"/100"
+);
+
+setCheck(
+"checkRolling",
+"Rolling 50",
+cRolling,
+rollingRate.toFixed(1)+"%"
+);
+
+}
+
+
+function setCheck(
+id,
+name,
+ok,
+value
+){
+
+const el=
+document.getElementById(id);
+
+el.innerHTML=
+(
+ok
+?"✅ "
+:"❌ "
+)+
+name+
+": "+
+value;
+
+el.style.color=
+ok
+?"#67efb5"
+:"#ff8080";
 
 }
 
@@ -2927,53 +3300,68 @@ return;
 
 }
 
-const train=
+const arr=
 digits.slice(-WINDOW);
 
-const stats={};
 
-for(
-const name of
-[
-"Global",
-"Recent",
-"Transition",
-"Sequence"
-]
-){
+/*
+Stats disponibles.
 
-if(
-benchmarkResults
-){
+Elles proviennent uniquement
+du walk-forward déjà terminé.
+*/
 
-const s=
-benchmarkResults.results[name];
+const past={
 
-stats[name]={
-tests:s.tests,
-wins:s.wins
+Global:
+benchmark
+?
+benchmark.results.Global
+:emptyStats(),
+
+Recent:
+benchmark
+?
+benchmark.results.Recent
+:emptyStats(),
+
+Transition:
+benchmark
+?
+benchmark.results.Transition
+:emptyStats(),
+
+Sequence:
+benchmark
+?
+benchmark.results.Sequence
+:emptyStats(),
+
+context:{}
+
 };
 
-}else{
 
-stats[name]={
-tests:0,
-wins:0
-};
+/*
+Pour V8 live, construire les statistiques
+contextuelles à partir des résultats
+du benchmark n'est pas suffisant pour
+rejouer exactement chaque contexte.
+On utilise donc une sélection globale
+prudente pour le live.
 
-}
-
-}
+Le benchmark reste la référence.
+*/
 
 const meta=
 metaSelect(
-train,
-stats
+arr,
+past
 );
 
-const calibration=
-empiricalCalibration(
-meta
+const cal=
+calculateCalibration(
+meta.score
 );
 
 document.getElementById(
@@ -2984,56 +3372,69 @@ meta.candidate;
 document.getElementById(
 "selectedModel"
 ).textContent=
-"Modèle "+meta.selected;
+"Modèle "+
+meta.selected;
 
 document.getElementById(
-"metaScore"
+"rawScore"
 ).textContent=
-meta.score.toFixed(1)+"/100";
+meta.score.toFixed(1)+
+"/100";
 
 document.getElementById(
 "calibration"
 ).textContent=
-calibration.toFixed(1)+"/100";
+cal.toFixed(1)+
+"/100";
 
 document.getElementById(
 "agreement"
 ).textContent=
-meta.agreement+"/4";
+meta.agreement+
+"/4";
 
 document.getElementById(
 "gap"
 ).textContent=
-meta.gap.toFixed(2)+"%";
+meta.gap.toFixed(2)+
+"%";
 
-updateGate(meta);
+
+/*
+Historique visuel.
+*/
 
 predictionHistory.unshift(
 new Date().toLocaleTimeString()+
 " | Meta="+
 meta.selected+
-" | Candidat="+
+" | Candidate="+
 meta.candidate+
 " | Score="+
 meta.score.toFixed(1)+
 " | Cal="+
-calibration.toFixed(1)+
+cal.toFixed(1)+
 " | Accord="+
-meta.agreement+"/4"
+meta.agreement+
+"/4"
 );
 
 predictionHistory=
 predictionHistory.slice(
 0,
-30
+35
 );
 
 document.getElementById(
 "predictionHistory"
 ).textContent=
-predictionHistory.join(
-"\n"
-);
+predictionHistory.join("\n");
+
+updateGate(meta);
+
+renderModels(meta);
+
+renderWeights(meta);
 
 }
 
@@ -3046,8 +3447,7 @@ function requestHistory(){
 
 if(
 !ws ||
-ws.readyState!==
-WebSocket.OPEN
+ws.readyState!==WebSocket.OPEN
 ){
 
 return;
@@ -3076,15 +3476,14 @@ style:"ticks"
 
 
 /* =========================================================
-ABONNEMENT LIVE
+LIVE TICKS
 ========================================================= */
 
 function subscribeTicks(){
 
 if(
 !ws ||
-ws.readyState!==
-WebSocket.OPEN
+ws.readyState!==WebSocket.OPEN
 ){
 
 return;
@@ -3123,6 +3522,7 @@ new WebSocket(
 WS_URL
 );
 
+
 ws.onopen=function(){
 
 document.getElementById(
@@ -3158,7 +3558,7 @@ return;
 
 
 /*
-API ERROR
+ERREUR API
 */
 
 if(data.error){
@@ -3186,6 +3586,7 @@ const historyPrices=
 data.history.prices||[];
 
 prices=[];
+
 digits=[];
 
 for(
@@ -3204,6 +3605,7 @@ d!==null
 ){
 
 prices.push(n);
+
 digits.push(d);
 
 }
@@ -3241,7 +3643,7 @@ digits.length-1
 }
 
 log(
-"Historique reçu: "+
+"Historique reçu : "+
 digits.length+
 " ticks."
 );
@@ -3257,17 +3659,17 @@ MIN_WALK_FORWARD
 ){
 
 log(
-"Calcul TRUE WALK-FORWARD V7.7..."
+"TRUE WALK-FORWARD V8 en cours..."
 );
 
-benchmarkResults=
-trueWalkForward(
+benchmark=
+runTrueWalkForward(
 digits
 );
 
 log(
-"Benchmark V7.7 terminé: "+
-benchmarkResults.results.Meta.tests+
+"Benchmark terminé : "+
+benchmark.results.Meta.tests+
 " tests Meta."
 );
 
@@ -3279,45 +3681,31 @@ renderMeta();
 
 renderSelections();
 
-renderModels(
-metaSelect(
-digits.slice(-WINDOW),
-{
-Global:{
-tests:benchmarkResults.results.Global.tests,
-wins:benchmarkResults.results.Global.wins
-},
-Recent:{
-tests:benchmarkResults.results.Recent.tests,
-wins:benchmarkResults.results.Recent.wins
-},
-Transition:{
-tests:benchmarkResults.results.Transition.tests,
-wins:benchmarkResults.results.Transition.wins
-},
-Sequence:{
-tests:benchmarkResults.results.Sequence.tests,
-wins:benchmarkResults.results.Sequence.wins
-}
-}
-)
-);
+renderContext();
 
 renderDigits();
 
-renderScore();
+renderScores();
 
-renderAgreement();
-
-renderContextStats();
+renderAgreements();
 
 }
+
+
+/*
+Affichage.
+*/
 
 renderFrequencies();
 
 renderLiveContext();
 
 updatePrediction();
+
+
+/*
+Abonnement live.
+*/
 
 subscribeTicks();
 
@@ -3332,15 +3720,14 @@ TICK LIVE
 
 if(data.tick){
 
-const tick=
-data.tick;
-
 const quote=
-Number(tick.quote);
+Number(
+data.tick.quote
+);
 
 const d=
 digitFromQuote(
-tick.quote
+data.tick.quote
 );
 
 if(
@@ -3375,7 +3762,7 @@ document.getElementById(
 "price"
 ).textContent=
 quote.toFixed(
-tick.pip_size||4
+data.tick.pip_size||4
 );
 
 document.getElementById(
@@ -3432,7 +3819,7 @@ connect,
 
 
 /* =========================================================
-START
+DÉMARRAGE
 ========================================================= */
 
 document.addEventListener(
@@ -3441,8 +3828,7 @@ function(){
 
 connect();
 
-}
-);
+});
 
 </script>
 
