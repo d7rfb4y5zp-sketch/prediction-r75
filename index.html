@@ -2,221 +2,222 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-
-<title>Prediction R75 — V7.4</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prediction R75 — V7.5</title>
 
 <style>
 *{
-    box-sizing:border-box;
+  box-sizing:border-box;
 }
 
 body{
-    margin:0;
-    background:#06111f;
-    color:#eaf4ff;
-    font-family:Arial,Helvetica,sans-serif;
+  margin:0;
+  background:#07111f;
+  color:#e8eef7;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
 }
 
 .container{
-    width:100%;
-    max-width:900px;
-    margin:auto;
-    padding:14px;
-}
-
-.header{
-    background:linear-gradient(135deg,#0b213b,#092d50);
-    border:1px solid #1e4b73;
-    border-radius:18px;
-    padding:18px;
-    margin-bottom:12px;
+  max-width:1100px;
+  margin:auto;
+  padding:16px;
 }
 
 h1{
-    margin:0 0 6px;
-    font-size:24px;
+  margin:0 0 6px;
+  font-size:24px;
 }
 
 .subtitle{
-    color:#8fb5d8;
-    font-size:13px;
+  color:#8ea0b8;
+  font-size:13px;
+  margin-bottom:15px;
 }
 
 .status{
-    margin-top:12px;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    font-size:14px;
+  padding:12px;
+  border-radius:10px;
+  background:#101d30;
+  margin-bottom:12px;
+  font-weight:600;
 }
 
-.dot{
-    width:10px;
-    height:10px;
-    border-radius:50%;
-    background:#777;
+.green{
+  color:#42e6a4;
 }
 
-.dot.ok{
-    background:#20d47b;
+.orange{
+  color:#ffc857;
 }
 
-.dot.bad{
-    background:#ff4d5f;
-}
-
-.card{
-    background:#091a2d;
-    border:1px solid #173b5d;
-    border-radius:16px;
-    padding:14px;
-    margin-bottom:12px;
-}
-
-.title{
-    font-size:16px;
-    font-weight:bold;
-    margin-bottom:12px;
+.red{
+  color:#ff6b6b;
 }
 
 .grid{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:8px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:12px;
 }
 
-.box{
-    background:#071425;
-    border:1px solid #163653;
-    border-radius:12px;
-    padding:10px;
+.card{
+  background:#0d1a2b;
+  border:1px solid #1c3048;
+  border-radius:14px;
+  padding:14px;
 }
 
-.label{
-    color:#82a8ca;
-    font-size:11px;
-    margin-bottom:5px;
-}
-
-.value{
-    font-size:18px;
-    font-weight:bold;
+.card h2{
+  font-size:15px;
+  margin:0 0 12px;
 }
 
 .big{
-    font-size:34px;
-}
-
-.good{
-    color:#20d47b;
-}
-
-.warn{
-    color:#ffd166;
-}
-
-.badtext{
-    color:#ff6574;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    font-size:12px;
-}
-
-th{
-    color:#81a8cb;
-    text-align:left;
-    padding:8px 5px;
-    border-bottom:1px solid #21435f;
-}
-
-td{
-    padding:8px 5px;
-    border-bottom:1px solid #112c44;
-}
-
-.candidate{
-    text-align:center;
-    background:#071a2c;
-    border:1px solid #24577f;
-    border-radius:15px;
-    padding:16px;
-}
-
-.candidateDigit{
-    font-size:62px;
-    font-weight:bold;
-    line-height:1;
-    margin:8px 0;
+  font-size:42px;
+  font-weight:800;
+  text-align:center;
+  margin:8px 0;
 }
 
 .score{
-    font-size:21px;
-    font-weight:bold;
+  font-size:25px;
+  font-weight:800;
 }
 
-.bar{
-    width:100%;
-    height:9px;
-    background:#07101d;
-    border-radius:10px;
-    overflow:hidden;
-    margin-top:8px;
+.row{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  padding:5px 0;
+  border-bottom:1px solid #17283d;
 }
 
-.barInner{
-    height:100%;
-    width:0%;
-    background:#39a9ff;
-    transition:width .3s;
+.row:last-child{
+  border-bottom:0;
 }
 
-.log{
-    background:#030b14;
-    border-radius:10px;
-    padding:10px;
-    height:190px;
-    overflow:auto;
-    font-family:monospace;
-    font-size:11px;
-    color:#8fc3ed;
+.label{
+  color:#8ea0b8;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:12px;
+}
+
+th,td{
+  padding:7px 5px;
+  border-bottom:1px solid #1b2c42;
+  text-align:right;
+}
+
+th:first-child,
+td:first-child{
+  text-align:left;
+}
+
+th{
+  color:#91a6c1;
+}
+
+.badge{
+  display:inline-block;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:11px;
+  background:#172b43;
+}
+
+.progress{
+  height:8px;
+  background:#16283e;
+  border-radius:99px;
+  overflow:hidden;
+  margin-top:6px;
+}
+
+.progress > div{
+  height:100%;
+  background:#42e6a4;
+}
+
+.digits{
+  display:grid;
+  grid-template-columns:repeat(10,1fr);
+  gap:5px;
+}
+
+.digit{
+  background:#13243a;
+  border-radius:8px;
+  text-align:center;
+  padding:8px 2px;
+}
+
+.digit b{
+  display:block;
+  font-size:16px;
+}
+
+.small{
+  font-size:11px;
+  color:#8195ad;
 }
 
 button{
-    width:100%;
-    border:0;
-    border-radius:12px;
-    padding:13px;
-    background:#123c61;
-    color:white;
-    font-weight:bold;
-    margin-top:7px;
+  width:100%;
+  border:0;
+  border-radius:10px;
+  padding:12px;
+  background:#1b6ef3;
+  color:white;
+  font-weight:700;
+  margin-top:8px;
 }
 
-button.danger{
-    background:#61202a;
+button:active{
+  transform:scale(.98);
+}
+
+.log{
+  max-height:220px;
+  overflow:auto;
+  background:#06101c;
+  border-radius:10px;
+  padding:10px;
+  font-family:monospace;
+  font-size:11px;
+  white-space:pre-wrap;
 }
 
 .warning{
-    color:#ffd166;
-    font-size:12px;
-    line-height:1.5;
+  background:#2a2010;
+  border:1px solid #59451c;
+  color:#ffd978;
+  padding:12px;
+  border-radius:10px;
+  font-size:12px;
+  margin-top:12px;
 }
 
-.note{
-    color:#8caecc;
-    font-size:11px;
-    line-height:1.5;
+.ok{
+  background:#0b251d;
+  border:1px solid #174c39;
+  color:#6ef0bb;
+  padding:12px;
+  border-radius:10px;
+  font-size:12px;
 }
 
-@media(min-width:700px){
-    .grid{
-        grid-template-columns:repeat(4,1fr);
-    }
+@media(max-width:600px){
+  .container{
+    padding:10px;
+  }
+
+  h1{
+    font-size:21px;
+  }
 }
 </style>
 </head>
@@ -225,303 +226,312 @@ button.danger{
 
 <div class="container">
 
-<div class="header">
-    <h1>📊 Prediction R75 — V7.4</h1>
-    <div class="subtitle">
-        Moteur empirique • Walk-Forward • Calibration • TEST UNIQUEMENT
-    </div>
+<h1>Prediction R75 — V7.5</h1>
+<div class="subtitle">
+TRUE WALK-FORWARD BENCHMARK • Statistical validation • TEST ONLY
+</div>
 
-    <div class="status">
-        <div id="statusDot" class="dot"></div>
-        <span id="statusText">Connexion…</span>
-    </div>
+<div id="status" class="status orange">
+🟠 Connexion…
+</div>
+
+<div class="grid">
+
+<div class="card">
+<h2>Marché</h2>
+
+<div class="row">
+<span class="label">Symbole</span>
+<b>Volatility 75 (R_75)</b>
+</div>
+
+<div class="row">
+<span class="label">Ticks reçus</span>
+<b id="ticksReceived">0</b>
+</div>
+
+<div class="row">
+<span class="label">Dernier prix</span>
+<b id="price">—</b>
+</div>
+
+<div class="row">
+<span class="label">Dernier chiffre</span>
+<b id="lastDigit">—</b>
+</div>
+
 </div>
 
 <div class="card">
-    <div class="title">📡 MARCHÉ</div>
+<h2>PRÉDICTION ENSEMBLE</h2>
 
-    <div class="grid">
-        <div class="box">
-            <div class="label">Marché</div>
-            <div class="value">Volatility 75</div>
-        </div>
+<div class="big" id="candidate">—</div>
 
-        <div class="box">
-            <div class="label">Symbole</div>
-            <div class="value">R_75</div>
-        </div>
+<div style="text-align:center">
+<span class="badge" id="agreement">Accord —</span>
+</div>
 
-        <div class="box">
-            <div class="label">Ticks reçus</div>
-            <div id="tickCount" class="value">0</div>
-        </div>
+<div class="row">
+<span class="label">Score brut</span>
+<b id="rawScore">—</b>
+</div>
 
-        <div class="box">
-            <div class="label">Dernier prix</div>
-            <div id="lastPrice" class="value">—</div>
-        </div>
-    </div>
+<div class="row">
+<span class="label">Calibration empirique</span>
+<b id="calibratedScore">—</b>
+</div>
+
+<div class="row">
+<span class="label">Écart</span>
+<b id="gap">—</b>
+</div>
+
 </div>
 
 <div class="card">
-    <div class="title">🎯 PRÉDICTION V7.4</div>
+<h2>GATE V7.5</h2>
 
-    <div class="candidate">
-        <div class="label">CANDIDAT ACTUEL</div>
-        <div id="candidate" class="candidateDigit">—</div>
+<div class="row">
+<span class="label">État</span>
+<b id="gate" class="red">FERMÉ</b>
+</div>
 
-        <div>
-            Score brut :
-            <strong id="rawScore">—</strong>
-        </div>
+<div class="row">
+<span class="label">Tests</span>
+<b id="gateTests">0</b>
+</div>
 
-        <div>
-            Calibration empirique :
-            <strong id="calibratedScore">—</strong>
-        </div>
+<div class="row">
+<span class="label">Taux réel</span>
+<b id="gateRate">—</b>
+</div>
 
-        <div>
-            Écart :
-            <strong id="edge">—</strong>
-        </div>
+<div class="row">
+<span class="label">Wilson lower</span>
+<b id="gateWilson">—</b>
+</div>
 
-        <div>
-            Accord :
-            <strong id="agreement">—</strong>
-        </div>
+<div class="warning">
+⚠️ Le Gate n'autorise aucune transaction.
+Cette application reste un laboratoire statistique.
+</div>
 
-        <div class="bar">
-            <div id="scoreBar" class="barInner"></div>
-        </div>
+</div>
 
-        <div id="gateText" class="warning" style="margin-top:10px;">
-            GATE FERMÉ
-        </div>
-    </div>
+</div>
+
+<br>
+
+<div class="grid">
+
+<div class="card">
+<h2>FRÉQUENCE — 100 DERNIERS TICKS</h2>
+<div id="frequencies" class="digits"></div>
 </div>
 
 <div class="card">
-    <div class="title">📊 FRÉQUENCES — 100 TICKS</div>
-    <div id="frequencies"></div>
+<h2>CONTEXTE</h2>
+
+<div class="row">
+<span class="label">Entropie</span>
+<b id="entropy">—</b>
+</div>
+
+<div class="row">
+<span class="label">Uniformité</span>
+<b id="uniformity">—</b>
+</div>
+
+<div class="row">
+<span class="label">Streak</span>
+<b id="streak">—</b>
+</div>
+
+<div class="row">
+<span class="label">Changement régime</span>
+<b id="regime">—</b>
+</div>
+
+</div>
+
+</div>
+
+<br>
+
+<div class="card">
+<h2>TRUE WALK-FORWARD BENCHMARK</h2>
+
+<p class="small">
+Chaque ligne correspond à de vraies prédictions historiques.
+À l'instant t, le modèle utilise uniquement les ticks antérieurs à t,
+puis compare sa prédiction au chiffre réellement arrivé à t.
+</p>
+
+<table>
+<thead>
+<tr>
+<th>Modèle</th>
+<th>Tests</th>
+<th>Wins</th>
+<th>Taux</th>
+<th>Wilson</th>
+</tr>
+</thead>
+
+<tbody id="benchmarkTable"></tbody>
+</table>
+
+<div class="ok" style="margin-top:12px">
+✅ V7.5 : benchmark calculé en véritable walk-forward.
+Aucun futur n'est utilisé pour fabriquer les résultats.
+</div>
+
+</div>
+
+<br>
+
+<div class="grid">
+
+<div class="card">
+<h2>PERFORMANCE DES MODÈLES</h2>
+
+<table>
+<thead>
+<tr>
+<th>Modèle</th>
+<th>Candidate</th>
+<th>Poids</th>
+<th>Tests</th>
+<th>Wins</th>
+<th>Taux</th>
+<th>Wilson</th>
+</tr>
+</thead>
+
+<tbody id="modelTable"></tbody>
+</table>
+
 </div>
 
 <div class="card">
-    <div class="title">🧠 PERFORMANCE DES 4 MODÈLES</div>
+<h2>ENSEMBLE WALK-FORWARD</h2>
 
-    <table>
-        <thead>
-        <tr>
-            <th>MODÈLE</th>
-            <th>CAND.</th>
-            <th>TESTS</th>
-            <th>WIN</th>
-            <th>TAUX</th>
-            <th>WILSON</th>
-            <th>POIDS</th>
-        </tr>
-        </thead>
+<div class="row">
+<span class="label">Tests</span>
+<b id="ensembleTests">0</b>
+</div>
 
-        <tbody id="modelTable"></tbody>
-    </table>
+<div class="row">
+<span class="label">Wins</span>
+<b id="ensembleWins">0</b>
+</div>
+
+<div class="row">
+<span class="label">Taux</span>
+<b id="ensembleRate">—</b>
+</div>
+
+<div class="row">
+<span class="label">Wilson lower</span>
+<b id="ensembleWilson">—</b>
+</div>
+
+<div class="row">
+<span class="label">Rolling 50</span>
+<b id="rolling50">—</b>
+</div>
+
+</div>
+
+</div>
+
+<br>
+
+<div class="card">
+<h2>PERFORMANCE PAR CHIFFRE — ENSEMBLE</h2>
+
+<table>
+<thead>
+<tr>
+<th>Chiffre</th>
+<th>Tests</th>
+<th>Wins</th>
+<th>Taux</th>
+<th>Wilson</th>
+</tr>
+</thead>
+
+<tbody id="digitTable"></tbody>
+</table>
+
+</div>
+
+<br>
+
+<div class="grid">
+
+<div class="card">
+<h2>PERFORMANCE PAR SCORE</h2>
+
+<table>
+<thead>
+<tr>
+<th>Score</th>
+<th>Tests</th>
+<th>Wins</th>
+<th>Taux</th>
+<th>Wilson</th>
+</tr>
+</thead>
+
+<tbody id="scoreTable"></tbody>
+</table>
+
 </div>
 
 <div class="card">
-    <div class="title">🧪 WALK-FORWARD VALIDATION</div>
+<h2>PERFORMANCE PAR ACCORD</h2>
 
-    <div class="grid">
-        <div class="box">
-            <div class="label">Tests ensemble</div>
-            <div id="wfTests" class="value">0</div>
-        </div>
+<table>
+<thead>
+<tr>
+<th>Accord</th>
+<th>Tests</th>
+<th>Wins</th>
+<th>Taux</th>
+<th>Wilson</th>
+</tr>
+</thead>
 
-        <div class="box">
-            <div class="label">WIN</div>
-            <div id="wfWins" class="value">0</div>
-        </div>
+<tbody id="agreementTable"></tbody>
+</table>
 
-        <div class="box">
-            <div class="label">Taux global</div>
-            <div id="wfRate" class="value">—</div>
-        </div>
-
-        <div class="box">
-            <div class="label">Wilson</div>
-            <div id="wfWilson" class="value">—</div>
-        </div>
-
-        <div class="box">
-            <div class="label">Rolling 50</div>
-            <div id="rollingRate" class="value">—</div>
-        </div>
-
-        <div class="box">
-            <div class="label">WIN rolling</div>
-            <div id="rollingWins" class="value">—</div>
-        </div>
-    </div>
-
-    <p class="note">
-        Une prédiction est créée après le tick actuel.
-        Elle est validée uniquement lorsque le tick suivant arrive.
-        La donnée utilisée pour créer la prédiction n'est donc jamais
-        utilisée pour valider cette même prédiction.
-    </p>
 </div>
 
-<div class="card">
-    <div class="title">⚖️ BENCHMARK</div>
-
-    <table>
-        <thead>
-        <tr>
-            <th>MÉTHODE</th>
-            <th>TESTS</th>
-            <th>WIN</th>
-            <th>TAUX</th>
-            <th>VS 10%</th>
-        </tr>
-        </thead>
-
-        <tbody id="benchmarkTable"></tbody>
-    </table>
 </div>
 
+<br>
+
 <div class="card">
-    <div class="title">🔬 SHADOW LAB</div>
-
-    <div class="grid">
-        <div class="box">
-            <div class="label">Tests</div>
-            <div id="shadowTests" class="value">0</div>
-        </div>
-
-        <div class="box">
-            <div class="label">WIN</div>
-            <div id="shadowWins" class="value">0</div>
-        </div>
-
-        <div class="box">
-            <div class="label">Taux</div>
-            <div id="shadowRate" class="value">—</div>
-        </div>
-
-        <div class="box">
-            <div class="label">Wilson</div>
-            <div id="shadowWilson" class="value">—</div>
-        </div>
-    </div>
-
-    <br>
-
-    <table>
-        <thead>
-        <tr>
-            <th>DIGIT</th>
-            <th>TESTS</th>
-            <th>WIN</th>
-            <th>TAUX</th>
-        </tr>
-        </thead>
-
-        <tbody id="digitTable"></tbody>
-    </table>
+<h2>LAB — DERNIÈRES PRÉDICTIONS</h2>
+<div id="predictionHistory" class="log">
+En attente de données…
+</div>
 </div>
 
+<br>
+
 <div class="card">
-    <div class="title">🎯 CALIBRATION EMPIRIQUE</div>
+<h2>JOURNAL API</h2>
 
-    <table>
-        <thead>
-        <tr>
-            <th>SCORE</th>
-            <th>TESTS</th>
-            <th>WIN</th>
-            <th>TAUX</th>
-            <th>WILSON</th>
-        </tr>
-        </thead>
-
-        <tbody id="scoreTable"></tbody>
-    </table>
-
-    <p class="note">
-        Le score est un score interne du modèle.
-        Il n'est pas une probabilité de gain.
-        V7.4 mesure maintenant la performance réellement observée
-        dans chaque tranche de score.
-    </p>
+<div id="log" class="log">
+Initialisation V7.5…
 </div>
 
-<div class="card">
-    <div class="title">🤝 CALIBRATION PAR ACCORD</div>
+<button onclick="clearLogs()">
+EFFACER LE JOURNAL
+</button>
 
-    <table>
-        <thead>
-        <tr>
-            <th>ACCORD</th>
-            <th>TESTS</th>
-            <th>WIN</th>
-            <th>TAUX</th>
-            <th>WILSON</th>
-        </tr>
-        </thead>
-
-        <tbody id="agreementTable"></tbody>
-    </table>
-</div>
-
-<div class="card">
-    <div class="title">🌐 CONTEXT ENGINE</div>
-
-    <div class="grid">
-        <div class="box">
-            <div class="label">Entropie</div>
-            <div id="entropy" class="value">—</div>
-        </div>
-
-        <div class="box">
-            <div class="label">Uniformité</div>
-            <div id="uniformity" class="value">—</div>
-        </div>
-
-        <div class="box">
-            <div class="label">Streak</div>
-            <div id="streak" class="value">—</div>
-        </div>
-
-        <div class="box">
-            <div class="label">Changement</div>
-            <div id="change" class="value">—</div>
-        </div>
-    </div>
-</div>
-
-<div class="card">
-    <div class="title">🚦 STATISTICAL GATE V7.4</div>
-
-    <div id="gateDetails" class="note">
-        Initialisation…
-    </div>
-</div>
-
-<div class="card">
-    <div class="title">⚠️ MODE TEST</div>
-
-    <div class="warning">
-        Cette application analyse uniquement les données publiques de marché.
-        Aucun ordre, contrat, achat ou vente n'est envoyé à Deriv.
-        Les résultats historiques ne garantissent pas les résultats futurs.
-    </div>
-</div>
-
-<div class="card">
-    <div class="title">📜 JOURNAL API</div>
-
-    <div id="log" class="log"></div>
-
-    <button onclick="resetState()" class="danger">
-        ♻️ RESET DES DONNÉES V7.4
-    </button>
 </div>
 
 </div>
@@ -529,1695 +539,1701 @@ button.danger{
 <script>
 
 /* =========================================================
-   V7.4 — CONFIGURATION
+   CONFIGURATION
 ========================================================= */
 
 const WS_URL =
-    "wss://api.derivws.com/trading/v1/options/ws/public";
+"wss://api.derivws.com/trading/v1/options/ws/public";
 
 const SYMBOL = "R_75";
-const HISTORY_COUNT = 100;
-const RECENT_COUNT = 30;
 
-const STORAGE_KEY =
-    "prediction_r75_v74_state";
+const HISTORY_COUNT = 700;
+
+const WINDOW = 100;
+
+const RECENT_WINDOW = 30;
+
+const MIN_WALK_FORWARD = 100;
+
+const LAPLACE = 1;
+
 
 /* =========================================================
-   STATE
+   ÉTAT
 ========================================================= */
 
 let ws = null;
-let reconnectTimer = null;
-let reconnectDelay = 1500;
 
-let ticks = [];
-let pendingPrediction = null;
+let ticksReceived = 0;
 
-let state = {
-    totalTicks: 0,
+let prices = [];
 
-    ensemble: {
-        tests: 0,
-        wins: 0
-    },
+let digits = [];
 
-    shadow: {
-        tests: 0,
-        wins: 0
-    },
+let predictionHistory = [];
 
-    models: {},
+let benchmarkResults = null;
 
-    scoreBuckets: {},
-
-    agreementBuckets: {},
-
-    digitStats: {},
-
-    benchmarks: {},
-
-    history: []
-};
-
-const MODEL_NAMES = [
-    "Global",
-    "Recent",
-    "Transition",
-    "Sequence"
-];
-
-for(let i=0;i<10;i++){
-    state.digitStats[i] = {
-        tests:0,
-        wins:0
-    };
-}
-
-const SCORE_BUCKETS = [
-    [50,59],
-    [60,69],
-    [70,79],
-    [80,89],
-    [90,100]
-];
-
-for(const [a,b] of SCORE_BUCKETS){
-    state.scoreBuckets[a+"-"+b] = {
-        tests:0,
-        wins:0
-    };
-}
-
-for(let i=1;i<=4;i++){
-    state.agreementBuckets[i] = {
-        tests:0,
-        wins:0
-    };
-}
-
-for(const name of MODEL_NAMES){
-    state.models[name] = {
-        tests:0,
-        wins:0,
-        candidate:null,
-        weight:0.25
-    };
-}
-
-const BENCHMARK_NAMES = [
-    "Hasard",
-    "Plus fréquent",
-    "Recent",
-    "Global",
-    "Ensemble"
-];
-
-for(const name of BENCHMARK_NAMES){
-    state.benchmarks[name] = {
-        tests:0,
-        wins:0
-    };
-}
 
 /* =========================================================
    UTILITAIRES
 ========================================================= */
 
-function log(msg){
+function log(message){
 
-    const el = document.getElementById("log");
+  const el = document.getElementById("log");
 
-    const time =
-        new Date().toLocaleTimeString();
+  const time =
+    new Date().toLocaleTimeString();
 
-    el.innerHTML +=
-        "[" + time + "] " +
-        msg +
-        "<br>";
+  el.textContent =
+    "[" + time + "] " + message +
+    "\n" + el.textContent;
 
-    el.scrollTop = el.scrollHeight;
+}
+
+function clearLogs(){
+
+  document.getElementById("log").textContent =
+    "Journal effacé.";
+
+}
+
+function digitFromQuote(quote){
+
+  const s =
+    String(quote);
+
+  const clean =
+    s.replace(/[^0-9]/g,"");
+
+  if(!clean) return null;
+
+  return Number(clean.slice(-1));
+
 }
 
 function clamp(x,min,max){
-    return Math.max(min,Math.min(max,x));
+
+  return Math.max(min,Math.min(max,x));
+
 }
 
-function pct(wins,tests){
-
-    if(!tests) return null;
-
-    return 100*wins/tests;
-}
-
-/* Wilson lower bound 95% */
-
-function wilson(wins,tests){
-
-    if(!tests) return null;
-
-    const z = 1.96;
-    const p = wins/tests;
-
-    const denominator =
-        1 + z*z/tests;
-
-    const center =
-        p + z*z/(2*tests);
-
-    const margin =
-        z * Math.sqrt(
-            (p*(1-p)/tests) +
-            (z*z/(4*tests*tests))
-        );
-
-    return 100 * ((center-margin)/denominator);
-}
 
 /* =========================================================
-   DIGIT EXTRACTION
+   WILSON LOWER BOUND
 ========================================================= */
 
-function extractDigit(quote){
+function wilsonLower(wins,total){
 
-    const s = String(quote);
+  if(total <= 0) return 0;
 
-    if(s.includes(".")){
+  const z = 1.96;
 
-        const parts = s.split(".");
+  const p = wins / total;
 
-        const decimals =
-            parts[1].replace(/\D/g,"");
+  const denominator =
+    1 + z*z/total;
 
-        if(decimals.length){
-            return Number(
-                decimals[decimals.length-1]
-            );
-        }
-    }
+  const centre =
+    p + z*z/(2*total);
 
-    const clean =
-        s.replace(/\D/g,"");
-
-    if(clean.length){
-        return Number(
-            clean[clean.length-1]
-        );
-    }
-
-    const n =
-        Math.floor(
-            Math.abs(Number(quote))*10000
-        );
-
-    return n % 10;
-}
-
-/* =========================================================
-   LOAD / SAVE
-========================================================= */
-
-function saveState(){
-
-    try{
-
-        localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify(state)
-        );
-
-    }catch(e){
-
-        log("localStorage indisponible");
-    }
-}
-
-function loadState(){
-
-    try{
-
-        const raw =
-            localStorage.getItem(STORAGE_KEY);
-
-        if(!raw) return;
-
-        const saved =
-            JSON.parse(raw);
-
-        if(saved.ensemble)
-            state.ensemble = saved.ensemble;
-
-        if(saved.shadow)
-            state.shadow = saved.shadow;
-
-        if(saved.models)
-            state.models = saved.models;
-
-        if(saved.scoreBuckets)
-            state.scoreBuckets = saved.scoreBuckets;
-
-        if(saved.agreementBuckets)
-            state.agreementBuckets =
-                saved.agreementBuckets;
-
-        if(saved.digitStats)
-            state.digitStats =
-                saved.digitStats;
-
-        if(saved.benchmarks)
-            state.benchmarks =
-                saved.benchmarks;
-
-        if(saved.history)
-            state.history =
-                saved.history.slice(-1000);
-
-        if(saved.totalTicks)
-            state.totalTicks =
-                saved.totalTicks;
-
-        log("État V7.4 chargé");
-
-    }catch(e){
-
-        log("Impossible de charger l'état");
-    }
-}
-
-function resetState(){
-
-    if(!confirm(
-        "Réinitialiser toutes les données V7.4 ?"
-    )) return;
-
-    localStorage.removeItem(
-        STORAGE_KEY
+  const margin =
+    z * Math.sqrt(
+      (p*(1-p) + z*z/(4*total))/total
     );
 
-    location.reload();
+  return (
+    (centre - margin) /
+    denominator
+  ) * 100;
+
 }
+
 
 /* =========================================================
-   STATISTIQUES DIGITS
+   STATISTIQUES
 ========================================================= */
 
-function frequency(){
+function frequency(arr){
 
-    const f =
-        Array(10).fill(0);
+  const f = Array(10).fill(0);
 
-    for(const d of ticks){
+  for(const d of arr){
 
-        if(Number.isInteger(d))
-            f[d]++;
+    if(Number.isInteger(d) && d >= 0 && d <= 9){
+
+      f[d]++;
+
     }
 
-    return f;
+  }
+
+  return f;
+
 }
+
+function entropy(arr){
+
+  if(arr.length === 0) return 0;
+
+  const f = frequency(arr);
+
+  let h = 0;
+
+  for(const n of f){
+
+    if(n > 0){
+
+      const p = n / arr.length;
+
+      h -= p * Math.log2(p);
+
+    }
+
+  }
+
+  return h;
+
+}
+
+function uniformity(arr){
+
+  if(arr.length === 0) return 0;
+
+  const f = frequency(arr);
+
+  const expected =
+    arr.length / 10;
+
+  let error = 0;
+
+  for(const n of f){
+
+    error += Math.abs(n-expected);
+
+  }
+
+  return clamp(
+    100 - (error/(arr.length*2))*100,
+    0,
+    100
+  );
+
+}
+
+function currentStreak(arr){
+
+  if(arr.length === 0) return 0;
+
+  const last =
+    arr[arr.length-1];
+
+  let count = 0;
+
+  for(let i=arr.length-1;i>=0;i--){
+
+    if(arr[i] === last){
+
+      count++;
+
+    }else{
+
+      break;
+
+    }
+
+  }
+
+  return count;
+
+}
+
 
 /* =========================================================
-   ENTROPIE
+   MODÈLE GLOBAL
 ========================================================= */
 
-function entropy(){
+function predictGlobal(history){
 
-    const f = frequency();
+  const f =
+    frequency(history);
 
-    const n = ticks.length;
+  let best = 0;
 
-    if(!n) return 0;
+  for(let d=1;d<10;d++){
 
-    let h=0;
+    if(f[d] > f[best]){
 
-    for(let i=0;i<10;i++){
+      best = d;
 
-        if(!f[i]) continue;
-
-        const p=f[i]/n;
-
-        h -= p*Math.log2(p);
     }
 
-    return h;
-}
+  }
 
-function uniformity(){
-
-    const f = frequency();
-
-    const n = ticks.length;
-
-    if(!n) return 0;
-
-    let diff=0;
-
-    const expected =
-        n/10;
-
-    for(const x of f){
-
-        diff +=
-            Math.abs(x-expected);
-    }
-
-    const maxDiff =
-        n*1.8;
-
-    return clamp(
-        100*(1-diff/maxDiff),
-        0,
-        100
+  const probs =
+    f.map(n =>
+      (n + LAPLACE) /
+      (history.length + 10*LAPLACE)
     );
+
+  return {
+    candidate: best,
+    probs,
+    counts:f
+  };
+
 }
 
+
 /* =========================================================
-   STREAK
+   MODÈLE RECENT
 ========================================================= */
 
-function currentStreak(){
+function predictRecent(history){
 
-    if(!ticks.length)
-        return 0;
+  const arr =
+    history.slice(-RECENT_WINDOW);
 
-    const last =
-        ticks[ticks.length-1];
+  return predictGlobal(arr);
 
-    let n=0;
+}
 
-    for(let i=ticks.length-1;i>=0;i--){
 
-        if(ticks[i]===last)
-            n++;
-        else
-            break;
+/* =========================================================
+   MODÈLE TRANSITION
+========================================================= */
+
+function predictTransition(history){
+
+  const probs =
+    Array(10).fill(0);
+
+  if(history.length < 2){
+
+    return predictGlobal(history);
+
+  }
+
+  const last =
+    history[history.length-1];
+
+  const counts =
+    Array(10).fill(0);
+
+  let total = 0;
+
+  for(let i=1;i<history.length;i++){
+
+    if(history[i-1] === last){
+
+      counts[history[i]]++;
+
+      total++;
+
     }
 
-    return n;
-}
+  }
 
-/* =========================================================
-   MODEL GLOBAL
-========================================================= */
+  if(total === 0){
 
-function modelGlobal(data){
+    return predictRecent(history);
 
-    if(!data.length)
-        return null;
+  }
 
-    const counts =
-        Array(10).fill(0);
+  for(let d=0;d<10;d++){
 
-    for(const d of data)
-        counts[d]++;
+    probs[d] =
+      (counts[d]+LAPLACE) /
+      (total+10*LAPLACE);
 
-    let best=0;
+  }
 
-    for(let i=1;i<10;i++){
+  let candidate = 0;
 
-        if(counts[i]>counts[best])
-            best=i;
+  for(let d=1;d<10;d++){
+
+    if(probs[d] > probs[candidate]){
+
+      candidate = d;
+
     }
 
-    return best;
+  }
+
+  return {
+    candidate,
+    probs,
+    counts
+  };
+
 }
 
+
 /* =========================================================
-   MODEL RECENT
+   MODÈLE SEQUENCE
 ========================================================= */
 
-function modelRecent(data){
+function predictSequence(history){
 
-    if(!data.length)
-        return null;
+  if(history.length < 3){
 
-    const start =
+    return predictTransition(history);
+
+  }
+
+  const a =
+    history[history.length-2];
+
+  const b =
+    history[history.length-1];
+
+  const counts =
+    Array(10).fill(0);
+
+  let total = 0;
+
+  for(let i=2;i<history.length;i++){
+
+    if(
+      history[i-2] === a &&
+      history[i-1] === b
+    ){
+
+      counts[history[i]]++;
+
+      total++;
+
+    }
+
+  }
+
+  if(total === 0){
+
+    return predictTransition(history);
+
+  }
+
+  const probs =
+    counts.map(n =>
+      (n+LAPLACE) /
+      (total+10*LAPLACE)
+    );
+
+  let candidate = 0;
+
+  for(let d=1;d<10;d++){
+
+    if(probs[d] > probs[candidate]){
+
+      candidate = d;
+
+    }
+
+  }
+
+  return {
+    candidate,
+    probs,
+    counts
+  };
+
+}
+
+
+/* =========================================================
+   MODÈLE ENSEMBLE
+========================================================= */
+
+function ensemblePrediction(history,weights){
+
+  const models = {
+
+    Global:
+      predictGlobal(history),
+
+    Recent:
+      predictRecent(history),
+
+    Transition:
+      predictTransition(history),
+
+    Sequence:
+      predictSequence(history)
+
+  };
+
+  const combined =
+    Array(10).fill(0);
+
+  for(const name of Object.keys(models)){
+
+    const w =
+      weights[name] || 0.25;
+
+    for(let d=0;d<10;d++){
+
+      combined[d] +=
+        w * models[name].probs[d];
+
+    }
+
+  }
+
+  let candidate = 0;
+
+  for(let d=1;d<10;d++){
+
+    if(
+      combined[d] >
+      combined[candidate]
+    ){
+
+      candidate = d;
+
+    }
+
+  }
+
+  const sorted =
+    [...combined].sort((a,b)=>b-a);
+
+  const best =
+    sorted[0];
+
+  const second =
+    sorted[1] || 0;
+
+  const rawScore =
+    clamp(
+      50 +
+      ((best-second)*500),
+      0,
+      100
+    );
+
+  let agreement = 0;
+
+  for(const name of Object.keys(models)){
+
+    if(
+      models[name].candidate === candidate
+    ){
+
+      agreement++;
+
+    }
+
+  }
+
+  return {
+    models,
+    probs:combined,
+    candidate,
+    rawScore,
+    agreement,
+    gap:(best-second)*100
+  };
+
+}
+
+
+/* =========================================================
+   POIDS ADAPTATIFS
+   IMPORTANT:
+   LES POIDS UTILISENT UNIQUEMENT LES TESTS PASSÉS.
+========================================================= */
+
+function calculateWeights(stats){
+
+  const names =
+    ["Global","Recent","Transition","Sequence"];
+
+  const raw = {};
+
+  let sum = 0;
+
+  for(const name of names){
+
+    const s =
+      stats[name];
+
+    if(!s || s.tests < 10){
+
+      raw[name] = 1;
+
+    }else{
+
+      const lower =
+        wilsonLower(
+          s.wins,
+          s.tests
+        );
+
+      raw[name] =
         Math.max(
-            0,
-            data.length-RECENT_COUNT
+          0.05,
+          lower / 10
         );
 
-    const recent =
-        data.slice(start);
+    }
 
-    return modelGlobal(recent);
+    sum += raw[name];
+
+  }
+
+  const weights = {};
+
+  for(const name of names){
+
+    weights[name] =
+      raw[name] / sum;
+
+  }
+
+  return weights;
+
 }
 
-/* =========================================================
-   MODEL TRANSITION
-========================================================= */
-
-function modelTransition(data){
-
-    if(data.length<2)
-        return null;
-
-    const last =
-        data[data.length-1];
-
-    const counts =
-        Array(10).fill(0);
-
-    for(let i=0;i<data.length-1;i++){
-
-        if(data[i]===last)
-            counts[data[i+1]]++;
-    }
-
-    let total=0;
-
-    for(const x of counts)
-        total+=x;
-
-    if(total===0)
-        return modelRecent(data);
-
-    let best=0;
-
-    for(let i=1;i<10;i++){
-
-        if(counts[i]>counts[best])
-            best=i;
-    }
-
-    return best;
-}
 
 /* =========================================================
-   MODEL SEQUENCE
+   TRUE WALK-FORWARD
 ========================================================= */
 
-function modelSequence(data){
+function trueWalkForward(data){
 
-    if(data.length<4)
-        return null;
+  const names =
+    [
+      "Global",
+      "Recent",
+      "Transition",
+      "Sequence",
+      "Ensemble"
+    ];
 
-    const a =
-        data[data.length-3];
+  const results = {};
 
-    const b =
-        data[data.length-2];
+  for(const name of names){
 
-    const c =
-        data[data.length-1];
-
-    const counts =
-        Array(10).fill(0);
-
-    for(let i=3;i<data.length;i++){
-
-        if(
-            data[i-3]===a &&
-            data[i-2]===b &&
-            data[i-1]===c
-        ){
-            counts[data[i]]++;
-        }
-    }
-
-    let total=0;
-
-    for(const x of counts)
-        total+=x;
-
-    if(total===0)
-        return modelRecent(data);
-
-    let best=0;
-
-    for(let i=1;i<10;i++){
-
-        if(counts[i]>counts[best])
-            best=i;
-    }
-
-    return best;
-}
-
-/* =========================================================
-   MODELS
-========================================================= */
-
-function calculateModels(data){
-
-    return {
-        Global:modelGlobal(data),
-        Recent:modelRecent(data),
-        Transition:modelTransition(data),
-        Sequence:modelSequence(data)
+    results[name] = {
+      tests:0,
+      wins:0,
+      history:[]
     };
-}
 
-/* =========================================================
-   ADAPTIVE WEIGHTS
-========================================================= */
+  }
 
-function updateWeights(){
+  const byDigit =
+    Array.from(
+      {length:10},
+      ()=>({
+        tests:0,
+        wins:0
+      })
+    );
 
-    let total=0;
+  const byScore = {
 
-    for(const name of MODEL_NAMES){
+    "50-59":{tests:0,wins:0},
 
-        const m =
-            state.models[name];
+    "60-69":{tests:0,wins:0},
 
-        if(m.tests<20){
+    "70-79":{tests:0,wins:0},
 
-            m.weight=1;
+    "80-89":{tests:0,wins:0},
 
-        }else{
+    "90-100":{tests:0,wins:0}
 
-            const lower =
-                wilson(
-                    m.wins,
-                    m.tests
-                );
+  };
 
-            /*
-             * On ne récompense pas simplement
-             * le taux brut.
-             *
-             * Wilson pénalise les petits échantillons.
-             */
+  const byAgreement = {
 
-            m.weight =
-                Math.max(
-                    0.05,
-                    lower/10
-                );
-        }
+    1:{tests:0,wins:0},
 
-        total += m.weight;
-    }
+    2:{tests:0,wins:0},
 
-    if(total<=0){
+    3:{tests:0,wins:0},
 
-        for(const name of MODEL_NAMES)
-            state.models[name].weight=.25;
+    4:{tests:0,wins:0}
 
-        return;
-    }
+  };
 
-    for(const name of MODEL_NAMES){
+  const modelStats = {
 
-        state.models[name].weight =
-            state.models[name].weight /
-            total;
-    }
-}
+    Global:{tests:0,wins:0},
 
-/* =========================================================
-   ENSEMBLE
-========================================================= */
+    Recent:{tests:0,wins:0},
 
-function ensemblePrediction(data){
+    Transition:{tests:0,wins:0},
 
-    const models =
-        calculateModels(data);
+    Sequence:{tests:0,wins:0}
 
-    updateWeights();
+  };
 
-    const votes =
-        Array(10).fill(0);
+  const rolling =
+    [];
 
-    let available=0;
+  /*
+   * Déterministe:
+   * pas Math.random().
+   * Utilise une séquence pseudo-aléatoire
+   * reproductible.
+   */
 
-    for(const name of MODEL_NAMES){
+  let randomSeed =
+    123456789;
 
-        const candidate =
-            models[name];
+  function seededRandom(){
 
-        state.models[name].candidate =
-            candidate;
+    randomSeed =
+      (
+        randomSeed * 1664525 +
+        1013904223
+      ) >>> 0;
 
-        if(candidate===null ||
-           candidate===undefined)
-            continue;
+    return randomSeed / 4294967296;
 
-        votes[candidate] +=
-            state.models[name].weight;
+  }
 
-        available++;
-    }
-
-    if(!available)
-        return null;
-
-    let best=0;
-
-    for(let i=1;i<10;i++){
-
-        if(votes[i]>votes[best])
-            best=i;
-    }
-
-    const sorted =
-        votes
-        .map((v,i)=>({digit:i,v}))
-        .sort((a,b)=>b.v-a.v);
-
-    const top =
-        sorted[0];
-
-    const second =
-        sorted[1];
-
-    const agreement =
-        Object.values(models)
-        .filter(x=>x===best)
-        .length;
-
-    const gap =
-        Math.max(
-            0,
-            (top.v-second.v)*100
-        );
+  for(
+    let i=MIN_WALK_FORWARD;
+    i<data.length;
+    i++
+  ){
 
     /*
-     * Score interne.
+     * CRITIQUE:
      *
-     * Ce score n'est PAS une probabilité.
+     * train = uniquement les données
+     * AVANT le point i.
+     *
+     * actual = data[i]
+     *
+     * Le futur n'est jamais injecté
+     * dans la prédiction.
      */
 
-    const rawScore =
-        clamp(
-            50 +
-            agreement*7 +
-            gap*1.5 +
-            Math.min(
-                15,
-                state.models.Global.tests>0
-                ? wilson(
-                    state.models.Global.wins,
-                    state.models.Global.tests
-                )/3
-                : 0
-            ),
-            0,
-            100
-        );
+    const train =
+      data.slice(
+        Math.max(0,i-WINDOW),
+        i
+      );
 
-    return {
-        candidate:best,
-        rawScore,
-        agreement,
-        gap,
-        models
+    const actual =
+      data[i];
+
+    if(train.length < MIN_WALK_FORWARD){
+
+      continue;
+
+    }
+
+    /*
+     * Poids basés sur les performances
+     * observées AVANT i.
+     */
+
+    const weights =
+      calculateWeights(
+        modelStats
+      );
+
+    const prediction =
+      ensemblePrediction(
+        train,
+        weights
+      );
+
+    /*
+     * GLOBAL
+     */
+
+    const global =
+      prediction.models.Global;
+
+    const recent =
+      prediction.models.Recent;
+
+    const transition =
+      prediction.models.Transition;
+
+    const sequence =
+      prediction.models.Sequence;
+
+    const candidates = {
+
+      Global:global.candidate,
+
+      Recent:recent.candidate,
+
+      Transition:transition.candidate,
+
+      Sequence:sequence.candidate,
+
+      Ensemble:prediction.candidate
+
     };
+
+    /*
+     * Évaluation.
+     */
+
+    for(const name of names){
+
+      const pred =
+        candidates[name];
+
+      const win =
+        pred === actual;
+
+      results[name].tests++;
+
+      if(win){
+
+        results[name].wins++;
+
+      }
+
+      results[name].history.push(
+        win ? 1 : 0
+      );
+
+    }
+
+    /*
+     * Les statistiques des modèles sont
+     * mises à jour APRÈS leur prédiction.
+     */
+
+    for(
+      const name of
+      [
+        "Global",
+        "Recent",
+        "Transition",
+        "Sequence"
+      ]
+    ){
+
+      modelStats[name].tests++;
+
+      if(
+        candidates[name] === actual
+      ){
+
+        modelStats[name].wins++;
+
+      }
+
+    }
+
+    /*
+     * Ensemble
+     */
+
+    const ensembleWin =
+      candidates.Ensemble === actual;
+
+    rolling.push(
+      ensembleWin ? 1 : 0
+    );
+
+    /*
+     * Par chiffre prédit.
+     */
+
+    const predictedDigit =
+      candidates.Ensemble;
+
+    byDigit[predictedDigit].tests++;
+
+    if(ensembleWin){
+
+      byDigit[predictedDigit].wins++;
+
+    }
+
+    /*
+     * Score.
+     */
+
+    let scoreBucket = "50-59";
+
+    if(prediction.rawScore >= 90){
+
+      scoreBucket = "90-100";
+
+    }else if(prediction.rawScore >= 80){
+
+      scoreBucket = "80-89";
+
+    }else if(prediction.rawScore >= 70){
+
+      scoreBucket = "70-79";
+
+    }else if(prediction.rawScore >= 60){
+
+      scoreBucket = "60-69";
+
+    }
+
+    byScore[scoreBucket].tests++;
+
+    if(ensembleWin){
+
+      byScore[scoreBucket].wins++;
+
+    }
+
+    /*
+     * Accord.
+     */
+
+    const a =
+      clamp(
+        prediction.agreement,
+        1,
+        4
+      );
+
+    byAgreement[a].tests++;
+
+    if(ensembleWin){
+
+      byAgreement[a].wins++;
+
+    }
+
+  }
+
+  /*
+   * Benchmark aléatoire.
+   *
+   * IMPORTANT:
+   * il prédit réellement un chiffre
+   * à chaque étape.
+   * La séquence est reproductible.
+   */
+
+  results.Random = {
+    tests:0,
+    wins:0,
+    history:[]
+  };
+
+  for(
+    let i=MIN_WALK_FORWARD;
+    i<data.length;
+    i++
+  ){
+
+    const train =
+      data.slice(
+        Math.max(0,i-WINDOW),
+        i
+      );
+
+    if(train.length < MIN_WALK_FORWARD){
+
+      continue;
+
+    }
+
+    const actual =
+      data[i];
+
+    const randomDigit =
+      Math.floor(
+        seededRandom()*10
+      );
+
+    const win =
+      randomDigit === actual;
+
+    results.Random.tests++;
+
+    if(win){
+
+      results.Random.wins++;
+
+    }
+
+    results.Random.history.push(
+      win ? 1 : 0
+    );
+
+  }
+
+  /*
+   * Replacer Random en première ligne.
+   */
+
+  const ordered = {
+
+    Random:results.Random,
+
+    Global:results.Global,
+
+    Recent:results.Recent,
+
+    Transition:results.Transition,
+
+    Sequence:results.Sequence,
+
+    Ensemble:results.Ensemble
+
+  };
+
+  return {
+
+    results:ordered,
+
+    byDigit,
+
+    byScore,
+
+    byAgreement
+
+  };
+
 }
+
+
+/* =========================================================
+   AFFICHAGE BENCHMARK
+========================================================= */
+
+function rate(s){
+
+  if(!s || s.tests === 0){
+
+    return 0;
+
+  }
+
+  return s.wins/s.tests*100;
+
+}
+
+function renderBenchmark(){
+
+  if(!benchmarkResults) return;
+
+  const table =
+    document.getElementById(
+      "benchmarkTable"
+    );
+
+  table.innerHTML = "";
+
+  const order =
+    [
+      "Random",
+      "Global",
+      "Recent",
+      "Transition",
+      "Sequence",
+      "Ensemble"
+    ];
+
+  for(const name of order){
+
+    const s =
+      benchmarkResults.results[name];
+
+    const tr =
+      document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${name}</td>
+      <td>${s.tests}</td>
+      <td>${s.wins}</td>
+      <td>${rate(s).toFixed(1)}%</td>
+      <td>${wilsonLower(s.wins,s.tests).toFixed(1)}%</td>
+    `;
+
+    table.appendChild(tr);
+
+  }
+
+}
+
+
+/* =========================================================
+   AFFICHAGE MODÈLES
+========================================================= */
+
+function renderModels(current){
+
+  const table =
+    document.getElementById(
+      "modelTable"
+    );
+
+  table.innerHTML = "";
+
+  const names =
+    [
+      "Global",
+      "Recent",
+      "Transition",
+      "Sequence"
+    ];
+
+  const ensemble =
+    benchmarkResults.results.Ensemble;
+
+  const modelResults =
+    benchmarkResults.results;
+
+  /*
+   * Recalculer les poids avec toutes
+   * les performances passées.
+   */
+
+  const stats = {};
+
+  for(const name of names){
+
+    stats[name] = {
+      tests:
+        modelResults[name].tests,
+
+      wins:
+        modelResults[name].wins
+    };
+
+  }
+
+  const weights =
+    calculateWeights(stats);
+
+  for(const name of names){
+
+    const s =
+      modelResults[name];
+
+    const tr =
+      document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${name}</td>
+      <td>${current.models[name].candidate}</td>
+      <td>${(weights[name]*100).toFixed(1)}%</td>
+      <td>${s.tests}</td>
+      <td>${s.wins}</td>
+      <td>${rate(s).toFixed(1)}%</td>
+      <td>${wilsonLower(s.wins,s.tests).toFixed(1)}%</td>
+    `;
+
+    table.appendChild(tr);
+
+  }
+
+  document.getElementById(
+    "ensembleTests"
+  ).textContent =
+    ensemble.tests;
+
+  document.getElementById(
+    "ensembleWins"
+  ).textContent =
+    ensemble.wins;
+
+  document.getElementById(
+    "ensembleRate"
+  ).textContent =
+    rate(ensemble).toFixed(1)+"%";
+
+  document.getElementById(
+    "ensembleWilson"
+  ).textContent =
+    wilsonLower(
+      ensemble.wins,
+      ensemble.tests
+    ).toFixed(1)+"%";
+
+  const last50 =
+    ensemble.history.slice(-50);
+
+  const rollingRate =
+    last50.length
+      ? last50.reduce(
+          (a,b)=>a+b,
+          0
+        ) / last50.length * 100
+      : 0;
+
+  document.getElementById(
+    "rolling50"
+  ).textContent =
+    rollingRate.toFixed(1)+
+    "% ("+
+    last50.reduce(
+      (a,b)=>a+b,
+      0
+    )+
+    "/"+
+    last50.length+
+    ")";
+
+}
+
+
+/* =========================================================
+   AFFICHAGE PAR CHIFFRE
+========================================================= */
+
+function renderDigitStats(){
+
+  const table =
+    document.getElementById(
+      "digitTable"
+    );
+
+  table.innerHTML = "";
+
+  for(let d=0;d<10;d++){
+
+    const s =
+      benchmarkResults.byDigit[d];
+
+    const tr =
+      document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${d}</td>
+      <td>${s.tests}</td>
+      <td>${s.wins}</td>
+      <td>${rate(s).toFixed(1)}%</td>
+      <td>${wilsonLower(s.wins,s.tests).toFixed(1)}%</td>
+    `;
+
+    table.appendChild(tr);
+
+  }
+
+}
+
+
+/* =========================================================
+   SCORE
+========================================================= */
+
+function renderScoreStats(){
+
+  const table =
+    document.getElementById(
+      "scoreTable"
+    );
+
+  table.innerHTML = "";
+
+  for(const key of Object.keys(
+    benchmarkResults.byScore
+  )){
+
+    const s =
+      benchmarkResults.byScore[key];
+
+    const tr =
+      document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${key}</td>
+      <td>${s.tests}</td>
+      <td>${s.wins}</td>
+      <td>${rate(s).toFixed(1)}%</td>
+      <td>${wilsonLower(s.wins,s.tests).toFixed(1)}%</td>
+    `;
+
+    table.appendChild(tr);
+
+  }
+
+}
+
+
+/* =========================================================
+   ACCORD
+========================================================= */
+
+function renderAgreementStats(){
+
+  const table =
+    document.getElementById(
+      "agreementTable"
+    );
+
+  table.innerHTML = "";
+
+  for(let a=1;a<=4;a++){
+
+    const s =
+      benchmarkResults.byAgreement[a];
+
+    const tr =
+      document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${a}/4</td>
+      <td>${s.tests}</td>
+      <td>${s.wins}</td>
+      <td>${rate(s).toFixed(1)}%</td>
+      <td>${wilsonLower(s.wins,s.tests).toFixed(1)}%</td>
+    `;
+
+    table.appendChild(tr);
+
+  }
+
+}
+
+
+/* =========================================================
+   FRÉQUENCES ACTUELLES
+========================================================= */
+
+function renderFrequencies(){
+
+  const arr =
+    digits.slice(-100);
+
+  const f =
+    frequency(arr);
+
+  const box =
+    document.getElementById(
+      "frequencies"
+    );
+
+  box.innerHTML = "";
+
+  for(let d=0;d<10;d++){
+
+    const div =
+      document.createElement("div");
+
+    div.className =
+      "digit";
+
+    div.innerHTML = `
+      <b>${d}</b>
+      <span>${f[d]}</span>
+    `;
+
+    box.appendChild(div);
+
+  }
+
+}
+
+
+/* =========================================================
+   CONTEXTE
+========================================================= */
+
+function renderContext(){
+
+  const arr =
+    digits.slice(-100);
+
+  const h =
+    entropy(arr);
+
+  document.getElementById(
+    "entropy"
+  ).textContent =
+    h.toFixed(3);
+
+  document.getElementById(
+    "uniformity"
+  ).textContent =
+    uniformity(arr).toFixed(1)+"%";
+
+  document.getElementById(
+    "streak"
+  ).textContent =
+    currentStreak(arr);
+
+  /*
+   * Détection simple de changement
+   * entre les 30 derniers et les 30
+   * précédents.
+   */
+
+  if(arr.length >= 60){
+
+    const a =
+      entropy(
+        arr.slice(-30)
+      );
+
+    const b =
+      entropy(
+        arr.slice(-60,-30)
+      );
+
+    const changed =
+      Math.abs(a-b) > 0.25;
+
+    document.getElementById(
+      "regime"
+    ).textContent =
+      changed
+        ? "⚠️ OUI"
+        : "NON";
+
+  }else{
+
+    document.getElementById(
+      "regime"
+    ).textContent =
+      "—";
+
+  }
+
+}
+
 
 /* =========================================================
    CALIBRATION EMPIRIQUE
 ========================================================= */
 
-function scoreBucket(score){
+function empiricalCalibration(
+  currentPrediction
+){
 
-    if(score<60) return "50-59";
-    if(score<70) return "60-69";
-    if(score<80) return "70-79";
-    if(score<90) return "80-89";
+  if(!benchmarkResults){
 
-    return "90-100";
+    return 50;
+
+  }
+
+  const score =
+    currentPrediction.rawScore;
+
+  let bucket = "50-59";
+
+  if(score >= 90){
+
+    bucket="90-100";
+
+  }else if(score >= 80){
+
+    bucket="80-89";
+
+  }else if(score >= 70){
+
+    bucket="70-79";
+
+  }else if(score >= 60){
+
+    bucket="60-69";
+
+  }
+
+  const s =
+    benchmarkResults.byScore[bucket];
+
+  if(!s || s.tests < 20){
+
+    return 50;
+
+  }
+
+  /*
+   * Shrinkage vers 10%.
+   *
+   * Cela évite qu'un petit échantillon
+   * transforme 1/1 en score énorme.
+   */
+
+  const empirical =
+    rate(s);
+
+  const n =
+    s.tests;
+
+  const confidence =
+    clamp(n/200,0,1);
+
+  const adjusted =
+    10 +
+    (empirical-10)*
+    confidence;
+
+  /*
+   * Conversion en score modèle,
+   * pas en probabilité.
+   */
+
+  return clamp(
+    50 +
+    (adjusted-10)*5,
+    0,
+    100
+  );
+
 }
 
-function empiricalCalibration(score){
 
-    const bucket =
-        scoreBucket(score);
+/* =========================================================
+   GATE
+========================================================= */
 
-    const b =
-        state.scoreBuckets[bucket];
+function updateGate(current){
 
-    /*
-     * Avant suffisamment de données,
-     * on reste proche du score brut.
-     *
-     * Ensuite on incorpore la performance
-     * réellement observée.
-     */
+  const ensemble =
+    benchmarkResults.results.Ensemble;
 
-    if(!b || b.tests<20)
-        return clamp(score,0,100);
+  const tests =
+    ensemble.tests;
 
-    const observed =
-        pct(b.wins,b.tests);
+  const r =
+    rate(ensemble);
 
-    /*
-     * Une performance proche de 10%
-     * correspond à une absence d'edge
-     * démontré.
-     *
-     * La calibration transforme donc
-     * l'information empirique en score
-     * conservateur, sans prétendre donner
-     * une probabilité.
-     */
-
-    const evidence =
-        clamp(
-            (observed-10)*8,
-            -25,
-            25
-        );
-
-    const sampleFactor =
-        clamp(
-            b.tests/100,
-            0,
-            1
-        );
-
-    return clamp(
-        score*(1-sampleFactor*.65) +
-        clamp(
-            50+evidence*2,
-            0,
-            100
-        )*(sampleFactor*.65),
-        0,
-        100
+  const w =
+    wilsonLower(
+      ensemble.wins,
+      ensemble.tests
     );
+
+  /*
+   * Gate volontairement strict.
+   *
+   * Ce n'est PAS une autorisation
+   * de trading.
+   */
+
+  const open =
+    tests >= 500 &&
+    r >= 10.5 &&
+    w >= 8.5 &&
+    current.agreement >= 2 &&
+    current.rawScore >= 70;
+
+  const el =
+    document.getElementById(
+      "gate"
+    );
+
+  if(open){
+
+    el.textContent =
+      "OUVERT POUR ANALYSE";
+
+    el.className =
+      "orange";
+
+  }else{
+
+    el.textContent =
+      "FERMÉ";
+
+    el.className =
+      "red";
+
+  }
+
+  document.getElementById(
+    "gateTests"
+  ).textContent =
+    tests;
+
+  document.getElementById(
+    "gateRate"
+  ).textContent =
+    r.toFixed(1)+"%";
+
+  document.getElementById(
+    "gateWilson"
+  ).textContent =
+    w.toFixed(1)+"%";
+
 }
 
+
 /* =========================================================
-   VALIDATION D'UNE PRÉDICTION
+   PRÉDICTION ACTUELLE
 ========================================================= */
 
-function validatePrediction(actual){
+function updatePrediction(){
 
-    if(!pendingPrediction)
-        return;
+  if(digits.length < WINDOW){
 
-    const p =
-        pendingPrediction;
+    return;
 
-    const win =
-        actual===p.candidate;
+  }
 
-    state.ensemble.tests++;
+  const train =
+    digits.slice(-WINDOW);
 
-    if(win)
-        state.ensemble.wins++;
+  const stats = {};
 
-    /* Score bucket */
+  if(benchmarkResults){
 
-    const sb =
-        scoreBucket(p.rawScore);
+    for(
+      const name of
+      [
+        "Global",
+        "Recent",
+        "Transition",
+        "Sequence"
+      ]
+    ){
 
-    state.scoreBuckets[sb].tests++;
+      const s =
+        benchmarkResults.results[name];
 
-    if(win)
-        state.scoreBuckets[sb].wins++;
+      stats[name] = {
 
-    /* Agreement */
+        tests:s.tests,
 
-    const ag =
-        clamp(
-            p.agreement,
-            1,
-            4
-        );
+        wins:s.wins
 
-    state.agreementBuckets[ag].tests++;
+      };
 
-    if(win)
-        state.agreementBuckets[ag].wins++;
-
-    /* Digit */
-
-    state.digitStats[p.candidate].tests++;
-
-    if(win)
-        state.digitStats[p.candidate].wins++;
-
-    /* Models */
-
-    for(const name of MODEL_NAMES){
-
-        const candidate =
-            p.models[name];
-
-        if(candidate===null ||
-           candidate===undefined)
-            continue;
-
-        state.models[name].tests++;
-
-        if(candidate===actual)
-            state.models[name].wins++;
     }
 
-    /* Shadow */
+  }
 
-    state.shadow.tests++;
+  const weights =
+    calculateWeights(stats);
 
-    if(win)
-        state.shadow.wins++;
+  const prediction =
+    ensemblePrediction(
+      train,
+      weights
+    );
 
-    /* Benchmarks */
+  const calibrated =
+    empiricalCalibration(
+      prediction
+    );
 
-    const all =
-        ticks.slice(
-            0,
-            Math.max(0,ticks.length-1)
-        );
+  document.getElementById(
+    "candidate"
+  ).textContent =
+    prediction.candidate;
 
-    const global =
-        modelGlobal(all);
+  document.getElementById(
+    "rawScore"
+  ).textContent =
+    prediction.rawScore.toFixed(1)+
+    "/100";
 
-    const recent =
-        modelRecent(all);
+  document.getElementById(
+    "calibratedScore"
+  ).textContent =
+    calibrated.toFixed(1)+
+    "/100";
 
-    const ensemble =
-        p.candidate;
+  document.getElementById(
+    "agreement"
+  ).textContent =
+    "Accord "+
+    prediction.agreement+
+    "/4";
 
-    const random =
-        Math.floor(
-            Math.random()*10
-        );
+  document.getElementById(
+    "gap"
+  ).textContent =
+    prediction.gap.toFixed(2)+
+    "%";
 
-    const benchmarkCandidates = {
-        "Hasard":random,
-        "Plus fréquent":global,
-        "Recent":recent,
-        "Global":global,
-        "Ensemble":ensemble
-    };
+  updateGate(prediction);
 
-    for(const name of BENCHMARK_NAMES){
+  predictionHistory.unshift(
+    new Date().toLocaleTimeString()+
+    " | Candidat="+
+    prediction.candidate+
+    " | Score="+
+    prediction.rawScore.toFixed(1)+
+    " | Cal="+
+    calibrated.toFixed(1)+
+    " | Accord="+
+    prediction.agreement+
+    "/4"
+  );
 
-        const c =
-            benchmarkCandidates[name];
+  predictionHistory =
+    predictionHistory.slice(0,30);
 
-        if(c===null ||
-           c===undefined)
-            continue;
+  document.getElementById(
+    "predictionHistory"
+  ).textContent =
+    predictionHistory.join("\n");
 
-        state.benchmarks[name].tests++;
-
-        if(c===actual)
-            state.benchmarks[name].wins++;
-    }
-
-    /* historique */
-
-    state.history.push({
-        candidate:p.candidate,
-        actual,
-        win,
-        rawScore:p.rawScore,
-        calibrated:p.calibratedScore,
-        agreement:p.agreement,
-        timestamp:Date.now()
-    });
-
-    if(state.history.length>1000)
-        state.history =
-            state.history.slice(-1000);
-
-    pendingPrediction=null;
-
-    updateWeights();
-
-    saveState();
 }
+
 
 /* =========================================================
-   PRÉDICTION APRÈS CHAQUE TICK
+   HISTORIQUE DERIV
 ========================================================= */
 
-function createPrediction(){
+function requestHistory(){
 
-    if(ticks.length<20)
-        return;
+  if(!ws || ws.readyState !== WebSocket.OPEN){
 
-    /*
-     * Important :
-     * cette fonction est appelée APRÈS réception
-     * du tick actuel.
-     *
-     * La validation se fera sur le prochain tick.
-     */
+    return;
 
-    const result =
-        ensemblePrediction(ticks);
+  }
 
-    if(!result)
-        return;
+  log(
+    "Demande historique R_75..."
+  );
 
-    const calibrated =
-        empiricalCalibration(
-            result.rawScore
-        );
+  /*
+   * V7.5:
+   *
+   * PAS de subscribe ici.
+   *
+   * subscribe est réservé au stream
+   * ticks.
+   */
 
-    result.calibratedScore =
-        calibrated;
+  ws.send(JSON.stringify({
 
-    pendingPrediction =
-        result;
+    ticks_history:SYMBOL,
 
-    renderPrediction(result);
+    count:HISTORY_COUNT,
+
+    end:"latest",
+
+    style:"ticks"
+
+  }));
+
 }
+
 
 /* =========================================================
-   GATE V7.4
+   STREAM LIVE
 ========================================================= */
 
-function gateEvaluation(){
+function subscribeTicks(){
 
-    if(!pendingPrediction){
+  if(!ws || ws.readyState !== WebSocket.OPEN){
 
-        return {
-            open:false,
-            reasons:["Aucune prédiction"]
-        };
-    }
+    return;
 
-    const p =
-        pendingPrediction;
+  }
 
-    const reasons=[];
+  ws.send(JSON.stringify({
 
-    const ensembleTests =
-        state.ensemble.tests;
+    ticks:SYMBOL,
 
-    const globalTests =
-        state.models.Global.tests;
+    subscribe:1
 
-    const globalRate =
-        pct(
-            state.models.Global.wins,
-            globalTests
-        );
+  }));
 
-    const globalWilson =
-        wilson(
-            state.models.Global.wins,
-            globalTests
-        );
+  log(
+    "Abonnement live R_75 activé."
+  );
 
-    const ensembleWilson =
-        wilson(
-            state.ensemble.wins,
-            ensembleTests
-        );
-
-    const rolling =
-        state.history.slice(-50);
-
-    const rollingWins =
-        rolling.filter(
-            x=>x.win
-        ).length;
-
-    const rollingRate =
-        rolling.length
-        ? 100*rollingWins/rolling.length
-        : 0;
-
-    const shadowRate =
-        pct(
-            state.shadow.wins,
-            state.shadow.tests
-        );
-
-    const shadowWilson =
-        wilson(
-            state.shadow.wins,
-            state.shadow.tests
-        );
-
-    /*
-     * Gate conservateur.
-     *
-     * Rien ici ne constitue une garantie.
-     */
-
-    if(p.calibratedScore<70)
-        reasons.push(
-            "Calibration < 70"
-        );
-
-    if(p.agreement<2)
-        reasons.push(
-            "Accord < 2/4"
-        );
-
-    if(ensembleTests<100)
-        reasons.push(
-            "Échantillon ensemble < 100"
-        );
-
-    if(globalTests<100)
-        reasons.push(
-            "Échantillon global < 100"
-        );
-
-    if(globalRate===null ||
-       globalRate<10.5)
-        reasons.push(
-            "Taux global < 10.5%"
-        );
-
-    if(globalWilson===null ||
-       globalWilson<8.5)
-        reasons.push(
-            "Wilson global < 8.5%"
-        );
-
-    if(ensembleWilson===null ||
-       ensembleWilson<8.5)
-        reasons.push(
-            "Wilson ensemble < 8.5%"
-        );
-
-    if(rolling.length<50)
-        reasons.push(
-            "Rolling 50 incomplet"
-        );
-
-    if(rollingRate<10.5)
-        reasons.push(
-            "Rolling 50 < 10.5%"
-        );
-
-    if(state.shadow.tests<100)
-        reasons.push(
-            "Shadow < 100"
-        );
-
-    if(shadowRate===null ||
-       shadowRate<10.5)
-        reasons.push(
-            "Shadow < 10.5%"
-        );
-
-    if(shadowWilson===null ||
-       shadowWilson<8.5)
-        reasons.push(
-            "Wilson shadow < 8.5%"
-        );
-
-    /*
-     * Context très désordonné :
-     * on bloque.
-     */
-
-    const h =
-        entropy();
-
-    if(h>3.30)
-        reasons.push(
-            "Entropie élevée"
-        );
-
-    /*
-     * Changement de régime :
-     * comparaison fréquence moitié ancienne /
-     * moitié récente.
-     */
-
-    if(regimeChange())
-        reasons.push(
-            "Changement de régime"
-        );
-
-    return {
-        open:reasons.length===0,
-        reasons,
-        ensembleTests,
-        globalRate,
-        globalWilson,
-        ensembleWilson,
-        rollingRate,
-        shadowRate,
-        shadowWilson
-    };
 }
 
-/* =========================================================
-   REGIME CHANGE
-========================================================= */
-
-function regimeChange(){
-
-    if(ticks.length<60)
-        return false;
-
-    const half =
-        Math.floor(ticks.length/2);
-
-    const old =
-        ticks.slice(0,half);
-
-    const recent =
-        ticks.slice(half);
-
-    const a =
-        Array(10).fill(0);
-
-    const b =
-        Array(10).fill(0);
-
-    old.forEach(x=>a[x]++);
-    recent.forEach(x=>b[x]++);
-
-    let diff=0;
-
-    for(let i=0;i<10;i++){
-
-        const pa =
-            a[i]/old.length;
-
-        const pb =
-            b[i]/recent.length;
-
-        diff +=
-            Math.abs(pa-pb);
-    }
-
-    return diff>0.45;
-}
-
-/* =========================================================
-   RENDER PREDICTION
-========================================================= */
-
-function renderPrediction(p){
-
-    document.getElementById(
-        "candidate"
-    ).textContent =
-        p.candidate;
-
-    document.getElementById(
-        "rawScore"
-    ).textContent =
-        p.rawScore.toFixed(1)+"/100";
-
-    document.getElementById(
-        "calibratedScore"
-    ).textContent =
-        p.calibratedScore.toFixed(1)+"/100";
-
-    document.getElementById(
-        "agreement"
-    ).textContent =
-        p.agreement+"/4";
-
-    document.getElementById(
-        "edge"
-    ).textContent =
-        p.gap.toFixed(2)+"%";
-
-    document.getElementById(
-        "scoreBar"
-    ).style.width =
-        p.calibratedScore+"%";
-
-    renderGate();
-}
-
-/* =========================================================
-   RENDER FREQUENCIES
-========================================================= */
-
-function renderFrequencies(){
-
-    const f =
-        frequency();
-
-    let html =
-        "<table><thead><tr>" +
-        "<th>DIGIT</th>" +
-        "<th>COUNT</th>" +
-        "<th>%</th>" +
-        "</tr></thead><tbody>";
-
-    for(let i=0;i<10;i++){
-
-        const p =
-            ticks.length
-            ? 100*f[i]/ticks.length
-            : 0;
-
-        html +=
-            "<tr>" +
-            "<td>"+i+"</td>" +
-            "<td>"+f[i]+"</td>" +
-            "<td>"+p.toFixed(1)+"%</td>" +
-            "</tr>";
-    }
-
-    html +=
-        "</tbody></table>";
-
-    document.getElementById(
-        "frequencies"
-    ).innerHTML=html;
-}
-
-/* =========================================================
-   RENDER MODEL TABLE
-========================================================= */
-
-function renderModels(){
-
-    let html="";
-
-    for(const name of MODEL_NAMES){
-
-        const m =
-            state.models[name];
-
-        const rate =
-            pct(m.wins,m.tests);
-
-        const w =
-            wilson(m.wins,m.tests);
-
-        html +=
-            "<tr>" +
-            "<td>"+name+"</td>" +
-            "<td>"+
-            (
-                m.candidate===null ||
-                m.candidate===undefined
-                ? "—"
-                : m.candidate
-            )+
-            "</td>" +
-            "<td>"+m.tests+"</td>" +
-            "<td>"+m.wins+"</td>" +
-            "<td>"+
-            (
-                rate===null
-                ? "—"
-                : rate.toFixed(1)+"%"
-            )+
-            "</td>" +
-            "<td>"+
-            (
-                w===null
-                ? "—"
-                : w.toFixed(1)+"%"
-            )+
-            "</td>" +
-            "<td>"+
-            (100*m.weight).toFixed(1)+"%"+
-            "</td>" +
-            "</tr>";
-    }
-
-    document.getElementById(
-        "modelTable"
-    ).innerHTML=html;
-}
-
-/* =========================================================
-   RENDER WALK FORWARD
-========================================================= */
-
-function renderWalkForward(){
-
-    const e =
-        state.ensemble;
-
-    const rate =
-        pct(e.wins,e.tests);
-
-    const w =
-        wilson(e.wins,e.tests);
-
-    const rolling =
-        state.history.slice(-50);
-
-    const rwins =
-        rolling.filter(
-            x=>x.win
-        ).length;
-
-    const rrate =
-        rolling.length
-        ? 100*rwins/rolling.length
-        : null;
-
-    document.getElementById(
-        "wfTests"
-    ).textContent=e.tests;
-
-    document.getElementById(
-        "wfWins"
-    ).textContent=e.wins;
-
-    document.getElementById(
-        "wfRate"
-    ).textContent=
-        rate===null
-        ? "—"
-        : rate.toFixed(1)+"%";
-
-    document.getElementById(
-        "wfWilson"
-    ).textContent=
-        w===null
-        ? "—"
-        : w.toFixed(1)+"%";
-
-    document.getElementById(
-        "rollingRate"
-    ).textContent=
-        rrate===null
-        ? "—"
-        : rrate.toFixed(1)+"%";
-
-    document.getElementById(
-        "rollingWins"
-    ).textContent=
-        rolling.length
-        ? rwins+"/"+rolling.length
-        : "—";
-}
-
-/* =========================================================
-   BENCHMARK
-========================================================= */
-
-function renderBenchmarks(){
-
-    let html="";
-
-    for(const name of BENCHMARK_NAMES){
-
-        const b =
-            state.benchmarks[name];
-
-        const rate =
-            pct(b.wins,b.tests);
-
-        const diff =
-            rate===null
-            ? null
-            : rate-10;
-
-        html +=
-            "<tr>" +
-            "<td>"+name+"</td>" +
-            "<td>"+b.tests+"</td>" +
-            "<td>"+b.wins+"</td>" +
-            "<td>"+
-            (
-                rate===null
-                ? "—"
-                : rate.toFixed(1)+"%"
-            )+
-            "</td>" +
-            "<td>"+
-            (
-                diff===null
-                ? "—"
-                : (diff>=0?"+":"")+
-                  diff.toFixed(1)+"%"
-            )+
-            "</td>" +
-            "</tr>";
-    }
-
-    document.getElementById(
-        "benchmarkTable"
-    ).innerHTML=html;
-}
-
-/* =========================================================
-   SHADOW
-========================================================= */
-
-function renderShadow(){
-
-    const rate =
-        pct(
-            state.shadow.wins,
-            state.shadow.tests
-        );
-
-    const w =
-        wilson(
-            state.shadow.wins,
-            state.shadow.tests
-        );
-
-    document.getElementById(
-        "shadowTests"
-    ).textContent =
-        state.shadow.tests;
-
-    document.getElementById(
-        "shadowWins"
-    ).textContent =
-        state.shadow.wins;
-
-    document.getElementById(
-        "shadowRate"
-    ).textContent =
-        rate===null
-        ? "—"
-        : rate.toFixed(1)+"%";
-
-    document.getElementById(
-        "shadowWilson"
-    ).textContent =
-        w===null
-        ? "—"
-        : w.toFixed(1)+"%";
-
-    let html="";
-
-    for(let i=0;i<10;i++){
-
-        const d =
-            state.digitStats[i];
-
-        const r =
-            pct(d.wins,d.tests);
-
-        html +=
-            "<tr>" +
-            "<td>"+i+"</td>" +
-            "<td>"+d.tests+"</td>" +
-            "<td>"+d.wins+"</td>" +
-            "<td>"+
-            (
-                r===null
-                ? "—"
-                : r.toFixed(1)+"%"
-            )+
-            "</td>" +
-            "</tr>";
-    }
-
-    document.getElementById(
-        "digitTable"
-    ).innerHTML=html;
-}
-
-/* =========================================================
-   SCORE CALIBRATION TABLE
-========================================================= */
-
-function renderScoreBuckets(){
-
-    let html="";
-
-    for(const [a,b] of SCORE_BUCKETS){
-
-        const key =
-            a+"-"+b;
-
-        const x =
-            state.scoreBuckets[key];
-
-        const r =
-            pct(x.wins,x.tests);
-
-        const w =
-            wilson(x.wins,x.tests);
-
-        html +=
-            "<tr>" +
-            "<td>"+key+"</td>" +
-            "<td>"+x.tests+"</td>" +
-            "<td>"+x.wins+"</td>" +
-            "<td>"+
-            (
-                r===null
-                ? "—"
-                : r.toFixed(1)+"%"
-            )+
-            "</td>" +
-            "<td>"+
-            (
-                w===null
-                ? "—"
-                : w.toFixed(1)+"%"
-            )+
-            "</td>" +
-            "</tr>";
-    }
-
-    document.getElementById(
-        "scoreTable"
-    ).innerHTML=html;
-}
-
-/* =========================================================
-   AGREEMENT TABLE
-========================================================= */
-
-function renderAgreement(){
-
-    let html="";
-
-    for(let i=1;i<=4;i++){
-
-        const x =
-            state.agreementBuckets[i];
-
-        const r =
-            pct(x.wins,x.tests);
-
-        const w =
-            wilson(x.wins,x.tests);
-
-        html +=
-            "<tr>" +
-            "<td>"+i+"/4</td>" +
-            "<td>"+x.tests+"</td>" +
-            "<td>"+x.wins+"</td>" +
-            "<td>"+
-            (
-                r===null
-                ? "—"
-                : r.toFixed(1)+"%"
-            )+
-            "</td>" +
-            "<td>"+
-            (
-                w===null
-                ? "—"
-                : w.toFixed(1)+"%"
-            )+
-            "</td>" +
-            "</tr>";
-    }
-
-    document.getElementById(
-        "agreementTable"
-    ).innerHTML=html;
-}
-
-/* =========================================================
-   CONTEXT
-========================================================= */
-
-function renderContext(){
-
-    document.getElementById(
-        "entropy"
-    ).textContent =
-        entropy().toFixed(3);
-
-    document.getElementById(
-        "uniformity"
-    ).textContent =
-        uniformity().toFixed(1)+"%";
-
-    document.getElementById(
-        "streak"
-    ).textContent =
-        currentStreak();
-
-    document.getElementById(
-        "change"
-    ).textContent =
-        regimeChange()
-        ? "OUI"
-        : "NON";
-}
-
-/* =========================================================
-   GATE DISPLAY
-========================================================= */
-
-function renderGate(){
-
-    const g =
-        gateEvaluation();
-
-    const text =
-        document.getElementById(
-            "gateText"
-        );
-
-    if(g.open){
-
-        text.textContent =
-            "🟢 GATE OUVERT — TEST STATISTIQUE";
-
-        text.className =
-            "good";
-
-    }else{
-
-        text.textContent =
-            "🔴 GATE FERMÉ — PREUVE INSUFFISANTE";
-
-        text.className =
-            "badtext";
-    }
-
-    let html="";
-
-    if(g.reasons){
-
-        for(const r of g.reasons){
-
-            html +=
-                "🔴 "+r+"<br>";
-        }
-    }
-
-    if(g.open){
-
-        html =
-            "🟢 Toutes les conditions statistiques " +
-            "du gate sont actuellement remplies.<br>" +
-            "Cela ne constitue PAS une garantie de gain.";
-    }
-
-    document.getElementById(
-        "gateDetails"
-    ).innerHTML=html;
-}
-
-/* =========================================================
-   RENDER GLOBAL
-========================================================= */
-
-function renderAll(){
-
-    document.getElementById(
-        "tickCount"
-    ).textContent =
-        state.totalTicks;
-
-    renderFrequencies();
-    renderModels();
-    renderWalkForward();
-    renderBenchmarks();
-    renderShadow();
-    renderScoreBuckets();
-    renderAgreement();
-    renderContext();
-    renderGate();
-}
 
 /* =========================================================
    WEBSOCKET
@@ -2225,342 +2241,282 @@ function renderAll(){
 
 function connect(){
 
-    clearTimeout(reconnectTimer);
+  log(
+    "Connexion au WebSocket public Deriv..."
+  );
+
+  ws =
+    new WebSocket(WS_URL);
+
+  ws.onopen = function(){
+
+    document.getElementById(
+      "status"
+    ).innerHTML =
+      '<span class="green">🟢 Connecté</span>';
+
+    log(
+      "WebSocket connecté."
+    );
+
+    requestHistory();
+
+  };
+
+  ws.onmessage = function(event){
+
+    let data;
 
     try{
 
-        ws =
-            new WebSocket(
-                WS_URL
-            );
+      data =
+        JSON.parse(event.data);
 
     }catch(e){
 
-        log(
-            "Erreur création WebSocket : "+
-            e.message
-        );
+      return;
 
-        scheduleReconnect();
-
-        return;
     }
 
-    ws.onopen=function(){
+    if(data.error){
 
-        reconnectDelay=1500;
+      log(
+        "API ERROR: "+
+        (
+          data.error.message ||
+          JSON.stringify(data.error)
+        )
+      );
 
-        setStatus(
-            true,
-            "Connecté — R_75"
-        );
+      return;
 
-        log(
-            "WebSocket connecté"
-        );
-
-        /*
-         * HISTORIQUE
-         *
-         * IMPORTANT :
-         * aucun subscribe ici.
-         */
-
-        ws.send(
-            JSON.stringify({
-                ticks_history:SYMBOL,
-                count:HISTORY_COUNT,
-                end:"latest",
-                style:"ticks",
-                req_id:2
-            })
-        );
-
-        log(
-            "Historique R_75 demandé"
-        );
-
-        /*
-         * STREAM LIVE
-         *
-         * subscribe = 1 uniquement ici.
-         */
-
-        ws.send(
-            JSON.stringify({
-                ticks:SYMBOL,
-                subscribe:1,
-                req_id:3
-            })
-        );
-
-        log(
-            "Flux live R_75 demandé"
-        );
-    };
-
-    ws.onmessage=function(event){
-
-        let data;
-
-        try{
-
-            data =
-                JSON.parse(event.data);
-
-        }catch(e){
-
-            log(
-                "Réponse JSON invalide"
-            );
-
-            return;
-        }
-
-        if(data.error){
-
-            log(
-                "API ERROR : "+
-                (
-                    data.error.message ||
-                    JSON.stringify(data.error)
-                )
-            );
-
-            return;
-        }
-
-        if(data.msg_type==="history"){
-
-            handleHistory(data);
-
-            return;
-        }
-
-        if(data.msg_type==="tick"){
-
-            handleTick(data);
-
-            return;
-        }
-
-        if(data.msg_type==="active_symbols"){
-
-            log(
-                "active_symbols reçu"
-            );
-
-            return;
-        }
-    };
-
-    ws.onerror=function(){
-
-        setStatus(
-            false,
-            "Erreur WebSocket"
-        );
-
-        log(
-            "Erreur WebSocket"
-        );
-    };
-
-    ws.onclose=function(){
-
-        setStatus(
-            false,
-            "Connexion fermée"
-        );
-
-        log(
-            "WebSocket fermé"
-        );
-
-        scheduleReconnect();
-    };
-}
-
-/* =========================================================
-   HISTORY
-========================================================= */
-
-function handleHistory(data){
-
-    if(!data.history){
-
-        log(
-            "Historique absent"
-        );
-
-        return;
     }
 
-    const prices =
+    /*
+     * HISTORIQUE
+     */
+
+    if(data.history){
+
+      const pricesHistory =
         data.history.prices || [];
 
-    ticks=[];
+      digits = [];
 
-    for(const price of prices){
+      prices = [];
+
+      for(const quote of pricesHistory){
+
+        const n =
+          Number(quote);
 
         const d =
-            extractDigit(price);
+          digitFromQuote(quote);
 
         if(
-            Number.isInteger(d) &&
-            d>=0 &&
-            d<=9
+          Number.isFinite(n) &&
+          d !== null
         ){
 
-            ticks.push(d);
+          prices.push(n);
+
+          digits.push(d);
+
         }
-    }
 
-    ticks =
-        ticks.slice(-HISTORY_COUNT);
+      }
 
-    state.totalTicks =
-        Math.max(
-            state.totalTicks,
-            ticks.length
-        );
+      ticksReceived =
+        digits.length;
 
-    log(
-        "Historique reçu : "+
-        ticks.length+
-        " ticks"
-    );
+      document.getElementById(
+        "ticksReceived"
+      ).textContent =
+        ticksReceived;
 
-    renderAll();
-}
+      log(
+        "Historique reçu: "+
+        digits.length+
+        " ticks."
+      );
 
-/* =========================================================
-   LIVE TICK
-========================================================= */
+      /*
+       * TRUE WALK-FORWARD
+       */
 
-function handleTick(data){
-
-    if(!data.tick)
-        return;
-
-    const quote =
-        data.tick.quote;
-
-    const digit =
-        extractDigit(quote);
-
-    if(
-        !Number.isInteger(digit) ||
-        digit<0 ||
-        digit>9
-    ){
+      if(digits.length >= MIN_WALK_FORWARD){
 
         log(
-            "Digit invalide : "+quote
+          "Calcul TRUE WALK-FORWARD..."
         );
 
-        return;
+        benchmarkResults =
+          trueWalkForward(
+            digits
+          );
+
+        log(
+          "Benchmark terminé: "+
+          benchmarkResults.results.Ensemble.tests+
+          " tests Ensemble."
+        );
+
+        renderBenchmark();
+
+        renderModels(
+          ensemblePrediction(
+            digits.slice(-WINDOW),
+            {
+              Global:.25,
+              Recent:.25,
+              Transition:.25,
+              Sequence:.25
+            }
+          )
+        );
+
+        renderDigitStats();
+
+        renderScoreStats();
+
+        renderAgreementStats();
+
+      }
+
+      renderFrequencies();
+
+      renderContext();
+
+      updatePrediction();
+
+      subscribeTicks();
+
+      return;
+
     }
 
     /*
-     * Le tick actuel valide la prédiction
-     * créée sur le tick précédent.
+     * TICK LIVE
      */
 
-    if(pendingPrediction){
+    if(data.tick){
 
-        validatePrediction(
-            digit
-        );
+      const tick =
+        data.tick;
+
+      const quote =
+        Number(tick.quote);
+
+      const d =
+        digitFromQuote(tick.quote);
+
+      if(
+        Number.isFinite(quote) &&
+        d !== null
+      ){
+
+        prices.push(quote);
+
+        digits.push(d);
+
+        /*
+         * Garder assez de données
+         * pour l'analyse locale.
+         */
+
+        if(prices.length > 1500){
+
+          prices.shift();
+
+        }
+
+        if(digits.length > 1500){
+
+          digits.shift();
+
+        }
+
+        ticksReceived++;
+
+        document.getElementById(
+          "ticksReceived"
+        ).textContent =
+          ticksReceived;
+
+        document.getElementById(
+          "price"
+        ).textContent =
+          quote.toFixed(
+            tick.pip_size || 4
+          );
+
+        document.getElementById(
+          "lastDigit"
+        ).textContent =
+          d;
+
+        renderFrequencies();
+
+        renderContext();
+
+        updatePrediction();
+
+      }
+
     }
 
-    ticks.push(digit);
+  };
 
-    if(ticks.length>HISTORY_COUNT)
-        ticks.shift();
-
-    state.totalTicks++;
+  ws.onerror = function(){
 
     document.getElementById(
-        "lastPrice"
-    ).textContent =
-        String(quote);
+      "status"
+    ).innerHTML =
+      '<span class="red">🔴 Erreur WebSocket</span>';
 
-    /*
-     * Maintenant seulement on crée
-     * une nouvelle prédiction.
-     */
-
-    createPrediction();
-
-    renderAll();
-}
-
-/* =========================================================
-   STATUS
-========================================================= */
-
-function setStatus(ok,text){
-
-    const dot =
-        document.getElementById(
-            "statusDot"
-        );
-
-    const label =
-        document.getElementById(
-            "statusText"
-        );
-
-    dot.className =
-        ok
-        ? "dot ok"
-        : "dot bad";
-
-    label.textContent =
-        text;
-}
-
-/* =========================================================
-   RECONNECT
-========================================================= */
-
-function scheduleReconnect(){
-
-    clearTimeout(
-        reconnectTimer
+    log(
+      "Erreur WebSocket."
     );
 
-    reconnectTimer =
-        setTimeout(
-            function(){
+  };
 
-                log(
-                    "Tentative de reconnexion..."
-                );
+  ws.onclose = function(){
 
-                connect();
+    document.getElementById(
+      "status"
+    ).innerHTML =
+      '<span class="orange">🟠 Connexion fermée</span>';
 
-            },
-            reconnectDelay
-        );
+    log(
+      "WebSocket fermé."
+    );
 
-    reconnectDelay =
-        Math.min(
-            reconnectDelay*1.7,
-            15000
-        );
+    /*
+     * Reconnexion douce.
+     */
+
+    setTimeout(
+      connect,
+      5000
+    );
+
+  };
+
 }
 
+
 /* =========================================================
-   INIT
+   START
 ========================================================= */
 
-loadState();
+document.addEventListener(
+  "DOMContentLoaded",
+  function(){
 
-renderAll();
+    connect();
 
-connect();
+  }
+);
 
 </script>
 
