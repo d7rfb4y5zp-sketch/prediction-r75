@@ -3,246 +3,263 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Prediction R75 — V7.1</title>
+
+<title>Prediction R75 — V7.2</title>
 
 <style>
+
 *{
-  box-sizing:border-box;
+box-sizing:border-box;
 }
 
 body{
-  margin:0;
-  background:#061927;
-  color:#d9edf7;
-  font-family:Arial,Helvetica,sans-serif;
-  font-size:13px;
+margin:0;
+background:#061824;
+color:#dceff7;
+font-family:Arial,Helvetica,sans-serif;
+font-size:13px;
 }
 
 .container{
-  width:100%;
-  max-width:900px;
-  margin:auto;
-  padding:10px;
+max-width:950px;
+margin:auto;
+padding:10px;
 }
 
 h1{
-  margin:4px 0 10px;
-  text-align:center;
-  font-size:20px;
-  color:#fff;
+text-align:center;
+font-size:20px;
+margin:5px 0;
+color:#ffffff;
 }
 
 .subtitle{
-  text-align:center;
-  color:#83b8cc;
-  margin-bottom:12px;
+text-align:center;
+color:#80afc1;
+font-size:11px;
+margin-bottom:12px;
 }
 
 .card{
-  background:#092334;
-  border:1px solid #16435b;
-  border-radius:8px;
-  margin-bottom:10px;
-  overflow:hidden;
+background:#092535;
+border:1px solid #17465d;
+border-radius:8px;
+margin-bottom:10px;
+overflow:hidden;
 }
 
 .card h2{
-  margin:0;
-  padding:9px 10px;
-  background:#0c2d40;
-  color:#fff;
-  font-size:14px;
-  border-bottom:1px solid #16435b;
+margin:0;
+padding:9px;
+background:#0c3043;
+border-bottom:1px solid #17465d;
+font-size:14px;
+color:#fff;
 }
 
 .content{
-  padding:10px;
+padding:10px;
 }
 
 .grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:7px;
-}
-
-@media(max-width:600px){
-  .grid{
-    grid-template-columns:1fr 1fr;
-  }
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:7px;
 }
 
 .item{
-  background:#071d2b;
-  border:1px solid #123b50;
-  border-radius:5px;
-  padding:7px;
-  min-height:48px;
+background:#071c2a;
+border:1px solid #123c50;
+border-radius:6px;
+padding:8px;
 }
 
 .label{
-  color:#7eaec0;
-  font-size:10px;
-  margin-bottom:3px;
+font-size:10px;
+color:#78aabb;
+margin-bottom:4px;
 }
 
 .value{
-  color:#fff;
-  font-size:14px;
-  font-weight:bold;
-  word-break:break-word;
+font-size:14px;
+font-weight:bold;
+color:#fff;
 }
-
-.green{color:#48e59b!important;}
-.red{color:#ff6675!important;}
-.yellow{color:#ffd166!important;}
-.blue{color:#64c8ff!important;}
-.gray{color:#8ba5b2!important;}
 
 .big{
-  font-size:24px;
+font-size:25px;
 }
 
-.digit-grid{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:5px;
+.green{
+color:#55e4a2!important;
 }
 
-.digit{
-  background:#071b29;
-  border:1px solid #17465e;
-  border-radius:5px;
-  text-align:center;
-  padding:6px 2px;
+.red{
+color:#ff6978!important;
 }
 
-.digit-number{
-  font-size:16px;
-  font-weight:bold;
-  color:#fff;
+.yellow{
+color:#ffd166!important;
 }
 
-.digit-rate{
-  font-size:10px;
-  color:#8bb8c8;
-  margin-top:2px;
+.blue{
+color:#62caff!important;
 }
 
-.bar{
-  height:5px;
-  background:#102f3e;
-  border-radius:5px;
-  overflow:hidden;
-  margin-top:5px;
-}
-
-.bar span{
-  display:block;
-  height:100%;
-  background:#3bb9e8;
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:10px;
-}
-
-th,td{
-  padding:5px 3px;
-  border-bottom:1px solid #14384b;
-  text-align:center;
-}
-
-th{
-  color:#78b2c7;
-  background:#071d2b;
-}
-
-.log{
-  max-height:350px;
-  overflow:auto;
-  background:#04131e;
-  padding:7px;
-  font-family:monospace;
-  font-size:10px;
-  line-height:1.45;
-  white-space:pre-wrap;
-  word-break:break-word;
-}
-
-button{
-  width:100%;
-  border:0;
-  border-radius:6px;
-  padding:10px;
-  margin-top:5px;
-  background:#126b92;
-  color:#fff;
-  font-weight:bold;
-}
-
-button:active{
-  opacity:.7;
-}
-
-.warning{
-  background:#391820;
-  border:1px solid #85303d;
-  color:#ff8792;
-  padding:8px;
-  border-radius:6px;
-  text-align:center;
-  font-weight:bold;
-}
-
-.success{
-  background:#0b3329;
-  border:1px solid #19705b;
-  color:#62efba;
-  padding:8px;
-  border-radius:6px;
-  text-align:center;
-  font-weight:bold;
-}
-
-.neutral{
-  background:#102d3b;
-  border:1px solid #285269;
-  color:#a8d0df;
-  padding:8px;
-  border-radius:6px;
-  text-align:center;
-  font-weight:bold;
+.gray{
+color:#849eaa!important;
 }
 
 .small{
-  font-size:10px;
-  color:#759aaa;
+font-size:10px;
+color:#7194a2;
+line-height:1.5;
+}
+
+.status{
+padding:9px;
+border-radius:6px;
+text-align:center;
+font-weight:bold;
+}
+
+.status.ok{
+background:#0b342b;
+border:1px solid #1b735d;
+color:#65efba;
+}
+
+.status.bad{
+background:#39191f;
+border:1px solid #873642;
+color:#ff8794;
+}
+
+.status.wait{
+background:#102d3c;
+border:1px solid #285367;
+color:#a6d3e2;
+}
+
+.digits{
+display:grid;
+grid-template-columns:repeat(5,1fr);
+gap:5px;
+}
+
+.digit{
+background:#071b29;
+border:1px solid #17465b;
+border-radius:5px;
+padding:6px 2px;
+text-align:center;
+}
+
+.digit strong{
+display:block;
+font-size:16px;
+color:#fff;
+}
+
+.digit span{
+font-size:10px;
+color:#83aebb;
+}
+
+.bar{
+height:5px;
+background:#102e3e;
+border-radius:5px;
+overflow:hidden;
+margin-top:5px;
+}
+
+.bar div{
+height:100%;
+background:#3fb7df;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+font-size:10px;
+}
+
+th{
+background:#071d2b;
+color:#80b4c6;
+padding:6px 3px;
+}
+
+td{
+padding:6px 3px;
+border-bottom:1px solid #14394b;
+text-align:center;
 }
 
 .signal{
-  text-align:center;
-  padding:12px;
-  border-radius:7px;
-  font-weight:bold;
-  font-size:16px;
-  background:#251c0a;
-  border:1px solid #80601b;
-  color:#ffd166;
+padding:13px;
+text-align:center;
+border-radius:7px;
+font-size:16px;
+font-weight:bold;
+background:#3a191f;
+border:1px solid #883643;
+color:#ff8795;
 }
 
-.signal.ok{
-  background:#0b3329;
-  border-color:#19705b;
-  color:#62efba;
+.signal.open{
+background:#0b342b;
+border-color:#1d745d;
+color:#65efba;
 }
 
-.signal.block{
-  background:#391820;
-  border-color:#85303d;
-  color:#ff8792;
+.progress{
+height:8px;
+background:#102e3d;
+border-radius:10px;
+overflow:hidden;
 }
+
+.progress div{
+height:100%;
+background:#4ebce3;
+}
+
+.log{
+background:#03131d;
+border:1px solid #14394b;
+border-radius:5px;
+padding:7px;
+height:350px;
+overflow:auto;
+font-family:monospace;
+font-size:9px;
+line-height:1.45;
+white-space:pre-wrap;
+}
+
+button{
+width:100%;
+padding:10px;
+margin-top:6px;
+border:0;
+border-radius:6px;
+background:#116b91;
+color:#fff;
+font-weight:bold;
+}
+
+.warning{
+padding:9px;
+background:#39191f;
+border:1px solid #873642;
+border-radius:6px;
+color:#ff8795;
+text-align:center;
+font-weight:bold;
+}
+
 </style>
 </head>
 
@@ -250,19 +267,27 @@ button:active{
 
 <div class="container">
 
-<h1>Prediction R75 — V7.1</h1>
+<h1>Prediction R75 — V7.2</h1>
+
 <div class="subtitle">
-Moteur de validation statistique — TEST UNIQUEMENT
+Moteur statistique adaptatif • Validation hors-échantillon • TEST UNIQUEMENT
 </div>
 
-<div id="connectionBox" class="neutral">
-🟡 Connexion en cours…
+<div id="connection" class="status wait">
+🟡 Connexion à Deriv…
 </div>
 
-<!-- MARCHE -->
+
+<!-- =====================================================
+MARCHÉ
+===================================================== -->
+
 <div class="card">
-<h2>📡 MARCHÉ</h2>
+
+<h2>📡 MARCHÉ R_75</h2>
+
 <div class="content">
+
 <div class="grid">
 
 <div class="item">
@@ -286,25 +311,33 @@ Moteur de validation statistique — TEST UNIQUEMENT
 </div>
 
 <div class="item">
-<div class="label">TICKS REÇUS</div>
-<div id="tickCount" class="value">0</div>
+<div class="label">TICKS LIVE</div>
+<div id="ticksLive" class="value">0</div>
 </div>
 
 <div class="item">
 <div class="label">HISTORIQUE</div>
-<div id="historyCount" class="value">0</div>
+<div id="history" class="value">0</div>
 </div>
 
 </div>
-</div>
+
 </div>
 
-<!-- PREDICTION -->
+</div>
+
+
+<!-- =====================================================
+ENSEMBLE
+===================================================== -->
+
 <div class="card">
-<h2>🎯 PRÉDICTION ENSEMBLE</h2>
+
+<h2>🎯 ENSEMBLE V7.2</h2>
+
 <div class="content">
 
-<div id="signalBox" class="signal block">
+<div id="signal" class="signal">
 ⛔ PAS DE SIGNAL
 </div>
 
@@ -319,16 +352,16 @@ Moteur de validation statistique — TEST UNIQUEMENT
 
 <div class="item">
 <div class="label">SCORE BRUT</div>
-<div id="rawScore" class="value">—</div>
+<div id="raw" class="value">—</div>
 </div>
 
 <div class="item">
 <div class="label">SCORE CALIBRÉ</div>
-<div id="calibratedScore" class="value">—</div>
+<div id="calibrated" class="value">—</div>
 </div>
 
 <div class="item">
-<div class="label">ACCORD MODÈLES</div>
+<div class="label">ACCORD</div>
 <div id="agreement" class="value">—</div>
 </div>
 
@@ -345,23 +378,41 @@ Moteur de validation statistique — TEST UNIQUEMENT
 </div>
 
 </div>
+
 </div>
 
-<!-- FREQUENCES -->
+
+<!-- =====================================================
+FRÉQUENCES
+===================================================== -->
+
 <div class="card">
-<h2>📊 FRÉQUENCES — 100 DERNIERS TICKS</h2>
+
+<h2>📊 FRÉQUENCE — 100 DERNIERS TICKS</h2>
+
 <div class="content">
-<div id="frequencyGrid" class="digit-grid"></div>
-</div>
+
+<div id="digits" class="digits"></div>
+
 </div>
 
-<!-- MODELES -->
+</div>
+
+
+<!-- =====================================================
+MODÈLES
+===================================================== -->
+
 <div class="card">
-<h2>🧠 4 MODÈLES</h2>
+
+<h2>🧠 MODÈLES INDÉPENDANTS</h2>
+
 <div class="content">
 
 <table>
+
 <thead>
+
 <tr>
 <th>MODÈLE</th>
 <th>CAND.</th>
@@ -371,44 +422,108 @@ Moteur de validation statistique — TEST UNIQUEMENT
 <th>WILSON</th>
 <th>POIDS</th>
 </tr>
+
 </thead>
-<tbody id="modelsTable"></tbody>
+
+<tbody id="models"></tbody>
+
 </table>
 
 </div>
+
 </div>
 
-<!-- BENCHMARK -->
+
+<!-- =====================================================
+BENCHMARK
+===================================================== -->
+
 <div class="card">
-<h2>⚖️ BENCHMARK</h2>
+
+<h2>⚖️ BENCHMARK HORS-ÉCHANTILLON</h2>
+
 <div class="content">
 
 <table>
+
 <thead>
+
 <tr>
 <th>MÉTHODE</th>
 <th>TESTS</th>
 <th>WIN</th>
-<th>RATE</th>
+<th>TAUX</th>
+<th>EDGE vs 10%</th>
 </tr>
+
 </thead>
-<tbody id="benchmarkTable"></tbody>
+
+<tbody id="benchmark"></tbody>
+
 </table>
 
 <br>
 
 <div class="small">
-Référence théorique : un chiffre précis a environ 10% de fréquence
-sur une séquence uniforme. Le benchmark sert à vérifier si le modèle
-ajoute réellement une information hors-échantillon.
+
+Le benchmark 10 % est une référence théorique pour un chiffre
+particulier sous une distribution uniforme. Il ne constitue pas
+une promesse de performance.
+
 </div>
 
 </div>
+
 </div>
 
-<!-- SHADOW -->
+
+<!-- =====================================================
+VALIDATION ENSEMBLE
+===================================================== -->
+
 <div class="card">
+
+<h2>🧪 VALIDATION ENSEMBLE</h2>
+
+<div class="content">
+
+<div class="grid">
+
+<div class="item">
+<div class="label">TESTS OOS</div>
+<div id="ensembleTests" class="value">0</div>
+</div>
+
+<div class="item">
+<div class="label">WIN</div>
+<div id="ensembleWins" class="value">0</div>
+</div>
+
+<div class="item">
+<div class="label">TAUX</div>
+<div id="ensembleRate" class="value">—</div>
+</div>
+
+<div class="item">
+<div class="label">WILSON LOWER</div>
+<div id="ensembleWilson" class="value">—</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+SHADOW
+===================================================== -->
+
+<div class="card">
+
 <h2>🔬 SHADOW LAB</h2>
+
 <div class="content">
 
 <div class="grid">
@@ -429,7 +544,7 @@ ajoute réellement une information hors-échantillon.
 </div>
 
 <div class="item">
-<div class="label">WILSON LOWER</div>
+<div class="label">SHADOW WILSON</div>
 <div id="shadowWilson" class="value">—</div>
 </div>
 
@@ -438,23 +553,100 @@ ajoute réellement une information hors-échantillon.
 <br>
 
 <table>
+
 <thead>
+
 <tr>
 <th>DIGIT</th>
 <th>TESTS</th>
 <th>WIN</th>
 <th>RATE</th>
 </tr>
+
 </thead>
+
 <tbody id="shadowDigits"></tbody>
+
 </table>
 
 </div>
+
 </div>
 
-<!-- CONTEXTE -->
+
+<!-- =====================================================
+SCORE BUCKETS
+===================================================== -->
+
 <div class="card">
+
+<h2>📈 PERFORMANCE PAR SCORE</h2>
+
+<div class="content">
+
+<table>
+
+<thead>
+
+<tr>
+<th>BUCKET</th>
+<th>TESTS</th>
+<th>WIN</th>
+<th>TAUX</th>
+<th>WILSON</th>
+</tr>
+
+</thead>
+
+<tbody id="scoreBuckets"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+ACCORD
+===================================================== -->
+
+<div class="card">
+
+<h2>🤝 PERFORMANCE PAR ACCORD</h2>
+
+<div class="content">
+
+<table>
+
+<thead>
+
+<tr>
+<th>ACCORD</th>
+<th>TESTS</th>
+<th>WIN</th>
+<th>TAUX</th>
+</tr>
+
+</thead>
+
+<tbody id="agreementStats"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+CONTEXT
+===================================================== -->
+
+<div class="card">
+
 <h2>🌐 CONTEXT ENGINE</h2>
+
 <div class="content">
 
 <div class="grid">
@@ -476,72 +668,60 @@ ajoute réellement une information hors-échantillon.
 
 <div class="item">
 <div class="label">CHANGEMENT</div>
-<div id="regimeChange" class="value">—</div>
+<div id="change" class="value">—</div>
 </div>
 
 </div>
 
 </div>
+
 </div>
 
-<!-- GATE -->
+
+<!-- =====================================================
+GATE
+===================================================== -->
+
 <div class="card">
-<h2>🚦 SIGNAL GATE V7.1</h2>
+
+<h2>🚦 STATISTICAL GATE V7.2</h2>
+
 <div class="content">
 
 <table>
+
+<thead>
+
 <tr>
 <th>CONDITION</th>
 <th>ÉTAT</th>
 </tr>
 
-<tbody id="gateTable"></tbody>
+</thead>
+
+<tbody id="gate"></tbody>
+
 </table>
 
 <br>
 
-<div id="gateExplanation" class="neutral">
-En attente de suffisamment de données.
+<div id="gateMessage" class="warning">
+⛔ Pas suffisamment de preuves.
 </div>
 
 </div>
+
 </div>
 
-<!-- VALIDATION -->
+
+<!-- =====================================================
+CONFIG
+===================================================== -->
+
 <div class="card">
-<h2>🧪 VALIDATION HORS-ÉCHANTILLON</h2>
-<div class="content">
 
-<div class="grid">
+<h2>⚙️ CONFIGURATION V7.2</h2>
 
-<div class="item">
-<div class="label">VALIDATIONS ENSEMBLE</div>
-<div id="ensembleTests" class="value">0</div>
-</div>
-
-<div class="item">
-<div class="label">ENSEMBLE WIN</div>
-<div id="ensembleWins" class="value">0</div>
-</div>
-
-<div class="item">
-<div class="label">TAUX ENSEMBLE</div>
-<div id="ensembleRate" class="value">—</div>
-</div>
-
-<div class="item">
-<div class="label">WILSON ENSEMBLE</div>
-<div id="ensembleWilson" class="value">—</div>
-</div>
-
-</div>
-
-</div>
-</div>
-
-<!-- CONFIG -->
-<div class="card">
-<h2>⚙️ CONFIGURATION</h2>
 <div class="content">
 
 <div class="grid">
@@ -557,13 +737,13 @@ En attente de suffisamment de données.
 </div>
 
 <div class="item">
-<div class="label">MIN TESTS MODÈLE</div>
+<div class="label">MIN MODÈLE</div>
 <div class="value">30</div>
 </div>
 
 <div class="item">
 <div class="label">MIN SHADOW</div>
-<div class="value">30</div>
+<div class="value">40</div>
 </div>
 
 <div class="item">
@@ -579,2007 +759,2722 @@ En attente de suffisamment de données.
 </div>
 
 </div>
+
 </div>
 
-<!-- LOG -->
+
+<!-- =====================================================
+LOG
+===================================================== -->
+
 <div class="card">
-<h2>📝 API LOG</h2>
+
+<h2>📝 API / ENGINE LOG</h2>
+
 <div class="content">
+
 <div id="log" class="log"></div>
-<button onclick="clearLog()">Effacer le log</button>
+
+<button onclick="clearLog()">
+Effacer le log
+</button>
+
 </div>
+
 </div>
+
 
 <div class="warning">
-⚠️ TEST UNIQUEMENT — Aucun ordre de trading n'est envoyé.
+
+⚠️ TEST UNIQUEMENT — Aucun ordre n'est envoyé à Deriv.
 <br>
-Le score n'est PAS une probabilité de gain et aucune performance future
-n'est garantie.
-</div>
+Le score n'est PAS une probabilité de gain.
+<br>
+Aucune performance future n'est garantie.
 
 </div>
+
+
+</div>
+
 
 <script>
 
 /* =========================================================
-   V7.1 — PREDICTION R75
-   PUBLIC MARKET DATA ONLY
-   NO TRADING
+V7.2
+PUBLIC DATA ONLY
+NO TRADING
 ========================================================= */
 
+
 const SYMBOL = "R_75";
-const WS_URL = "wss://api.derivws.com/trading/v1/options/ws/public";
+
+const WS_URL =
+"wss://api.derivws.com/trading/v1/options/ws/public";
+
 
 const WINDOW_SIZE = 100;
+
 const RECENT_SIZE = 30;
 
 const MIN_MODEL_TESTS = 30;
-const MIN_SHADOW_TESTS = 30;
+
+const MIN_SHADOW_TESTS = 40;
 
 const BASELINE = 0.10;
 
+
+/* =========================================================
+STATE
+========================================================= */
+
 let ws = null;
+
 let reconnectTimer = null;
+
 let reconnectDelay = 1000;
 
 let ticks = [];
-let tickCount = 0;
-let historyLoaded = false;
 
-let predictions = {
-  global:null,
-  recent:null,
-  transition:null,
-  sequence:null,
-  ensemble:null
-};
+let liveTicks = 0;
 
-let models = {
-  global:{
-    name:"Global",
-    tests:0,
-    wins:0,
-    weight:0.25
-  },
-  recent:{
-    name:"Recent",
-    tests:0,
-    wins:0,
-    weight:0.25
-  },
-  transition:{
-    name:"Transition",
-    tests:0,
-    wins:0,
-    weight:0.25
-  },
-  sequence:{
-    name:"Sequence",
-    tests:0,
-    wins:0,
-    weight:0.25
-  }
-};
+let prediction = null;
 
-let ensembleStats = {
-  tests:0,
-  wins:0
-};
-
-let shadow = {
-  tests:0,
-  wins:0,
-  byDigit:Array.from({length:10},()=>({tests:0,wins:0}))
-};
-
-let benchmark = {
-  random:{tests:0,wins:0},
-  mostFrequent:{tests:0,wins:0},
-  global:{tests:0,wins:0},
-  recent:{tests:0,wins:0},
-  ensemble:{tests:0,wins:0}
-};
-
-let lastPredictionTick = null;
 let shadowPrediction = null;
 
-let currentAnalysis = {
-  candidate:null,
-  rawScore:0,
-  calibrated:0,
-  agreement:0,
-  gap:0,
-  regime:"—",
-  entropy:0,
-  uniformity:0,
-  streak:0,
-  regimeChange:false
+
+let models = {
+
+global:{
+name:"Global",
+tests:0,
+wins:0,
+weight:.25
+},
+
+recent:{
+name:"Recent",
+tests:0,
+wins:0,
+weight:.25
+},
+
+transition:{
+name:"Transition",
+tests:0,
+wins:0,
+weight:.25
+},
+
+sequence:{
+name:"Sequence",
+tests:0,
+wins:0,
+weight:.25
+}
+
+};
+
+
+let predictions = {
+
+global:null,
+recent:null,
+transition:null,
+sequence:null
+
+};
+
+
+let ensembleStats = {
+
+tests:0,
+wins:0
+
+};
+
+
+let shadow = {
+
+tests:0,
+wins:0,
+
+byDigit:Array.from(
+{length:10},
+()=>({
+tests:0,
+wins:0
+})
+)
+
+};
+
+
+let scoreBuckets = {
+
+"50-59":{tests:0,wins:0},
+
+"60-69":{tests:0,wins:0},
+
+"70-79":{tests:0,wins:0},
+
+"80-89":{tests:0,wins:0},
+
+"90-100":{tests:0,wins:0}
+
+};
+
+
+let agreementStats = {
+
+"1/4":{tests:0,wins:0},
+
+"2/4":{tests:0,wins:0},
+
+"3/4":{tests:0,wins:0},
+
+"4/4":{tests:0,wins:0}
+
+};
+
+
+let benchmark = {
+
+random:{
+tests:0,
+wins:0
+},
+
+mostFrequent:{
+tests:0,
+wins:0
+},
+
+recent:{
+tests:0,
+wins:0
+},
+
+global:{
+tests:0,
+wins:0
+},
+
+ensemble:{
+tests:0,
+wins:0
+}
+
+};
+
+
+let analysis = {
+
+candidate:null,
+
+raw:0,
+
+calibrated:0,
+
+agreement:0,
+
+gap:0,
+
+entropy:0,
+
+uniformity:0,
+
+streak:0,
+
+regime:"—",
+
+change:false
+
 };
 
 
 /* =========================================================
-   DOM
+HELPERS
 ========================================================= */
 
-const $ = id => document.getElementById(id);
+function $(id){
 
+return document.getElementById(id);
 
-/* =========================================================
-   LOG
-========================================================= */
-
-function log(msg){
-
-  const time = new Date().toLocaleTimeString();
-
-  const box = $("log");
-
-  box.textContent += "[" + time + "] " + msg + "\n";
-
-  box.scrollTop = box.scrollHeight;
 }
+
+
+function log(message){
+
+const time =
+new Date().toLocaleTimeString();
+
+$("log").textContent +=
+"[" + time + "] " +
+message +
+"\n";
+
+$("log").scrollTop =
+$("log").scrollHeight;
+
+}
+
 
 function clearLog(){
-  $("log").textContent = "";
+
+$("log").textContent="";
+
+}
+
+
+function clamp(x,min,max){
+
+return Math.max(
+min,
+Math.min(max,x)
+);
+
 }
 
 
 /* =========================================================
-   CONNECTION
+DIGIT EXTRACTION
 ========================================================= */
 
-function connect(){
+function lastDigit(value){
 
-  if(ws){
-    try{
-      ws.close();
-    }catch(e){}
-  }
+if(value === null ||
+value === undefined){
 
-  log("Connexion WebSocket…");
+return null;
 
-  $("status").textContent = "Connexion…";
-  $("connectionBox").className = "neutral";
-  $("connectionBox").textContent = "🟡 Connexion à Deriv…";
-
-  ws = new WebSocket(WS_URL);
-
-  ws.onopen = function(){
-
-    reconnectDelay = 1000;
-
-    log("WebSocket connecté.");
-
-    $("status").textContent = "Connecté";
-    $("status").className = "value green";
-
-    $("connectionBox").className = "success";
-    $("connectionBox").textContent =
-      "🟢 Connecté — R_75";
-
-    requestHistory();
-
-    startTicks();
-  };
-
-  ws.onmessage = function(event){
-
-    let data;
-
-    try{
-      data = JSON.parse(event.data);
-    }catch(e){
-      log("Réponse JSON invalide.");
-      return;
-    }
-
-    handleMessage(data);
-  };
-
-  ws.onerror = function(){
-
-    log("Erreur WebSocket.");
-
-    $("status").textContent = "Erreur";
-    $("connectionBox").className = "warning";
-    $("connectionBox").textContent =
-      "🔴 Erreur WebSocket";
-  };
-
-  ws.onclose = function(){
-
-    log("WebSocket fermé.");
-
-    $("status").textContent = "Fermé";
-
-    $("connectionBox").className = "warning";
-    $("connectionBox").textContent =
-      "🔴 Connexion fermée — reconnexion…";
-
-    scheduleReconnect();
-  };
 }
 
-function scheduleReconnect(){
+const str =
+String(value).trim();
 
-  if(reconnectTimer) return;
 
-  reconnectTimer = setTimeout(()=>{
+if(str.includes(".")){
 
-    reconnectTimer = null;
+const parts =
+str.split(".");
 
-    reconnectDelay = Math.min(
-      reconnectDelay * 1.7,
-      30000
-    );
+const decimal =
+parts[1] || "";
 
-    connect();
+const clean =
+decimal.replace(
+/\D/g,
+""
+);
 
-  }, reconnectDelay);
+if(clean.length){
+
+return Number(
+clean[clean.length-1]
+);
+
+}
+
+}
+
+
+const n =
+Number(value);
+
+if(Number.isFinite(n)){
+
+return Math.floor(
+Math.abs(n)*10000
+)%10;
+
+}
+
+return null;
+
 }
 
 
 /* =========================================================
-   HISTORY
-   IMPORTANT:
-   NO subscribe field here.
-========================================================= */
-
-function requestHistory(){
-
-  if(!ws || ws.readyState !== WebSocket.OPEN)
-    return;
-
-  const request = {
-    ticks_history:SYMBOL,
-    count:WINDOW_SIZE,
-    end:"latest",
-    style:"ticks",
-    req_id:2
-  };
-
-  log("Demande historique R_75…");
-
-  ws.send(JSON.stringify(request));
-}
-
-
-/* =========================================================
-   LIVE TICKS
-   subscribe IS USED HERE.
-========================================================= */
-
-function startTicks(){
-
-  if(!ws || ws.readyState !== WebSocket.OPEN)
-    return;
-
-  const request = {
-    ticks:SYMBOL,
-    subscribe:1,
-    req_id:3
-  };
-
-  log("Abonnement ticks live R_75…");
-
-  ws.send(JSON.stringify(request));
-}
-
-
-/* =========================================================
-   MESSAGE HANDLER
-========================================================= */
-
-function handleMessage(data){
-
-  if(data.error){
-
-    const msg =
-      data.error.message ||
-      data.error.code ||
-      "Erreur API inconnue";
-
-    log("API ERROR: " + msg);
-
-    $("connectionBox").className = "warning";
-    $("connectionBox").textContent =
-      "⚠️ API : " + msg;
-
-    return;
-  }
-
-  if(data.msg_type === "history"){
-
-    handleHistory(data);
-    return;
-  }
-
-  if(data.msg_type === "tick"){
-
-    handleTick(data);
-    return;
-  }
-
-  if(data.msg_type === "active_symbols"){
-
-    log("active_symbols reçu.");
-    return;
-  }
-}
-
-
-/* =========================================================
-   HISTORY
-========================================================= */
-
-function handleHistory(data){
-
-  if(
-    !data.history ||
-    !Array.isArray(data.history.prices)
-  ){
-
-    log("Historique reçu mais format inattendu.");
-    return;
-  }
-
-  const prices = data.history.prices;
-  const times =
-    Array.isArray(data.history.times)
-      ? data.history.times
-      : [];
-
-  ticks = [];
-
-  for(let i=0;i<prices.length;i++){
-
-    const price = prices[i];
-
-    const digit = getLastDigit(price);
-
-    if(digit === null)
-      continue;
-
-    ticks.push({
-      price:price,
-      epoch:times[i] || Date.now()/1000,
-      digit:digit
-    });
-  }
-
-  if(ticks.length > WINDOW_SIZE){
-
-    ticks =
-      ticks.slice(-WINDOW_SIZE);
-  }
-
-  historyLoaded = true;
-
-  $("historyCount").textContent = ticks.length;
-
-  log(
-    "Historique chargé : " +
-    ticks.length +
-    " ticks."
-  );
-
-  renderAll();
-
-  /*
-    We do NOT validate the last historical
-    prediction against anything unknown.
-    Live ticks will continue the OOS process.
-  */
-}
-
-
-/* =========================================================
-   LAST DIGIT
-========================================================= */
-
-function getLastDigit(value){
-
-  if(value === null || value === undefined)
-    return null;
-
-  let s = String(value).trim();
-
-  /*
-    Deriv quotes may contain decimal places.
-    We want the final decimal digit.
-  */
-
-  if(s.includes(".")){
-
-    const parts = s.split(".");
-
-    const decimal = parts[1];
-
-    if(decimal && /\d/.test(decimal)){
-
-      const digits =
-        decimal.replace(/\D/g,"");
-
-      if(digits.length)
-        return Number(
-          digits[digits.length-1]
-        );
-    }
-  }
-
-  /*
-    Fallback.
-  */
-
-  const n = Number(value);
-
-  if(Number.isFinite(n)){
-
-    const fallback =
-      Math.floor(
-        Math.abs(n) * 10000
-      ) % 10;
-
-    return fallback;
-  }
-
-  return null;
-}
-
-
-/* =========================================================
-   LIVE TICK
-========================================================= */
-
-function handleTick(data){
-
-  if(!data.tick)
-    return;
-
-  const quote = data.tick.quote;
-
-  const digit = getLastDigit(quote);
-
-  if(digit === null)
-    return;
-
-  const item = {
-    price:quote,
-    epoch:data.tick.epoch || Date.now()/1000,
-    digit:digit
-  };
-
-  /*
-    First validate predictions made before
-    this new tick arrived.
-  */
-
-  validatePending(item);
-
-  /*
-    Add new tick.
-  */
-
-  ticks.push(item);
-
-  if(ticks.length > WINDOW_SIZE){
-
-    ticks =
-      ticks.slice(-WINDOW_SIZE);
-  }
-
-  tickCount++;
-
-  $("tickCount").textContent =
-    tickCount;
-
-  $("price").textContent =
-    formatPrice(quote);
-
-  $("lastDigit").textContent =
-    digit;
-
-  /*
-    New prediction AFTER seeing this tick.
-  */
-
-  makePredictions();
-
-  renderAll();
-}
-
-
-/* =========================================================
-   PRICE
-========================================================= */
-
-function formatPrice(value){
-
-  const n = Number(value);
-
-  if(!Number.isFinite(n))
-    return String(value);
-
-  return n.toFixed(4);
-}
-
-
-/* =========================================================
-   FREQUENCY
+FREQUENCY
 ========================================================= */
 
 function frequency(arr){
 
-  const counts =
-    Array(10).fill(0);
+const c =
+Array(10).fill(0);
 
-  for(const x of arr){
+for(const d of arr){
 
-    if(Number.isInteger(x) && x>=0 && x<=9)
-      counts[x]++;
-  }
+if(Number.isInteger(d) &&
+d>=0 &&
+d<=9){
 
-  return counts;
+c[d]++;
+
 }
 
+}
 
-/* =========================================================
-   PROBABILITY WITH LAPLACE
-========================================================= */
+return c;
+
+}
+
 
 function probabilities(arr){
 
-  const counts = frequency(arr);
+const c =
+frequency(arr);
 
-  const total = arr.length;
+const total =
+arr.length;
 
-  return counts.map(
-    c => (c + 1) / (total + 10)
-  );
+return c.map(
+x=>
+(x+1)/
+(total+10)
+);
+
 }
 
-
-/* =========================================================
-   ARGMAX
-========================================================= */
 
 function argmax(arr){
 
-  let best = 0;
+let best=0;
 
-  for(let i=1;i<arr.length;i++){
+for(let i=1;i<arr.length;i++){
 
-    if(arr[i] > arr[best])
-      best = i;
-  }
+if(arr[i]>arr[best]){
 
-  return best;
+best=i;
+
+}
+
+}
+
+return best;
+
 }
 
 
 /* =========================================================
-   SORTED BEST
+MODELS
 ========================================================= */
 
-function sortedDigits(probs){
+function globalModel(){
 
-  return probs
-    .map((p,d)=>({digit:d,p:p}))
-    .sort((a,b)=>b.p-a.p);
+if(ticks.length<20)
+return null;
+
+const arr =
+ticks.map(x=>x.digit);
+
+const p =
+probabilities(arr);
+
+return {
+
+digit:argmax(p),
+
+probs:p
+
+};
+
+}
+
+
+function recentModel(){
+
+if(ticks.length<20)
+return null;
+
+const arr =
+ticks
+.slice(-RECENT_SIZE)
+.map(x=>x.digit);
+
+const p =
+probabilities(arr);
+
+return {
+
+digit:argmax(p),
+
+probs:p
+
+};
+
+}
+
+
+function transitionModel(){
+
+if(ticks.length<25)
+return null;
+
+const previous =
+ticks[ticks.length-1].digit;
+
+const c =
+Array(10).fill(1);
+
+for(let i=1;i<ticks.length;i++){
+
+if(
+ticks[i-1].digit === previous
+){
+
+c[ticks[i].digit]++;
+
+}
+
+}
+
+const total =
+c.reduce(
+(a,b)=>a+b,
+0
+);
+
+const p =
+c.map(
+x=>x/total
+);
+
+return {
+
+digit:argmax(p),
+
+probs:p
+
+};
+
+}
+
+
+function sequenceModel(){
+
+if(ticks.length<35)
+return null;
+
+const a =
+ticks[ticks.length-2].digit;
+
+const b =
+ticks[ticks.length-1].digit;
+
+const c =
+Array(10).fill(1);
+
+for(let i=2;i<ticks.length;i++){
+
+if(
+ticks[i-2].digit === a &&
+ticks[i-1].digit === b
+){
+
+c[ticks[i].digit]++;
+
+}
+
+}
+
+const total =
+c.reduce(
+(x,y)=>x+y,
+0
+);
+
+const p =
+c.map(
+x=>x/total
+);
+
+return {
+
+digit:argmax(p),
+
+probs:p
+
+};
+
 }
 
 
 /* =========================================================
-   GLOBAL MODEL
-========================================================= */
-
-function modelGlobal(){
-
-  if(ticks.length < 10)
-    return null;
-
-  const arr =
-    ticks.map(x=>x.digit);
-
-  const p =
-    probabilities(arr);
-
-  return {
-    digit:argmax(p),
-    probs:p
-  };
-}
-
-
-/* =========================================================
-   RECENT MODEL
-========================================================= */
-
-function modelRecent(){
-
-  if(ticks.length < 10)
-    return null;
-
-  const arr =
-    ticks
-      .slice(-RECENT_SIZE)
-      .map(x=>x.digit);
-
-  const p =
-    probabilities(arr);
-
-  return {
-    digit:argmax(p),
-    probs:p
-  };
-}
-
-
-/* =========================================================
-   TRANSITION MODEL
-========================================================= */
-
-function modelTransition(){
-
-  if(ticks.length < 20)
-    return null;
-
-  const previous =
-    ticks[ticks.length-1].digit;
-
-  const counts =
-    Array(10).fill(1);
-
-  for(let i=1;i<ticks.length;i++){
-
-    if(ticks[i-1].digit === previous){
-
-      counts[ticks[i].digit]++;
-    }
-  }
-
-  const total =
-    counts.reduce((a,b)=>a+b,0);
-
-  const p =
-    counts.map(x=>x/total);
-
-  return {
-    digit:argmax(p),
-    probs:p
-  };
-}
-
-
-/* =========================================================
-   SEQUENCE MODEL
-   Last two digits -> next digit
-========================================================= */
-
-function modelSequence(){
-
-  if(ticks.length < 30)
-    return null;
-
-  const a =
-    ticks[ticks.length-2].digit;
-
-  const b =
-    ticks[ticks.length-1].digit;
-
-  const counts =
-    Array(10).fill(1);
-
-  for(let i=2;i<ticks.length;i++){
-
-    if(
-      ticks[i-2].digit === a &&
-      ticks[i-1].digit === b
-    ){
-
-      counts[ticks[i].digit]++;
-    }
-  }
-
-  const total =
-    counts.reduce((x,y)=>x+y,0);
-
-  const p =
-    counts.map(x=>x/total);
-
-  return {
-    digit:argmax(p),
-    probs:p
-  };
-}
-
-
-/* =========================================================
-   ENTROPY
+ENTROPY
 ========================================================= */
 
 function entropy(arr){
 
-  if(arr.length === 0)
-    return 0;
+if(!arr.length)
+return 0;
 
-  const p =
-    frequency(arr).map(
-      c => c/arr.length
-    );
+const c =
+frequency(arr);
 
-  let h = 0;
+let h=0;
 
-  for(const x of p){
+for(const n of c){
 
-    if(x>0)
-      h -= x*Math.log2(x);
-  }
+if(n===0)
+continue;
 
-  return h;
+const p =
+n/arr.length;
+
+h -=
+p*Math.log2(p);
+
+}
+
+return h;
+
 }
 
 
 /* =========================================================
-   UNIFORMITY
+UNIFORMITY
 ========================================================= */
 
 function uniformity(arr){
 
-  if(arr.length === 0)
-    return 0;
+if(!arr.length)
+return 0;
 
-  const counts = frequency(arr);
+const c =
+frequency(arr);
 
-  const target =
-    arr.length / 10;
+const target =
+arr.length/10;
 
-  let error = 0;
+let error=0;
 
-  for(const c of counts){
+for(const n of c){
 
-    error +=
-      Math.abs(c-target);
-  }
+error +=
+Math.abs(n-target);
 
-  const maxError =
-    2 * arr.length;
+}
 
-  return Math.max(
-    0,
-    1 - error/maxError
-  );
+return clamp(
+1 -
+error/(2*arr.length),
+0,
+1
+);
+
 }
 
 
 /* =========================================================
-   STREAK
+STREAK
 ========================================================= */
 
 function getStreak(){
 
-  if(ticks.length === 0)
-    return {
-      digit:null,
-      length:0
-    };
+if(!ticks.length){
 
-  const last =
-    ticks[ticks.length-1].digit;
+return {
+digit:null,
+length:0
+};
 
-  let count = 0;
+}
 
-  for(let i=ticks.length-1;i>=0;i--){
+const d =
+ticks[ticks.length-1].digit;
 
-    if(ticks[i].digit === last)
-      count++;
-    else
-      break;
-  }
+let n=0;
 
-  return {
-    digit:last,
-    length:count
-  };
+for(
+let i=ticks.length-1;
+i>=0;
+i--
+){
+
+if(
+ticks[i].digit===d
+){
+
+n++;
+
+}else{
+
+break;
+
+}
+
+}
+
+return {
+
+digit:d,
+
+length:n
+
+};
+
 }
 
 
 /* =========================================================
-   REGIME
+REGIME
 ========================================================= */
 
-function getRegime(){
+function regime(){
 
-  const arr =
-    ticks.map(x=>x.digit);
+if(ticks.length<60){
 
-  if(arr.length < 30){
+return {
 
-    return {
-      name:"INSUFFISANT",
-      entropy:0,
-      uniformity:0,
-      change:false
-    };
-  }
+name:"INSUFFISANT",
 
-  const recent =
-    arr.slice(-30);
+entropy:0,
 
-  const previous =
-    arr.slice(-60,-30);
+uniformity:0,
 
-  const h =
-    entropy(recent);
+change:false
 
-  const u =
-    uniformity(recent);
+};
 
-  const hp =
-    entropy(previous);
+}
 
-  const change =
-    Math.abs(h-hp) > 0.45;
+const recent =
+ticks
+.slice(-30)
+.map(x=>x.digit);
 
-  let name = "NORMAL";
+const previous =
+ticks
+.slice(-60,-30)
+.map(x=>x.digit);
 
-  if(h > 3.15){
+const h =
+entropy(recent);
 
-    name = "BRUIT";
-  }
-  else if(h < 2.65){
+const hp =
+entropy(previous);
 
-    name = "CONCENTRÉ";
-  }
+const u =
+uniformity(recent);
 
-  if(change)
-    name += " / CHANGEMENT";
+const change =
+Math.abs(h-hp)>0.40;
 
-  return {
-    name:name,
-    entropy:h,
-    uniformity:u,
-    change:change
-  };
+let name="NORMAL";
+
+if(h>=3.15){
+
+name="BRUIT";
+
+}
+
+else if(h<=2.60){
+
+name="CONCENTRÉ";
+
+}
+
+if(change){
+
+name +=
+" / CHANGEMENT";
+
+}
+
+return {
+
+name:name,
+
+entropy:h,
+
+uniformity:u,
+
+change:change
+
+};
+
 }
 
 
 /* =========================================================
-   WILSON LOWER BOUND
+WILSON
 ========================================================= */
 
-function wilsonLower(wins,tests){
+function wilson(wins,tests){
 
-  if(tests <= 0)
-    return 0;
+if(tests<=0)
+return 0;
 
-  const z = 1.96;
+const z=1.96;
 
-  const p =
-    wins/tests;
+const p=
+wins/tests;
 
-  const denominator =
-    1 + z*z/tests;
+const denominator =
+1+(z*z/tests);
 
-  const centre =
-    p + z*z/(2*tests);
+const centre =
+p+
+(z*z/(2*tests));
 
-  const margin =
-    z *
-    Math.sqrt(
-      (
-        p*(1-p) +
-        z*z/(4*tests)
-      ) / tests
-    );
+const margin =
+z*Math.sqrt(
+(
+p*(1-p)+
+z*z/(4*tests)
+)/tests
+);
 
-  return (
-    centre-margin
-  ) / denominator;
+return (
+centre-margin
+)/
+denominator;
+
 }
 
 
 /* =========================================================
-   MODEL PERFORMANCE
-========================================================= */
-
-function modelRate(model){
-
-  if(model.tests === 0)
-    return 0;
-
-  return model.wins/model.tests;
-}
-
-
-/* =========================================================
-   MODEL WEIGHTS
+MODEL WEIGHTS
 ========================================================= */
 
 function updateWeights(){
 
-  const entries =
-    Object.entries(models);
+let rawWeights=[];
 
-  let total = 0;
+for(
+const key of
+Object.keys(models)
+){
 
-  for(const [key,m] of entries){
+const m =
+models[key];
 
-    if(m.tests < MIN_MODEL_TESTS){
+let w=.25;
 
-      m.weight = 0.25;
-      continue;
-    }
+if(
+m.tests>=MIN_MODEL_TESTS
+){
 
-    const rate =
-      modelRate(m);
+const lower =
+wilson(
+m.wins,
+m.tests
+);
 
-    const lower =
-      wilsonLower(
-        m.wins,
-        m.tests
-      );
+const edge =
+lower-
+BASELINE;
 
-    /*
-      Weight uses evidence rather than
-      raw win rate alone.
-    */
+w =
+.25+
+clamp(
+edge*4,
+-.15,
+.30
+);
 
-    let w =
-      0.25 +
-      Math.max(
-        -0.20,
-        Math.min(
-          0.35,
-          (lower - BASELINE) * 3
-        )
-      );
+}
 
-    /*
-      Slight preference for stable models.
-    */
+w =
+clamp(
+w,
+.05,
+.55
+);
 
-    if(rate > BASELINE)
-      w += 0.03;
+m.weight=w;
 
-    m.weight = Math.max(0.05,w);
+rawWeights.push(w);
 
-    total += m.weight;
-  }
+}
 
-  if(total <= 0)
-    return;
 
-  for(const m of Object.values(models)){
+const total =
+rawWeights.reduce(
+(a,b)=>a+b,
+0
+);
 
-    m.weight /= total;
-  }
+
+for(
+const m of
+Object.values(models)
+){
+
+m.weight /=
+total;
+
+}
+
 }
 
 
 /* =========================================================
-   ENSEMBLE
+ENSEMBLE
 ========================================================= */
 
-function ensemblePrediction(){
+function ensemble(){
 
-  const available = [];
+const keys = [
 
-  if(predictions.global)
-    available.push({
-      key:"global",
-      data:predictions.global
-    });
+"global",
+"recent",
+"transition",
+"sequence"
 
-  if(predictions.recent)
-    available.push({
-      key:"recent",
-      data:predictions.recent
-    });
+];
 
-  if(predictions.transition)
-    available.push({
-      key:"transition",
-      data:predictions.transition
-    });
+const score =
+Array(10).fill(0);
 
-  if(predictions.sequence)
-    available.push({
-      key:"sequence",
-      data:predictions.sequence
-    });
+let available=0;
 
-  if(!available.length)
-    return null;
+for(const key of keys){
 
-  const score =
-    Array(10).fill(0);
+const p =
+predictions[key];
 
-  for(const x of available){
+if(!p)
+continue;
 
-    const weight =
-      models[x.key].weight;
+available++;
 
-    for(let d=0;d<10;d++){
+const w =
+models[key].weight;
 
-      score[d] +=
-        weight *
-        x.data.probs[d];
-    }
-  }
+for(let d=0;d<10;d++){
 
-  const sorted =
-    sortedDigits(score);
+score[d] +=
+w*p.probs[d];
 
-  return {
-    digit:sorted[0].digit,
-    probs:score,
-    second:sorted[1].digit,
-    best:sorted[0].p,
-    secondProb:sorted[1].p
-  };
+}
+
+}
+
+if(!available)
+return null;
+
+const sorted =
+score
+.map(
+(p,d)=>({
+digit:d,
+p:p
+})
+)
+.sort(
+(a,b)=>b.p-a.p
+);
+
+return {
+
+digit:
+sorted[0].digit,
+
+second:
+sorted[1].digit,
+
+best:
+sorted[0].p,
+
+secondProb:
+sorted[1].p,
+
+probs:score
+
+};
+
 }
 
 
 /* =========================================================
-   AGREEMENT
+AGREEMENT
 ========================================================= */
 
-function getAgreement(){
+function agreement(){
 
-  const list = [];
+const keys = [
 
-  for(const p of Object.values(predictions)){
+"global",
+"recent",
+"transition",
+"sequence"
 
-    if(p && Number.isInteger(p.digit))
-      list.push(p.digit);
-  }
+];
 
-  /*
-    Ensemble should not be counted as
-    an independent model.
-  */
+const c =
+Array(10).fill(0);
 
-  const modelList = [];
+let total=0;
 
-  for(const key of [
-    "global",
-    "recent",
-    "transition",
-    "sequence"
-  ]){
+for(const key of keys){
 
-    if(predictions[key])
-      modelList.push(
-        predictions[key].digit
-      );
-  }
+if(!predictions[key])
+continue;
 
-  if(modelList.length === 0)
-    return {
-      count:0,
-      total:0,
-      digit:null
-    };
+c[predictions[key].digit]++;
 
-  const counts =
-    Array(10).fill(0);
+total++;
 
-  for(const d of modelList)
-    counts[d]++;
+}
 
-  const best =
-    argmax(counts);
+if(!total){
 
-  return {
-    count:counts[best],
-    total:modelList.length,
-    digit:best
-  };
+return {
+
+digit:null,
+
+count:0,
+
+total:0
+
+};
+
+}
+
+const d =
+argmax(c);
+
+return {
+
+digit:d,
+
+count:c[d],
+
+total:total
+
+};
+
 }
 
 
 /* =========================================================
-   RAW SCORE
+RAW SCORE
 ========================================================= */
 
-function calculateRawScore(ensemble,agreement,regime){
+function rawScore(
+ens,
+agr,
+reg
+){
 
-  if(!ensemble)
-    return 0;
+if(!ens)
+return 0;
 
-  /*
-    10% baseline.
-    We measure concentration above baseline.
-  */
+const edge =
+Math.max(
+0,
+(
+ens.best-
+BASELINE
+)/
+BASELINE
+);
 
-  const edge =
-    Math.max(
-      0,
-      (ensemble.best - BASELINE)
-      / BASELINE
-    );
+let score =
+40;
 
-  let score =
-    45 +
-    Math.min(30,edge*20);
+score +=
+Math.min(
+30,
+edge*20
+);
 
-  if(agreement.total > 0){
+if(agr.total){
 
-    score +=
-      (agreement.count /
-       agreement.total) * 20;
-  }
+score +=
+(
+agr.count/
+agr.total
+)*20;
 
-  if(ensemble.best -
-     ensemble.secondProb > 0.025){
+}
 
-    score += 5;
-  }
+const gap =
+(
+ens.best-
+ens.secondProb
+)*100;
 
-  if(regime.name.includes("BRUIT"))
-    score -= 15;
+if(gap>=2.5){
 
-  if(regime.change)
-    score -= 10;
+score+=5;
 
-  return Math.max(
-    0,
-    Math.min(
-      100,
-      score
-    )
-  );
+}
+
+if(reg.name.includes("BRUIT")){
+
+score-=15;
+
+}
+
+if(reg.change){
+
+score-=10;
+
+}
+
+return clamp(
+score,
+0,
+100
+);
+
 }
 
 
 /* =========================================================
-   CALIBRATION
+CALIBRATION
 ========================================================= */
 
-function calibration(raw){
+function calibratedScore(raw){
 
-  /*
-    Conservative calibration.
+if(
+ensembleStats.tests<40
+){
 
-    The calibrated score is deliberately
-    capped until enough OOS evidence exists.
-  */
+return Math.min(
+raw,
+65
+);
 
-  if(ensembleStats.tests < 30)
-    return Math.min(raw,65);
+}
 
-  const rate =
-    ensembleStats.wins /
-    ensembleStats.tests;
+const rate =
+ensembleStats.wins/
+ensembleStats.tests;
 
-  const lower =
-    wilsonLower(
-      ensembleStats.wins,
-      ensembleStats.tests
-    );
+const lower =
+wilson(
+ensembleStats.wins,
+ensembleStats.tests
+);
 
-  let factor = 1;
+let factor=1;
 
-  if(rate < BASELINE)
-    factor = 0.70;
+if(rate<.10){
 
-  else if(lower < BASELINE)
-    factor = 0.82;
+factor=.65;
 
-  else if(lower < 0.105)
-    factor = 0.92;
+}
 
-  else
-    factor = 1.02;
+else if(lower<.085){
 
-  return Math.max(
-    0,
-    Math.min(
-      100,
-      raw * factor
-    )
-  );
+factor=.78;
+
+}
+
+else if(lower<.10){
+
+factor=.88;
+
+}
+
+else if(lower<.105){
+
+factor=.96;
+
+}
+
+else{
+
+factor=1.02;
+
+}
+
+return clamp(
+raw*factor,
+0,
+100
+);
+
 }
 
 
 /* =========================================================
-   MAKE PREDICTIONS
+SCORE BUCKET
 ========================================================= */
 
-function makePredictions(){
+function scoreBucket(score){
 
-  if(ticks.length < 30)
-    return;
+if(score<60)
+return "50-59";
 
-  predictions.global =
-    modelGlobal();
+if(score<70)
+return "60-69";
 
-  predictions.recent =
-    modelRecent();
+if(score<80)
+return "70-79";
 
-  predictions.transition =
-    modelTransition();
+if(score<90)
+return "80-89";
 
-  predictions.sequence =
-    modelSequence();
+return "90-100";
 
-  updateWeights();
-
-  const ens =
-    ensemblePrediction();
-
-  if(!ens)
-    return;
-
-  const agreement =
-    getAgreement();
-
-  const regime =
-    getRegime();
-
-  const raw =
-    calculateRawScore(
-      ens,
-      agreement,
-      regime
-    );
-
-  const calibrated =
-    calibration(raw);
-
-  const gap =
-    (ens.best -
-     ens.secondProb) * 100;
-
-  currentAnalysis = {
-    candidate:ens.digit,
-    rawScore:raw,
-    calibrated:calibrated,
-    agreement:agreement.count,
-    gap:gap,
-    regime:regime.name,
-    entropy:regime.entropy,
-    uniformity:regime.uniformity,
-    streak:getStreak().length,
-    regimeChange:regime.change
-  };
-
-  /*
-    Store predictions for OOS validation.
-  */
-
-  lastPredictionTick = {
-    candidate:ens.digit,
-
-    models:{
-      global:predictions.global
-        ? predictions.global.digit
-        : null,
-
-      recent:predictions.recent
-        ? predictions.recent.digit
-        : null,
-
-      transition:predictions.transition
-        ? predictions.transition.digit
-        : null,
-
-      sequence:predictions.sequence
-        ? predictions.sequence.digit
-        : null
-    },
-
-    mostFrequent:
-      argmax(
-        frequency(
-          ticks.map(x=>x.digit)
-        )
-      ),
-
-    recentMostFrequent:
-      argmax(
-        frequency(
-          ticks
-            .slice(-RECENT_SIZE)
-            .map(x=>x.digit)
-        )
-      ),
-
-    ensemble:ens.digit,
-
-    timestamp:
-      Date.now()
-  };
-
-  /*
-    Shadow prediction is identical to the
-    current ensemble candidate.
-  */
-
-  shadowPrediction = {
-    candidate:ens.digit,
-    timestamp:Date.now()
-  };
 }
 
 
 /* =========================================================
-   VALIDATION
+NEW PREDICTION
 ========================================================= */
 
-function validatePending(actual){
+function makePrediction(){
 
-  if(!lastPredictionTick)
-    return;
+if(ticks.length<35)
+return;
 
-  const p =
-    lastPredictionTick;
+predictions.global =
+globalModel();
 
-  /*
-    Each model is validated independently.
-  */
+predictions.recent =
+recentModel();
 
-  for(const key of [
-    "global",
-    "recent",
-    "transition",
-    "sequence"
-  ]){
+predictions.transition =
+transitionModel();
 
-    const candidate =
-      p.models[key];
-
-    if(candidate === null)
-      continue;
-
-    models[key].tests++;
-
-    if(candidate === actual.digit)
-      models[key].wins++;
-  }
+predictions.sequence =
+sequenceModel();
 
 
-  /*
-    Ensemble OOS validation.
-  */
-
-  if(Number.isInteger(p.ensemble)){
-
-    ensembleStats.tests++;
-
-    if(p.ensemble === actual.digit)
-      ensembleStats.wins++;
-  }
+updateWeights();
 
 
-  /*
-    Benchmark: most frequent.
-  */
+const ens =
+ensemble();
 
-  if(Number.isInteger(p.mostFrequent)){
-
-    benchmark.mostFrequent.tests++;
-
-    if(
-      p.mostFrequent ===
-      actual.digit
-    ){
-
-      benchmark.mostFrequent.wins++;
-    }
-  }
+if(!ens)
+return;
 
 
-  /*
-    Recent benchmark.
-  */
+const agr =
+agreement();
 
-  if(Number.isInteger(p.recentMostFrequent)){
+const reg =
+regime();
 
-    benchmark.recent.tests++;
+const raw =
+rawScore(
+ens,
+agr,
+reg
+);
 
-    if(
-      p.recentMostFrequent ===
-      actual.digit
-    ){
+const cal =
+calibratedScore(raw);
 
-      benchmark.recent.wins++;
-    }
-  }
-
-
-  /*
-    Global benchmark.
-  */
-
-  if(Number.isInteger(p.models.global)){
-
-    benchmark.global.tests++;
-
-    if(
-      p.models.global ===
-      actual.digit
-    ){
-
-      benchmark.global.wins++;
-    }
-  }
+const gap =
+(
+ens.best-
+ens.secondProb
+)*100;
 
 
-  /*
-    Ensemble benchmark.
-  */
+analysis = {
 
-  if(Number.isInteger(p.ensemble)){
+candidate:ens.digit,
 
-    benchmark.ensemble.tests++;
+raw:raw,
 
-    if(
-      p.ensemble ===
-      actual.digit
-    ){
+calibrated:cal,
 
-      benchmark.ensemble.wins++;
-    }
-  }
+agreement:agr.count,
 
+gap:gap,
 
-  /*
-    Random benchmark:
-    deterministic pseudo-random digit.
-  */
+entropy:reg.entropy,
 
-  const randomDigit =
-    Math.floor(
-      Math.random()*10
-    );
+uniformity:reg.uniformity,
 
-  benchmark.random.tests++;
+streak:getStreak().length,
 
-  if(randomDigit === actual.digit)
-    benchmark.random.wins++;
+regime:reg.name,
+
+change:reg.change
+
+};
 
 
-  /*
-    Shadow validation.
-  */
+/*
+IMPORTANT:
 
-  if(shadowPrediction){
+Prediction is stored BEFORE
+the next tick arrives.
+*/
 
-    shadow.tests++;
+prediction = {
 
-    if(
-      shadowPrediction.candidate ===
-      actual.digit
-    ){
+candidate:ens.digit,
 
-      shadow.wins++;
+models:{
 
-      shadow.byDigit[
-        shadowPrediction.candidate
-      ].wins++;
-    }
+global:
+predictions.global
+?predictions.global.digit
+:null,
 
-    shadow.byDigit[
-      shadowPrediction.candidate
-    ].tests++;
-  }
+recent:
+predictions.recent
+?predictions.recent.digit
+:null,
+
+transition:
+predictions.transition
+?predictions.transition.digit
+:null,
+
+sequence:
+predictions.sequence
+?predictions.sequence.digit
+:null
+
+},
+
+ensemble:ens.digit,
+
+agreement:agr.count,
+
+score:cal,
+
+bucket:
+scoreBucket(cal),
+
+timestamp:Date.now()
+
+};
 
 
-  /*
-    Clear prediction.
-  */
+shadowPrediction = {
 
-  lastPredictionTick = null;
-  shadowPrediction = null;
+candidate:ens.digit,
+
+agreement:agr.count,
+
+score:cal,
+
+bucket:
+scoreBucket(cal),
+
+timestamp:Date.now()
+
+};
+
 }
 
 
 /* =========================================================
-   SIGNAL GATE
+VALIDATION
 ========================================================= */
 
-function evaluateGate(){
+function validate(
+actual
+){
 
-  const a =
-    currentAnalysis;
+if(!prediction)
+return;
 
-  const ensTests =
-    ensembleStats.tests;
 
-  const ensRate =
-    ensTests > 0
-      ? ensembleStats.wins /
-        ensTests
-      : 0;
+/* ---------- MODELS ---------- */
 
-  const ensWilson =
-    wilsonLower(
-      ensembleStats.wins,
-      ensembleStats.tests
-    );
+for(
+const key of
+[
+"global",
+"recent",
+"transition",
+"sequence"
+]
+){
 
-  const shadowRate =
-    shadow.tests > 0
-      ? shadow.wins /
-        shadow.tests
-      : 0;
+const d =
+prediction.models[key];
 
-  const shadowWilson =
-    wilsonLower(
-      shadow.wins,
-      shadow.tests
-    );
+if(d===null)
+continue;
 
-  const checks = [
+models[key].tests++;
 
-    {
-      name:"Score calibré ≥ 70",
-      ok:a.calibrated >= 70
-    },
+if(d===actual)
+models[key].wins++;
 
-    {
-      name:"Accord ≥ 2/4",
-      ok:a.agreement >= 2
-    },
+}
 
-    {
-      name:"Validation ensemble ≥ 80",
-      ok:ensTests >= 80
-    },
 
-    {
-      name:"Taux ensemble ≥ 10.5%",
-      ok:ensRate >= 0.105
-    },
+/* ---------- ENSEMBLE ---------- */
 
-    {
-      name:"Wilson ensemble ≥ 8.5%",
-      ok:ensWilson >= 0.085
-    },
+ensembleStats.tests++;
 
-    {
-      name:"Shadow ≥ 30",
-      ok:shadow.tests >= MIN_SHADOW_TESTS
-    },
+if(
+prediction.ensemble===
+actual
+){
 
-    {
-      name:"Shadow rate ≥ 10.5%",
-      ok:shadowRate >= 0.105
-    },
+ensembleStats.wins++;
 
-    {
-      name:"Shadow Wilson ≥ 8.5%",
-      ok:shadowWilson >= 0.085
-    },
+}
 
-    {
-      name:"Pas de régime bruit",
-      ok:!a.regime.includes("BRUIT")
-    },
 
-    {
-      name:"Pas de changement de régime",
-      ok:!a.regimeChange
-    },
+/* ---------- SCORE ---------- */
 
-    {
-      name:"Écart ≥ 2.5%",
-      ok:a.gap >= 2.5
-    }
+if(
+scoreBuckets[prediction.bucket]
+){
 
-  ];
+scoreBuckets[
+prediction.bucket
+].tests++;
 
-  const all =
-    checks.every(x=>x.ok);
+if(
+prediction.ensemble===
+actual
+){
 
-  return {
-    all:all,
-    checks:checks,
-    ensRate:ensRate,
-    ensWilson:ensWilson,
-    shadowRate:shadowRate,
-    shadowWilson:shadowWilson
-  };
+scoreBuckets[
+prediction.bucket
+].wins++;
+
+}
+
+}
+
+
+/* ---------- AGREEMENT ---------- */
+
+const agrKey =
+prediction.agreement+
+"/4";
+
+if(
+agreementStats[agrKey]
+){
+
+agreementStats[
+agrKey
+].tests++;
+
+if(
+prediction.ensemble===
+actual
+){
+
+agreementStats[
+agrKey
+].wins++;
+
+}
+
+}
+
+
+/* ---------- BENCHMARK GLOBAL ---------- */
+
+benchmark.global.tests++;
+
+if(
+prediction.models.global===
+actual
+){
+
+benchmark.global.wins++;
+
+}
+
+
+/* ---------- BENCHMARK ENSEMBLE ---------- */
+
+benchmark.ensemble.tests++;
+
+if(
+prediction.ensemble===
+actual
+){
+
+benchmark.ensemble.wins++;
+
+}
+
+
+/* ---------- MOST FREQUENT ---------- */
+
+const all =
+ticks.map(
+x=>x.digit
+);
+
+const mf =
+argmax(
+frequency(all)
+);
+
+benchmark.mostFrequent.tests++;
+
+if(mf===actual)
+benchmark.mostFrequent.wins++;
+
+
+/* ---------- RECENT ---------- */
+
+const recent =
+ticks
+.slice(-RECENT_SIZE)
+.map(x=>x.digit);
+
+const rmf =
+argmax(
+frequency(recent)
+);
+
+benchmark.recent.tests++;
+
+if(rmf===actual)
+benchmark.recent.wins++;
+
+
+/* ---------- RANDOM ---------- */
+
+const random =
+Math.floor(
+Math.random()*10
+);
+
+benchmark.random.tests++;
+
+if(random===actual)
+benchmark.random.wins++;
+
+
+/* ---------- SHADOW ---------- */
+
+if(shadowPrediction){
+
+shadow.tests++;
+
+const d =
+shadowPrediction.candidate;
+
+shadow.byDigit[d].tests++;
+
+if(d===actual){
+
+shadow.wins++;
+
+shadow.byDigit[d].wins++;
+
+}
+
+}
+
+
+prediction=null;
+
+shadowPrediction=null;
+
 }
 
 
 /* =========================================================
-   RENDER ALL
+GATE
 ========================================================= */
 
-function renderAll(){
+function gate(){
 
-  renderFrequency();
+const ensTests =
+ensembleStats.tests;
 
-  renderModels();
+const ensRate =
+ensTests
+?ensembleStats.wins/
+ensTests
+:0;
 
-  renderBenchmark();
+const ensWilson =
+wilson(
+ensembleStats.wins,
+ensembleStats.tests
+);
 
-  renderShadow();
 
-  renderContext();
+const shadowRate =
+shadow.tests
+?shadow.wins/
+shadow.tests
+:0;
 
-  renderPrediction();
+const shadowWilson =
+wilson(
+shadow.wins,
+shadow.tests
+);
 
-  renderGate();
 
-  renderValidation();
+const checks=[
+
+{
+name:"Score calibré ≥ 70",
+ok:analysis.calibrated>=70
+},
+
+{
+name:"Accord ≥ 2/4",
+ok:analysis.agreement>=2
+},
+
+{
+name:"OOS ensemble ≥ 80",
+ok:ensTests>=80
+},
+
+{
+name:"Taux ensemble ≥ 10.5%",
+ok:ensRate>=.105
+},
+
+{
+name:"Wilson ensemble ≥ 8.5%",
+ok:ensWilson>=.085
+},
+
+{
+name:"Shadow ≥ 40",
+ok:shadow.tests>=MIN_SHADOW_TESTS
+},
+
+{
+name:"Shadow ≥ 10.5%",
+ok:shadowRate>=.105
+},
+
+{
+name:"Shadow Wilson ≥ 8.5%",
+ok:shadowWilson>=.085
+},
+
+{
+name:"Pas de BRUIT",
+ok:!analysis.regime.includes("BRUIT")
+},
+
+{
+name:"Pas de changement",
+ok:!analysis.change
+},
+
+{
+name:"Écart ≥ 2.5%",
+ok:analysis.gap>=2.5
+
+}
+
+];
+
+
+return {
+
+checks:checks,
+
+open:
+checks.every(
+x=>x.ok
+)
+
+};
+
 }
 
 
 /* =========================================================
-   FREQUENCY UI
+CONNECTION
 ========================================================= */
 
-function renderFrequency(){
+function connect(){
 
-  const arr =
-    ticks.map(x=>x.digit);
+if(ws){
 
-  const counts =
-    frequency(arr);
+try{
+ws.close();
+}catch(e){}
 
-  const total =
-    arr.length;
+}
 
-  let html = "";
+log(
+"Connexion WebSocket publique…"
+);
 
-  for(let d=0;d<10;d++){
+$("connection").className =
+"status wait";
 
-    const rate =
-      total > 0
-        ? counts[d]/total*100
-        : 0;
+$("connection").textContent =
+"🟡 Connexion à Deriv…";
 
-    html += `
-      <div class="digit">
-        <div class="digit-number">${d}</div>
-        <div class="digit-rate">
-          ${counts[d]} — ${rate.toFixed(1)}%
-        </div>
-        <div class="bar">
-          <span style="width:${Math.min(100,rate*5)}%"></span>
-        </div>
-      </div>
-    `;
-  }
 
-  $("frequencyGrid").innerHTML =
-    html;
+ws =
+new WebSocket(WS_URL);
+
+
+ws.onopen=function(){
+
+reconnectDelay=1000;
+
+log(
+"WebSocket connecté."
+);
+
+$("connection").className =
+"status ok";
+
+$("connection").textContent =
+"🟢 Connecté — R_75";
+
+$("status").textContent =
+"Connecté";
+
+$("status").className =
+"value green";
+
+
+requestHistory();
+
+startTicks();
+
+};
+
+
+ws.onmessage=function(event){
+
+let data;
+
+try{
+
+data =
+JSON.parse(event.data);
+
+}catch(e){
+
+log(
+"Réponse JSON invalide."
+);
+
+return;
+
+}
+
+handleMessage(data);
+
+};
+
+
+ws.onerror=function(){
+
+log(
+"Erreur WebSocket."
+);
+
+$("connection").className =
+"status bad";
+
+$("connection").textContent =
+"🔴 Erreur WebSocket";
+
+};
+
+
+ws.onclose=function(){
+
+log(
+"WebSocket fermé."
+);
+
+$("connection").className =
+"status bad";
+
+$("connection").textContent =
+"🔴 Connexion fermée — reconnexion…";
+
+scheduleReconnect();
+
+};
+
 }
 
 
 /* =========================================================
-   MODELS UI
+HISTORY REQUEST
+========================================================= */
+
+function requestHistory(){
+
+if(
+!ws ||
+ws.readyState!==WebSocket.OPEN
+)
+return;
+
+
+/*
+IMPORTANT:
+
+No subscribe field here.
+*/
+
+const req={
+
+ticks_history:SYMBOL,
+
+count:WINDOW_SIZE,
+
+end:"latest",
+
+style:"ticks",
+
+req_id:101
+
+};
+
+
+log(
+"Demande historique R_75…"
+);
+
+ws.send(
+JSON.stringify(req)
+);
+
+}
+
+
+/* =========================================================
+LIVE SUBSCRIPTION
+========================================================= */
+
+function startTicks(){
+
+if(
+!ws ||
+ws.readyState!==WebSocket.OPEN
+)
+return;
+
+
+const req={
+
+ticks:SYMBOL,
+
+subscribe:1,
+
+req_id:102
+
+};
+
+
+log(
+"Abonnement ticks live R_75…"
+);
+
+ws.send(
+JSON.stringify(req)
+);
+
+}
+
+
+/* =========================================================
+MESSAGE HANDLER
+========================================================= */
+
+function handleMessage(data){
+
+if(data.error){
+
+const msg =
+data.error.message ||
+data.error.code ||
+"Erreur API";
+
+log(
+"API ERROR : "+msg
+);
+
+$("connection").className =
+"status bad";
+
+$("connection").textContent =
+"⚠️ API : "+msg;
+
+return;
+
+}
+
+
+if(data.msg_type==="history"){
+
+handleHistory(data);
+
+return;
+
+}
+
+
+if(data.msg_type==="tick"){
+
+handleTick(data);
+
+return;
+
+}
+
+}
+
+
+/* =========================================================
+HISTORY
+========================================================= */
+
+function handleHistory(data){
+
+if(
+!data.history ||
+!Array.isArray(
+data.history.prices
+)
+){
+
+log(
+"Historique reçu mais format invalide."
+);
+
+return;
+
+}
+
+
+ticks=[];
+
+
+for(
+let i=0;
+i<data.history.prices.length;
+i++
+){
+
+const price =
+data.history.prices[i];
+
+const d =
+lastDigit(price);
+
+if(d===null)
+continue;
+
+ticks.push({
+
+price:price,
+
+epoch:
+data.history.times &&
+data.history.times[i]
+?data.history.times[i]
+:Date.now()/1000,
+
+digit:d
+
+});
+
+}
+
+
+if(
+ticks.length>WINDOW_SIZE
+){
+
+ticks =
+ticks.slice(-WINDOW_SIZE);
+
+}
+
+
+$("history").textContent =
+ticks.length;
+
+
+log(
+"Historique chargé : "+
+ticks.length+
+" ticks."
+);
+
+
+render();
+
+}
+
+
+/* =========================================================
+LIVE TICK
+========================================================= */
+
+function handleTick(data){
+
+if(!data.tick)
+return;
+
+
+const quote =
+data.tick.quote;
+
+const d =
+lastDigit(quote);
+
+if(d===null)
+return;
+
+
+/*
+First:
+validate previous prediction
+against the NEW tick.
+*/
+
+validate(d);
+
+
+/*
+Then:
+append new observation.
+*/
+
+ticks.push({
+
+price:quote,
+
+epoch:
+data.tick.epoch ||
+Date.now()/1000,
+
+digit:d
+
+});
+
+
+if(
+ticks.length>WINDOW_SIZE
+){
+
+ticks =
+ticks.slice(-WINDOW_SIZE);
+
+}
+
+
+liveTicks++;
+
+
+$("ticksLive").textContent =
+liveTicks;
+
+$("price").textContent =
+Number(quote).toFixed(4);
+
+$("lastDigit").textContent =
+d;
+
+
+/*
+Now calculate the next prediction
+using the information available
+up to this tick.
+*/
+
+makePrediction();
+
+
+render();
+
+}
+
+
+/* =========================================================
+RECONNECT
+========================================================= */
+
+function scheduleReconnect(){
+
+if(reconnectTimer)
+return;
+
+
+reconnectTimer =
+setTimeout(
+
+()=>{
+
+reconnectTimer=null;
+
+connect();
+
+reconnectDelay =
+Math.min(
+reconnectDelay*1.7,
+30000
+);
+
+},
+
+reconnectDelay
+
+);
+
+}
+
+
+/* =========================================================
+RENDER
+========================================================= */
+
+function render(){
+
+renderDigits();
+
+renderModels();
+
+renderBenchmark();
+
+renderValidation();
+
+renderShadow();
+
+renderScores();
+
+renderAgreement();
+
+renderContext();
+
+renderPrediction();
+
+renderGate();
+
+}
+
+
+/* =========================================================
+DIGITS
+========================================================= */
+
+function renderDigits(){
+
+const arr =
+ticks.map(x=>x.digit);
+
+const c =
+frequency(arr);
+
+const total =
+arr.length;
+
+let html="";
+
+
+for(let d=0;d<10;d++){
+
+const rate =
+total
+?c[d]/total*100
+:0;
+
+html+=`
+
+<div class="digit">
+
+<strong>${d}</strong>
+
+<span>
+${c[d]} — ${rate.toFixed(1)}%
+</span>
+
+<div class="bar">
+
+<div style="width:${Math.min(
+100,
+rate*5
+)}%"></div>
+
+</div>
+
+</div>
+
+`;
+
+}
+
+
+$("digits").innerHTML =
+html;
+
+}
+
+
+/* =========================================================
+MODELS
 ========================================================= */
 
 function renderModels(){
 
-  let html = "";
+let html="";
 
-  for(const [key,m] of Object.entries(models)){
 
-    const rate =
-      modelRate(m);
+for(
+const [key,m]
+of Object.entries(models)
+){
 
-    const lower =
-      wilsonLower(
-        m.wins,
-        m.tests
-      );
+const rate =
+m.tests
+?m.wins/m.tests
+:0;
 
-    const candidate =
-      predictions[key]
-        ? predictions[key].digit
-        : "—";
+const lower =
+wilson(
+m.wins,
+m.tests
+);
 
-    html += `
-      <tr>
-        <td>${m.name}</td>
-        <td>${candidate}</td>
-        <td>${m.tests}</td>
-        <td>${m.wins}</td>
-        <td>${(rate*100).toFixed(1)}%</td>
-        <td>${(lower*100).toFixed(1)}%</td>
-        <td>${(m.weight*100).toFixed(1)}%</td>
-      </tr>
-    `;
-  }
 
-  $("modelsTable").innerHTML =
-    html;
+const candidate =
+predictions[key]
+?predictions[key].digit
+:"—";
+
+
+html+=`
+
+<tr>
+
+<td>${m.name}</td>
+
+<td>${candidate}</td>
+
+<td>${m.tests}</td>
+
+<td>${m.wins}</td>
+
+<td>${(rate*100).toFixed(1)}%</td>
+
+<td>${(lower*100).toFixed(1)}%</td>
+
+<td>${(m.weight*100).toFixed(1)}%</td>
+
+</tr>
+
+`;
+
+}
+
+
+$("models").innerHTML =
+html;
+
 }
 
 
 /* =========================================================
-   BENCHMARK UI
+BENCHMARK
 ========================================================= */
 
 function renderBenchmark(){
 
-  const labels = {
-    random:"Hasard",
-    mostFrequent:"Plus fréquent",
-    recent:"Recent",
-    global:"Global",
-    ensemble:"Ensemble"
-  };
+const labels={
 
-  let html = "";
+random:"Hasard",
 
-  for(const key of [
-    "random",
-    "mostFrequent",
-    "recent",
-    "global",
-    "ensemble"
-  ]){
+mostFrequent:"Plus fréquent",
 
-    const b =
-      benchmark[key];
+recent:"Recent",
 
-    const rate =
-      b.tests > 0
-        ? b.wins/b.tests
-        : 0;
+global:"Global",
 
-    html += `
-      <tr>
-        <td>${labels[key]}</td>
-        <td>${b.tests}</td>
-        <td>${b.wins}</td>
-        <td>${(rate*100).toFixed(1)}%</td>
-      </tr>
-    `;
-  }
+ensemble:"Ensemble"
 
-  $("benchmarkTable").innerHTML =
-    html;
+};
+
+
+let html="";
+
+
+for(
+const key of
+[
+"random",
+"mostFrequent",
+"recent",
+"global",
+"ensemble"
+]
+){
+
+const b =
+benchmark[key];
+
+const rate =
+b.tests
+?b.wins/b.tests
+:0;
+
+const edge =
+(rate-BASELINE)*100;
+
+
+html+=`
+
+<tr>
+
+<td>${labels[key]}</td>
+
+<td>${b.tests}</td>
+
+<td>${b.wins}</td>
+
+<td>${(rate*100).toFixed(1)}%</td>
+
+<td>
+${edge>=0?"+":""}${edge.toFixed(1)}%
+</td>
+
+</tr>
+
+`;
+
+}
+
+
+$("benchmark").innerHTML =
+html;
+
 }
 
 
 /* =========================================================
-   SHADOW UI
-========================================================= */
-
-function renderShadow(){
-
-  const rate =
-    shadow.tests > 0
-      ? shadow.wins/shadow.tests
-      : 0;
-
-  const lower =
-    wilsonLower(
-      shadow.wins,
-      shadow.tests
-    );
-
-  $("shadowTests").textContent =
-    shadow.tests;
-
-  $("shadowWins").textContent =
-    shadow.wins;
-
-  $("shadowRate").textContent =
-    shadow.tests
-      ? (rate*100).toFixed(1)+"%"
-      : "—";
-
-  $("shadowWilson").textContent =
-    shadow.tests
-      ? (lower*100).toFixed(1)+"%"
-      : "—";
-
-  let html = "";
-
-  for(let d=0;d<10;d++){
-
-    const x =
-      shadow.byDigit[d];
-
-    const r =
-      x.tests > 0
-        ? x.wins/x.tests
-        : 0;
-
-    html += `
-      <tr>
-        <td>${d}</td>
-        <td>${x.tests}</td>
-        <td>${x.wins}</td>
-        <td>${x.tests ? (r*100).toFixed(1)+"%" : "—"}</td>
-      </tr>
-    `;
-  }
-
-  $("shadowDigits").innerHTML =
-    html;
-}
-
-
-/* =========================================================
-   CONTEXT UI
-========================================================= */
-
-function renderContext(){
-
-  const a =
-    currentAnalysis;
-
-  $("entropy").textContent =
-    a.entropy
-      ? a.entropy.toFixed(3)
-      : "—";
-
-  $("uniformity").textContent =
-    a.uniformity
-      ? (a.uniformity*100).toFixed(1)+"%"
-      : "—";
-
-  $("streak").textContent =
-    a.streak || "—";
-
-  $("regime").textContent =
-    a.regime || "—";
-
-  $("regimeChange").textContent =
-    a.regimeChange
-      ? "⚠️ OUI"
-      : "NON";
-
-  $("regimeChange").className =
-    "value " +
-    (a.regimeChange
-      ? "red"
-      : "green");
-}
-
-
-/* =========================================================
-   PREDICTION UI
-========================================================= */
-
-function renderPrediction(){
-
-  const a =
-    currentAnalysis;
-
-  $("candidate").textContent =
-    a.candidate === null
-      ? "—"
-      : a.candidate;
-
-  $("rawScore").textContent =
-    a.candidate === null
-      ? "—"
-      : a.rawScore.toFixed(1)+"/100";
-
-  $("calibratedScore").textContent =
-    a.candidate === null
-      ? "—"
-      : a.calibrated.toFixed(1)+"/100";
-
-  $("agreement").textContent =
-    a.candidate === null
-      ? "—"
-      : a.agreement + "/4";
-
-  $("gap").textContent =
-    a.candidate === null
-      ? "—"
-      : a.gap.toFixed(2)+"%";
-
-  $("regime").textContent =
-    a.regime || "—";
-}
-
-
-/* =========================================================
-   GATE UI
-========================================================= */
-
-function renderGate(){
-
-  const result =
-    evaluateGate();
-
-  let html = "";
-
-  for(const c of result.checks){
-
-    html += `
-      <tr>
-        <td>${c.name}</td>
-        <td class="${c.ok ? "green":"red"}">
-          ${c.ok ? "✅ OK":"❌ BLOQUÉ"}
-        </td>
-      </tr>
-    `;
-  }
-
-  $("gateTable").innerHTML =
-    html;
-
-  if(result.all){
-
-    $("signalBox").className =
-      "signal ok";
-
-    $("signalBox").textContent =
-      "🟢 SIGNAL STATISTIQUE — TEST";
-
-    $("gateExplanation").className =
-      "success";
-
-    $("gateExplanation").textContent =
-      "Toutes les conditions statistiques du Gate sont actuellement satisfaites. Ceci ne constitue PAS une garantie de gain et aucun ordre n'est envoyé.";
-
-  }else{
-
-    $("signalBox").className =
-      "signal block";
-
-    $("signalBox").textContent =
-      "⛔ PAS DE SIGNAL";
-
-    $("gateExplanation").className =
-      "warning";
-
-    $("gateExplanation").textContent =
-      "Le Gate reste fermé : les preuves hors-échantillon ne sont pas encore suffisamment solides.";
-  }
-}
-
-
-/* =========================================================
-   VALIDATION UI
+VALIDATION
 ========================================================= */
 
 function renderValidation(){
 
-  const rate =
-    ensembleStats.tests > 0
-      ? ensembleStats.wins /
-        ensembleStats.tests
-      : 0;
+const rate =
+ensembleStats.tests
+?ensembleStats.wins/
+ensembleStats.tests
+:0;
 
-  const lower =
-    wilsonLower(
-      ensembleStats.wins,
-      ensembleStats.tests
-    );
 
-  $("ensembleTests").textContent =
-    ensembleStats.tests;
+const lower =
+wilson(
+ensembleStats.wins,
+ensembleStats.tests
+);
 
-  $("ensembleWins").textContent =
-    ensembleStats.wins;
 
-  $("ensembleRate").textContent =
-    ensembleStats.tests
-      ? (rate*100).toFixed(1)+"%"
-      : "—";
+$("ensembleTests").textContent =
+ensembleStats.tests;
 
-  $("ensembleWilson").textContent =
-    ensembleStats.tests
-      ? (lower*100).toFixed(1)+"%"
-      : "—";
+$("ensembleWins").textContent =
+ensembleStats.wins;
+
+$("ensembleRate").textContent =
+ensembleStats.tests
+?(rate*100).toFixed(1)+"%"
+:"—";
+
+$("ensembleWilson").textContent =
+ensembleStats.tests
+?(lower*100).toFixed(1)+"%"
+:"—";
+
 }
 
 
 /* =========================================================
-   START
+SHADOW
 ========================================================= */
 
-log("Prediction R75 V7.1 démarrage…");
-log("Mode TEST uniquement.");
-log("Aucun trade ne sera envoyé.");
-log("Endpoint public : " + WS_URL);
-log("Historique : ticks_history sans subscribe.");
-log("Live : ticks avec subscribe=1.");
+function renderShadow(){
+
+const rate =
+shadow.tests
+?shadow.wins/
+shadow.tests
+:0;
+
+
+const lower =
+wilson(
+shadow.wins,
+shadow.tests
+);
+
+
+$("shadowTests").textContent =
+shadow.tests;
+
+$("shadowWins").textContent =
+shadow.wins;
+
+$("shadowRate").textContent =
+shadow.tests
+?(rate*100).toFixed(1)+"%"
+:"—";
+
+$("shadowWilson").textContent =
+shadow.tests
+?(lower*100).toFixed(1)+"%"
+:"—";
+
+
+let html="";
+
+
+for(let d=0;d<10;d++){
+
+const x =
+shadow.byDigit[d];
+
+const r =
+x.tests
+?x.wins/x.tests
+:0;
+
+
+html+=`
+
+<tr>
+
+<td>${d}</td>
+
+<td>${x.tests}</td>
+
+<td>${x.wins}</td>
+
+<td>
+${x.tests
+?(r*100).toFixed(1)+"%"
+:"—"}
+</td>
+
+</tr>
+
+`;
+
+}
+
+
+$("shadowDigits").innerHTML =
+html;
+
+}
+
+
+/* =========================================================
+SCORE TABLE
+========================================================= */
+
+function renderScores(){
+
+let html="";
+
+
+for(
+const [bucket,x]
+of Object.entries(scoreBuckets)
+){
+
+const rate =
+x.tests
+?x.wins/x.tests
+:0;
+
+const lower =
+wilson(
+x.wins,
+x.tests
+);
+
+
+html+=`
+
+<tr>
+
+<td>${bucket}</td>
+
+<td>${x.tests}</td>
+
+<td>${x.wins}</td>
+
+<td>
+${x.tests
+?(rate*100).toFixed(1)+"%"
+:"—"}
+</td>
+
+<td>
+${x.tests
+?(lower*100).toFixed(1)+"%"
+:"—"}
+</td>
+
+</tr>
+
+`;
+
+}
+
+
+$("scoreBuckets").innerHTML =
+html;
+
+}
+
+
+/* =========================================================
+AGREEMENT TABLE
+========================================================= */
+
+function renderAgreement(){
+
+let html="";
+
+
+for(
+const [key,x]
+of Object.entries(
+agreementStats
+)
+){
+
+const rate =
+x.tests
+?x.wins/x.tests
+:0;
+
+
+html+=`
+
+<tr>
+
+<td>${key}</td>
+
+<td>${x.tests}</td>
+
+<td>${x.wins}</td>
+
+<td>
+${x.tests
+?(rate*100).toFixed(1)+"%"
+:"—"}
+</td>
+
+</tr>
+
+`;
+
+}
+
+
+$("agreementStats").innerHTML =
+html;
+
+}
+
+
+/* =========================================================
+CONTEXT
+========================================================= */
+
+function renderContext(){
+
+$("entropy").textContent =
+analysis.entropy
+?analysis.entropy.toFixed(3)
+:"—";
+
+
+$("uniformity").textContent =
+analysis.uniformity
+?(analysis.uniformity*100).toFixed(1)+"%"
+:"—";
+
+
+$("streak").textContent =
+analysis.streak || "—";
+
+
+$("change").textContent =
+analysis.change
+?"⚠️ OUI"
+:"NON";
+
+
+$("change").className =
+"label";
+
+
+}
+
+
+/* =========================================================
+PREDICTION
+========================================================= */
+
+function renderPrediction(){
+
+$("candidate").textContent =
+analysis.candidate===null
+?"—"
+:analysis.candidate;
+
+
+$("raw").textContent =
+analysis.candidate===null
+?"—"
+:analysis.raw.toFixed(1)+"/100";
+
+
+$("calibrated").textContent =
+analysis.candidate===null
+?"—"
+:analysis.calibrated.toFixed(1)+"/100";
+
+
+$("agreement").textContent =
+analysis.candidate===null
+?"—"
+:analysis.agreement+"/4";
+
+
+$("gap").textContent =
+analysis.candidate===null
+?"—"
+:analysis.gap.toFixed(2)+"%";
+
+
+$("regime").textContent =
+analysis.regime;
+
+}
+
+
+/* =========================================================
+GATE
+========================================================= */
+
+function renderGate(){
+
+const result =
+gate();
+
+let html="";
+
+
+for(
+const c of result.checks
+){
+
+html+=`
+
+<tr>
+
+<td>${c.name}</td>
+
+<td class="${
+c.ok
+?"green"
+:"red"
+}">
+
+${c.ok
+?"✅ OK"
+:"❌ BLOQUÉ"}
+
+</td>
+
+</tr>
+
+`;
+
+}
+
+
+$("gate").innerHTML =
+html;
+
+
+if(result.open){
+
+$("signal").className =
+"signal open";
+
+$("signal").textContent =
+"🟢 CONDITIONS STATISTIQUES RÉUNIES — TEST";
+
+
+$("gateMessage").className =
+"status ok";
+
+$("gateMessage").textContent =
+"Le Gate statistique est ouvert. Cela ne garantit pas un gain et aucun ordre n'est envoyé.";
+
+}else{
+
+$("signal").className =
+"signal";
+
+$("signal").textContent =
+"⛔ PAS DE SIGNAL";
+
+
+$("gateMessage").className =
+"warning";
+
+$("gateMessage").textContent =
+"Le Gate reste fermé : preuves hors-échantillon insuffisantes.";
+
+}
+
+}
+
+
+/* =========================================================
+START
+========================================================= */
+
+log(
+"Prediction R75 V7.2 démarrage."
+);
+
+log(
+"Mode TEST uniquement."
+);
+
+log(
+"Aucun trade ne sera envoyé."
+);
+
+log(
+"Connexion publique Deriv."
+);
+
+log(
+"Historique ticks_history sans subscribe."
+);
+
+log(
+"Flux live ticks avec subscribe=1."
+);
+
+log(
+"Validation OOS activée."
+);
+
+log(
+"Shadow Lab activé."
+);
 
 connect();
 
