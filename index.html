@@ -3,221 +3,197 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Prediction R75 — V7.5</title>
+<title>Prediction R75 — V7.6</title>
 
 <style>
-*{
-  box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 body{
   margin:0;
   background:#07111f;
   color:#e8eef7;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif
 }
 
 .container{
   max-width:1100px;
   margin:auto;
-  padding:16px;
+  padding:14px
 }
 
 h1{
-  margin:0 0 6px;
-  font-size:24px;
+  margin:0 0 4px;
+  font-size:23px
 }
 
 .subtitle{
   color:#8ea0b8;
-  font-size:13px;
-  margin-bottom:15px;
+  font-size:12px;
+  margin-bottom:12px
 }
 
 .status{
-  padding:12px;
-  border-radius:10px;
+  padding:10px;
+  border-radius:9px;
   background:#101d30;
-  margin-bottom:12px;
-  font-weight:600;
+  margin-bottom:10px;
+  font-weight:700;
+  font-size:13px
 }
 
-.green{
-  color:#42e6a4;
-}
-
-.orange{
-  color:#ffc857;
-}
-
-.red{
-  color:#ff6b6b;
-}
+.green{color:#42e6a4}
+.orange{color:#ffc857}
+.red{color:#ff6b6b}
 
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-  gap:12px;
+  gap:10px
 }
 
 .card{
   background:#0d1a2b;
   border:1px solid #1c3048;
-  border-radius:14px;
-  padding:14px;
+  border-radius:13px;
+  padding:12px
 }
 
 .card h2{
-  font-size:15px;
-  margin:0 0 12px;
+  font-size:14px;
+  margin:0 0 10px
 }
 
 .big{
-  font-size:42px;
+  font-size:40px;
   font-weight:800;
   text-align:center;
-  margin:8px 0;
-}
-
-.score{
-  font-size:25px;
-  font-weight:800;
+  margin:5px 0
 }
 
 .row{
   display:flex;
   justify-content:space-between;
-  gap:10px;
+  gap:8px;
   padding:5px 0;
   border-bottom:1px solid #17283d;
+  font-size:12px
 }
 
-.row:last-child{
-  border-bottom:0;
+.row:last-child{border-bottom:0}
+
+.label{color:#8ea0b8}
+
+.badge{
+  display:inline-block;
+  padding:3px 7px;
+  border-radius:999px;
+  background:#172b43;
+  font-size:10px
 }
 
-.label{
-  color:#8ea0b8;
+.small{
+  color:#8195ad;
+  font-size:10px;
+  line-height:1.4
 }
 
 table{
   width:100%;
   border-collapse:collapse;
-  font-size:12px;
+  font-size:10px
 }
 
 th,td{
-  padding:7px 5px;
+  padding:6px 4px;
   border-bottom:1px solid #1b2c42;
-  text-align:right;
+  text-align:right
 }
 
 th:first-child,
-td:first-child{
-  text-align:left;
-}
+td:first-child{text-align:left}
 
-th{
-  color:#91a6c1;
-}
-
-.badge{
-  display:inline-block;
-  padding:4px 8px;
-  border-radius:999px;
-  font-size:11px;
-  background:#172b43;
-}
-
-.progress{
-  height:8px;
-  background:#16283e;
-  border-radius:99px;
-  overflow:hidden;
-  margin-top:6px;
-}
-
-.progress > div{
-  height:100%;
-  background:#42e6a4;
-}
+th{color:#91a6c1}
 
 .digits{
   display:grid;
   grid-template-columns:repeat(10,1fr);
-  gap:5px;
+  gap:4px
 }
 
 .digit{
   background:#13243a;
-  border-radius:8px;
+  border-radius:7px;
   text-align:center;
-  padding:8px 2px;
+  padding:6px 2px
 }
 
 .digit b{
   display:block;
-  font-size:16px;
+  font-size:14px
 }
 
-.small{
-  font-size:11px;
-  color:#8195ad;
+.progress{
+  height:7px;
+  background:#16283e;
+  border-radius:99px;
+  overflow:hidden;
+  margin-top:5px
 }
 
-button{
-  width:100%;
-  border:0;
-  border-radius:10px;
-  padding:12px;
-  background:#1b6ef3;
-  color:white;
-  font-weight:700;
-  margin-top:8px;
-}
-
-button:active{
-  transform:scale(.98);
-}
-
-.log{
-  max-height:220px;
-  overflow:auto;
-  background:#06101c;
-  border-radius:10px;
-  padding:10px;
-  font-family:monospace;
-  font-size:11px;
-  white-space:pre-wrap;
+.progress div{
+  height:100%;
+  background:#42e6a4
 }
 
 .warning{
   background:#2a2010;
   border:1px solid #59451c;
   color:#ffd978;
-  padding:12px;
-  border-radius:10px;
-  font-size:12px;
-  margin-top:12px;
+  padding:9px;
+  border-radius:9px;
+  font-size:10px;
+  margin-top:8px
 }
 
 .ok{
   background:#0b251d;
   border:1px solid #174c39;
   color:#6ef0bb;
-  padding:12px;
-  border-radius:10px;
-  font-size:12px;
+  padding:9px;
+  border-radius:9px;
+  font-size:10px;
+  margin-top:8px
+}
+
+.log{
+  max-height:220px;
+  overflow:auto;
+  background:#06101c;
+  border-radius:9px;
+  padding:9px;
+  font-family:monospace;
+  font-size:10px;
+  white-space:pre-wrap
+}
+
+button{
+  width:100%;
+  border:0;
+  border-radius:9px;
+  padding:11px;
+  background:#1b6ef3;
+  color:white;
+  font-weight:700;
+  margin-top:8px
+}
+
+.highlight{
+  font-weight:800
 }
 
 @media(max-width:600px){
-  .container{
-    padding:10px;
-  }
-
-  h1{
-    font-size:21px;
-  }
+  .container{padding:8px}
+  h1{font-size:20px}
 }
 </style>
 </head>
@@ -226,18 +202,25 @@ button:active{
 
 <div class="container">
 
-<h1>Prediction R75 — V7.5</h1>
+<h1>Prediction R75 — V7.6</h1>
+
 <div class="subtitle">
-TRUE WALK-FORWARD BENCHMARK • Statistical validation • TEST ONLY
+ENSEMBLE ENGINE 2.0 • TRUE WALK-FORWARD • STATISTICAL VALIDATION • TEST ONLY
 </div>
 
 <div id="status" class="status orange">
 🟠 Connexion…
 </div>
 
+
+<!-- =====================================================
+     MARCHÉ + PRÉDICTION
+===================================================== -->
+
 <div class="grid">
 
 <div class="card">
+
 <h2>Marché</h2>
 
 <div class="row">
@@ -262,8 +245,10 @@ TRUE WALK-FORWARD BENCHMARK • Statistical validation • TEST ONLY
 
 </div>
 
+
 <div class="card">
-<h2>PRÉDICTION ENSEMBLE</h2>
+
+<h2>PRÉDICTION ENSEMBLE 2.0</h2>
 
 <div class="big" id="candidate">—</div>
 
@@ -272,24 +257,31 @@ TRUE WALK-FORWARD BENCHMARK • Statistical validation • TEST ONLY
 </div>
 
 <div class="row">
-<span class="label">Score brut</span>
-<b id="rawScore">—</b>
+<span class="label">Score V2</span>
+<b id="scoreV2">—</b>
 </div>
 
 <div class="row">
-<span class="label">Calibration empirique</span>
-<b id="calibratedScore">—</b>
+<span class="label">Score V1</span>
+<b id="scoreV1">—</b>
 </div>
 
 <div class="row">
-<span class="label">Écart</span>
+<span class="label">Calibration</span>
+<b id="calibration">—</b>
+</div>
+
+<div class="row">
+<span class="label">Écart V2</span>
 <b id="gap">—</b>
 </div>
 
 </div>
 
+
 <div class="card">
-<h2>GATE V7.5</h2>
+
+<h2>GATE V7.6</h2>
 
 <div class="row">
 <span class="label">État</span>
@@ -297,7 +289,7 @@ TRUE WALK-FORWARD BENCHMARK • Statistical validation • TEST ONLY
 </div>
 
 <div class="row">
-<span class="label">Tests</span>
+<span class="label">Tests Ensemble V2</span>
 <b id="gateTests">0</b>
 </div>
 
@@ -312,8 +304,8 @@ TRUE WALK-FORWARD BENCHMARK • Statistical validation • TEST ONLY
 </div>
 
 <div class="warning">
-⚠️ Le Gate n'autorise aucune transaction.
-Cette application reste un laboratoire statistique.
+⚠️ Le Gate n'envoie aucune transaction.
+V7.6 est uniquement un laboratoire statistique.
 </div>
 
 </div>
@@ -322,14 +314,24 @@ Cette application reste un laboratoire statistique.
 
 <br>
 
+
+<!-- =====================================================
+     FRÉQUENCE + CONTEXTE
+===================================================== -->
+
 <div class="grid">
 
 <div class="card">
+
 <h2>FRÉQUENCE — 100 DERNIERS TICKS</h2>
+
 <div id="frequencies" class="digits"></div>
+
 </div>
 
+
 <div class="card">
+
 <h2>CONTEXTE</h2>
 
 <div class="row">
@@ -358,16 +360,23 @@ Cette application reste un laboratoire statistique.
 
 <br>
 
+
+<!-- =====================================================
+     TRUE WALK FORWARD
+===================================================== -->
+
 <div class="card">
+
 <h2>TRUE WALK-FORWARD BENCHMARK</h2>
 
 <p class="small">
-Chaque ligne correspond à de vraies prédictions historiques.
-À l'instant t, le modèle utilise uniquement les ticks antérieurs à t,
-puis compare sa prédiction au chiffre réellement arrivé à t.
+Pour chaque tick historique, les modèles utilisent uniquement
+les données disponibles avant ce tick. La prédiction est ensuite
+comparée au chiffre réellement observé.
 </p>
 
 <table>
+
 <thead>
 <tr>
 <th>Modèle</th>
@@ -379,28 +388,33 @@ puis compare sa prédiction au chiffre réellement arrivé à t.
 </thead>
 
 <tbody id="benchmarkTable"></tbody>
+
 </table>
 
-<div class="ok" style="margin-top:12px">
-✅ V7.5 : benchmark calculé en véritable walk-forward.
-Aucun futur n'est utilisé pour fabriquer les résultats.
+<div class="ok">
+✅ Aucun futur n'est utilisé dans le benchmark.
 </div>
 
 </div>
 
 <br>
 
+
+<!-- =====================================================
+     ENSEMBLE V1 VS V2
+===================================================== -->
+
 <div class="grid">
 
 <div class="card">
-<h2>PERFORMANCE DES MODÈLES</h2>
+
+<h2>COMPARAISON ENSEMBLE</h2>
 
 <table>
+
 <thead>
 <tr>
-<th>Modèle</th>
-<th>Candidate</th>
-<th>Poids</th>
+<th>Version</th>
 <th>Tests</th>
 <th>Wins</th>
 <th>Taux</th>
@@ -408,13 +422,16 @@ Aucun futur n'est utilisé pour fabriquer les résultats.
 </tr>
 </thead>
 
-<tbody id="modelTable"></tbody>
+<tbody id="ensembleCompare"></tbody>
+
 </table>
 
 </div>
 
+
 <div class="card">
-<h2>ENSEMBLE WALK-FORWARD</h2>
+
+<h2>ENSEMBLE V2 — WALK-FORWARD</h2>
 
 <div class="row">
 <span class="label">Tests</span>
@@ -447,10 +464,48 @@ Aucun futur n'est utilisé pour fabriquer les résultats.
 
 <br>
 
+
+<!-- =====================================================
+     PERFORMANCE DES MODÈLES
+===================================================== -->
+
 <div class="card">
-<h2>PERFORMANCE PAR CHIFFRE — ENSEMBLE</h2>
+
+<h2>PERFORMANCE DES 4 MODÈLES</h2>
 
 <table>
+
+<thead>
+<tr>
+<th>Modèle</th>
+<th>Candidate</th>
+<th>Poids V2</th>
+<th>Tests</th>
+<th>Wins</th>
+<th>Taux</th>
+<th>Wilson</th>
+</tr>
+</thead>
+
+<tbody id="modelTable"></tbody>
+
+</table>
+
+</div>
+
+<br>
+
+
+<!-- =====================================================
+     PAR CHIFFRE
+===================================================== -->
+
+<div class="card">
+
+<h2>PERFORMANCE PAR CHIFFRE — ENSEMBLE V2</h2>
+
+<table>
+
 <thead>
 <tr>
 <th>Chiffre</th>
@@ -462,18 +517,26 @@ Aucun futur n'est utilisé pour fabriquer les résultats.
 </thead>
 
 <tbody id="digitTable"></tbody>
+
 </table>
 
 </div>
 
 <br>
 
+
+<!-- =====================================================
+     SCORE + ACCORD
+===================================================== -->
+
 <div class="grid">
 
 <div class="card">
-<h2>PERFORMANCE PAR SCORE</h2>
+
+<h2>PERFORMANCE PAR SCORE V2</h2>
 
 <table>
+
 <thead>
 <tr>
 <th>Score</th>
@@ -485,14 +548,18 @@ Aucun futur n'est utilisé pour fabriquer les résultats.
 </thead>
 
 <tbody id="scoreTable"></tbody>
+
 </table>
 
 </div>
 
+
 <div class="card">
+
 <h2>PERFORMANCE PAR ACCORD</h2>
 
 <table>
+
 <thead>
 <tr>
 <th>Accord</th>
@@ -504,6 +571,7 @@ Aucun futur n'est utilisé pour fabriquer les résultats.
 </thead>
 
 <tbody id="agreementTable"></tbody>
+
 </table>
 
 </div>
@@ -512,20 +580,34 @@ Aucun futur n'est utilisé pour fabriquer les résultats.
 
 <br>
 
+
+<!-- =====================================================
+     LAB
+===================================================== -->
+
 <div class="card">
+
 <h2>LAB — DERNIÈRES PRÉDICTIONS</h2>
+
 <div id="predictionHistory" class="log">
-En attente de données…
+En attente…
 </div>
+
 </div>
 
 <br>
 
+
+<!-- =====================================================
+     JOURNAL
+===================================================== -->
+
 <div class="card">
+
 <h2>JOURNAL API</h2>
 
 <div id="log" class="log">
-Initialisation V7.5…
+Initialisation V7.6…
 </div>
 
 <button onclick="clearLogs()">
@@ -535,6 +617,7 @@ EFFACER LE JOURNAL
 </div>
 
 </div>
+
 
 <script>
 
@@ -581,16 +664,20 @@ let benchmarkResults = null;
 
 function log(message){
 
-  const el = document.getElementById("log");
+  const el =
+    document.getElementById("log");
 
   const time =
     new Date().toLocaleTimeString();
 
   el.textContent =
-    "[" + time + "] " + message +
-    "\n" + el.textContent;
+    "[" + time + "] " +
+    message +
+    "\n" +
+    el.textContent;
 
 }
+
 
 function clearLogs(){
 
@@ -598,6 +685,17 @@ function clearLogs(){
     "Journal effacé.";
 
 }
+
+
+function clamp(x,min,max){
+
+  return Math.max(
+    min,
+    Math.min(max,x)
+  );
+
+}
+
 
 function digitFromQuote(quote){
 
@@ -609,19 +707,15 @@ function digitFromQuote(quote){
 
   if(!clean) return null;
 
-  return Number(clean.slice(-1));
-
-}
-
-function clamp(x,min,max){
-
-  return Math.max(min,Math.min(max,x));
+  return Number(
+    clean.slice(-1)
+  );
 
 }
 
 
 /* =========================================================
-   WILSON LOWER BOUND
+   WILSON
 ========================================================= */
 
 function wilsonLower(wins,total){
@@ -630,7 +724,8 @@ function wilsonLower(wins,total){
 
   const z = 1.96;
 
-  const p = wins / total;
+  const p =
+    wins / total;
 
   const denominator =
     1 + z*z/total;
@@ -640,28 +735,55 @@ function wilsonLower(wins,total){
 
   const margin =
     z * Math.sqrt(
-      (p*(1-p) + z*z/(4*total))/total
+      (
+        p*(1-p) +
+        z*z/(4*total)
+      ) / total
     );
 
   return (
-    (centre - margin) /
+    (centre-margin) /
     denominator
   ) * 100;
 
 }
 
 
+function rate(stat){
+
+  if(
+    !stat ||
+    stat.tests === 0
+  ){
+
+    return 0;
+
+  }
+
+  return (
+    stat.wins /
+    stat.tests
+  ) * 100;
+
+}
+
+
 /* =========================================================
-   STATISTIQUES
+   FREQUENCES
 ========================================================= */
 
 function frequency(arr){
 
-  const f = Array(10).fill(0);
+  const f =
+    Array(10).fill(0);
 
   for(const d of arr){
 
-    if(Number.isInteger(d) && d >= 0 && d <= 9){
+    if(
+      Number.isInteger(d) &&
+      d >= 0 &&
+      d <= 9
+    ){
 
       f[d]++;
 
@@ -673,11 +795,18 @@ function frequency(arr){
 
 }
 
+
+/* =========================================================
+   ENTROPIE
+========================================================= */
+
 function entropy(arr){
 
-  if(arr.length === 0) return 0;
+  if(arr.length === 0)
+    return 0;
 
-  const f = frequency(arr);
+  const f =
+    frequency(arr);
 
   let h = 0;
 
@@ -685,9 +814,11 @@ function entropy(arr){
 
     if(n > 0){
 
-      const p = n / arr.length;
+      const p =
+        n / arr.length;
 
-      h -= p * Math.log2(p);
+      h -=
+        p * Math.log2(p);
 
     }
 
@@ -697,11 +828,18 @@ function entropy(arr){
 
 }
 
+
+/* =========================================================
+   UNIFORMITÉ
+========================================================= */
+
 function uniformity(arr){
 
-  if(arr.length === 0) return 0;
+  if(arr.length === 0)
+    return 0;
 
-  const f = frequency(arr);
+  const f =
+    frequency(arr);
 
   const expected =
     arr.length / 10;
@@ -710,28 +848,45 @@ function uniformity(arr){
 
   for(const n of f){
 
-    error += Math.abs(n-expected);
+    error +=
+      Math.abs(
+        n - expected
+      );
 
   }
 
   return clamp(
-    100 - (error/(arr.length*2))*100,
+    100 -
+    (
+      error /
+      (arr.length*2)
+    )*100,
     0,
     100
   );
 
 }
 
+
+/* =========================================================
+   STREAK
+========================================================= */
+
 function currentStreak(arr){
 
-  if(arr.length === 0) return 0;
+  if(arr.length === 0)
+    return 0;
 
   const last =
     arr[arr.length-1];
 
   let count = 0;
 
-  for(let i=arr.length-1;i>=0;i--){
+  for(
+    let i=arr.length-1;
+    i>=0;
+    i--
+  ){
 
     if(arr[i] === last){
 
@@ -751,7 +906,7 @@ function currentStreak(arr){
 
 
 /* =========================================================
-   MODÈLE GLOBAL
+   GLOBAL
 ========================================================= */
 
 function predictGlobal(history){
@@ -759,26 +914,33 @@ function predictGlobal(history){
   const f =
     frequency(history);
 
-  let best = 0;
+  const probs =
+    f.map(
+      n =>
+      (n+LAPLACE) /
+      (
+        history.length +
+        10*LAPLACE
+      )
+    );
+
+  let candidate = 0;
 
   for(let d=1;d<10;d++){
 
-    if(f[d] > f[best]){
+    if(
+      probs[d] >
+      probs[candidate]
+    ){
 
-      best = d;
+      candidate = d;
 
     }
 
   }
 
-  const probs =
-    f.map(n =>
-      (n + LAPLACE) /
-      (history.length + 10*LAPLACE)
-    );
-
   return {
-    candidate: best,
+    candidate,
     probs,
     counts:f
   };
@@ -787,13 +949,15 @@ function predictGlobal(history){
 
 
 /* =========================================================
-   MODÈLE RECENT
+   RECENT
 ========================================================= */
 
 function predictRecent(history){
 
   const arr =
-    history.slice(-RECENT_WINDOW);
+    history.slice(
+      -RECENT_WINDOW
+    );
 
   return predictGlobal(arr);
 
@@ -801,106 +965,42 @@ function predictRecent(history){
 
 
 /* =========================================================
-   MODÈLE TRANSITION
+   TRANSITION
 ========================================================= */
 
 function predictTransition(history){
 
-  const probs =
-    Array(10).fill(0);
-
   if(history.length < 2){
 
-    return predictGlobal(history);
+    return predictGlobal(
+      history
+    );
 
   }
 
   const last =
-    history[history.length-1];
+    history[
+      history.length-1
+    ];
 
   const counts =
     Array(10).fill(0);
 
   let total = 0;
 
-  for(let i=1;i<history.length;i++){
-
-    if(history[i-1] === last){
-
-      counts[history[i]]++;
-
-      total++;
-
-    }
-
-  }
-
-  if(total === 0){
-
-    return predictRecent(history);
-
-  }
-
-  for(let d=0;d<10;d++){
-
-    probs[d] =
-      (counts[d]+LAPLACE) /
-      (total+10*LAPLACE);
-
-  }
-
-  let candidate = 0;
-
-  for(let d=1;d<10;d++){
-
-    if(probs[d] > probs[candidate]){
-
-      candidate = d;
-
-    }
-
-  }
-
-  return {
-    candidate,
-    probs,
-    counts
-  };
-
-}
-
-
-/* =========================================================
-   MODÈLE SEQUENCE
-========================================================= */
-
-function predictSequence(history){
-
-  if(history.length < 3){
-
-    return predictTransition(history);
-
-  }
-
-  const a =
-    history[history.length-2];
-
-  const b =
-    history[history.length-1];
-
-  const counts =
-    Array(10).fill(0);
-
-  let total = 0;
-
-  for(let i=2;i<history.length;i++){
+  for(
+    let i=1;
+    i<history.length;
+    i++
+  ){
 
     if(
-      history[i-2] === a &&
-      history[i-1] === b
+      history[i-1] === last
     ){
 
-      counts[history[i]]++;
+      counts[
+        history[i]
+      ]++;
 
       total++;
 
@@ -910,21 +1010,30 @@ function predictSequence(history){
 
   if(total === 0){
 
-    return predictTransition(history);
+    return predictRecent(
+      history
+    );
 
   }
 
   const probs =
-    counts.map(n =>
+    counts.map(
+      n =>
       (n+LAPLACE) /
-      (total+10*LAPLACE)
+      (
+        total +
+        10*LAPLACE
+      )
     );
 
   let candidate = 0;
 
   for(let d=1;d<10;d++){
 
-    if(probs[d] > probs[candidate]){
+    if(
+      probs[d] >
+      probs[candidate]
+    ){
 
       candidate = d;
 
@@ -942,10 +1051,106 @@ function predictSequence(history){
 
 
 /* =========================================================
-   MODÈLE ENSEMBLE
+   SEQUENCE
 ========================================================= */
 
-function ensemblePrediction(history,weights){
+function predictSequence(history){
+
+  if(history.length < 3){
+
+    return predictTransition(
+      history
+    );
+
+  }
+
+  const a =
+    history[
+      history.length-2
+    ];
+
+  const b =
+    history[
+      history.length-1
+    ];
+
+  const counts =
+    Array(10).fill(0);
+
+  let total = 0;
+
+  for(
+    let i=2;
+    i<history.length;
+    i++
+  ){
+
+    if(
+      history[i-2] === a &&
+      history[i-1] === b
+    ){
+
+      counts[
+        history[i]
+      ]++;
+
+      total++;
+
+    }
+
+  }
+
+  if(total === 0){
+
+    return predictTransition(
+      history
+    );
+
+  }
+
+  const probs =
+    counts.map(
+      n =>
+      (n+LAPLACE) /
+      (
+        total +
+        10*LAPLACE
+      )
+    );
+
+  let candidate = 0;
+
+  for(let d=1;d<10;d++){
+
+    if(
+      probs[d] >
+      probs[candidate]
+    ){
+
+      candidate = d;
+
+    }
+
+  }
+
+  return {
+    candidate,
+    probs,
+    counts
+  };
+
+}
+
+
+/* =========================================================
+   ENSEMBLE V1
+   Ancienne logique: moyenne des probabilités.
+========================================================= */
+
+function ensembleV1(
+  history,
+  weights
+){
 
   const models = {
 
@@ -966,7 +1171,9 @@ function ensemblePrediction(history,weights){
   const combined =
     Array(10).fill(0);
 
-  for(const name of Object.keys(models)){
+  for(
+    const name of Object.keys(models)
+  ){
 
     const w =
       weights[name] || 0.25;
@@ -974,7 +1181,8 @@ function ensemblePrediction(history,weights){
     for(let d=0;d<10;d++){
 
       combined[d] +=
-        w * models[name].probs[d];
+        w *
+        models[name].probs[d];
 
     }
 
@@ -996,28 +1204,31 @@ function ensemblePrediction(history,weights){
   }
 
   const sorted =
-    [...combined].sort((a,b)=>b-a);
+    [...combined]
+    .sort((a,b)=>b-a);
 
-  const best =
-    sorted[0];
+  const gap =
+    (
+      sorted[0] -
+      (sorted[1] || 0)
+    ) * 100;
 
-  const second =
-    sorted[1] || 0;
-
-  const rawScore =
+  const score =
     clamp(
-      50 +
-      ((best-second)*500),
+      50 + gap*5,
       0,
       100
     );
 
   let agreement = 0;
 
-  for(const name of Object.keys(models)){
+  for(
+    const name of Object.keys(models)
+  ){
 
     if(
-      models[name].candidate === candidate
+      models[name].candidate ===
+      candidate
     ){
 
       agreement++;
@@ -1030,64 +1241,234 @@ function ensemblePrediction(history,weights){
     models,
     probs:combined,
     candidate,
-    rawScore,
-    agreement,
-    gap:(best-second)*100
+    gap,
+    score,
+    agreement
   };
 
 }
 
 
 /* =========================================================
-   POIDS ADAPTATIFS
-   IMPORTANT:
-   LES POIDS UTILISENT UNIQUEMENT LES TESTS PASSÉS.
+   ENSEMBLE V2
+   NOUVELLE LOGIQUE
 ========================================================= */
 
-function calculateWeights(stats){
+function ensembleV2(
+  history,
+  weights
+){
 
-  const names =
-    ["Global","Recent","Transition","Sequence"];
+  const models = {
 
-  const raw = {};
+    Global:
+      predictGlobal(history),
 
-  let sum = 0;
+    Recent:
+      predictRecent(history),
 
-  for(const name of names){
+    Transition:
+      predictTransition(history),
 
-    const s =
-      stats[name];
+    Sequence:
+      predictSequence(history)
 
-    if(!s || s.tests < 10){
+  };
 
-      raw[name] = 1;
+  /*
+   * V2 utilise un vote pondéré
+   * des candidats.
+   *
+   * Chaque modèle donne son vote
+   * au chiffre qu'il sélectionne.
+   */
 
-    }else{
+  const votes =
+    Array(10).fill(0);
 
-      const lower =
-        wilsonLower(
-          s.wins,
-          s.tests
-        );
+  for(
+    const name of Object.keys(models)
+  ){
 
-      raw[name] =
-        Math.max(
-          0.05,
-          lower / 10
-        );
+    const candidate =
+      models[name].candidate;
+
+    const w =
+      weights[name] || 0.25;
+
+    votes[candidate] += w;
+
+  }
+
+  let candidate = 0;
+
+  for(let d=1;d<10;d++){
+
+    if(
+      votes[d] >
+      votes[candidate]
+    ){
+
+      candidate = d;
 
     }
 
-    sum += raw[name];
+  }
+
+  const sorted =
+    [...votes]
+    .sort((a,b)=>b-a);
+
+  const best =
+    sorted[0] || 0;
+
+  const second =
+    sorted[1] || 0;
+
+  /*
+   * Score = séparation entre
+   * premier et deuxième vote.
+   *
+   * Ce n'est PAS une probabilité.
+   */
+
+  const score =
+    clamp(
+      50 +
+      (best-second)*100,
+      0,
+      100
+    );
+
+  const gap =
+    (best-second)*100;
+
+  let agreement = 0;
+
+  for(
+    const name of Object.keys(models)
+  ){
+
+    if(
+      models[name].candidate ===
+      candidate
+    ){
+
+      agreement++;
+
+    }
+
+  }
+
+  return {
+    models,
+    votes,
+    candidate,
+    score,
+    gap,
+    agreement
+  };
+
+}
+
+
+/* =========================================================
+   POIDS ENSEMBLE V2
+   IMPORTANT:
+   uniquement les résultats PASSÉS.
+========================================================= */
+
+function calculateWeights(
+  modelStats
+){
+
+  const names =
+    [
+      "Global",
+      "Recent",
+      "Transition",
+      "Sequence"
+    ];
+
+  const raw = {};
+
+  let total = 0;
+
+  for(
+    const name of names
+  ){
+
+    const s =
+      modelStats[name];
+
+    /*
+     * Avant suffisamment de données,
+     * poids neutre.
+     */
+
+    if(
+      !s ||
+      s.tests < 30
+    ){
+
+      raw[name] = 1;
+
+      total += 1;
+
+      continue;
+
+    }
+
+    const lower =
+      wilsonLower(
+        s.wins,
+        s.tests
+      );
+
+    /*
+     * Shrinkage vers la référence 10%.
+     *
+     * Cela évite qu'un modèle avec
+     * très peu de tests domine.
+     */
+
+    const confidence =
+      clamp(
+        s.tests / 300,
+        0,
+        1
+      );
+
+    const evidence =
+      10 +
+      (
+        lower - 10
+      ) *
+      confidence;
+
+    /*
+     * Plancher de sécurité.
+     */
+
+    raw[name] =
+      Math.max(
+        0.5,
+        evidence
+      );
+
+    total +=
+      raw[name];
 
   }
 
   const weights = {};
 
-  for(const name of names){
+  for(
+    const name of names
+  ){
 
     weights[name] =
-      raw[name] / sum;
+      raw[name] / total;
 
   }
 
@@ -1097,10 +1478,12 @@ function calculateWeights(stats){
 
 
 /* =========================================================
-   TRUE WALK-FORWARD
+   TRUE WALK-FORWARD V7.6
 ========================================================= */
 
-function trueWalkForward(data){
+function trueWalkForward(
+  data
+){
 
   const names =
     [
@@ -1108,12 +1491,15 @@ function trueWalkForward(data){
       "Recent",
       "Transition",
       "Sequence",
-      "Ensemble"
+      "EnsembleV1",
+      "EnsembleV2"
     ];
 
   const results = {};
 
-  for(const name of names){
+  for(
+    const name of names
+  ){
 
     results[name] = {
       tests:0,
@@ -1123,77 +1509,123 @@ function trueWalkForward(data){
 
   }
 
+
+  const modelStats = {
+
+    Global:{
+      tests:0,
+      wins:0
+    },
+
+    Recent:{
+      tests:0,
+      wins:0
+    },
+
+    Transition:{
+      tests:0,
+      wins:0
+    },
+
+    Sequence:{
+      tests:0,
+      wins:0
+    }
+
+  };
+
+
   const byDigit =
     Array.from(
       {length:10},
-      ()=>({
+      () => ({
         tests:0,
         wins:0
       })
     );
 
+
   const byScore = {
 
-    "50-59":{tests:0,wins:0},
+    "50-59":{
+      tests:0,
+      wins:0
+    },
 
-    "60-69":{tests:0,wins:0},
+    "60-69":{
+      tests:0,
+      wins:0
+    },
 
-    "70-79":{tests:0,wins:0},
+    "70-79":{
+      tests:0,
+      wins:0
+    },
 
-    "80-89":{tests:0,wins:0},
+    "80-89":{
+      tests:0,
+      wins:0
+    },
 
-    "90-100":{tests:0,wins:0}
+    "90-100":{
+      tests:0,
+      wins:0
+    }
 
   };
+
 
   const byAgreement = {
 
-    1:{tests:0,wins:0},
+    1:{
+      tests:0,
+      wins:0
+    },
 
-    2:{tests:0,wins:0},
+    2:{
+      tests:0,
+      wins:0
+    },
 
-    3:{tests:0,wins:0},
+    3:{
+      tests:0,
+      wins:0
+    },
 
-    4:{tests:0,wins:0}
+    4:{
+      tests:0,
+      wins:0
+    }
 
   };
 
-  const modelStats = {
-
-    Global:{tests:0,wins:0},
-
-    Recent:{tests:0,wins:0},
-
-    Transition:{tests:0,wins:0},
-
-    Sequence:{tests:0,wins:0}
-
-  };
-
-  const rolling =
-    [];
 
   /*
-   * Déterministe:
-   * pas Math.random().
-   * Utilise une séquence pseudo-aléatoire
-   * reproductible.
+   * Random déterministe.
+   *
+   * Aucun Math.random().
    */
 
-  let randomSeed =
+  let seed =
     123456789;
 
   function seededRandom(){
 
-    randomSeed =
+    seed =
       (
-        randomSeed * 1664525 +
+        seed * 1664525 +
         1013904223
       ) >>> 0;
 
-    return randomSeed / 4294967296;
+    return seed /
+      4294967296;
 
   }
+
+
+  /*
+   * WALK-FORWARD
+   */
 
   for(
     let i=MIN_WALK_FORWARD;
@@ -1202,35 +1634,36 @@ function trueWalkForward(data){
   ){
 
     /*
-     * CRITIQUE:
-     *
-     * train = uniquement les données
-     * AVANT le point i.
-     *
-     * actual = data[i]
-     *
-     * Le futur n'est jamais injecté
-     * dans la prédiction.
+     * TRAIN contient uniquement
+     * les observations AVANT i.
      */
 
     const train =
       data.slice(
-        Math.max(0,i-WINDOW),
+        Math.max(
+          0,
+          i-WINDOW
+        ),
         i
       );
 
     const actual =
       data[i];
 
-    if(train.length < MIN_WALK_FORWARD){
+    if(
+      train.length <
+      MIN_WALK_FORWARD
+    ){
 
       continue;
 
     }
 
+
     /*
-     * Poids basés sur les performances
-     * observées AVANT i.
+     * Les poids sont calculés
+     * uniquement avec les résultats
+     * précédents.
      */
 
     const weights =
@@ -1238,53 +1671,79 @@ function trueWalkForward(data){
         modelStats
       );
 
-    const prediction =
-      ensemblePrediction(
+
+    /*
+     * Modèles individuels.
+     */
+
+    const global =
+      predictGlobal(train);
+
+    const recent =
+      predictRecent(train);
+
+    const transition =
+      predictTransition(train);
+
+    const sequence =
+      predictSequence(train);
+
+
+    /*
+     * Ensemble V1.
+     */
+
+    const v1 =
+      ensembleV1(
         train,
         weights
       );
 
+
     /*
-     * GLOBAL
+     * Ensemble V2.
      */
 
-    const global =
-      prediction.models.Global;
+    const v2 =
+      ensembleV2(
+        train,
+        weights
+      );
 
-    const recent =
-      prediction.models.Recent;
 
-    const transition =
-      prediction.models.Transition;
+    const predictions = {
 
-    const sequence =
-      prediction.models.Sequence;
+      Global:
+        global.candidate,
 
-    const candidates = {
+      Recent:
+        recent.candidate,
 
-      Global:global.candidate,
+      Transition:
+        transition.candidate,
 
-      Recent:recent.candidate,
+      Sequence:
+        sequence.candidate,
 
-      Transition:transition.candidate,
+      EnsembleV1:
+        v1.candidate,
 
-      Sequence:sequence.candidate,
-
-      Ensemble:prediction.candidate
+      EnsembleV2:
+        v2.candidate
 
     };
 
+
     /*
-     * Évaluation.
+     * Évaluer les 6 systèmes.
      */
 
-    for(const name of names){
-
-      const pred =
-        candidates[name];
+    for(
+      const name of names
+    ){
 
       const win =
-        pred === actual;
+        predictions[name] === actual;
 
       results[name].tests++;
 
@@ -1300,25 +1759,32 @@ function trueWalkForward(data){
 
     }
 
+
     /*
-     * Les statistiques des modèles sont
-     * mises à jour APRÈS leur prédiction.
+     * IMPORTANT:
+     *
+     * Les modèles individuels
+     * n'apprennent le résultat qu'APRÈS
+     * avoir fait leur prédiction.
      */
 
-    for(
-      const name of
+    const individualNames =
       [
         "Global",
         "Recent",
         "Transition",
         "Sequence"
-      ]
+      ];
+
+    for(
+      const name of individualNames
     ){
 
       modelStats[name].tests++;
 
       if(
-        candidates[name] === actual
+        predictions[name] ===
+        actual
       ){
 
         modelStats[name].wins++;
@@ -1327,99 +1793,115 @@ function trueWalkForward(data){
 
     }
 
-    /*
-     * Ensemble
-     */
-
-    const ensembleWin =
-      candidates.Ensemble === actual;
-
-    rolling.push(
-      ensembleWin ? 1 : 0
-    );
 
     /*
-     * Par chiffre prédit.
+     * Statistiques V2.
      */
 
-    const predictedDigit =
-      candidates.Ensemble;
+    const v2Win =
+      v2.candidate === actual;
 
-    byDigit[predictedDigit].tests++;
 
-    if(ensembleWin){
+    /*
+     * Par chiffre.
+     */
 
-      byDigit[predictedDigit].wins++;
+    byDigit[
+      v2.candidate
+    ].tests++;
+
+    if(v2Win){
+
+      byDigit[
+        v2.candidate
+      ].wins++;
 
     }
+
 
     /*
      * Score.
      */
 
-    let scoreBucket = "50-59";
+    let scoreBucket =
+      "50-59";
 
-    if(prediction.rawScore >= 90){
+    if(v2.score >= 90){
 
-      scoreBucket = "90-100";
+      scoreBucket =
+        "90-100";
 
-    }else if(prediction.rawScore >= 80){
+    }else if(v2.score >= 80){
 
-      scoreBucket = "80-89";
+      scoreBucket =
+        "80-89";
 
-    }else if(prediction.rawScore >= 70){
+    }else if(v2.score >= 70){
 
-      scoreBucket = "70-79";
+      scoreBucket =
+        "70-79";
 
-    }else if(prediction.rawScore >= 60){
+    }else if(v2.score >= 60){
 
-      scoreBucket = "60-69";
+      scoreBucket =
+        "60-69";
+
+    }
+
+
+    byScore[
+      scoreBucket
+    ].tests++;
+
+    if(v2Win){
+
+      byScore[
+        scoreBucket
+      ].wins++;
 
     }
 
-    byScore[scoreBucket].tests++;
-
-    if(ensembleWin){
-
-      byScore[scoreBucket].wins++;
-
-    }
 
     /*
      * Accord.
      */
 
-    const a =
+    const agreement =
       clamp(
-        prediction.agreement,
+        v2.agreement,
         1,
         4
       );
 
-    byAgreement[a].tests++;
+    byAgreement[
+      agreement
+    ].tests++;
 
-    if(ensembleWin){
+    if(v2Win){
 
-      byAgreement[a].wins++;
+      byAgreement[
+        agreement
+      ].wins++;
 
     }
 
   }
 
+
   /*
-   * Benchmark aléatoire.
+   * BENCHMARK RANDOM
    *
-   * IMPORTANT:
-   * il prédit réellement un chiffre
-   * à chaque étape.
-   * La séquence est reproductible.
+   * Même nombre de tests.
    */
 
   results.Random = {
+
     tests:0,
     wins:0,
     history:[]
+
   };
+
 
   for(
     let i=MIN_WALK_FORWARD;
@@ -1429,11 +1911,17 @@ function trueWalkForward(data){
 
     const train =
       data.slice(
-        Math.max(0,i-WINDOW),
+        Math.max(
+          0,
+          i-WINDOW
+        ),
         i
       );
 
-    if(train.length < MIN_WALK_FORWARD){
+    if(
+      train.length <
+      MIN_WALK_FORWARD
+    ){
 
       continue;
 
@@ -1464,25 +1952,36 @@ function trueWalkForward(data){
 
   }
 
+
   /*
-   * Replacer Random en première ligne.
+   * Ordre affiché.
    */
 
   const ordered = {
 
-    Random:results.Random,
+    Random:
+      results.Random,
 
-    Global:results.Global,
+    Global:
+      results.Global,
 
-    Recent:results.Recent,
+    Recent:
+      results.Recent,
 
-    Transition:results.Transition,
+    Transition:
+      results.Transition,
 
-    Sequence:results.Sequence,
+    Sequence:
+      results.Sequence,
 
-    Ensemble:results.Ensemble
+    EnsembleV1:
+      results.EnsembleV1,
+
+    EnsembleV2:
+      results.EnsembleV2
 
   };
+
 
   return {
 
@@ -1500,24 +1999,13 @@ function trueWalkForward(data){
 
 
 /* =========================================================
-   AFFICHAGE BENCHMARK
+   BENCHMARK DISPLAY
 ========================================================= */
-
-function rate(s){
-
-  if(!s || s.tests === 0){
-
-    return 0;
-
-  }
-
-  return s.wins/s.tests*100;
-
-}
 
 function renderBenchmark(){
 
-  if(!benchmarkResults) return;
+  if(!benchmarkResults)
+    return;
 
   const table =
     document.getElementById(
@@ -1533,19 +2021,29 @@ function renderBenchmark(){
       "Recent",
       "Transition",
       "Sequence",
-      "Ensemble"
+      "EnsembleV1",
+      "EnsembleV2"
     ];
 
-  for(const name of order){
+  for(
+    const name of order
+  ){
 
     const s =
       benchmarkResults.results[name];
+
+    const label =
+      name === "EnsembleV1"
+        ? "Ensemble V1"
+        : name === "EnsembleV2"
+          ? "Ensemble V2"
+          : name;
 
     const tr =
       document.createElement("tr");
 
     tr.innerHTML = `
-      <td>${name}</td>
+      <td>${label}</td>
       <td>${s.tests}</td>
       <td>${s.wins}</td>
       <td>${rate(s).toFixed(1)}%</td>
@@ -1560,10 +2058,66 @@ function renderBenchmark(){
 
 
 /* =========================================================
-   AFFICHAGE MODÈLES
+   COMPARAISON V1 / V2
+========================================================= */
+
+function renderEnsembleComparison(){
+
+  if(!benchmarkResults)
+    return;
+
+  const table =
+    document.getElementById(
+      "ensembleCompare"
+    );
+
+  table.innerHTML = "";
+
+  const names =
+    [
+      ["V1","EnsembleV1"],
+      ["V2","EnsembleV2"]
+    ];
+
+  for(
+    const pair of names
+  ){
+
+    const label =
+      pair[0];
+
+    const name =
+      pair[1];
+
+    const s =
+      benchmarkResults.results[name];
+
+    const tr =
+      document.createElement("tr");
+
+    tr.innerHTML = `
+      <td><b>${label}</b></td>
+      <td>${s.tests}</td>
+      <td>${s.wins}</td>
+      <td>${rate(s).toFixed(1)}%</td>
+      <td>${wilsonLower(s.wins,s.tests).toFixed(1)}%</td>
+    `;
+
+    table.appendChild(tr);
+
+  }
+
+}
+
+
+/* =========================================================
+   MODEL DISPLAY
 ========================================================= */
 
 function renderModels(current){
+
+  if(!benchmarkResults)
+    return;
 
   const table =
     document.getElementById(
@@ -1580,27 +2134,21 @@ function renderModels(current){
       "Sequence"
     ];
 
-  const ensemble =
-    benchmarkResults.results.Ensemble;
-
-  const modelResults =
-    benchmarkResults.results;
-
-  /*
-   * Recalculer les poids avec toutes
-   * les performances passées.
-   */
-
   const stats = {};
 
-  for(const name of names){
+  for(
+    const name of names
+  ){
+
+    const s =
+      benchmarkResults.results[name];
 
     stats[name] = {
-      tests:
-        modelResults[name].tests,
 
-      wins:
-        modelResults[name].wins
+      tests:s.tests,
+
+      wins:s.wins
+
     };
 
   }
@@ -1608,10 +2156,12 @@ function renderModels(current){
   const weights =
     calculateWeights(stats);
 
-  for(const name of names){
+  for(
+    const name of names
+  ){
 
     const s =
-      modelResults[name];
+      benchmarkResults.results[name];
 
     const tr =
       document.createElement("tr");
@@ -1630,20 +2180,29 @@ function renderModels(current){
 
   }
 
+
+  const ensemble =
+    benchmarkResults.results.EnsembleV2;
+
+
   document.getElementById(
     "ensembleTests"
   ).textContent =
     ensemble.tests;
+
 
   document.getElementById(
     "ensembleWins"
   ).textContent =
     ensemble.wins;
 
+
   document.getElementById(
     "ensembleRate"
   ).textContent =
-    rate(ensemble).toFixed(1)+"%";
+    rate(ensemble).toFixed(1)+
+    "%";
+
 
   document.getElementById(
     "ensembleWilson"
@@ -1651,28 +2210,33 @@ function renderModels(current){
     wilsonLower(
       ensemble.wins,
       ensemble.tests
-    ).toFixed(1)+"%";
+    ).toFixed(1)+
+    "%";
+
 
   const last50 =
     ensemble.history.slice(-50);
 
-  const rollingRate =
+  const wins50 =
+    last50.reduce(
+      (a,b)=>a+b,
+      0
+    );
+
+  const rolling =
     last50.length
-      ? last50.reduce(
-          (a,b)=>a+b,
-          0
-        ) / last50.length * 100
+      ? wins50 /
+        last50.length *
+        100
       : 0;
+
 
   document.getElementById(
     "rolling50"
   ).textContent =
-    rollingRate.toFixed(1)+
+    rolling.toFixed(1)+
     "% ("+
-    last50.reduce(
-      (a,b)=>a+b,
-      0
-    )+
+    wins50+
     "/"+
     last50.length+
     ")";
@@ -1681,7 +2245,7 @@ function renderModels(current){
 
 
 /* =========================================================
-   AFFICHAGE PAR CHIFFRE
+   PAR CHIFFRE
 ========================================================= */
 
 function renderDigitStats(){
@@ -1693,7 +2257,11 @@ function renderDigitStats(){
 
   table.innerHTML = "";
 
-  for(let d=0;d<10;d++){
+  for(
+    let d=0;
+    d<10;
+    d++
+  ){
 
     const s =
       benchmarkResults.byDigit[d];
@@ -1717,7 +2285,7 @@ function renderDigitStats(){
 
 
 /* =========================================================
-   SCORE
+   PAR SCORE
 ========================================================= */
 
 function renderScoreStats(){
@@ -1729,9 +2297,11 @@ function renderScoreStats(){
 
   table.innerHTML = "";
 
-  for(const key of Object.keys(
-    benchmarkResults.byScore
-  )){
+  for(
+    const key of Object.keys(
+      benchmarkResults.byScore
+    )
+  ){
 
     const s =
       benchmarkResults.byScore[key];
@@ -1755,7 +2325,7 @@ function renderScoreStats(){
 
 
 /* =========================================================
-   ACCORD
+   PAR ACCORD
 ========================================================= */
 
 function renderAgreementStats(){
@@ -1767,7 +2337,11 @@ function renderAgreementStats(){
 
   table.innerHTML = "";
 
-  for(let a=1;a<=4;a++){
+  for(
+    let a=1;
+    a<=4;
+    a++
+  ){
 
     const s =
       benchmarkResults.byAgreement[a];
@@ -1791,7 +2365,7 @@ function renderAgreementStats(){
 
 
 /* =========================================================
-   FRÉQUENCES ACTUELLES
+   FRÉQUENCES
 ========================================================= */
 
 function renderFrequencies(){
@@ -1809,7 +2383,11 @@ function renderFrequencies(){
 
   box.innerHTML = "";
 
-  for(let d=0;d<10;d++){
+  for(
+    let d=0;
+    d<10;
+    d++
+  ){
 
     const div =
       document.createElement("div");
@@ -1838,44 +2416,40 @@ function renderContext(){
   const arr =
     digits.slice(-100);
 
-  const h =
-    entropy(arr);
-
   document.getElementById(
     "entropy"
   ).textContent =
-    h.toFixed(3);
+    entropy(arr).toFixed(3);
 
   document.getElementById(
     "uniformity"
   ).textContent =
-    uniformity(arr).toFixed(1)+"%";
+    uniformity(arr).toFixed(1)+
+    "%";
 
   document.getElementById(
     "streak"
   ).textContent =
     currentStreak(arr);
 
-  /*
-   * Détection simple de changement
-   * entre les 30 derniers et les 30
-   * précédents.
-   */
 
   if(arr.length >= 60){
 
-    const a =
+    const recentEntropy =
       entropy(
         arr.slice(-30)
       );
 
-    const b =
+    const previousEntropy =
       entropy(
         arr.slice(-60,-30)
       );
 
     const changed =
-      Math.abs(a-b) > 0.25;
+      Math.abs(
+        recentEntropy -
+        previousEntropy
+      ) > 0.25;
 
     document.getElementById(
       "regime"
@@ -1897,80 +2471,80 @@ function renderContext(){
 
 
 /* =========================================================
-   CALIBRATION EMPIRIQUE
+   CALIBRATION
 ========================================================= */
 
 function empiricalCalibration(
-  currentPrediction
+  prediction
 ){
 
-  if(!benchmarkResults){
-
+  if(!benchmarkResults)
     return 50;
 
-  }
-
   const score =
-    currentPrediction.rawScore;
+    prediction.score;
 
-  let bucket = "50-59";
+  let bucket =
+    "50-59";
 
   if(score >= 90){
 
-    bucket="90-100";
+    bucket =
+      "90-100";
 
   }else if(score >= 80){
 
-    bucket="80-89";
+    bucket =
+      "80-89";
 
   }else if(score >= 70){
 
-    bucket="70-79";
+    bucket =
+      "70-79";
 
   }else if(score >= 60){
 
-    bucket="60-69";
+    bucket =
+      "60-69";
 
   }
 
   const s =
-    benchmarkResults.byScore[bucket];
+    benchmarkResults.byScore[
+      bucket
+    ];
 
-  if(!s || s.tests < 20){
+  if(
+    !s ||
+    s.tests < 20
+  ){
 
     return 50;
 
   }
 
-  /*
-   * Shrinkage vers 10%.
-   *
-   * Cela évite qu'un petit échantillon
-   * transforme 1/1 en score énorme.
-   */
-
   const empirical =
     rate(s);
 
-  const n =
-    s.tests;
-
   const confidence =
-    clamp(n/200,0,1);
+    clamp(
+      s.tests / 200,
+      0,
+      1
+    );
 
   const adjusted =
     10 +
-    (empirical-10)*
+    (
+      empirical-10
+    ) *
     confidence;
-
-  /*
-   * Conversion en score modèle,
-   * pas en probabilité.
-   */
 
   return clamp(
     50 +
-    (adjusted-10)*5,
+    (
+      adjusted-10
+    )*5,
     0,
     100
   );
@@ -1982,10 +2556,15 @@ function empiricalCalibration(
    GATE
 ========================================================= */
 
-function updateGate(current){
+function updateGate(
+  prediction
+){
+
+  if(!benchmarkResults)
+    return;
 
   const ensemble =
-    benchmarkResults.results.Ensemble;
+    benchmarkResults.results.EnsembleV2;
 
   const tests =
     ensemble.tests;
@@ -1999,19 +2578,20 @@ function updateGate(current){
       ensemble.tests
     );
 
+
   /*
-   * Gate volontairement strict.
+   * Gate statistique strict.
    *
-   * Ce n'est PAS une autorisation
-   * de trading.
+   * Ce Gate n'envoie aucune transaction.
    */
 
   const open =
     tests >= 500 &&
     r >= 10.5 &&
     w >= 8.5 &&
-    current.agreement >= 2 &&
-    current.rawScore >= 70;
+    prediction.agreement >= 3 &&
+    prediction.score >= 70;
+
 
   const el =
     document.getElementById(
@@ -2036,6 +2616,7 @@ function updateGate(current){
 
   }
 
+
   document.getElementById(
     "gateTests"
   ).textContent =
@@ -2044,30 +2625,37 @@ function updateGate(current){
   document.getElementById(
     "gateRate"
   ).textContent =
-    r.toFixed(1)+"%";
+    r.toFixed(1)+
+    "%";
 
   document.getElementById(
     "gateWilson"
   ).textContent =
-    w.toFixed(1)+"%";
+    w.toFixed(1)+
+    "%";
 
 }
 
 
 /* =========================================================
-   PRÉDICTION ACTUELLE
+   PRÉDICTION EN TEMPS RÉEL
 ========================================================= */
 
 function updatePrediction(){
 
-  if(digits.length < WINDOW){
+  if(
+    digits.length <
+    WINDOW
+  ){
 
     return;
 
   }
 
+
   const train =
     digits.slice(-WINDOW);
+
 
   const stats = {};
 
@@ -2098,72 +2686,105 @@ function updatePrediction(){
 
   }
 
-  const weights =
-    calculateWeights(stats);
 
-  const prediction =
-    ensemblePrediction(
+  const weights =
+    calculateWeights(
+      stats
+    );
+
+
+  const v1 =
+    ensembleV1(
       train,
       weights
     );
 
-  const calibrated =
-    empiricalCalibration(
-      prediction
+
+  const v2 =
+    ensembleV2(
+      train,
+      weights
     );
+
+
+  const calibration =
+    empiricalCalibration(
+      v2
+    );
+
 
   document.getElementById(
     "candidate"
   ).textContent =
-    prediction.candidate;
+    v2.candidate;
+
 
   document.getElementById(
-    "rawScore"
+    "scoreV2"
   ).textContent =
-    prediction.rawScore.toFixed(1)+
+    v2.score.toFixed(1)+
     "/100";
 
+
   document.getElementById(
-    "calibratedScore"
+    "scoreV1"
   ).textContent =
-    calibrated.toFixed(1)+
+    v1.score.toFixed(1)+
     "/100";
+
+
+  document.getElementById(
+    "calibration"
+  ).textContent =
+    calibration.toFixed(1)+
+    "/100";
+
 
   document.getElementById(
     "agreement"
   ).textContent =
     "Accord "+
-    prediction.agreement+
+    v2.agreement+
     "/4";
+
 
   document.getElementById(
     "gap"
   ).textContent =
-    prediction.gap.toFixed(2)+
+    v2.gap.toFixed(2)+
     "%";
 
-  updateGate(prediction);
+
+  updateGate(v2);
+
 
   predictionHistory.unshift(
     new Date().toLocaleTimeString()+
     " | Candidat="+
-    prediction.candidate+
-    " | Score="+
-    prediction.rawScore.toFixed(1)+
+    v2.candidate+
+    " | V2="+
+    v2.score.toFixed(1)+
     " | Cal="+
-    calibrated.toFixed(1)+
+    calibration.toFixed(1)+
     " | Accord="+
-    prediction.agreement+
+    v2.agreement+
     "/4"
   );
 
+
   predictionHistory =
-    predictionHistory.slice(0,30);
+    predictionHistory.slice(
+      0,
+      30
+    );
+
 
   document.getElementById(
     "predictionHistory"
   ).textContent =
-    predictionHistory.join("\n");
+    predictionHistory.join(
+      "\n"
+    );
 
 }
 
@@ -2174,36 +2795,40 @@ function updatePrediction(){
 
 function requestHistory(){
 
-  if(!ws || ws.readyState !== WebSocket.OPEN){
+  if(
+    !ws ||
+    ws.readyState !==
+    WebSocket.OPEN
+  ){
 
     return;
 
   }
 
+
   log(
     "Demande historique R_75..."
   );
 
+
   /*
-   * V7.5:
-   *
-   * PAS de subscribe ici.
-   *
-   * subscribe est réservé au stream
-   * ticks.
+   * IMPORTANT:
+   * aucun subscribe ici.
    */
 
-  ws.send(JSON.stringify({
+  ws.send(
+    JSON.stringify({
 
-    ticks_history:SYMBOL,
+      ticks_history:SYMBOL,
 
-    count:HISTORY_COUNT,
+      count:HISTORY_COUNT,
 
-    end:"latest",
+      end:"latest",
 
-    style:"ticks"
+      style:"ticks"
 
-  }));
+    })
+  );
 
 }
 
@@ -2214,19 +2839,27 @@ function requestHistory(){
 
 function subscribeTicks(){
 
-  if(!ws || ws.readyState !== WebSocket.OPEN){
+  if(
+    !ws ||
+    ws.readyState !==
+    WebSocket.OPEN
+  ){
 
     return;
 
   }
 
-  ws.send(JSON.stringify({
 
-    ticks:SYMBOL,
+  ws.send(
+    JSON.stringify({
 
-    subscribe:1
+      ticks:SYMBOL,
 
-  }));
+      subscribe:1
+
+    })
+  );
+
 
   log(
     "Abonnement live R_75 activé."
@@ -2242,218 +2875,216 @@ function subscribeTicks(){
 function connect(){
 
   log(
-    "Connexion au WebSocket public Deriv..."
+    "Connexion WebSocket public Deriv..."
   );
 
+
   ws =
-    new WebSocket(WS_URL);
-
-  ws.onopen = function(){
-
-    document.getElementById(
-      "status"
-    ).innerHTML =
-      '<span class="green">🟢 Connecté</span>';
-
-    log(
-      "WebSocket connecté."
+    new WebSocket(
+      WS_URL
     );
 
-    requestHistory();
 
-  };
+  ws.onopen =
+    function(){
 
-  ws.onmessage = function(event){
+      document.getElementById(
+        "status"
+      ).innerHTML =
+        '<span class="green">🟢 Connecté</span>';
 
-    let data;
-
-    try{
-
-      data =
-        JSON.parse(event.data);
-
-    }catch(e){
-
-      return;
-
-    }
-
-    if(data.error){
 
       log(
-        "API ERROR: "+
-        (
-          data.error.message ||
-          JSON.stringify(data.error)
-        )
+        "WebSocket connecté."
       );
 
-      return;
 
-    }
+      requestHistory();
 
-    /*
-     * HISTORIQUE
-     */
+    };
 
-    if(data.history){
 
-      const pricesHistory =
-        data.history.prices || [];
+  ws.onmessage =
+    function(event){
 
-      digits = [];
+      let data;
 
-      prices = [];
+      try{
 
-      for(const quote of pricesHistory){
+        data =
+          JSON.parse(
+            event.data
+          );
 
-        const n =
-          Number(quote);
+      }catch(e){
 
-        const d =
-          digitFromQuote(quote);
-
-        if(
-          Number.isFinite(n) &&
-          d !== null
-        ){
-
-          prices.push(n);
-
-          digits.push(d);
-
-        }
+        return;
 
       }
 
-      ticksReceived =
-        digits.length;
-
-      document.getElementById(
-        "ticksReceived"
-      ).textContent =
-        ticksReceived;
-
-      log(
-        "Historique reçu: "+
-        digits.length+
-        " ticks."
-      );
 
       /*
-       * TRUE WALK-FORWARD
+       * API ERROR
        */
 
-      if(digits.length >= MIN_WALK_FORWARD){
+      if(data.error){
 
         log(
-          "Calcul TRUE WALK-FORWARD..."
-        );
-
-        benchmarkResults =
-          trueWalkForward(
-            digits
-          );
-
-        log(
-          "Benchmark terminé: "+
-          benchmarkResults.results.Ensemble.tests+
-          " tests Ensemble."
-        );
-
-        renderBenchmark();
-
-        renderModels(
-          ensemblePrediction(
-            digits.slice(-WINDOW),
-            {
-              Global:.25,
-              Recent:.25,
-              Transition:.25,
-              Sequence:.25
-            }
+          "API ERROR: "+
+          (
+            data.error.message ||
+            JSON.stringify(
+              data.error
+            )
           )
         );
 
-        renderDigitStats();
-
-        renderScoreStats();
-
-        renderAgreementStats();
+        return;
 
       }
 
-      renderFrequencies();
 
-      renderContext();
+      /*
+       * HISTORIQUE
+       */
 
-      updatePrediction();
+      if(data.history){
 
-      subscribeTicks();
+        const historyPrices =
+          data.history.prices ||
+          [];
 
-      return;
 
-    }
+        prices = [];
 
-    /*
-     * TICK LIVE
-     */
+        digits = [];
 
-    if(data.tick){
 
-      const tick =
-        data.tick;
+        for(
+          const quote of
+          historyPrices
+        ){
 
-      const quote =
-        Number(tick.quote);
+          const n =
+            Number(quote);
 
-      const d =
-        digitFromQuote(tick.quote);
+          const d =
+            digitFromQuote(
+              quote
+            );
 
-      if(
-        Number.isFinite(quote) &&
-        d !== null
-      ){
 
-        prices.push(quote);
+          if(
+            Number.isFinite(n) &&
+            d !== null
+          ){
 
-        digits.push(d);
+            prices.push(n);
 
-        /*
-         * Garder assez de données
-         * pour l'analyse locale.
-         */
+            digits.push(d);
 
-        if(prices.length > 1500){
-
-          prices.shift();
+          }
 
         }
 
-        if(digits.length > 1500){
 
-          digits.shift();
+        ticksReceived =
+          digits.length;
 
-        }
-
-        ticksReceived++;
 
         document.getElementById(
           "ticksReceived"
         ).textContent =
           ticksReceived;
 
-        document.getElementById(
-          "price"
-        ).textContent =
-          quote.toFixed(
-            tick.pip_size || 4
+
+        if(prices.length){
+
+          document.getElementById(
+            "price"
+          ).textContent =
+            prices[
+              prices.length-1
+            ].toFixed(4);
+
+        }
+
+
+        if(digits.length){
+
+          document.getElementById(
+            "lastDigit"
+          ).textContent =
+            digits[
+              digits.length-1
+            ];
+
+        }
+
+
+        log(
+          "Historique reçu: "+
+          digits.length+
+          " ticks."
+        );
+
+
+        /*
+         * TRUE WALK-FORWARD
+         */
+
+        if(
+          digits.length >=
+          MIN_WALK_FORWARD
+        ){
+
+          log(
+            "Calcul TRUE WALK-FORWARD V7.6..."
           );
 
-        document.getElementById(
-          "lastDigit"
-        ).textContent =
-          d;
+
+          benchmarkResults =
+            trueWalkForward(
+              digits
+            );
+
+
+          log(
+            "Benchmark V7.6 terminé: "+
+            benchmarkResults.results.EnsembleV2.tests+
+            " tests."
+          );
+
+
+          renderBenchmark();
+
+          renderEnsembleComparison();
+
+
+          const current =
+            ensembleV2(
+              digits.slice(-WINDOW),
+              {
+                Global:.25,
+                Recent:.25,
+                Transition:.25,
+                Sequence:.25
+              }
+            );
+
+
+          renderModels(
+            current
+          );
+
+          renderDigitStats();
+
+          renderScoreStats();
+
+          renderAgreementStats();
+
+        }
+
 
         renderFrequencies();
 
@@ -2461,46 +3092,148 @@ function connect(){
 
         updatePrediction();
 
+        subscribeTicks();
+
+        return;
+
       }
 
-    }
 
-  };
+      /*
+       * TICK LIVE
+       */
 
-  ws.onerror = function(){
+      if(data.tick){
 
-    document.getElementById(
-      "status"
-    ).innerHTML =
-      '<span class="red">🔴 Erreur WebSocket</span>';
+        const tick =
+          data.tick;
 
-    log(
-      "Erreur WebSocket."
-    );
+        const quote =
+          Number(
+            tick.quote
+          );
 
-  };
+        const d =
+          digitFromQuote(
+            tick.quote
+          );
 
-  ws.onclose = function(){
 
-    document.getElementById(
-      "status"
-    ).innerHTML =
-      '<span class="orange">🟠 Connexion fermée</span>';
+        if(
+          Number.isFinite(quote) &&
+          d !== null
+        ){
 
-    log(
-      "WebSocket fermé."
-    );
+          prices.push(
+            quote
+          );
 
-    /*
-     * Reconnexion douce.
-     */
+          digits.push(
+            d
+          );
 
-    setTimeout(
-      connect,
-      5000
-    );
 
-  };
+          /*
+           * Limite mémoire.
+           */
+
+          if(
+            prices.length >
+            1500
+          ){
+
+            prices.shift();
+
+          }
+
+
+          if(
+            digits.length >
+            1500
+          ){
+
+            digits.shift();
+
+          }
+
+
+          ticksReceived++;
+
+
+          document.getElementById(
+            "ticksReceived"
+          ).textContent =
+            ticksReceived;
+
+
+          document.getElementById(
+            "price"
+          ).textContent =
+            quote.toFixed(
+              tick.pip_size ||
+              4
+            );
+
+
+          document.getElementById(
+            "lastDigit"
+          ).textContent =
+            d;
+
+
+          renderFrequencies();
+
+          renderContext();
+
+          updatePrediction();
+
+        }
+
+      }
+
+    };
+
+
+  ws.onerror =
+    function(){
+
+      document.getElementById(
+        "status"
+      ).innerHTML =
+        '<span class="red">🔴 Erreur WebSocket</span>';
+
+
+      log(
+        "Erreur WebSocket."
+      );
+
+    };
+
+
+  ws.onclose =
+    function(){
+
+      document.getElementById(
+        "status"
+      ).innerHTML =
+        '<span class="orange">🟠 Connexion fermée</span>';
+
+
+      log(
+        "WebSocket fermé."
+      );
+
+
+      /*
+       * Reconnexion automatique.
+       */
+
+      setTimeout(
+        connect,
+        5000
+      );
+
+    };
 
 }
 
