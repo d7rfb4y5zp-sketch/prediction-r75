@@ -3,26 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
-<title>Prediction R75 — V8 FINAL VALIDATION ENGINE</title>
+<title>MALISUGU AI — R75 EDGE LAB V8</title>
 
 <style>
-
-*{
-box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 body{
 margin:0;
-background:#06101c;
-color:#eaf1fb;
+background:#050d17;
+color:#edf4ff;
 font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
 }
 
 .container{
-max-width:1100px;
+max-width:1050px;
 margin:auto;
-padding:9px;
+padding:10px;
 }
 
 h1{
@@ -31,14 +27,14 @@ margin:0 0 3px;
 }
 
 .subtitle{
-font-size:10px;
-color:#8fa2bb;
+font-size:9px;
+color:#91a4bd;
 margin-bottom:9px;
 }
 
 .status{
-background:#101e31;
-border:1px solid #1d324a;
+background:#0c1a2a;
+border:1px solid #1b3048;
 border-radius:9px;
 padding:9px;
 font-size:11px;
@@ -46,19 +42,9 @@ font-weight:700;
 margin-bottom:9px;
 }
 
-.green{color:#39e59d}
-.red{color:#ff6666}
-.orange{color:#ffc857}
-
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-gap:8px;
-}
-
 .card{
-background:#0c1a2a;
-border:1px solid #1b3048;
+background:#0b1828;
+border:1px solid #1a3049;
 border-radius:11px;
 padding:10px;
 margin-bottom:8px;
@@ -69,13 +55,19 @@ font-size:12px;
 margin:0 0 8px;
 }
 
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+gap:8px;
+}
+
 .row{
 display:flex;
 justify-content:space-between;
-gap:8px;
+gap:10px;
 padding:5px 0;
-border-bottom:1px solid #182a40;
-font-size:10px;
+border-bottom:1px solid #17293e;
+font-size:9px;
 }
 
 .row:last-child{
@@ -83,62 +75,65 @@ border-bottom:0;
 }
 
 .label{
-color:#91a4bd;
+color:#8fa3bc;
 }
 
+.green{color:#49e39b}
+.red{color:#ff6868}
+.orange{color:#ffc857}
+.blue{color:#66a9ff}
+
 .big{
-font-size:39px;
+font-size:38px;
 font-weight:800;
 text-align:center;
-margin:2px 0;
+margin:4px 0;
 }
+
+.center{text-align:center}
 
 .badge{
 display:inline-block;
-background:#182c44;
+background:#152a43;
 border-radius:999px;
-padding:3px 7px;
+padding:4px 8px;
 font-size:8px;
-}
-
-.center{
-text-align:center;
 }
 
 .small{
 font-size:9px;
+color:#8499b3;
 line-height:1.45;
-color:#8498b2;
 }
 
 .warning{
-background:#2a200f;
-border:1px solid #60471a;
-color:#ffd66b;
-padding:7px;
+background:#2b210e;
+border:1px solid #624917;
+color:#ffd36b;
+padding:8px;
 border-radius:7px;
 font-size:9px;
-margin-top:7px;
+line-height:1.4;
 }
 
 .ok{
-background:#09261d;
-border:1px solid #18523c;
-color:#65efb5;
-padding:7px;
+background:#08251b;
+border:1px solid #18533d;
+color:#6af0b7;
+padding:8px;
 border-radius:7px;
 font-size:9px;
-margin-top:7px;
+line-height:1.4;
 }
 
 .fail{
-background:#2a1115;
-border:1px solid #5d252d;
+background:#291116;
+border:1px solid #5c2730;
 color:#ff8585;
-padding:7px;
+padding:8px;
 border-radius:7px;
 font-size:9px;
-margin-top:7px;
+line-height:1.4;
 }
 
 .digits{
@@ -148,9 +143,9 @@ gap:3px;
 }
 
 .digit{
-background:#12243a;
+background:#112238;
 border-radius:6px;
-padding:5px 2px;
+padding:6px 2px;
 text-align:center;
 }
 
@@ -160,19 +155,19 @@ font-size:11px;
 }
 
 .digit span{
-font-size:9px;
-color:#9db0c8;
+font-size:8px;
+color:#9cb0c8;
 }
 
 table{
 width:100%;
 border-collapse:collapse;
-font-size:8.5px;
+font-size:8px;
 }
 
 th,td{
 padding:5px 3px;
-border-bottom:1px solid #182a40;
+border-bottom:1px solid #182b41;
 text-align:right;
 }
 
@@ -182,14 +177,28 @@ text-align:left;
 }
 
 th{
-color:#91a5bf;
-font-weight:600;
+color:#8fa4be;
+}
+
+.good{
+color:#59e9aa;
+font-weight:700;
+}
+
+.bad{
+color:#ff7777;
+font-weight:700;
+}
+
+.neutral{
+color:#ffc857;
+font-weight:700;
 }
 
 .log{
-background:#050e18;
+background:#040a11;
 border-radius:7px;
-padding:7px;
+padding:8px;
 font-family:monospace;
 font-size:8px;
 line-height:1.45;
@@ -203,30 +212,67 @@ width:100%;
 border:0;
 border-radius:7px;
 padding:10px;
-background:#176cf0;
+margin-top:7px;
+background:#176df0;
 color:white;
 font-weight:700;
-margin-top:7px;
 }
 
 button.secondary{
 background:#26384e;
 }
 
-.gateChecks{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:5px;
+input{
+width:100%;
+background:#071321;
+border:1px solid #28415e;
+border-radius:7px;
+padding:9px;
+color:white;
+margin-top:5px;
+}
+
+.progress{
+height:7px;
+background:#13253a;
+border-radius:99px;
+overflow:hidden;
 margin-top:7px;
 }
 
+.progress div{
+height:100%;
+width:0%;
+background:#3f91ff;
+transition:width .2s;
+}
+
+.metric{
+font-size:20px;
+font-weight:800;
+text-align:center;
+padding:5px;
+}
+
+.checkgrid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:5px;
+margin-top:8px;
+}
+
 .check{
-background:#101f32;
+background:#101f31;
+padding:7px;
 border-radius:6px;
-padding:6px;
 font-size:8px;
 }
 
+hr{
+border:0;
+border-top:1px solid #1a2d43;
+margin:8px 0;
+}
 </style>
 </head>
 
@@ -234,10 +280,10 @@ font-size:8px;
 
 <div class="container">
 
-<h1>Prediction R75 — V8</h1>
+<h1>Prediction R75 — V8 EDGE LAB</h1>
 
 <div class="subtitle">
-FINAL VALIDATION ENGINE • TRUE WALK-FORWARD • META SELECTOR 2.0 • TEST ONLY
+FINAL EDGE RESEARCH • WALK-FORWARD • HOLDOUT • MONTE-CARLO • TEST ONLY
 </div>
 
 <div id="status" class="status orange">
@@ -245,9 +291,9 @@ FINAL VALIDATION ENGINE • TRUE WALK-FORWARD • META SELECTOR 2.0 • TEST ONL
 </div>
 
 
-<!-- =====================================================
+<!-- ======================================================
 MARCHÉ
-===================================================== -->
+====================================================== -->
 
 <div class="grid">
 
@@ -262,7 +308,7 @@ MARCHÉ
 
 <div class="row">
 <span class="label">Ticks reçus</span>
-<b id="ticksReceived">0</b>
+<b id="tickCount">0</b>
 </div>
 
 <div class="row">
@@ -272,130 +318,384 @@ MARCHÉ
 
 <div class="row">
 <span class="label">Dernier chiffre</span>
-<b id="lastDigit">—</b>
+<b id="digit">—</b>
+</div>
+
+<div class="row">
+<span class="label">Échantillon</span>
+<b id="sampleStatus">En attente</b>
 </div>
 
 </div>
 
-
-<!-- =====================================================
-PREDICTION
-===================================================== -->
 
 <div class="card">
 
-<h2>🧠 PRÉDICTION V8 — META SELECTOR 2.0</h2>
+<h2>💰 PARAMÈTRE ÉCONOMIQUE</h2>
 
-<div class="big" id="candidate">—</div>
+<div class="small">
+Entre ici le profit NET réel gagné pour une mise de 1 si le contrat gagne.
+Exemple : si 1 $ rapporte 0,95 $ de profit net, entrer 0.95.
+</div>
+
+<input
+id="payoutInput"
+type="number"
+step="0.01"
+min="0"
+placeholder="Profit net par $1 — ex: 0.95"
+>
+
+<div class="row">
+<span class="label">Seuil break-even</span>
+<b id="breakEven">—</b>
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ======================================================
+VERDICT
+====================================================== -->
+
+<div class="card">
+
+<h2>🧠 VERDICT EDGE LAB</h2>
+
+<div class="metric" id="edgeVerdict">
+EN ATTENTE
+</div>
+
+<div class="center small" id="edgeExplanation">
+Analyse en attente…
+</div>
+
+</div>
+
+
+<!-- ======================================================
+DATA SPLIT
+====================================================== -->
+
+<div class="card">
+
+<h2>📊 SÉPARATION DES DONNÉES</h2>
+
+<table>
+
+<thead>
+<tr>
+<th>Bloc</th>
+<th>Part</th>
+<th>Tests</th>
+<th>Utilisation</th>
+</tr>
+</thead>
+
+<tbody id="splitTable">
+
+<tr>
+<td>Développement</td>
+<td>70%</td>
+<td>—</td>
+<td>Choix du modèle</td>
+</tr>
+
+<tr>
+<td>Validation</td>
+<td>15%</td>
+<td>—</td>
+<td>Choix du champion</td>
+</tr>
+
+<tr>
+<td>Holdout final</td>
+<td>15%</td>
+<td>—</td>
+<td>TEST FINAL</td>
+</tr>
+
+</tbody>
+
+</table>
+
+<div class="warning">
+🔒 Le HOLDOUT FINAL est verrouillé : il ne sert jamais à choisir le champion.
+</div>
+
+</div>
+
+
+<!-- ======================================================
+BENCHMARK
+====================================================== -->
+
+<div class="card">
+
+<h2>🔬 BENCHMARK — DÉVELOPPEMENT</h2>
+
+<table>
+
+<thead>
+<tr>
+<th>Système</th>
+<th>Tests</th>
+<th>Wins</th>
+<th>Taux</th>
+<th>Wilson</th>
+</tr>
+</thead>
+
+<tbody id="devTable"></tbody>
+
+</table>
+
+</div>
+
+
+<!-- ======================================================
+VALIDATION
+====================================================== -->
+
+<div class="card">
+
+<h2>🧪 VALIDATION — CHOIX DU CHAMPION</h2>
+
+<table>
+
+<thead>
+<tr>
+<th>Système</th>
+<th>Tests</th>
+<th>Wins</th>
+<th>Taux</th>
+<th>Wilson</th>
+</tr>
+</thead>
+
+<tbody id="validationTable"></tbody>
+
+</table>
+
+<div id="selectionMessage" class="small">
+Champion en attente…
+</div>
+
+</div>
+
+
+<!-- ======================================================
+CHAMPION
+====================================================== -->
+
+<div class="card">
+
+<h2>🏆 CHAMPION VERROUILLÉ</h2>
+
+<div class="big" id="champion">
+—
+</div>
 
 <div class="center">
-<span class="badge" id="selectedModel">
-Modèle —
+<span class="badge" id="championReason">
+Sélection en attente
 </span>
 </div>
 
 <div class="row">
-<span class="label">Score brut</span>
-<b id="rawScore">—</b>
-</div>
-
-<div class="row">
-<span class="label">Calibration</span>
-<b id="calibration">—</b>
-</div>
-
-<div class="row">
-<span class="label">Accord</span>
-<b id="agreement">—</b>
-</div>
-
-<div class="row">
-<span class="label">Écart</span>
-<b id="gap">—</b>
-</div>
-
+<span class="label">Validation</span>
+<b id="championValidation">—</b>
 </div>
 
 </div>
 
 
-<!-- =====================================================
-GATE
-===================================================== -->
+<!-- ======================================================
+FINAL HOLDOUT
+====================================================== -->
 
 <div class="card">
 
-<h2>🔒 GATE V8 — VALIDATION STATISTIQUE</h2>
+<h2>🔒 TEST FINAL — HOLDOUT JAMAIS VU</h2>
+
+<p class="small">
+Cette section est la plus importante. Le champion est choisi avant
+l'évaluation du holdout. Les résultats ci-dessous ne servent pas
+à modifier le champion.
+</p>
+
+<table>
+
+<thead>
+<tr>
+<th>Champion</th>
+<th>Tests</th>
+<th>Wins</th>
+<th>Taux</th>
+<th>Wilson</th>
+</tr>
+</thead>
+
+<tbody id="holdoutTable"></tbody>
+
+</table>
+
+<div id="holdoutVerdict" class="warning">
+Holdout en attente…
+</div>
+
+</div>
+
+
+<!-- ======================================================
+COMPARAISON HOLDOUT
+====================================================== -->
+
+<div class="card">
+
+<h2>⚔️ COMPARAISON HOLDOUT — TOUS LES MODÈLES</h2>
+
+<table>
+
+<thead>
+<tr>
+<th>Système</th>
+<th>Tests</th>
+<th>Wins</th>
+<th>Taux</th>
+<th>Wilson</th>
+</tr>
+</thead>
+
+<tbody id="holdoutAllTable"></tbody>
+
+</table>
+
+</div>
+
+
+<!-- ======================================================
+MONTE CARLO
+====================================================== -->
+
+<div class="card">
+
+<h2>🎲 TEST MONTE-CARLO — HASARD</h2>
 
 <div class="row">
-<span class="label">État</span>
-<b id="gateState" class="red">FERMÉ</b>
+<span class="label">Simulations</span>
+<b id="mcRuns">—</b>
 </div>
 
 <div class="row">
-<span class="label">Tests Meta</span>
-<b id="gateTests">0</b>
+<span class="label">Wins observés</span>
+<b id="mcObserved">—</b>
 </div>
 
 <div class="row">
-<span class="label">Taux réel</span>
-<b id="gateRate">—</b>
+<span class="label">Taux observé</span>
+<b id="mcRate">—</b>
 </div>
 
 <div class="row">
-<span class="label">Wilson lower</span>
-<b id="gateWilson">—</b>
+<span class="label">p-value uniforme</span>
+<b id="mcP">—</b>
 </div>
 
-<div class="gateChecks">
-
-<div class="check" id="checkTests">
-Tests : —
+<div class="row">
+<span class="label">p-value shuffle marginal</span>
+<b id="mcMarginal">—</b>
 </div>
 
-<div class="check" id="checkRate">
-Taux : —
-</div>
-
-<div class="check" id="checkWilson">
-Wilson : —
-</div>
-
-<div class="check" id="checkAgreement">
-Accord : —
-</div>
-
-<div class="check" id="checkCalibration">
-Calibration : —
-</div>
-
-<div class="check" id="checkRolling">
-Rolling : —
-</div>
-
-</div>
-
-<div class="warning">
-⚠️ V8 n'envoie aucune transaction. Le Gate est uniquement statistique.
+<div id="mcVerdict" class="warning">
+Test Monte-Carlo en attente…
 </div>
 
 </div>
 
 
-<!-- =====================================================
-FRÉQUENCE + CONTEXTE
-===================================================== -->
+<!-- ======================================================
+EV
+====================================================== -->
+
+<div class="card">
+
+<h2>💰 ESPÉRANCE MATHÉMATIQUE</h2>
+
+<div class="row">
+<span class="label">Taux holdout</span>
+<b id="evRate">—</b>
+</div>
+
+<div class="row">
+<span class="label">Profit net / $1</span>
+<b id="evPayout">—</b>
+</div>
+
+<div class="row">
+<span class="label">EV / $1</span>
+<b id="evValue">—</b>
+</div>
+
+<div class="row">
+<span class="label">Seuil rentabilité</span>
+<b id="evBreakEven">—</b>
+</div>
+
+<div id="evVerdict" class="warning">
+Renseigne le payout réel pour calculer l'EV.
+</div>
+
+</div>
+
+
+<!-- ======================================================
+STABILITÉ
+====================================================== -->
+
+<div class="card">
+
+<h2>📈 STABILITÉ DU CHAMPION</h2>
+
+<table>
+
+<thead>
+<tr>
+<th>Période</th>
+<th>Tests</th>
+<th>Wins</th>
+<th>Taux</th>
+<th>Wilson</th>
+</tr>
+</thead>
+
+<tbody id="stabilityTable"></tbody>
+
+</table>
+
+</div>
+
+
+<!-- ======================================================
+DIGITS
+====================================================== -->
+
+<div class="card">
+
+<h2>🔢 DISTRIBUTION DES 100 DERNIERS TICKS</h2>
+
+<div id="freq" class="digits"></div>
+
+</div>
+
+
+<!-- ======================================================
+CONTEXTE
+====================================================== -->
 
 <div class="grid">
-
-<div class="card">
-
-<h2>FRÉQUENCE — 100 DERNIERS TICKS</h2>
-
-<div id="frequencies" class="digits"></div>
-
-</div>
-
 
 <div class="card">
 
@@ -421,340 +721,59 @@ FRÉQUENCE + CONTEXTE
 <b id="regime">—</b>
 </div>
 
-<div class="row">
-<span class="label">Contexte</span>
-<b id="context">—</b>
 </div>
 
-</div>
-
-</div>
-
-
-<!-- =====================================================
-TRUE WALK FORWARD
-===================================================== -->
 
 <div class="card">
 
-<h2>🔬 TRUE WALK-FORWARD BENCHMARK</h2>
+<h2>PRÉDICTION LIVE — LAB</h2>
 
-<p class="small">
-Pour chaque position historique, la prédiction est calculée
-uniquement avec les données disponibles avant le tick cible.
-Le résultat du tick cible n'est utilisé qu'après la prédiction.
-</p>
-
-<table>
-
-<thead>
-<tr>
-<th>Système</th>
-<th>Tests</th>
-<th>Wins</th>
-<th>Taux</th>
-<th>Wilson</th>
-</tr>
-</thead>
-
-<tbody id="benchmarkTable"></tbody>
-
-</table>
-
-<div class="ok">
-✅ Benchmark déterministe et walk-forward.
+<div class="big" id="liveCandidate">
+—
 </div>
 
-</div>
-
-
-<!-- =====================================================
-COMPARAISON
-===================================================== -->
-
-<div class="card">
-
-<h2>⚔️ COMPARAISON DES SYSTÈMES</h2>
-
-<table>
-
-<thead>
-<tr>
-<th>Système</th>
-<th>Tests</th>
-<th>Wins</th>
-<th>Taux</th>
-<th>Wilson</th>
-</tr>
-</thead>
-
-<tbody id="systemTable"></tbody>
-
-</table>
-
-</div>
-
-
-<!-- =====================================================
-META WALK FORWARD
-===================================================== -->
-
-<div class="grid">
-
-<div class="card">
-
-<h2>🧠 META SELECTOR — WALK-FORWARD</h2>
-
-<div class="row">
-<span class="label">Tests</span>
-<b id="metaTests">0</b>
+<div class="center">
+<span class="badge" id="liveModel">
+Aucun modèle
+</span>
 </div>
 
 <div class="row">
-<span class="label">Wins</span>
-<b id="metaWins">0</b>
+<span class="label">Score descriptif</span>
+<b id="liveScore">—</b>
 </div>
 
-<div class="row">
-<span class="label">Taux</span>
-<b id="metaRate">—</b>
+<div class="warning">
+⚠️ Cette prédiction LIVE n'est pas une preuve de rentabilité.
+Elle ne déclenche aucune transaction.
 </div>
-
-<div class="row">
-<span class="label">Wilson lower</span>
-<b id="metaWilson">—</b>
-</div>
-
-<div class="row">
-<span class="label">Rolling 50</span>
-<b id="rolling50">—</b>
-</div>
-
-</div>
-
-
-<div class="card">
-
-<h2>MODÈLE SÉLECTIONNÉ PAR META</h2>
-
-<table>
-
-<thead>
-<tr>
-<th>Système</th>
-<th>Sélections</th>
-<th>Wins</th>
-<th>Taux</th>
-</tr>
-</thead>
-
-<tbody id="selectionTable"></tbody>
-
-</table>
 
 </div>
 
 </div>
 
 
-<!-- =====================================================
-PERFORMANCE MODÈLES
-===================================================== -->
-
-<div class="card">
-
-<h2>PERFORMANCE DES 4 MODÈLES</h2>
-
-<table>
-
-<thead>
-<tr>
-<th>Modèle</th>
-<th>Candidate</th>
-<th>Tests</th>
-<th>Wins</th>
-<th>Taux</th>
-<th>Wilson</th>
-</tr>
-</thead>
-
-<tbody id="modelTable"></tbody>
-
-</table>
-
-</div>
-
-
-<!-- =====================================================
-CONTEXTE
-===================================================== -->
-
-<div class="card">
-
-<h2>PERFORMANCE META PAR CONTEXTE</h2>
-
-<table>
-
-<thead>
-<tr>
-<th>Contexte</th>
-<th>Tests</th>
-<th>Wins</th>
-<th>Taux</th>
-<th>Wilson</th>
-</tr>
-</thead>
-
-<tbody id="contextTable"></tbody>
-
-</table>
-
-</div>
-
-
-<!-- =====================================================
-CHIFFRES
-===================================================== -->
-
-<div class="card">
-
-<h2>PERFORMANCE PAR CHIFFRE — META</h2>
-
-<table>
-
-<thead>
-<tr>
-<th>Chiffre</th>
-<th>Tests</th>
-<th>Wins</th>
-<th>Taux</th>
-<th>Wilson</th>
-</tr>
-</thead>
-
-<tbody id="digitTable"></tbody>
-
-</table>
-
-</div>
-
-
-<!-- =====================================================
-SCORE
-===================================================== -->
-
-<div class="card">
-
-<h2>CALIBRATION — PERFORMANCE PAR SCORE</h2>
-
-<table>
-
-<thead>
-<tr>
-<th>Score</th>
-<th>Tests</th>
-<th>Wins</th>
-<th>Taux</th>
-<th>Wilson</th>
-</tr>
-</thead>
-
-<tbody id="scoreTable"></tbody>
-
-</table>
-
-</div>
-
-
-<!-- =====================================================
-ACCORD
-===================================================== -->
-
-<div class="card">
-
-<h2>PERFORMANCE PAR ACCORD</h2>
-
-<table>
-
-<thead>
-<tr>
-<th>Accord</th>
-<th>Tests</th>
-<th>Wins</th>
-<th>Taux</th>
-<th>Wilson</th>
-</tr>
-</thead>
-
-<tbody id="agreementTable"></tbody>
-
-</table>
-
-</div>
-
-
-<!-- =====================================================
-POIDS
-===================================================== -->
-
-<div class="card">
-
-<h2>POIDS DES MODÈLES — ÉTAT ACTUEL</h2>
-
-<table>
-
-<thead>
-<tr>
-<th>Modèle</th>
-<th>Candidate</th>
-<th>Poids</th>
-<th>Tests</th>
-<th>Wins</th>
-<th>Taux</th>
-<th>Wilson</th>
-</tr>
-</thead>
-
-<tbody id="weightTable"></tbody>
-
-</table>
-
-</div>
-
-
-<!-- =====================================================
-LAB
-===================================================== -->
-
-<div class="card">
-
-<h2>LAB — DERNIÈRES PRÉDICTIONS</h2>
-
-<div id="predictionHistory" class="log">
-En attente…
-</div>
-
-</div>
-
-
-<!-- =====================================================
+<!-- ======================================================
 JOURNAL
-===================================================== -->
+====================================================== -->
 
 <div class="card">
 
-<h2>JOURNAL API</h2>
+<h2>🧪 JOURNAL EDGE LAB</h2>
 
 <div id="log" class="log">
-Initialisation V8…
+Initialisation V8 EDGE LAB…
 </div>
 
-<button onclick="clearLogs()">
-EFFACER LE JOURNAL
+<button onclick="runLab()">
+RELANCER LE LAB
 </button>
 
-<button class="secondary" onclick="resetAnalysis()">
-RÉINITIALISER L'ANALYSE
+<button
+class="secondary"
+onclick="clearLog()"
+>
+EFFACER LE JOURNAL
 </button>
 
 </div>
@@ -765,183 +784,124 @@ RÉINITIALISER L'ANALYSE
 <script>
 
 /* =========================================================
-CONFIGURATION
+CONFIG
 ========================================================= */
 
 const WS_URL =
 "wss://api.derivws.com/trading/v1/options/ws/public";
 
-const SYMBOL = "R_75";
+const SYMBOL =
+"R_75";
 
-const HISTORY_COUNT = 1000;
+const HISTORY_COUNT =
+2000;
 
-const WINDOW = 100;
+const LOOKBACK =
+100;
 
-const RECENT_WINDOW = 30;
+const RECENT =
+30;
 
-const MIN_WALK_FORWARD = 100;
+const MC_RUNS =
+3000;
 
-const LAPLACE = 1;
+const MIN_TRAIN =
+100;
 
 
 /* =========================================================
-ÉTAT
+STATE
 ========================================================= */
 
-let ws = null;
+let ws=null;
 
-let prices = [];
+let prices=[];
 
-let digits = [];
+let digits=[];
 
-let ticksReceived = 0;
+let pipSize=4;
 
-let benchmark = null;
-
-let predictionHistory = [];
+let lab=null;
 
 
 /* =========================================================
 LOG
 ========================================================= */
 
-function log(message){
+function log(msg){
 
-const el =
+const el=
 document.getElementById("log");
 
-const time =
+const time=
 new Date().toLocaleTimeString();
 
-el.textContent =
+el.textContent=
 "["+
 time+
 "] "+
-message+
+msg+
 "\n"+
 el.textContent;
 
 }
 
-function clearLogs(){
+function clearLog(){
 
-document.getElementById("log").textContent =
+document.getElementById("log").textContent=
 "Journal effacé.";
 
 }
 
 
 /* =========================================================
-RESET
+UTILS
 ========================================================= */
 
-function resetAnalysis(){
-
-prices=[];
-
-digits=[];
-
-benchmark=null;
-
-predictionHistory=[];
-
-document.getElementById(
-"predictionHistory"
-).textContent="En attente…";
-
-document.getElementById(
-"benchmarkTable"
-).innerHTML="";
-
-document.getElementById(
-"systemTable"
-).innerHTML="";
-
-document.getElementById(
-"modelTable"
-).innerHTML="";
-
-document.getElementById(
-"selectionTable"
-).innerHTML="";
-
-document.getElementById(
-"contextTable"
-).innerHTML="";
-
-document.getElementById(
-"digitTable"
-).innerHTML="";
-
-document.getElementById(
-"scoreTable"
-).innerHTML="";
-
-document.getElementById(
-"agreementTable"
-).innerHTML="";
-
-document.getElementById(
-"weightTable"
-).innerHTML="";
-
-log(
-"Analyse V8 réinitialisée."
-);
-
-}
-
-
-/* =========================================================
-UTILITAIRES
-========================================================= */
-
-function clamp(x,min,max){
+function clamp(x,a,b){
 
 return Math.max(
-min,
-Math.min(max,x)
+a,
+Math.min(b,x)
 );
 
 }
 
-function rate(s){
 
-if(!s || s.tests===0)
-return 0;
+function pct(w,n){
 
-return s.wins/s.tests*100;
+return n?
+w/n*100:0;
 
 }
 
 
-function wilsonLower(wins,total){
+function wilson(w,n){
 
-if(total<=0)
+if(!n)
 return 0;
 
 const z=1.96;
 
-const p=wins/total;
+const p=w/n;
 
 const den=
 1+
-z*z/total;
+z*z/n;
 
 const centre=
 p+
-z*z/(2*total);
+z*z/(2*n);
 
 const margin=
-z*
-Math.sqrt(
+z*Math.sqrt(
 (
 p*(1-p)+
-z*z/(4*total)
-)/total
+z*z/(4*n)
+)/n
 );
 
-return (
+return(
 (centre-margin)/
 den
 )*100;
@@ -949,27 +909,56 @@ den
 }
 
 
-function digitFromQuote(quote){
+function digitFromQuote(q){
 
-const clean=
-String(quote)
-.replace(/[^0-9]/g,"");
-
-if(!clean)
-return null;
-
-return Number(
-clean.slice(-1)
+const n=
+Math.round(
+Number(q)*
+Math.pow(10,pipSize)
 );
+
+return Math.abs(n)%10;
+
+}
+
+
+function emptyStats(){
+
+return{
+tests:0,
+wins:0,
+history:[]
+};
 
 }
 
 
 /* =========================================================
-FRÉQUENCE
+DETERMINISTIC RANDOM
 ========================================================= */
 
-function frequency(arr){
+function seeded(seed){
+
+return function(){
+
+seed=
+(
+seed*1664525+
+1013904223
+)>>>0;
+
+return seed/4294967296;
+
+};
+
+}
+
+
+/* =========================================================
+FREQUENCY
+========================================================= */
+
+function freq(arr){
 
 const f=
 Array(10).fill(0);
@@ -977,8 +966,10 @@ Array(10).fill(0);
 for(const d of arr){
 
 if(
-Number.isInteger(d) &&
-d>=0 &&
+Number.isInteger(d)
+&&
+d>=0
+&&
 d<=9
 ){
 
@@ -993,164 +984,21 @@ return f;
 }
 
 
-/* =========================================================
-ENTROPIE
-========================================================= */
-
-function entropy(arr){
-
-if(!arr.length)
-return 0;
+function mostFrequent(arr){
 
 const f=
-frequency(arr);
+freq(arr);
 
-let h=0;
+let best=0;
 
-for(const n of f){
+for(let d=1;d<10;d++){
 
-if(n>0){
-
-const p=
-n/arr.length;
-
-h-=
-p*
-Math.log2(p);
+if(f[d]>f[best])
+best=d;
 
 }
 
-}
-
-return h;
-
-}
-
-
-/* =========================================================
-UNIFORMITÉ
-========================================================= */
-
-function uniformity(arr){
-
-if(!arr.length)
-return 0;
-
-const f=
-frequency(arr);
-
-const expected=
-arr.length/10;
-
-let error=0;
-
-for(const n of f){
-
-error+=
-Math.abs(
-n-expected
-);
-
-}
-
-return clamp(
-100-
-(error/(arr.length*2))*100,
-0,
-100
-);
-
-}
-
-
-/* =========================================================
-STREAK
-========================================================= */
-
-function streak(arr){
-
-if(!arr.length)
-return 0;
-
-const last=
-arr[arr.length-1];
-
-let n=0;
-
-for(
-let i=arr.length-1;
-i>=0;
-i--
-){
-
-if(arr[i]===last){
-
-n++;
-
-}else{
-
-break;
-
-}
-
-}
-
-return n;
-
-}
-
-
-/* =========================================================
-RÉGIME
-========================================================= */
-
-function regimeChange(arr){
-
-if(arr.length<60)
-return false;
-
-const oldH=
-entropy(
-arr.slice(-60,-30)
-);
-
-const newH=
-entropy(
-arr.slice(-30)
-);
-
-return Math.abs(
-newH-oldH
-)>0.25;
-
-}
-
-
-/* =========================================================
-CONTEXTE
-========================================================= */
-
-function getContext(arr){
-
-const u=
-uniformity(arr);
-
-const s=
-streak(arr);
-
-const r=
-regimeChange(arr);
-
-if(r)
-return "Régime change";
-
-if(s>=4)
-return "Streak élevé";
-
-if(u>=85)
-return "Forte uniformité";
-
-return "Normal";
+return best;
 
 }
 
@@ -1162,33 +1010,22 @@ GLOBAL
 function globalModel(arr){
 
 const f=
-frequency(arr);
+freq(arr);
 
-const probs=
-f.map(
-n=>
-(n+LAPLACE)/
-(arr.length+10*LAPLACE)
-);
-
-let candidate=0;
+let best=0;
 
 for(let d=1;d<10;d++){
 
-if(
-probs[d]>
-probs[candidate]
-){
-
-candidate=d;
+if(f[d]>f[best])
+best=d;
 
 }
 
-}
-
-return {
-candidate,
-probs
+return{
+candidate:best,
+score:
+arr.length?
+f[best]/arr.length*100:0
 };
 
 }
@@ -1200,9 +1037,10 @@ RECENT
 
 function recentModel(arr){
 
-return globalModel(
-arr.slice(-RECENT_WINDOW)
-);
+const x=
+arr.slice(-RECENT);
+
+return globalModel(x);
 
 }
 
@@ -1219,7 +1057,7 @@ return globalModel(arr);
 const last=
 arr[arr.length-1];
 
-const counts=
+const f=
 Array(10).fill(0);
 
 let total=0;
@@ -1234,9 +1072,7 @@ if(
 arr[i-1]===last
 ){
 
-counts[
-arr[i]
-]++;
+f[arr[i]]++;
 
 total++;
 
@@ -1244,34 +1080,21 @@ total++;
 
 }
 
-if(total===0)
+if(!total)
 return recentModel(arr);
 
-const probs=
-counts.map(
-n=>
-(n+LAPLACE)/
-(total+10*LAPLACE)
-);
-
-let candidate=0;
+let best=0;
 
 for(let d=1;d<10;d++){
 
-if(
-probs[d]>
-probs[candidate]
-){
-
-candidate=d;
+if(f[d]>f[best])
+best=d;
 
 }
 
-}
-
-return {
-candidate,
-probs
+return{
+candidate:best,
+score:f[best]/total*100
 };
 
 }
@@ -1292,7 +1115,7 @@ arr[arr.length-2];
 const b=
 arr[arr.length-1];
 
-const counts=
+const f=
 Array(10).fill(0);
 
 let total=0;
@@ -1308,9 +1131,7 @@ arr[i-2]===a &&
 arr[i-1]===b
 ){
 
-counts[
-arr[i]
-]++;
+f[arr[i]]++;
 
 total++;
 
@@ -1318,46 +1139,69 @@ total++;
 
 }
 
-if(total===0)
+if(!total)
 return transitionModel(arr);
 
-const probs=
-counts.map(
-n=>
-(n+LAPLACE)/
-(total+10*LAPLACE)
-);
-
-let candidate=0;
+let best=0;
 
 for(let d=1;d<10;d++){
 
-if(
-probs[d]>
-probs[candidate]
-){
-
-candidate=d;
+if(f[d]>f[best])
+best=d;
 
 }
 
-}
-
-return {
-candidate,
-probs
+return{
+candidate:best,
+score:f[best]/total*100
 };
 
 }
 
 
 /* =========================================================
-LES 4 MODÈLES
+REVERSAL
 ========================================================= */
 
-function getFourModels(arr){
+function reversalModel(arr){
 
-return {
+if(arr.length<2)
+return globalModel(arr);
+
+const last=
+arr[arr.length-1];
+
+const f=
+freq(arr);
+
+f[last]=0;
+
+let best=0;
+
+for(let d=1;d<10;d++){
+
+if(f[d]>f[best])
+best=d;
+
+}
+
+return{
+candidate:best,
+score:
+arr.length?
+f[best]/arr.length*100:0
+};
+
+}
+
+
+/* =========================================================
+ALL MODELS
+========================================================= */
+
+function models(arr){
+
+return{
 
 Global:
 globalModel(arr),
@@ -1369,7 +1213,10 @@ Transition:
 transitionModel(arr),
 
 Sequence:
-sequenceModel(arr)
+sequenceModel(arr),
+
+Reversal:
+reversalModel(arr)
 
 };
 
@@ -1377,1571 +1224,1273 @@ sequenceModel(arr)
 
 
 /* =========================================================
-POIDS À PARTIR DU PASSÉ
+EVALUATE
 ========================================================= */
 
-function calculateWeights(stats){
+function evaluate(data, start, end, lockedModel){
+
+const out=
+emptyStats();
+
+for(
+let i=start;
+i<end;
+i++
+){
+
+const train=
+data.slice(
+Math.max(
+0,
+i-LOOKBACK
+),
+i
+);
+
+if(
+train.length<MIN_TRAIN
+)
+continue;
+
+const prediction=
+models(train)[
+lockedModel
+];
+
+out.tests++;
+
+if(
+prediction.candidate===
+data[i]
+){
+
+out.wins++;
+
+}
+
+out.history.push(
+prediction.candidate===
+data[i]
+?1:0
+);
+
+}
+
+return out;
+
+}
+
+
+/* =========================================================
+WALK FORWARD ALL
+========================================================= */
+
+function walkForwardAll(data,start,end){
 
 const names=[
 "Global",
 "Recent",
 "Transition",
-"Sequence"
+"Sequence",
+"Reversal"
 ];
 
-const raw={};
+const result={};
+
+for(const n of names){
+
+result[n]=emptyStats();
+
+}
+
+for(
+let i=start;
+i<end;
+i++
+){
+
+const train=
+data.slice(
+Math.max(
+0,
+i-LOOKBACK
+),
+i
+);
+
+if(
+train.length<MIN_TRAIN
+)
+continue;
+
+const m=
+models(train);
+
+for(const n of names){
+
+const win=
+m[n].candidate===
+data[i];
+
+result[n].tests++;
+
+if(win)
+result[n].wins++;
+
+result[n].history.push(
+win?1:0
+);
+
+}
+
+}
+
+return result;
+
+}
+
+
+/* =========================================================
+SPLIT
+========================================================= */
+
+function splitData(data){
+
+const n=
+data.length;
+
+const devEnd=
+Math.floor(n*0.70);
+
+const valEnd=
+Math.floor(n*0.85);
+
+return{
+
+devStart:MIN_TRAIN,
+
+devEnd,
+
+valStart:devEnd,
+
+valEnd,
+
+holdStart:valEnd,
+
+holdEnd:n
+
+};
+
+}
+
+
+/* =========================================================
+CHAMPION SELECTION
+========================================================= */
+
+function selectChampion(validation){
+
+const names=
+Object.keys(validation);
+
+let best=
+names[0];
+
+for(const n of names){
+
+const a=
+validation[n];
+
+const b=
+validation[best];
+
+
+/*
+Wilson d'abord.
+Taux ensuite.
+
+Cela évite de choisir simplement
+le taux le plus élevé avec très peu
+de preuve.
+*/
+
+const wa=
+wilson(a.wins,a.tests);
+
+const wb=
+wilson(b.wins,b.tests);
+
+if(
+wa>wb
+||
+(
+wa===wb &&
+pct(a.wins,a.tests)>
+pct(b.wins,b.tests)
+)
+){
+
+best=n;
+
+}
+
+}
+
+return best;
+
+}
+
+
+/* =========================================================
+MONTE CARLO
+========================================================= */
+
+function monteCarlo(predictions,actuals){
+
+const n=
+Math.min(
+predictions.length,
+actuals.length
+);
+
+if(!n)
+return null;
+
+let observed=0;
+
+for(let i=0;i<n;i++){
+
+if(
+predictions[i]===
+actuals[i]
+){
+
+observed++;
+
+}
+
+}
+
+
+/*
+1. Null uniforme :
+chaque chiffre a 10%.
+*/
+
+let extremeUniform=0;
+
+const rng=
+seeded(8472391);
+
+for(
+let r=0;
+r<MC_RUNS;
+r++
+){
+
+let wins=0;
+
+for(let i=0;i<n;i++){
+
+const randomDigit=
+Math.floor(
+rng()*10
+);
+
+if(
+randomDigit===
+actuals[i]
+){
+
+wins++;
+
+}
+
+}
+
+if(
+wins>=observed
+){
+
+extremeUniform++;
+
+}
+
+}
+
+
+/*
+2. Null marginal :
+on garde la distribution des chiffres
+observés mais on détruit leur ordre.
+*/
+
+const f=
+freq(actuals);
+
+const cumulative=[];
 
 let total=0;
 
-for(const name of names){
+for(let d=0;d<10;d++){
+
+total+=f[d];
+
+cumulative[d]=total;
+
+}
+
+let extremeMarginal=0;
+
+const rng2=
+seeded(19283746);
+
+for(
+let r=0;
+r<MC_RUNS;
+r++
+){
+
+let wins=0;
+
+for(let i=0;i<n;i++){
+
+const u=
+rng2()*n;
+
+let d=0;
+
+while(
+d<9 &&
+u>=cumulative[d]
+){
+
+d++;
+
+}
+
+if(
+predictions[i]===
+d
+){
+
+wins++;
+
+}
+
+}
+
+if(
+wins>=observed
+){
+
+extremeMarginal++;
+
+}
+
+}
+
+
+return{
+
+n,
+
+observed,
+
+rate:
+observed/n*100,
+
+pUniform:
+(extremeUniform+1)/
+(MC_RUNS+1),
+
+pMarginal:
+(extremeMarginal+1)/
+(MC_RUNS+1)
+
+};
+
+}
+
+
+/* =========================================================
+HOLDOUT PREDICTIONS
+========================================================= */
+
+function lockedPredictions(
+data,
+start,
+end,
+modelName
+){
+
+const predictions=[];
+
+const actuals=[];
+
+for(
+let i=start;
+i<end;
+i++
+){
+
+const train=
+data.slice(
+Math.max(
+0,
+i-LOOKBACK
+),
+i
+);
+
+if(
+train.length<MIN_TRAIN
+)
+continue;
+
+const prediction=
+models(train)[
+modelName
+].candidate;
+
+predictions.push(
+prediction
+);
+
+actuals.push(
+data[i]
+);
+
+}
+
+return{
+predictions,
+actuals
+};
+
+}
+
+
+/* =========================================================
+STABILITY
+========================================================= */
+
+function stability(
+data,
+start,
+end,
+modelName
+){
+
+const n=
+end-start;
+
+if(n<3)
+return[];
+
+const parts=3;
+
+const size=
+Math.floor(n/parts);
+
+const out=[];
+
+for(let p=0;p<parts;p++){
 
 const s=
-stats[name];
+start+p*size;
 
-if(!s || s.tests<30){
+const e=
+p===parts-1
+?end
+:s+size;
 
-raw[name]=1;
+const r=
+evaluate(
+data,
+s,
+e,
+modelName
+);
+
+out.push({
+name:
+p===0
+?"Début holdout"
+:p===1
+?"Milieu holdout"
+:"Fin holdout",
+...r
+});
+
+}
+
+return out;
+
+}
+
+
+/* =========================================================
+RENDER ROW
+========================================================= */
+
+function row(name,s){
+
+return`
+<tr>
+<td>${name}</td>
+<td>${s.tests}</td>
+<td>${s.wins}</td>
+<td>${pct(s.wins,s.tests).toFixed(1)}%</td>
+<td>${wilson(s.wins,s.tests).toFixed(1)}%</td>
+</tr>
+`;
+
+}
+
+
+/* =========================================================
+RENDER TABLE
+========================================================= */
+
+function renderStatsTable(id,stats){
+
+const el=
+document.getElementById(id);
+
+el.innerHTML="";
+
+for(const name of Object.keys(stats)){
+
+el.innerHTML+=
+row(name,stats[name]);
+
+}
+
+}
+
+
+/* =========================================================
+RUN LAB
+========================================================= */
+
+function runLab(){
+
+if(
+digits.length<
+500
+){
+
+document.getElementById(
+"edgeVerdict"
+).textContent=
+"PAS ASSEZ DE DONNÉES";
+
+document.getElementById(
+"edgeExplanation"
+).textContent=
+"Il faut davantage de ticks.";
+
+return;
+
+}
+
+log(
+"EDGE LAB V8 démarré."
+);
+
+const data=
+digits.slice();
+
+const sp=
+splitData(data);
+
+document.getElementById(
+"sampleStatus"
+).textContent=
+data.length+
+" ticks analysés";
+
+
+/*
+DATA SPLIT
+*/
+
+document.getElementById(
+"splitTable"
+).innerHTML=`
+
+<tr>
+<td>Développement</td>
+<td>70%</td>
+<td>${sp.devEnd-sp.devStart}</td>
+<td>Recherche</td>
+</tr>
+
+<tr>
+<td>Validation</td>
+<td>15%</td>
+<td>${sp.valEnd-sp.valStart}</td>
+<td>Sélection</td>
+</tr>
+
+<tr>
+<td>Holdout final</td>
+<td>15%</td>
+<td>${sp.holdEnd-sp.holdStart}</td>
+<td>🔒 Verrouillé</td>
+</tr>
+`;
+
+
+/*
+DEV
+*/
+
+log(
+"Walk-forward développement..."
+);
+
+const dev=
+walkForwardAll(
+data,
+sp.devStart,
+sp.devEnd
+);
+
+renderStatsTable(
+"devTable",
+dev
+);
+
+
+/*
+VALIDATION
+*/
+
+log(
+"Walk-forward validation..."
+);
+
+const validation=
+walkForwardAll(
+data,
+sp.valStart,
+sp.valEnd
+);
+
+renderStatsTable(
+"validationTable",
+validation
+);
+
+
+/*
+CHAMPION
+*/
+
+const champion=
+selectChampion(
+validation
+);
+
+lab={
+data,
+split:sp,
+dev,
+validation,
+champion
+};
+
+document.getElementById(
+"champion"
+).textContent=
+champion;
+
+document.getElementById(
+"championReason"
+).textContent=
+"Wilson validation maximum";
+
+document.getElementById(
+"championValidation"
+).textContent=
+pct(
+validation[champion].wins,
+validation[champion].tests
+).toFixed(1)+
+"%";
+
+
+document.getElementById(
+"selectionMessage"
+).innerHTML=
+"🏆 Champion sélectionné uniquement sur le bloc VALIDATION : <b>"+
+champion+
+"</b>";
+
+
+/*
+HOLDOUT
+*/
+
+log(
+"Champion verrouillé : "+
+champion
+);
+
+log(
+"Test HOLDOUT final..."
+);
+
+const hold=
+evaluate(
+data,
+sp.holdStart,
+sp.holdEnd,
+champion
+);
+
+document.getElementById(
+"holdoutTable"
+).innerHTML=
+row(champion,hold);
+
+const holdoutVerdict=
+document.getElementById(
+"holdoutVerdict"
+);
+
+if(
+hold.tests>=100
+){
+
+if(
+wilson(
+hold.wins,
+hold.tests
+)>10
+){
+
+holdoutVerdict.className="ok";
+
+holdoutVerdict.textContent=
+"🟢 Le champion conserve un résultat supérieur à 10% sur le holdout. Résultat intéressant, mais pas une garantie future.";
 
 }else{
 
-const lower=
-wilsonLower(
-s.wins,
-s.tests
-);
+holdoutVerdict.className="warning";
 
-const confidence=
-clamp(
-s.tests/300,
-0,
-1
-);
+holdoutVerdict.textContent=
+"🟠 Le champion ne démontre pas un Wilson > 10% sur le holdout.";
 
-const evidence=
-10+
-(lower-10)*
-confidence;
+}
 
-raw[name]=
-Math.max(
-0.5,
-evidence
+}else{
+
+holdoutVerdict.className="warning";
+
+holdoutVerdict.textContent=
+"Échantillon holdout trop petit.";
+
+}
+
+
+/*
+TOUS LES MODÈLES SUR HOLDOUT
+*/
+
+const holdAll={};
+
+for(
+const name of Object.keys(dev)
+){
+
+holdAll[name]=
+evaluate(
+data,
+sp.holdStart,
+sp.holdEnd,
+name
 );
 
 }
 
-total+=raw[name];
+renderStatsTable(
+"holdoutAllTable",
+holdAll
+);
+
+
+/*
+MONTE CARLO
+*/
+
+const hp=
+lockedPredictions(
+data,
+sp.holdStart,
+sp.holdEnd,
+champion
+);
+
+const mc=
+monteCarlo(
+hp.predictions,
+hp.actuals
+);
+
+if(mc){
+
+document.getElementById(
+"mcRuns"
+).textContent=
+MC_RUNS;
+
+document.getElementById(
+"mcObserved"
+).textContent=
+mc.observed+
+"/"+
+mc.n;
+
+document.getElementById(
+"mcRate"
+).textContent=
+mc.rate.toFixed(1)+"%";
+
+document.getElementById(
+"mcP"
+).textContent=
+mc.pUniform.toFixed(4);
+
+document.getElementById(
+"mcMarginal"
+).textContent=
+mc.pMarginal.toFixed(4);
+
+const el=
+document.getElementById(
+"mcVerdict"
+);
+
+if(
+mc.pUniform<0.05 &&
+mc.pMarginal<0.05
+){
+
+el.className="ok";
+
+el.textContent=
+"🟢 Le résultat du holdout est difficile à expliquer par ces deux nulls. Cela reste une preuve statistique, pas une garantie de rentabilité.";
+
+}else{
+
+el.className="warning";
+
+el.textContent=
+"🟠 Le résultat n'est pas suffisamment rare sous les tests de hasard utilisés.";
 
 }
 
-const weights={};
+}
 
-for(const name of names){
 
-weights[name]=
-raw[name]/total;
+/*
+STABILITÉ
+*/
+
+const stabilityData=
+stability(
+data,
+sp.holdStart,
+sp.holdEnd,
+champion
+);
+
+const stabTable=
+document.getElementById(
+"stabilityTable"
+);
+
+stabTable.innerHTML="";
+
+for(const s of stabilityData){
+
+stabTable.innerHTML+=
+row(
+s.name,
+s
+);
 
 }
 
-return weights;
+
+/*
+EV
+*/
+
+updateEV(
+hold
+);
+
+
+/*
+VERDICT GLOBAL
+*/
+
+finalVerdict(
+hold,
+mc
+);
+
+log(
+"EDGE LAB terminé."
+);
 
 }
 
 
 /* =========================================================
-ENSEMBLE V1
+FINAL VERDICT
 ========================================================= */
 
-function ensembleV1(arr,weights){
-
-const models=
-getFourModels(arr);
-
-const combined=
-Array(10).fill(0);
-
-for(
-const name of
-Object.keys(models)
+function finalVerdict(
+hold,
+mc
 ){
+
+const verdict=
+document.getElementById(
+"edgeVerdict"
+);
+
+const explanation=
+document.getElementById(
+"edgeExplanation"
+);
 
 const w=
-weights[name]||0.25;
-
-for(let d=0;d<10;d++){
-
-combined[d]+=
-w*
-models[name].probs[d];
-
-}
-
-}
-
-let candidate=0;
-
-for(let d=1;d<10;d++){
+wilson(
+hold.wins,
+hold.tests
+);
 
 if(
-combined[d]>
-combined[candidate]
+hold.tests>=100 &&
+w>10 &&
+mc &&
+mc.pUniform<0.05 &&
+mc.pMarginal<0.05
 ){
 
-candidate=d;
+verdict.textContent=
+"🟢 EDGE INTÉRESSANT";
+
+verdict.className=
+"metric green";
+
+explanation.textContent=
+"Le champion survit au holdout et les tests Monte-Carlo sont encourageants. Il faut encore vérifier l'EV réel et la stabilité sur davantage de données.";
+
+return;
 
 }
 
+if(
+hold.tests>=100 &&
+pct(hold.wins,hold.tests)>=10
+){
+
+verdict.textContent=
+"🟠 EDGE INCERTAIN";
+
+verdict.className=
+"metric orange";
+
+explanation.textContent=
+"Le taux du holdout est intéressant, mais les preuves statistiques ne sont pas assez fortes pour conclure à un edge robuste.";
+
+return;
+
 }
 
-const sorted=
-[...combined]
-.sort((a,b)=>b-a);
+verdict.textContent=
+"🔴 AUCUN EDGE CONFIRMÉ";
 
-const gap=
+verdict.className=
+"metric red";
+
+explanation.textContent=
+"Le champion ne conserve pas suffisamment de preuve sur les données jamais vues.";
+
+}
+
+
+/* =========================================================
+EV
+========================================================= */
+
+function updateEV(hold){
+
+const input=
+document.getElementById(
+"payoutInput"
+);
+
+const payout=
+Number(
+input.value
+);
+
+const r=
+pct(
+hold.wins,
+hold.tests
+)/100;
+
+document.getElementById(
+"evRate"
+).textContent=
+(r*100).toFixed(1)+"%";
+
+if(
+!Number.isFinite(payout) ||
+payout<=0
+){
+
+document.getElementById(
+"evPayout"
+).textContent=
+"—";
+
+document.getElementById(
+"evValue"
+).textContent=
+"—";
+
+document.getElementById(
+"evBreakEven"
+).textContent=
+"—";
+
+document.getElementById(
+"evVerdict"
+).textContent=
+"Renseigne le profit net réel pour calculer l'EV.";
+
+return;
+
+}
+
+const breakEven=
+1/
+(1+payout);
+
+const ev=
+r*payout-
+(1-r);
+
+document.getElementById(
+"evPayout"
+).textContent=
+payout.toFixed(2);
+
+document.getElementById(
+"evBreakEven"
+).textContent=
 (
-sorted[0]-
-(sorted[1]||0)
-)*100;
+breakEven*100
+).toFixed(2)+"%";
 
-let agreement=0;
+document.getElementById(
+"evValue"
+).textContent=
+ev.toFixed(4);
 
-for(
-const name of
-Object.keys(models)
-){
+const el=
+document.getElementById(
+"evVerdict"
+);
 
-if(
-models[name].candidate===
-candidate
-){
+if(ev>0){
 
-agreement++;
+el.className="ok";
+
+el.textContent=
+"🟢 EV historique positif sur le holdout. Attention : cela reste une estimation historique.";
+
+}else{
+
+el.className="fail";
+
+el.textContent=
+"🔴 EV historique négatif ou nul sur le holdout.";
 
 }
 
 }
 
-const score=
-clamp(
-50+
-gap*5,
+document.getElementById(
+"payoutInput"
+).addEventListener(
+"input",
+function(){
+
+if(lab){
+
+const hold=
+evaluate(
+lab.data,
+lab.split.holdStart,
+lab.split.holdEnd,
+lab.champion
+);
+
+updateEV(hold);
+
+}
+
+}
+);
+
+
+/* =========================================================
+LIVE CONTEXT
+========================================================= */
+
+function entropy(arr){
+
+const f=
+freq(arr);
+
+let h=0;
+
+for(const n of f){
+
+if(n){
+
+const p=
+n/arr.length;
+
+h-=p*Math.log2(p);
+
+}
+
+}
+
+return h;
+
+}
+
+
+function uniformity(arr){
+
+const f=
+freq(arr);
+
+const expected=
+arr.length/10;
+
+let error=0;
+
+for(const n of f){
+
+error+=
+Math.abs(
+n-expected
+);
+
+}
+
+return clamp(
+100-
+error/(arr.length*2)*100,
 0,
 100
 );
 
-return {
-candidate,
-score,
-gap,
-agreement,
-probs:combined,
-models
-};
-
 }
 
 
-/* =========================================================
-ENSEMBLE V2 — VOTE
-========================================================= */
+function streak(arr){
 
-function ensembleV2(arr,weights){
-
-const models=
-getFourModels(arr);
-
-const votes=
-Array(10).fill(0);
-
-for(
-const name of
-Object.keys(models)
-){
-
-const d=
-models[name].candidate;
-
-votes[d]+=
-weights[name]||0.25;
-
-}
-
-let candidate=0;
-
-for(let d=1;d<10;d++){
-
-if(
-votes[d]>
-votes[candidate]
-){
-
-candidate=d;
-
-}
-
-}
-
-const sorted=
-[...votes]
-.sort((a,b)=>b-a);
-
-const gap=
-(
-sorted[0]-
-(sorted[1]||0)
-)*100;
-
-let agreement=0;
-
-for(
-const name of
-Object.keys(models)
-){
-
-if(
-models[name].candidate===
-candidate
-){
-
-agreement++;
-
-}
-
-}
-
-const score=
-clamp(
-50+
-gap,
-0,
-100
-);
-
-return {
-candidate,
-score,
-gap,
-agreement,
-votes,
-models
-};
-
-}
-
-
-/* =========================================================
-META SELECTOR 2.0
-========================================================= */
-
-function metaSelect(arr,past){
-
-const four=
-getFourModels(arr);
-
-const names=[
-"Global",
-"Recent",
-"Transition",
-"Sequence"
-];
-
-const weights=
-calculateWeights(past);
-
-
-/*
-Contexte actuel.
-*/
-
-const ctx=
-getContext(arr);
-
-
-/*
-Pour chaque modèle :
-
-1. performance globale passée
-2. performance dans le contexte passé
-3. shrinkage vers 10%
-*/
-
-const scores={};
-
-for(const name of names){
-
-const global=
-past[name]||
-{
-tests:0,
-wins:0
-};
-
-const globalRate=
-rate(global);
-
-const globalConfidence=
-clamp(
-global.tests/300,
-0,
-1
-);
-
-const globalEvidence=
-10+
-(
-globalRate-10
-)*
-globalConfidence;
-
-
-/*
-Statistiques contextuelles.
-*/
-
-const contextData=
-past.context &&
-past.context[ctx] &&
-past.context[ctx][name]
-?
-past.context[ctx][name]
-:null;
-
-let contextEvidence=
-globalEvidence;
-
-if(
-contextData &&
-contextData.tests>=25
-){
-
-const contextRate=
-rate(contextData);
-
-const contextConfidence=
-clamp(
-contextData.tests/100,
-0,
-1
-);
-
-contextEvidence=
-globalEvidence+
-(
-contextRate-globalEvidence
-)*
-contextConfidence;
-
-}
-
-
-/*
-Combinaison prudente.
-*/
-
-scores[name]=
-contextEvidence*
-(
-0.65+
-0.35*
-(weights[name]||0.25)*4
-);
-
-}
-
-
-/*
-Choix du modèle.
-*/
-
-let selected=
-names[0];
-
-for(const name of names){
-
-if(
-scores[name]>
-scores[selected]
-){
-
-selected=name;
-
-}
-
-}
-
-
-/*
-Si données insuffisantes,
-Global reste la référence.
-*/
-
-const totalPast=
-names.reduce(
-(sum,name)=>
-sum+
-(
-past[name]
-?
-past[name].tests
-:0
-),
-0
-);
-
-if(totalPast<120){
-
-selected="Global";
-
-}
-
-
-const candidate=
-four[selected].candidate;
-
-
-/*
-Accord des 4 modèles.
-*/
-
-let agreement=0;
-
-for(const name of names){
-
-if(
-four[name].candidate===
-candidate
-){
-
-agreement++;
-
-}
-
-}
-
-
-/*
-Écart entre meilleur et second
-score Meta.
-*/
-
-const sorted=
-Object.values(scores)
-.sort((a,b)=>b-a);
-
-const best=
-sorted[0]||10;
-
-const second=
-sorted[1]||10;
-
-const gap=
-Math.max(
-0,
-best-second
-);
-
-
-/*
-Score V8.
-
-Ce score n'est PAS une probabilité.
-*/
-
-const agreementBoost=
-agreement*5;
-
-const score=
-clamp(
-50+
-gap*2+
-agreementBoost,
-0,
-100
-);
-
-return {
-
-four,
-
-selected,
-
-candidate,
-
-scores,
-
-weights,
-
-score,
-
-gap,
-
-agreement,
-
-context:ctx
-
-};
-
-}
-
-
-/* =========================================================
-BUCKET SCORE
-========================================================= */
-
-function scoreBucket(score){
-
-if(score>=90)
-return "90-100";
-
-if(score>=80)
-return "80-89";
-
-if(score>=70)
-return "70-79";
-
-if(score>=60)
-return "60-69";
-
-return "50-59";
-
-}
-
-
-/* =========================================================
-RÉSULTATS VIDES
-========================================================= */
-
-function emptyStats(){
-
-return {
-tests:0,
-wins:0,
-history:[]
-};
-
-}
-
-
-/* =========================================================
-TRUE WALK-FORWARD V8
-========================================================= */
-
-function runTrueWalkForward(data){
-
-const systems=[
-"Random",
-"Global",
-"Recent",
-"Transition",
-"Sequence",
-"EnsembleV1",
-"EnsembleV2",
-"Meta"
-];
-
-const results={};
-
-for(const name of systems){
-
-results[name]=
-emptyStats();
-
-}
-
-
-/*
-Performance passée des quatre modèles.
-
-IMPORTANT :
-
-ces données contiennent uniquement
-les observations déjà rencontrées.
-*/
-
-const past={
-
-Global:emptyStats(),
-
-Recent:emptyStats(),
-
-Transition:emptyStats(),
-
-Sequence:emptyStats(),
-
-context:{}
-
-};
-
-
-/*
-Statistiques Meta.
-*/
-
-const selectedStats={
-
-Global:emptyStats(),
-
-Recent:emptyStats(),
-
-Transition:emptyStats(),
-
-Sequence:emptyStats()
-};
-
-
-/*
-Meta par contexte.
-*/
-
-const contextStats={
-
-"Normal":emptyStats(),
-
-"Régime change":emptyStats(),
-
-"Forte uniformité":emptyStats(),
-
-"Streak élevé":emptyStats()
-
-};
-
-
-/*
-Meta par chiffre.
-*/
-
-const digitStats=
-Array.from(
-{length:10},
-()=>emptyStats()
-);
-
-
-/*
-Meta par score.
-*/
-
-const scoreStats={
-
-"50-59":emptyStats(),
-
-"60-69":emptyStats(),
-
-"70-79":emptyStats(),
-
-"80-89":emptyStats(),
-
-"90-100":emptyStats()
-
-};
-
-
-/*
-Meta par accord.
-*/
-
-const agreementStats={
-
-1:emptyStats(),
-
-2:emptyStats(),
-
-3:emptyStats(),
-
-4:emptyStats()
-
-};
-
-
-/*
-Random déterministe.
-*/
-
-let seed=731923;
-
-function randomDigit(){
-
-seed=
-(
-seed*1664525+
-1013904223
-)>>>0;
-
-return Math.floor(
-(seed/4294967296)*10
-);
-
-}
-
-
-/*
-WALK-FORWARD
-*/
-
-for(
-let i=MIN_WALK_FORWARD;
-i<data.length;
-i++
-){
-
-const train=
-data.slice(
-Math.max(
-0,
-i-WINDOW
-),
-i
-);
-
-const actual=
-data[i];
-
-if(
-train.length<MIN_WALK_FORWARD
-){
-
-continue;
-
-}
-
-
-/*
-Créer les stats de contexte
-disponibles AVANT le tick cible.
-*/
-
-const currentContext=
-getContext(train);
-
-past.context=
-past.context||{};
-
-if(
-!past.context[currentContext]
-){
-
-past.context[currentContext]={};
-
-}
-
-for(
-const name of
-[
-"Global",
-"Recent",
-"Transition",
-"Sequence"
-]
-){
-
-if(
-!past.context[currentContext][name]
-){
-
-past.context[currentContext][name]=
-emptyStats();
-
-}
-
-}
-
-
-/*
-Calcul des prédictions.
-
-AUCUN accès à data[i].
-*/
-
-const four=
-getFourModels(train);
-
-const weights=
-calculateWeights(past);
-
-const v1=
-ensembleV1(train,weights);
-
-const v2=
-ensembleV2(train,weights);
-
-const meta=
-metaSelect(train,past);
-
-
-/*
-Prédictions.
-*/
-
-const predictions={
-
-Global:
-four.Global.candidate,
-
-Recent:
-four.Recent.candidate,
-
-Transition:
-four.Transition.candidate,
-
-Sequence:
-four.Sequence.candidate,
-
-EnsembleV1:
-v1.candidate,
-
-EnsembleV2:
-v2.candidate,
-
-Meta:
-meta.candidate
-
-};
-
-
-/*
-Évaluer après observation.
-*/
-
-for(const name of systems){
-
-const win=
-predictions[name]===
-actual;
-
-results[name].tests++;
-
-if(win){
-
-results[name].wins++;
-
-}
-
-results[name].history.push(
-win?1:0
-);
-
-}
-
-
-/*
-Mettre à jour le passé des quatre modèles
-APRÈS avoir vu le tick réel.
-*/
-
-for(
-const name of
-[
-"Global",
-"Recent",
-"Transition",
-"Sequence"
-]
-){
-
-const win=
-predictions[name]===
-actual;
-
-past[name].tests++;
-
-if(win){
-
-past[name].wins++;
-
-}
-
-past[name].history.push(
-win?1:0
-);
-
-
-/*
-Contexte.
-*/
-
-past.context[currentContext][name].tests++;
-
-if(win){
-
-past.context[currentContext][name].wins++;
-
-}
-
-}
-
-
-/*
-Quel modèle Meta a choisi ?
-*/
-
-const selected=
-meta.selected;
-
-const metaWin=
-meta.candidate===
-actual;
-
-selectedStats[selected].tests++;
-
-if(metaWin){
-
-selectedStats[selected].wins++;
-
-}
-
-selectedStats[selected].history.push(
-metaWin?1:0
-);
-
-
-/*
-Contexte Meta.
-*/
-
-contextStats[
-currentContext
-].tests++;
-
-if(metaWin){
-
-contextStats[
-currentContext
-].wins++;
-
-}
-
-contextStats[
-currentContext
-].history.push(
-metaWin?1:0
-);
-
-
-/*
-Chiffre.
-*/
-
-digitStats[
-meta.candidate
-].tests++;
-
-if(metaWin){
-
-digitStats[
-meta.candidate
-].wins++;
-
-}
-
-
-/*
-Score.
-*/
-
-const bucket=
-scoreBucket(
-meta.score
-);
-
-scoreStats[
-bucket
-].tests++;
-
-if(metaWin){
-
-scoreStats[
-bucket
-].wins++;
-
-}
-
-
-/*
-Accord.
-*/
-
-const a=
-clamp(
-meta.agreement,
-1,
-4
-);
-
-agreementStats[
-a
-].tests++;
-
-if(metaWin){
-
-agreementStats[
-a
-].wins++;
-
-}
-
-}
-
-
-/*
-RANDOM est calculé séparément,
-avec la même longueur d'échantillon.
-*/
-
-results.Random=
-emptyStats();
-
-for(
-let i=MIN_WALK_FORWARD;
-i<data.length;
-i++
-){
-
-const train=
-data.slice(
-Math.max(
-0,
-i-WINDOW
-),
-i
-);
-
-if(
-train.length<
-MIN_WALK_FORWARD
-){
-
-continue;
-
-}
-
-const actual=
-data[i];
-
-const guess=
-randomDigit();
-
-const win=
-guess===actual;
-
-results.Random.tests++;
-
-if(win){
-
-results.Random.wins++;
-
-}
-
-results.Random.history.push(
-win?1:0
-);
-
-}
-
-
-return {
-
-results,
-
-selectedStats,
-
-contextStats,
-
-digitStats,
-
-scoreStats,
-
-agreementStats
-
-};
-
-}
-
-
-/* =========================================================
-RENDER BENCHMARK
-========================================================= */
-
-function renderBenchmark(){
-
-const table=
-document.getElementById(
-"benchmarkTable"
-);
-
-table.innerHTML="";
-
-const order=[
-"Random",
-"Global",
-"Recent",
-"Transition",
-"Sequence",
-"EnsembleV1",
-"EnsembleV2",
-"Meta"
-];
-
-for(const name of order){
-
-const s=
-benchmark.results[name];
-
-const label=
-name==="EnsembleV1"
-?"Ensemble V1":
-name==="EnsembleV2"
-?"Ensemble V2":
-name==="Meta"
-?"META SELECTOR":
-name;
-
-const tr=
-document.createElement("tr");
-
-tr.innerHTML=`
-<td>${label}</td>
-<td>${s.tests}</td>
-<td>${s.wins}</td>
-<td>${rate(s).toFixed(1)}%</td>
-<td>${wilsonLower(s.wins,s.tests).toFixed(1)}%</td>
-`;
-
-table.appendChild(tr);
-
-}
-
-}
-
-
-/* =========================================================
-SYSTEM TABLE
-========================================================= */
-
-function renderSystems(){
-
-const table=
-document.getElementById(
-"systemTable"
-);
-
-table.innerHTML="";
-
-const order=[
-["Global","Global"],
-["Recent","Recent"],
-["Transition","Transition"],
-["Sequence","Sequence"],
-["Ensemble V1","EnsembleV1"],
-["Ensemble V2","EnsembleV2"],
-["META SELECTOR","Meta"]
-];
-
-for(const item of order){
-
-const s=
-benchmark.results[item[1]];
-
-const tr=
-document.createElement("tr");
-
-tr.innerHTML=`
-<td><b>${item[0]}</b></td>
-<td>${s.tests}</td>
-<td>${s.wins}</td>
-<td>${rate(s).toFixed(1)}%</td>
-<td>${wilsonLower(s.wins,s.tests).toFixed(1)}%</td>
-`;
-
-table.appendChild(tr);
-
-}
-
-}
-
-
-/* =========================================================
-META
-========================================================= */
-
-function renderMeta(){
-
-const s=
-benchmark.results.Meta;
-
-document.getElementById(
-"metaTests"
-).textContent=
-s.tests;
-
-document.getElementById(
-"metaWins"
-).textContent=
-s.wins;
-
-document.getElementById(
-"metaRate"
-).textContent=
-rate(s).toFixed(1)+"%";
-
-document.getElementById(
-"metaWilson"
-).textContent=
-wilsonLower(
-s.wins,
-s.tests
-).toFixed(1)+"%";
+if(!arr.length)
+return 0;
 
 const last=
-s.history.slice(-50);
+arr[arr.length-1];
 
-const wins=
-last.reduce(
-(a,b)=>a+b,
-0
-);
-
-document.getElementById(
-"rolling50"
-).textContent=
-last.length
-?
-(
-wins/last.length*100
-).toFixed(1)+
-"% ("+
-wins+
-"/"+
-last.length+
-")"
-:"—";
-
-}
-
-
-/* =========================================================
-SELECTIONS
-========================================================= */
-
-function renderSelections(){
-
-const table=
-document.getElementById(
-"selectionTable"
-);
-
-table.innerHTML="";
+let n=0;
 
 for(
-const name of
-[
-"Global",
-"Recent",
-"Transition",
-"Sequence"
-]
+let i=arr.length-1;
+i>=0;
+i--
 ){
 
-const s=
-benchmark.selectedStats[name];
-
-const tr=
-document.createElement("tr");
-
-tr.innerHTML=`
-<td>${name}</td>
-<td>${s.tests}</td>
-<td>${s.wins}</td>
-<td>${rate(s).toFixed(1)}%</td>
-`;
-
-table.appendChild(tr);
+if(arr[i]===last)
+n++;
+else
+break;
 
 }
 
-}
-
-
-/* =========================================================
-MODELS
-========================================================= */
-
-function renderModels(current){
-
-const table=
-document.getElementById(
-"modelTable"
-);
-
-table.innerHTML="";
-
-for(
-const name of
-[
-"Global",
-"Recent",
-"Transition",
-"Sequence"
-]
-){
-
-const s=
-benchmark.results[name];
-
-const tr=
-document.createElement("tr");
-
-tr.innerHTML=`
-<td>${name}</td>
-<td>${current.four[name].candidate}</td>
-<td>${s.tests}</td>
-<td>${s.wins}</td>
-<td>${rate(s).toFixed(1)}%</td>
-<td>${wilsonLower(s.wins,s.tests).toFixed(1)}%</td>
-`;
-
-table.appendChild(tr);
+return n;
 
 }
 
-}
-
-
-/* =========================================================
-POIDS
-========================================================= */
-
-function renderWeights(current){
-
-const table=
-document.getElementById(
-"weightTable"
-);
-
-table.innerHTML="";
-
-const stats={};
-
-for(
-const name of
-[
-"Global",
-"Recent",
-"Transition",
-"Sequence"
-]
-){
-
-stats[name]=
-benchmark.results[name];
-
-}
-
-const weights=
-calculateWeights(stats);
-
-for(
-const name of
-Object.keys(weights)
-){
-
-const s=
-benchmark.results[name];
-
-const tr=
-document.createElement("tr");
-
-tr.innerHTML=`
-<td>${name}</td>
-<td>${current.four[name].candidate}</td>
-<td>${(weights[name]*100).toFixed(1)}%</td>
-<td>${s.tests}</td>
-<td>${s.wins}</td>
-<td>${rate(s).toFixed(1)}%</td>
-<td>${wilsonLower(s.wins,s.tests).toFixed(1)}%</td>
-`;
-
-table.appendChild(tr);
-
-}
-
-}
-
-
-/* =========================================================
-CONTEXTE
-========================================================= */
 
 function renderContext(){
 
-const table=
+const a=
+digits.slice(-100);
+
+if(!a.length)
+return;
+
 document.getElementById(
-"contextTable"
-);
+"entropy"
+).textContent=
+entropy(a).toFixed(3);
 
-table.innerHTML="";
+document.getElementById(
+"uniformity"
+).textContent=
+uniformity(a).toFixed(1)+"%";
 
-for(
-const key of
-[
-"Normal",
-"Régime change",
-"Forte uniformité",
-"Streak élevé"
-]
-){
+document.getElementById(
+"streak"
+).textContent=
+streak(a);
 
-const s=
-benchmark.contextStats[key];
-
-const tr=
-document.createElement("tr");
-
-tr.innerHTML=`
-<td>${key}</td>
-<td>${s.tests}</td>
-<td>${s.wins}</td>
-<td>${rate(s).toFixed(1)}%</td>
-<td>${wilsonLower(s.wins,s.tests).toFixed(1)}%</td>
-`;
-
-table.appendChild(tr);
-
-}
+document.getElementById(
+"regime"
+).textContent=
+Math.abs(
+entropy(a.slice(-30))-
+entropy(a.slice(-60,-30))
+)>0.25
+?"⚠️ OUI"
+:"NON";
 
 }
 
 
 /* =========================================================
-DIGITS
+FREQUENCY UI
 ========================================================= */
 
-function renderDigits(){
-
-const table=
-document.getElementById(
-"digitTable"
-);
-
-table.innerHTML="";
-
-for(let d=0;d<10;d++){
-
-const s=
-benchmark.digitStats[d];
-
-const tr=
-document.createElement("tr");
-
-tr.innerHTML=`
-<td>${d}</td>
-<td>${s.tests}</td>
-<td>${s.wins}</td>
-<td>${rate(s).toFixed(1)}%</td>
-<td>${wilsonLower(s.wins,s.tests).toFixed(1)}%</td>
-`;
-
-table.appendChild(tr);
-
-}
-
-}
-
-
-/* =========================================================
-SCORE
-========================================================= */
-
-function renderScores(){
-
-const table=
-document.getElementById(
-"scoreTable"
-);
-
-table.innerHTML="";
-
-for(
-const key of
-[
-"50-59",
-"60-69",
-"70-79",
-"80-89",
-"90-100"
-]
-){
-
-const s=
-benchmark.scoreStats[key];
-
-const tr=
-document.createElement("tr");
-
-tr.innerHTML=`
-<td>${key}</td>
-<td>${s.tests}</td>
-<td>${s.wins}</td>
-<td>${rate(s).toFixed(1)}%</td>
-<td>${wilsonLower(s.wins,s.tests).toFixed(1)}%</td>
-`;
-
-table.appendChild(tr);
-
-}
-
-}
-
-
-/* =========================================================
-ACCORD
-========================================================= */
-
-function renderAgreements(){
-
-const table=
-document.getElementById(
-"agreementTable"
-);
-
-table.innerHTML="";
-
-for(let a=1;a<=4;a++){
-
-const s=
-benchmark.agreementStats[a];
-
-const tr=
-document.createElement("tr");
-
-tr.innerHTML=`
-<td>${a}/4</td>
-<td>${s.tests}</td>
-<td>${s.wins}</td>
-<td>${rate(s).toFixed(1)}%</td>
-<td>${wilsonLower(s.wins,s.tests).toFixed(1)}%</td>
-`;
-
-table.appendChild(tr);
-
-}
-
-}
-
-
-/* =========================================================
-FRÉQUENCES
-========================================================= */
-
-function renderFrequencies(){
-
-const f=
-frequency(
-digits.slice(-100)
-);
+function renderFrequency(){
 
 const box=
 document.getElementById(
-"frequencies"
+"freq"
+);
+
+const f=
+freq(
+digits.slice(-100)
 );
 
 box.innerHTML="";
@@ -2966,481 +2515,62 @@ box.appendChild(div);
 
 
 /* =========================================================
-CONTEXTE LIVE
+LIVE PREDICTION
 ========================================================= */
 
-function renderLiveContext(){
-
-const arr=
-digits.slice(-100);
-
-if(!arr.length)
-return;
-
-const h=
-entropy(arr);
-
-const u=
-uniformity(arr);
-
-const s=
-streak(arr);
-
-const r=
-regimeChange(arr);
-
-const c=
-getContext(arr);
-
-document.getElementById(
-"entropy"
-).textContent=
-h.toFixed(3);
-
-document.getElementById(
-"uniformity"
-).textContent=
-u.toFixed(1)+"%";
-
-document.getElementById(
-"streak"
-).textContent=
-s;
-
-document.getElementById(
-"regime"
-).textContent=
-r
-?"⚠️ OUI"
-:"NON";
-
-document.getElementById(
-"context"
-).textContent=
-c;
-
-}
-
-
-/* =========================================================
-CALIBRATION RÉELLE
-========================================================= */
-
-function calculateCalibration(score){
-
-if(!benchmark)
-return 50;
-
-const bucket=
-scoreBucket(score);
-
-const s=
-benchmark.scoreStats[bucket];
+function livePrediction(){
 
 if(
-!s ||
-s.tests<30
-){
-
-return 50;
-
-}
-
-
-/*
-On compare le taux empirique
-au niveau de référence 10%.
-*/
-
-const empirical=
-rate(s);
-
-const confidence=
-clamp(
-s.tests/200,
-0,
-1
-);
-
-const evidence=
-10+
-(
-empirical-10
-)*
-confidence;
-
-
-/*
-Transformation en indice 0-100.
-
-Ce n'est PAS une probabilité.
-*/
-
-return clamp(
-50+
-(evidence-10)*5,
-0,
-100
-);
-
-}
-
-
-/* =========================================================
-GATE
-========================================================= */
-
-function updateGate(meta){
-
-if(!benchmark)
+digits.length<LOOKBACK
+)
 return;
 
-const s=
-benchmark.results.Meta;
+const a=
+digits.slice(-LOOKBACK);
 
-const tests=
-s.tests;
+const m=
+models(a);
 
-const realRate=
-rate(s);
+const names=
+Object.keys(m);
 
-const lower=
-wilsonLower(
-s.wins,
-s.tests
-);
+let best=
+names[0];
 
-const rolling=
-s.history.slice(-50);
-
-const rollingWins=
-rolling.reduce(
-(a,b)=>a+b,
-0
-);
-
-const rollingRate=
-rolling.length
-?
-rollingWins/rolling.length*100
-:0;
-
-
-/*
-Conditions.
-*/
-
-const cTests=
-tests>=500;
-
-const cRate=
-realRate>=10.5;
-
-const cWilson=
-lower>=8.5;
-
-const cAgreement=
-meta.agreement>=3;
-
-const cCalibration=
-calculateCalibration(
-meta.score
-)>=55;
-
-const cRolling=
-rolling.length>=50 &&
-rollingRate>=10;
-
-
-/*
-Gate final.
-
-IMPORTANT :
-aucune transaction n'est déclenchée.
-*/
-
-const open=
-cTests &&
-cRate &&
-cWilson &&
-cAgreement &&
-cCalibration &&
-cRolling;
-
-
-/*
-État.
-*/
-
-const state=
-document.getElementById(
-"gateState"
-);
-
-state.textContent=
-open
-?"VALIDATION OK"
-:"FERMÉ";
-
-state.className=
-open
-?"orange"
-:"red";
-
-
-/*
-Valeurs.
-*/
-
-document.getElementById(
-"gateTests"
-).textContent=
-tests;
-
-document.getElementById(
-"gateRate"
-).textContent=
-realRate.toFixed(1)+"%";
-
-document.getElementById(
-"gateWilson"
-).textContent=
-lower.toFixed(1)+"%";
-
-
-/*
-Checks.
-*/
-
-setCheck(
-"checkTests",
-"Tests",
-cTests,
-tests+" / 500"
-);
-
-setCheck(
-"checkRate",
-"Taux",
-cRate,
-realRate.toFixed(1)+"% / 10.5%"
-);
-
-setCheck(
-"checkWilson",
-"Wilson",
-cWilson,
-lower.toFixed(1)+"% / 8.5%"
-);
-
-setCheck(
-"checkAgreement",
-"Accord",
-cAgreement,
-meta.agreement+"/4"
-);
-
-setCheck(
-"checkCalibration",
-"Calibration",
-cCalibration,
-calculateCalibration(meta.score).toFixed(1)+
-"/100"
-);
-
-setCheck(
-"checkRolling",
-"Rolling 50",
-cRolling,
-rollingRate.toFixed(1)+"%"
-);
-
-}
-
-
-function setCheck(
-id,
-name,
-ok,
-value
-){
-
-const el=
-document.getElementById(id);
-
-el.innerHTML=
-(
-ok
-?"✅ "
-:"❌ "
-)+
-name+
-": "+
-value;
-
-el.style.color=
-ok
-?"#67efb5"
-:"#ff8080";
-
-}
-
-
-/* =========================================================
-PRÉDICTION LIVE
-========================================================= */
-
-function updatePrediction(){
+for(const n of names){
 
 if(
-digits.length<WINDOW
+m[n].score>
+m[best].score
 ){
 
-return;
+best=n;
 
 }
 
-const arr=
-digits.slice(-WINDOW);
-
-
-/*
-Stats disponibles.
-
-Elles proviennent uniquement
-du walk-forward déjà terminé.
-*/
-
-const past={
-
-Global:
-benchmark
-?
-benchmark.results.Global
-:emptyStats(),
-
-Recent:
-benchmark
-?
-benchmark.results.Recent
-:emptyStats(),
-
-Transition:
-benchmark
-?
-benchmark.results.Transition
-:emptyStats(),
-
-Sequence:
-benchmark
-?
-benchmark.results.Sequence
-:emptyStats(),
-
-context:{}
-
-};
-
-
-/*
-Pour V8 live, construire les statistiques
-contextuelles à partir des résultats
-du benchmark n'est pas suffisant pour
-rejouer exactement chaque contexte.
-On utilise donc une sélection globale
-prudente pour le live.
-
-Le benchmark reste la référence.
-*/
-
-const meta=
-metaSelect(
-arr,
-past
-);
-
-const cal=
-calculateCalibration(
-meta.score
-);
+}
 
 document.getElementById(
-"candidate"
+"liveCandidate"
 ).textContent=
-meta.candidate;
+m[best].candidate;
 
 document.getElementById(
-"selectedModel"
+"liveModel"
 ).textContent=
-"Modèle "+
-meta.selected;
+best;
 
 document.getElementById(
-"rawScore"
+"liveScore"
 ).textContent=
-meta.score.toFixed(1)+
+m[best].score.toFixed(1)+
 "/100";
-
-document.getElementById(
-"calibration"
-).textContent=
-cal.toFixed(1)+
-"/100";
-
-document.getElementById(
-"agreement"
-).textContent=
-meta.agreement+
-"/4";
-
-document.getElementById(
-"gap"
-).textContent=
-meta.gap.toFixed(2)+
-"%";
-
-
-/*
-Historique visuel.
-*/
-
-predictionHistory.unshift(
-new Date().toLocaleTimeString()+
-" | Meta="+
-meta.selected+
-" | Candidate="+
-meta.candidate+
-" | Score="+
-meta.score.toFixed(1)+
-" | Cal="+
-cal.toFixed(1)+
-" | Accord="+
-meta.agreement+
-"/4"
-);
-
-predictionHistory=
-predictionHistory.slice(
-0,
-35
-);
-
-document.getElementById(
-"predictionHistory"
-).textContent=
-predictionHistory.join("\n");
-
-updateGate(meta);
-
-renderModels(meta);
-
-renderWeights(meta);
 
 }
 
 
 /* =========================================================
-HISTORIQUE DERIV
+HISTORY REQUEST
 ========================================================= */
 
 function requestHistory(){
@@ -3448,60 +2578,62 @@ function requestHistory(){
 if(
 !ws ||
 ws.readyState!==WebSocket.OPEN
-){
-
+)
 return;
-
-}
-
-log(
-"Demande historique R_75..."
-);
 
 ws.send(
 JSON.stringify({
 
-ticks_history:SYMBOL,
+ticks_history:
+SYMBOL,
 
-count:HISTORY_COUNT,
+count:
+HISTORY_COUNT,
 
-end:"latest",
+end:
+"latest",
 
-style:"ticks"
+style:
+"ticks"
 
 })
+);
+
+log(
+"Historique demandé : "+
+HISTORY_COUNT+
+" ticks."
 );
 
 }
 
 
 /* =========================================================
-LIVE TICKS
+LIVE SUBSCRIPTION
 ========================================================= */
 
-function subscribeTicks(){
+function subscribe(){
 
 if(
 !ws ||
 ws.readyState!==WebSocket.OPEN
-){
-
+)
 return;
-
-}
 
 ws.send(
 JSON.stringify({
 
-ticks:SYMBOL,
+ticks:
+SYMBOL,
 
-subscribe:1
+subscribe:
+1
 
 })
 );
 
 log(
-"Abonnement live R_75 activé."
+"Flux live R_75 activé."
 );
 
 }
@@ -3514,7 +2646,7 @@ WEBSOCKET
 function connect(){
 
 log(
-"Connexion WebSocket public Deriv..."
+"Connexion WebSocket public..."
 );
 
 ws=
@@ -3522,17 +2654,12 @@ new WebSocket(
 WS_URL
 );
 
-
 ws.onopen=function(){
 
 document.getElementById(
 "status"
 ).innerHTML=
-'<span class="green">🟢 Connecté</span>';
-
-log(
-"WebSocket connecté."
-);
+'<span class="green">🟢 Connecté — EDGE LAB</span>';
 
 requestHistory();
 
@@ -3546,9 +2673,7 @@ let data;
 try{
 
 data=
-JSON.parse(
-event.data
-);
+JSON.parse(event.data);
 
 }catch(e){
 
@@ -3557,16 +2682,12 @@ return;
 }
 
 
-/*
-ERREUR API
-*/
-
 if(data.error){
 
 log(
-"API ERROR: "+
+"API ERROR : "+
 (
-data.error.message ||
+data.error.message||
 JSON.stringify(data.error)
 )
 );
@@ -3582,43 +2703,35 @@ HISTORIQUE
 
 if(data.history){
 
-const historyPrices=
+const p=
 data.history.prices||[];
 
 prices=[];
-
 digits=[];
 
-for(
-const quote of historyPrices
-){
+for(const q of p){
 
 const n=
-Number(quote);
-
-const d=
-digitFromQuote(quote);
+Number(q);
 
 if(
-Number.isFinite(n) &&
-d!==null
+Number.isFinite(n)
 ){
 
 prices.push(n);
 
-digits.push(d);
+digits.push(
+digitFromQuote(n)
+);
 
 }
 
 }
-
-ticksReceived=
-digits.length;
 
 document.getElementById(
-"ticksReceived"
+"tickCount"
 ).textContent=
-ticksReceived;
+digits.length;
 
 if(prices.length){
 
@@ -3634,7 +2747,7 @@ prices.length-1
 if(digits.length){
 
 document.getElementById(
-"lastDigit"
+"digit"
 ).textContent=
 digits[
 digits.length-1
@@ -3648,66 +2761,21 @@ digits.length+
 " ticks."
 );
 
-
-/*
-TRUE WALK-FORWARD
-*/
-
-if(
-digits.length>=
-MIN_WALK_FORWARD
-){
-
-log(
-"TRUE WALK-FORWARD V8 en cours..."
-);
-
-benchmark=
-runTrueWalkForward(
-digits
-);
-
-log(
-"Benchmark terminé : "+
-benchmark.results.Meta.tests+
-" tests Meta."
-);
-
-renderBenchmark();
-
-renderSystems();
-
-renderMeta();
-
-renderSelections();
+renderFrequency();
 
 renderContext();
 
-renderDigits();
+livePrediction();
 
-renderScores();
+if(
+digits.length>=500
+){
 
-renderAgreements();
+runLab();
 
 }
 
-
-/*
-Affichage.
-*/
-
-renderFrequencies();
-
-renderLiveContext();
-
-updatePrediction();
-
-
-/*
-Abonnement live.
-*/
-
-subscribeTicks();
+subscribe();
 
 return;
 
@@ -3720,61 +2788,49 @@ TICK LIVE
 
 if(data.tick){
 
-const quote=
+const q=
 Number(
 data.tick.quote
 );
 
-const d=
-digitFromQuote(
-data.tick.quote
-);
-
 if(
-Number.isFinite(quote) &&
-d!==null
+Number.isFinite(q)
 ){
 
-prices.push(quote);
+prices.push(q);
 
-digits.push(d);
+digits.push(
+digitFromQuote(q)
+);
 
-if(prices.length>1500){
-
+if(prices.length>2500)
 prices.shift();
 
-}
-
-if(digits.length>1500){
-
+if(digits.length>2500)
 digits.shift();
 
-}
-
-ticksReceived++;
-
 document.getElementById(
-"ticksReceived"
+"tickCount"
 ).textContent=
-ticksReceived;
+digits.length;
 
 document.getElementById(
 "price"
 ).textContent=
-quote.toFixed(
-data.tick.pip_size||4
-);
+q.toFixed(4);
 
 document.getElementById(
-"lastDigit"
+"digit"
 ).textContent=
-d;
+digits[
+digits.length-1
+];
 
-renderFrequencies();
+renderFrequency();
 
-renderLiveContext();
+renderContext();
 
-updatePrediction();
+livePrediction();
 
 }
 
@@ -3805,7 +2861,7 @@ document.getElementById(
 '<span class="orange">🟠 Connexion fermée</span>';
 
 log(
-"WebSocket fermé. Reconnexion dans 5 secondes..."
+"Connexion fermée. Reconnexion dans 5 secondes..."
 );
 
 setTimeout(
@@ -3819,16 +2875,10 @@ connect,
 
 
 /* =========================================================
-DÉMARRAGE
+START
 ========================================================= */
 
-document.addEventListener(
-"DOMContentLoaded",
-function(){
-
 connect();
-
-});
 
 </script>
 
