@@ -2,45 +2,50 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>Prediction R75 — V8.5 REAL PAYOUT EDGE LAB</title>
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1">
+
+<title>Prediction R75 — V10 REAL EDGE ENGINE</title>
 
 <style>
-*{box-sizing:border-box}
+
+*{
+ box-sizing:border-box;
+}
 
 body{
  margin:0;
- background:#061019;
- color:#edf5fa;
+ background:#061018;
+ color:#edf6fb;
  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
 }
 
 .container{
- max-width:780px;
+ max-width:820px;
  margin:auto;
  padding:12px;
 }
 
 h1{
  font-size:21px;
- margin:3px 0;
+ margin:2px 0 4px;
 }
 
 h2{
- font-size:15px;
+ font-size:14px;
  margin:0 0 10px;
 }
 
 .subtitle{
- color:#8ca4b5;
- font-size:11px;
- line-height:1.45;
+ color:#8da6b7;
+ font-size:10px;
+ line-height:1.5;
  margin-bottom:12px;
 }
 
 .card{
- background:#0c1923;
- border:1px solid #1b3342;
+ background:#0b1923;
+ border:1px solid #1b3544;
  border-radius:13px;
  padding:12px;
  margin-bottom:10px;
@@ -49,14 +54,22 @@ h2{
 .status{
  padding:9px;
  border-radius:8px;
- background:#14232d;
- font-size:12px;
+ background:#14242f;
+ font-size:11px;
  margin-bottom:10px;
 }
 
-.ok{color:#46df8c}
-.bad{color:#ff6876}
-.warn{color:#ffd166}
+.ok{
+ color:#45e48c;
+}
+
+.bad{
+ color:#ff6877;
+}
+
+.warn{
+ color:#ffd166;
+}
 
 .grid{
  display:grid;
@@ -65,156 +78,169 @@ h2{
 }
 
 .stat{
- background:#07121a;
- border:1px solid #19303d;
+ background:#07131b;
+ border:1px solid #19323f;
  border-radius:9px;
  padding:9px;
 }
 
 .label{
- color:#7991a2;
- font-size:10px;
+ color:#7891a2;
+ font-size:9px;
 }
 
 .value{
  font-size:16px;
- font-weight:700;
+ font-weight:800;
  margin-top:3px;
 }
 
 .big{
- font-size:29px;
+ font-size:28px;
 }
 
 .small{
- color:#8197a8;
- font-size:10px;
- line-height:1.5;
+ color:#8197a7;
+ font-size:9px;
+ line-height:1.55;
 }
 
-input{
- width:100%;
- padding:11px;
- border-radius:8px;
- border:1px solid #294150;
- background:#07121a;
- color:white;
- font-size:15px;
- margin-top:6px;
+.green{
+ color:#45e48c;
+}
+
+.red{
+ color:#ff6877;
+}
+
+.yellow{
+ color:#ffd166;
+}
+
+.blue{
+ color:#50b5ff;
 }
 
 button{
  width:100%;
- padding:12px;
  border:0;
  border-radius:9px;
- background:#1687ed;
- color:white;
- font-size:14px;
- font-weight:700;
+ padding:12px;
  margin-top:8px;
+ background:#1688ed;
+ color:white;
+ font-weight:800;
+ font-size:13px;
 }
 
 button:disabled{
  opacity:.45;
 }
 
+input{
+ width:100%;
+ padding:11px;
+ margin-top:6px;
+ border-radius:8px;
+ border:1px solid #294454;
+ background:#07131b;
+ color:white;
+ font-size:15px;
+}
+
 .verdict{
  text-align:center;
- padding:15px;
  border-radius:10px;
- background:#27191c;
- border:1px solid #633139;
- color:#ff6978;
- font-size:18px;
+ padding:15px;
+ background:#29181c;
+ border:1px solid #64313a;
+ color:#ff6877;
+ font-size:17px;
  font-weight:900;
 }
 
 .verdict.good{
  background:#10271b;
- border-color:#2a6942;
- color:#4be18d;
+ border-color:#2d6c45;
+ color:#45e48c;
 }
 
 .verdict.warn{
- background:#282218;
- border-color:#665126;
+ background:#2a2418;
+ border-color:#665526;
  color:#ffd166;
 }
 
 .signal{
  text-align:center;
  padding:15px;
+ background:#07131b;
+ border:1px solid #264252;
  border-radius:10px;
- background:#0b1822;
- border:1px solid #294252;
 }
 
 .signalDigit{
- font-size:50px;
+ font-size:52px;
  font-weight:900;
 }
 
 table{
  width:100%;
  border-collapse:collapse;
- font-size:8.5px;
+ font-size:8px;
 }
 
 th,td{
  padding:6px 3px;
- border-bottom:1px solid #19303b;
+ border-bottom:1px solid #19303c;
  text-align:center;
 }
 
 th{
- color:#7f96a6;
- font-weight:600;
-}
-
-.win{color:#46df8c}
-.loss{color:#ff6876}
-.neutral{color:#ffd166}
-
-.badge{
- display:inline-block;
- padding:3px 6px;
- border-radius:6px;
- font-size:9px;
- background:#172733;
+ color:#8096a6;
 }
 
 .mono{
- white-space:pre-wrap;
- word-break:break-word;
- background:#040b10;
+ background:#030a0f;
  border-radius:8px;
- padding:10px;
+ padding:9px;
  max-height:300px;
  overflow:auto;
+ white-space:pre-wrap;
+ word-break:break-word;
  font-family:monospace;
- font-size:9px;
+ font-size:8px;
  line-height:1.45;
 }
 
 footer{
  text-align:center;
- color:#5e7483;
- font-size:10px;
+ color:#5c7381;
+ font-size:9px;
  padding:20px 0;
 }
+
+.badge{
+ display:inline-block;
+ padding:3px 6px;
+ border-radius:6px;
+ background:#172832;
+ font-size:8px;
+}
+
 </style>
 </head>
+
 
 <body>
 
 <div class="container">
 
-<h1>Prediction R75 — V8.5 REAL PAYOUT EDGE LAB</h1>
+<h1>Prediction R75 — V10 REAL EDGE ENGINE</h1>
 
 <div class="subtitle">
-Statistique + économie réelle • Walk-forward • Holdout verrouillé •
-Payout configurable • Shadow uniquement
+Recherche d'edge statistique et économique • Walk-forward •
+Multi-régime • Holdout verrouillé • Monte-Carlo • Shadow
 </div>
 
 <div id="status" class="status warn">
@@ -223,7 +249,7 @@ Payout configurable • Shadow uniquement
 
 
 <!-- =====================================================
-     MARCHE
+MARCHÉ
 ===================================================== -->
 
 <div class="card">
@@ -233,7 +259,7 @@ Payout configurable • Shadow uniquement
 <div class="grid">
 
 <div class="stat">
-<div class="label">Marché</div>
+<div class="label">Symbole</div>
 <div class="value">R_75</div>
 </div>
 
@@ -258,25 +284,21 @@ Payout configurable • Shadow uniquement
 
 
 <!-- =====================================================
-     PAYOUT
+ÉCONOMIE
 ===================================================== -->
 
 <div class="card">
 
-<h2>💰 PAYOUT RÉEL DU CONTRAT</h2>
+<h2>💰 ÉCONOMIE RÉELLE</h2>
 
 <div class="small">
 
-Entre ici le <b>GAIN NET</b> reçu lorsque tu mises 1 $ et
-que le contrat gagne.
+Entre le <b>GAIN NET</b> d'une victoire pour une mise de
+1 $.<br><br>
 
-Exemple : si 1 $ gagné rapporte 8 $ de bénéfice net,
-entre <b>8.00</b>.
+Exemple : mise 1 $ → bénéfice net 8 $ → entrer <b>8.00</b>.
 
-⚠️ Ce n'est PAS le montant total récupéré.
-Le moteur utilise :
-WIN = +payout net
-LOSS = -1 $
+Une perte vaut toujours <b>-1 $</b>.
 
 </div>
 
@@ -291,62 +313,43 @@ LOSS = -1 $
 <div class="grid" style="margin-top:8px">
 
 <div class="stat">
-<div class="label">Gain net WIN</div>
-<div id="payoutDisplay" class="value">
+<div class="label">Payout net</div>
+<div id="payoutValue" class="value">
 8.00 $
 </div>
 </div>
 
 <div class="stat">
 <div class="label">Break-even</div>
-<div id="breakeven" class="value">
+<div id="breakEven" class="value">
 11.1%
 </div>
 </div>
 
 </div>
 
-<div id="payoutWarning"
+<div id="economicWarning"
      class="small warn"
      style="margin-top:8px">
 </div>
 
 <button id="runLab">
-🚀 LANCER REAL PAYOUT EDGE LAB
+🚀 LANCER V10 REAL EDGE ENGINE
 </button>
 
 </div>
 
 
 <!-- =====================================================
-     SCENARIOS PAYOUT
+VERDICT
 ===================================================== -->
 
 <div class="card">
 
-<h2>🧮 SCÉNARIOS ÉCONOMIQUES</h2>
+<h2>🚦 VERDICT GLOBAL</h2>
 
-<div class="small">
-Permet de voir comment le même WIN rate se comporte
-selon différents payouts nets.
-</div>
-
-<div id="payoutScenarios">
-En attente du holdout...
-</div>
-
-</div>
-
-
-<!-- =====================================================
-     VERDICT
-===================================================== -->
-
-<div class="card">
-
-<h2>🚦 VERDICT</h2>
-
-<div id="verdict" class="verdict">
+<div id="verdict"
+     class="verdict">
 LAB EN ATTENTE
 </div>
 
@@ -354,7 +357,7 @@ LAB EN ATTENTE
      class="small"
      style="text-align:center;margin-top:8px">
 
-Attente d'un historique suffisant.
+Aucune conclusion avant le test final.
 
 </div>
 
@@ -362,12 +365,12 @@ Attente d'un historique suffisant.
 
 
 <!-- =====================================================
-     ARCHITECTURE
+ARCHITECTURE
 ===================================================== -->
 
 <div class="card">
 
-<h2>🏗️ ARCHITECTURE V8.5</h2>
+<h2>🏗️ ARCHITECTURE V10</h2>
 
 <div class="grid">
 
@@ -378,7 +381,7 @@ Attente d'un historique suffisant.
 
 <div class="stat">
 <div class="label">Historique reçu</div>
-<div id="historyActual" class="value">0</div>
+<div id="historySize" class="value">0</div>
 </div>
 
 <div class="stat">
@@ -404,33 +407,52 @@ Attente d'un historique suffisant.
 </div>
 
 <div class="small" style="margin-top:8px">
-Le holdout n'est jamais utilisé pour choisir le champion.
+
+Développement → recherche<br>
+Validation → sélection<br>
+Holdout → test final jamais utilisé pour sélectionner le champion
+
 </div>
 
 </div>
 
 
 <!-- =====================================================
-     STRATEGIES
+RÉGIMES
 ===================================================== -->
 
 <div class="card">
 
-<h2>🧠 HYPOTHÈSES TESTÉES</h2>
+<h2>🌡️ DÉTECTION DE RÉGIME</h2>
 
-<div class="small">
+<div class="grid">
 
-<b>Global</b> — chiffre le plus fréquent sur les 100 derniers ticks.<br><br>
+<div class="stat">
+<div class="label">Uniformité 50</div>
+<div id="u50" class="value">—</div>
+</div>
 
-<b>Recent</b> — chiffre le plus fréquent sur les 30 derniers ticks.<br><br>
+<div class="stat">
+<div class="label">Uniformité 100</div>
+<div id="u100" class="value">—</div>
+</div>
 
-<b>Transition</b> — chiffre qui suit le dernier chiffre.<br><br>
+<div class="stat">
+<div class="label">Uniformité 200</div>
+<div id="u200" class="value">—</div>
+</div>
 
-<b>Sequence 2</b> — chiffre suivant les deux derniers chiffres.<br><br>
+<div class="stat">
+<div class="label">Régime actuel</div>
+<div id="regime" class="value">—</div>
+</div>
 
-<b>Sequence 3</b> — chiffre suivant les trois derniers chiffres.<br><br>
+</div>
 
-<b>Reversal</b> — chiffre fréquent différent du dernier chiffre.
+<div class="small" style="margin-top:8px">
+
+Le régime décrit seulement la structure statistique récente.
+Il ne garantit pas la direction du prochain chiffre.
 
 </div>
 
@@ -438,14 +460,38 @@ Le holdout n'est jamais utilisé pour choisir le champion.
 
 
 <!-- =====================================================
-     DEVELOPMENT
+STRATÉGIES
+===================================================== -->
+
+<div class="card">
+
+<h2>🧠 FAMILLES DE STRATÉGIES</h2>
+
+<div class="small">
+
+<b>Global</b> — fréquence sur 100 ticks.<br>
+<b>Recent</b> — fréquence sur 30 ticks.<br>
+<b>Transition</b> — chiffre suivant le dernier chiffre.<br>
+<b>Sequence 2</b> — chiffre suivant les deux derniers chiffres.<br>
+<b>Sequence 3</b> — chiffre suivant les trois derniers chiffres.<br>
+<b>Reversal</b> — fréquence en excluant le dernier chiffre.<br>
+<b>Momentum</b> — fréquence courte contre fréquence longue.<br>
+<b>Balanced</b> — modèle favorisant les distributions moins déséquilibrées.
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+DEVELOPPEMENT
 ===================================================== -->
 
 <div class="card">
 
 <h2>🔬 DÉVELOPPEMENT — RECHERCHE</h2>
 
-<div id="developmentTable">
+<div id="devTable">
 En attente...
 </div>
 
@@ -453,14 +499,14 @@ En attente...
 
 
 <!-- =====================================================
-     VALIDATION
+VALIDATION
 ===================================================== -->
 
 <div class="card">
 
 <h2>🧪 VALIDATION — SÉLECTION</h2>
 
-<div id="validationTable">
+<div id="valTable">
 En attente...
 </div>
 
@@ -468,7 +514,7 @@ En attente...
 
 
 <!-- =====================================================
-     CHAMPION
+CHAMPION
 ===================================================== -->
 
 <div class="card">
@@ -483,7 +529,7 @@ En attente...
 
 
 <!-- =====================================================
-     HOLDOUT
+HOLDOUT
 ===================================================== -->
 
 <div class="card">
@@ -498,7 +544,7 @@ En attente...
 
 
 <!-- =====================================================
-     RENTABILITE
+ÉCONOMIE CHAMPION
 ===================================================== -->
 
 <div class="card">
@@ -513,7 +559,7 @@ En attente...
 
 
 <!-- =====================================================
-     RISQUE
+RISQUE
 ===================================================== -->
 
 <div class="card">
@@ -528,7 +574,7 @@ En attente...
 
 
 <!-- =====================================================
-     STABILITE
+STABILITÉ
 ===================================================== -->
 
 <div class="card">
@@ -543,12 +589,12 @@ En attente...
 
 
 <!-- =====================================================
-     MONTE CARLO
+MONTE CARLO
 ===================================================== -->
 
 <div class="card">
 
-<h2>🎲 TEST ALÉATOIRE</h2>
+<h2>🎲 MONTE-CARLO</h2>
 
 <div id="monteBox">
 En attente...
@@ -558,14 +604,14 @@ En attente...
 
 
 <!-- =====================================================
-     COMPARAISON
+COMPARAISON
 ===================================================== -->
 
 <div class="card">
 
 <h2>🏁 COMPARAISON HOLDOUT</h2>
 
-<div id="comparisonTable">
+<div id="comparison">
 En attente...
 </div>
 
@@ -573,12 +619,27 @@ En attente...
 
 
 <!-- =====================================================
-     DISTRIBUTION
+PAYOUT SCENARIOS
 ===================================================== -->
 
 <div class="card">
 
-<h2>🔢 DISTRIBUTION — 100 DERNIERS TICKS</h2>
+<h2>🧮 SENSIBILITÉ AU PAYOUT</h2>
+
+<div id="payoutScenarios">
+En attente...
+</div>
+
+</div>
+
+
+<!-- =====================================================
+DISTRIBUTION
+===================================================== -->
+
+<div class="card">
+
+<h2>🔢 DISTRIBUTION DES 100 DERNIERS TICKS</h2>
 
 <div id="distribution">
 En attente...
@@ -588,7 +649,7 @@ En attente...
 
 
 <!-- =====================================================
-     CONTEXTE
+CONTEXTE
 ===================================================== -->
 
 <div class="card">
@@ -603,25 +664,22 @@ En attente...
 
 
 <!-- =====================================================
-     LIVE
+LIVE
 ===================================================== -->
 
 <div class="card">
 
-<h2>🔮 PRÉDICTION LIVE — RECHERCHE</h2>
+<h2>🔮 RECHERCHE LIVE</h2>
 
-<div id="livePrediction" class="signal">
+<div id="livePrediction"
+     class="signal">
 
 <div class="small">
-Attente
+Attente de données
 </div>
 
 <div class="signalDigit">
 —
-</div>
-
-<div class="small">
-Aucun ordre envoyé.
 </div>
 
 </div>
@@ -630,25 +688,24 @@ Aucun ordre envoyé.
 
 
 <!-- =====================================================
-     SHADOW
+SHADOW
 ===================================================== -->
 
 <div class="card">
 
-<h2>👻 CONFIRMATION LIVE SHADOW</h2>
+<h2>👻 SHADOW — VALIDATION FUTURE</h2>
 
 <div class="small">
 
-Le champion est observé sur de nouvelles données.
-Le Shadow ne place aucun contrat et ne modifie jamais
-le holdout historique.
+Le Shadow observe le champion sur les nouvelles données.
+Il ne place aucun contrat réel.
 
 </div>
 
 <div id="shadowBox"
      style="margin-top:9px">
 
-En attente du champion...
+Aucun champion.
 
 </div>
 
@@ -660,15 +717,16 @@ RÉINITIALISER SHADOW
 
 
 <!-- =====================================================
-     JOURNAL
+JOURNAL
 ===================================================== -->
 
 <div class="card">
 
-<h2>📓 JOURNAL</h2>
+<h2>📓 JOURNAL V10</h2>
 
-<div id="journal" class="mono">
-Initialisation V8.5...
+<div id="journal"
+     class="mono">
+Initialisation V10...
 </div>
 
 <button id="clearJournal">
@@ -679,7 +737,7 @@ EFFACER JOURNAL
 
 
 <footer>
-V8.5 REAL PAYOUT EDGE LAB — TEST UNIQUEMENT — AUCUN TRADE
+V10 REAL EDGE ENGINE — RECHERCHE UNIQUEMENT — AUCUN TRADE
 </footer>
 
 </div>
@@ -688,7 +746,7 @@ V8.5 REAL PAYOUT EDGE LAB — TEST UNIQUEMENT — AUCUN TRADE
 <script>
 
 /* =====================================================
-   CONFIGURATION
+CONFIG
 ===================================================== */
 
 const SYMBOL = "R_75";
@@ -700,15 +758,19 @@ const HISTORY_COUNT = 2000;
 
 const LOOKBACK = 100;
 
-const RECENT = 30;
+const SHORT_WINDOW = 30;
+
+const MEDIUM_WINDOW = 100;
+
+const LONG_WINDOW = 200;
 
 const MIN_TESTS = 30;
 
-const MIN_HOLDOUT = 100;
-
-const SHADOW_TARGET = 100;
+const MIN_HOLDOUT = 150;
 
 const MC_RUNS = 3000;
+
+const SHADOW_TARGET = 150;
 
 let ws = null;
 
@@ -722,7 +784,7 @@ let champion = null;
 
 
 /* =====================================================
-   SHADOW
+SHADOW
 ===================================================== */
 
 let shadow = {
@@ -731,7 +793,7 @@ let shadow = {
 
  name:null,
 
- predictions:[],
+ observations:0,
 
  wins:0,
 
@@ -743,28 +805,33 @@ let shadow = {
 
  peak:0,
 
- drawdown:0,
+ maxDrawdown:0,
 
- lossStreak:0,
+ currentLossStreak:0,
 
- maxLossStreak:0
+ maxLossStreak:0,
+
+ currentWinStreak:0,
+
+ maxWinStreak:0
 
 };
 
 
 /* =====================================================
-   DOM
+DOM
 ===================================================== */
 
-const $ = id =>
-document.getElementById(id);
+const $ =
+ id =>
+ document.getElementById(id);
 
 
 /* =====================================================
-   JOURNAL
+JOURNAL
 ===================================================== */
 
-function log(text){
+function log(msg){
 
  const time =
  new Date()
@@ -774,13 +841,14 @@ function log(text){
  "["+
  time+
  "] "+
- text+
+ msg+
  "\n";
 
  $("journal").scrollTop =
  $("journal").scrollHeight;
 
 }
+
 
 $("clearJournal").onclick = () => {
 
@@ -791,7 +859,7 @@ $("clearJournal").onclick = () => {
 
 
 /* =====================================================
-   FORMAT
+FORMAT
 ===================================================== */
 
 function pct(x){
@@ -804,6 +872,7 @@ function pct(x){
  ).toFixed(1)+"%";
 
 }
+
 
 function money(x){
 
@@ -818,6 +887,7 @@ function money(x){
 
 }
 
+
 function clamp(x,a,b){
 
  return Math.max(
@@ -829,68 +899,58 @@ function clamp(x,a,b){
 
 
 /* =====================================================
-   PAYOUT
+PAYOUT
 ===================================================== */
 
-function getPayout(){
+function payout(){
 
  const p =
  Number(
  $("payout").value
  );
 
- if(
+ return (
  Number.isFinite(p) &&
  p>0
- ){
-
- return p;
-
- }
-
- return 8;
+ )
+ ? p
+ : 8;
 
 }
 
 
 function breakEven(){
 
- const p =
- getPayout();
-
- return 1/(1+p);
+ return 1/
+ (
+ 1+payout()
+ );
 
 }
 
 
-function updateEconomicUI(){
+function updatePayoutUI(){
 
  const p =
- getPayout();
+ payout();
 
- $("payoutDisplay").textContent =
+ $("payoutValue").textContent =
  p.toFixed(2)+
  " $";
 
- $("breakeven").textContent =
+ $("breakEven").textContent =
  pct(
  breakEven()
  );
 
-
- /*
-   Avertissement si payout
-   extrêmement faible.
- */
-
  if(p<1){
 
- $("payoutWarning").textContent =
- "⚠️ Payout net inférieur à 1 $. Le break-even dépasse 50 %. Vérifie que tu as bien entré le gain NET du contrat.";
+ $("economicWarning").textContent =
+ "⚠️ Vérifie bien que tu entres le GAIN NET, pas le paiement total.";
 
  }else{
 
- $("payoutWarning").textContent =
+ $("economicWarning").textContent =
  "";
 
  }
@@ -900,14 +960,14 @@ function updateEconomicUI(){
 
 $("payout").addEventListener(
  "input",
- updateEconomicUI
+ updatePayoutUI
 );
 
-updateEconomicUI();
+updatePayoutUI();
 
 
 /* =====================================================
-   DIGIT EXTRACTION
+DIGIT
 ===================================================== */
 
 function digitFromQuote(
@@ -939,14 +999,14 @@ function digitFromQuote(
  q*factor
  );
 
- const str =
+ const s =
  String(
  Math.abs(integer)
  );
 
  return Number(
- str.charAt(
- str.length-1
+ s.charAt(
+ s.length-1
  )
  );
 
@@ -954,7 +1014,7 @@ function digitFromQuote(
 
 
 /* =====================================================
-   COUNTS
+COUNTS
 ===================================================== */
 
 function counts(arr){
@@ -985,7 +1045,7 @@ function counts(arr){
 
 function argmax(arr){
 
- let best=0;
+ let index=0;
 
  for(
  let i=1;
@@ -995,22 +1055,22 @@ function argmax(arr){
 
  if(
  arr[i]>
- arr[best]
+ arr[index]
  ){
 
- best=i;
+ index=i;
 
  }
 
  }
 
- return best;
+ return index;
 
 }
 
 
 /* =====================================================
-   UNIFORMITY
+UNIFORMITÉ
 ===================================================== */
 
 function uniformity(arr){
@@ -1043,7 +1103,8 @@ function uniformity(arr){
  arr.length*9/10;
 
  return clamp(
- 1-(chi/maxChi),
+ 1-
+ chi/maxChi,
  0,
  1
  );
@@ -1052,7 +1113,7 @@ function uniformity(arr){
 
 
 /* =====================================================
-   STREAK
+STREAK
 ===================================================== */
 
 function streak(arr){
@@ -1091,10 +1152,12 @@ function streak(arr){
 
 
 /* =====================================================
-   TRANSITION
+TRANSITION
 ===================================================== */
 
-function transitionInfo(arr){
+function transition(
+ arr
+){
 
  const last =
  arr[arr.length-1];
@@ -1118,7 +1181,7 @@ function transitionInfo(arr){
 
  }
 
- const sample =
+ const n =
  c.reduce(
  (a,b)=>a+b,
  0
@@ -1127,11 +1190,11 @@ function transitionInfo(arr){
  return {
 
  prediction:
- sample>0
+ n
  ? argmax(c)
  : argmax(counts(arr)),
 
- sample
+ sample:n
 
  };
 
@@ -1139,10 +1202,10 @@ function transitionInfo(arr){
 
 
 /* =====================================================
-   SEQUENCE
+SEQUENCE
 ===================================================== */
 
-function sequenceInfo(
+function sequence(
  arr,
  order
 ){
@@ -1194,7 +1257,7 @@ function sequenceInfo(
 
  }
 
- const sample =
+ const n =
  c.reduce(
  (a,b)=>a+b,
  0
@@ -1203,11 +1266,11 @@ function sequenceInfo(
  return {
 
  prediction:
- sample>0
+ n
  ? argmax(c)
  : argmax(counts(arr)),
 
- sample
+ sample:n
 
  };
 
@@ -1215,213 +1278,182 @@ function sequenceInfo(
 
 
 /* =====================================================
-   MODELES
+RÉGIME
 ===================================================== */
 
-function getModels(arr){
+function regimeOf(arr){
 
- const global =
- argmax(
- counts(arr)
+ const u50 =
+ uniformity(
+ arr.slice(-50)
  );
 
- const recentArr =
- arr.slice(-RECENT);
-
- const recent =
- argmax(
- counts(recentArr)
+ const u100 =
+ uniformity(
+ arr.slice(-100)
  );
 
- const transition =
- transitionInfo(arr);
-
- const seq2 =
- sequenceInfo(
- arr,
- 2
- );
-
- const seq3 =
- sequenceInfo(
- arr,
- 3
- );
-
- const last =
- arr[arr.length-1];
-
- const rev =
- counts(arr);
-
- rev[last]=-1;
-
- const reversal =
- argmax(rev);
-
- return {
-
- global,
-
- recent,
-
- transition,
-
- seq2,
-
- seq3,
-
- reversal
-
- };
-
-}
-
-
-/* =====================================================
-   STRATEGIES
-===================================================== */
-
-const STRATEGIES = [
-
- {
-
- name:"Global",
-
- predict:
- ctx =>
- ctx.models.global
-
- },
-
- {
-
- name:"Recent",
-
- predict:
- ctx =>
- ctx.models.recent
-
- },
-
- {
-
- name:"Transition",
-
- active:
- ctx =>
- ctx.transitionSample>=3,
-
- predict:
- ctx =>
- ctx.models.transition.prediction
-
- },
-
- {
-
- name:"Sequence 2",
-
- active:
- ctx =>
- ctx.seq2Sample>=3,
-
- predict:
- ctx =>
- ctx.models.seq2.prediction
-
- },
-
- {
-
- name:"Sequence 3",
-
- active:
- ctx =>
- ctx.seq3Sample>=3,
-
- predict:
- ctx =>
- ctx.models.seq3.prediction
-
- },
-
- {
-
- name:"Reversal",
-
- predict:
- ctx =>
- ctx.models.reversal
-
- }
-
-];
-
-
-/* =====================================================
-   CONTEXTE HISTORIQUE
-===================================================== */
-
-function contextAt(
- digits,
- i
-){
-
- const arr =
- digits.slice(
- i-LOOKBACK,
- i
+ const u200 =
+ uniformity(
+ arr.slice(-200)
  );
 
  if(
- arr.length<
- LOOKBACK
+ u50<0.45 &&
+ u100<0.60
  ){
 
- return null;
+ return "DÉSÉQUILIBRE";
 
  }
 
+ if(
+ u50>0.90 &&
+ u100>0.85
+ ){
+
+ return "UNIFORME";
+
+ }
+
+ if(
+ Math.abs(
+ u50-u200
+ )>0.25
+ ){
+
+ return "TRANSITION";
+
+ }
+
+ return "NORMAL";
+
+}
+
+
+/* =====================================================
+CONTEXTE
+===================================================== */
+
+function makeContext(arr){
+
+ const global =
+ arr.slice(-100);
+
  const recent =
- arr.slice(-RECENT);
+ arr.slice(-30);
 
- const recentCounts =
- counts(recent);
-
- const transition =
- transitionInfo(arr);
+ const tr =
+ transition(global);
 
  const seq2 =
- sequenceInfo(
- arr,
- 2
- );
+ sequence(global,2);
 
  const seq3 =
- sequenceInfo(
- arr,
- 3
+ sequence(global,3);
+
+ const cGlobal =
+ counts(global);
+
+ const cRecent =
+ counts(recent);
+
+ const last =
+ global[global.length-1];
+
+ const reversed =
+ [...cGlobal];
+
+ reversed[last]=-1;
+
+ const globalPred =
+ argmax(cGlobal);
+
+ const recentPred =
+ argmax(cRecent);
+
+ const reversalPred =
+ argmax(reversed);
+
+ /*
+    Momentum :
+    si un chiffre domine fortement
+    les 30 derniers ticks par rapport
+    aux 100 derniers.
+ */
+
+ const momentumScores =
+ Array(10).fill(0);
+
+ for(
+ let d=0;
+ d<10;
+ d++
+ ){
+
+ const shortRate =
+ cRecent[d]/
+ recent.length;
+
+ const longRate =
+ cGlobal[d]/
+ global.length;
+
+ momentumScores[d] =
+ shortRate-
+ longRate;
+
+ }
+
+ const momentum =
+ argmax(
+ momentumScores
  );
 
- const models =
- getModels(arr);
+
+ /*
+    Balanced :
+    choisit le chiffre ayant le plus
+    grand écart sous la moyenne,
+    comme hypothèse exploratoire.
+ */
+
+ const expected =
+ global.length/10;
+
+ let balancedScores =
+ cGlobal.map(
+ x=>Math.abs(
+ x-expected
+ )
+ );
+
+ const balanced =
+ argmax(
+ balancedScores
+ );
+
 
  const predictions=[
 
- models.global,
+ globalPred,
 
- models.recent,
+ recentPred,
 
- models.transition.prediction,
+ tr.prediction,
 
- models.seq2.prediction,
+ seq2.prediction,
 
- models.seq3.prediction,
+ seq3.prediction,
 
- models.reversal
+ reversalPred,
+
+ momentum,
+
+ balanced
 
  ];
+
 
  const votes =
  Array(10).fill(0);
@@ -1439,19 +1471,29 @@ function contextAt(
 
  return {
 
- arr,
+ globalPred,
 
- last:
- arr[arr.length-1],
+ recentPred,
 
- streak:
- streak(arr),
+ transitionPred:
+ tr.prediction,
 
- uniformity:
- uniformity(arr),
+ seq2Pred:
+ seq2.prediction,
+
+ seq3Pred:
+ seq3.prediction,
+
+ reversalPred,
+
+ momentumPred:
+ momentum,
+
+ balancedPred:
+ balanced,
 
  transitionSample:
- transition.sample,
+ tr.sample,
 
  seq2Sample:
  seq2.sample,
@@ -1459,18 +1501,33 @@ function contextAt(
  seq3Sample:
  seq3.sample,
 
- recentDominance:
- Math.max(
- ...recentCounts
- )/
- RECENT,
+ last,
 
- agreement:
- votes[consensus],
+ streak:
+ streak(global),
+
+ uniformity50:
+ uniformity(
+ arr.slice(-50)
+ ),
+
+ uniformity100:
+ uniformity(
+ arr.slice(-100)
+ ),
+
+ uniformity200:
+ uniformity(
+ arr.slice(-200)
+ ),
+
+ regime:
+ regimeOf(arr),
 
  consensus,
 
- models
+ agreement:
+ votes[consensus]
 
  };
 
@@ -1478,7 +1535,128 @@ function contextAt(
 
 
 /* =====================================================
-   WALK FORWARD
+STRATÉGIES
+===================================================== */
+
+const STRATEGIES = [
+
+ {
+
+ name:"Global",
+
+ predict:
+ ctx =>
+ ctx.globalPred,
+
+ active:
+ ctx =>
+ true
+
+ },
+
+ {
+
+ name:"Recent",
+
+ predict:
+ ctx =>
+ ctx.recentPred,
+
+ active:
+ ctx =>
+ true
+
+ },
+
+ {
+
+ name:"Transition",
+
+ predict:
+ ctx =>
+ ctx.transitionPred,
+
+ active:
+ ctx =>
+ ctx.transitionSample>=3
+
+ },
+
+ {
+
+ name:"Sequence 2",
+
+ predict:
+ ctx =>
+ ctx.seq2Pred,
+
+ active:
+ ctx =>
+ ctx.seq2Sample>=3
+
+ },
+
+ {
+
+ name:"Sequence 3",
+
+ predict:
+ ctx =>
+ ctx.seq3Pred,
+
+ active:
+ ctx =>
+ ctx.seq3Sample>=3
+
+ },
+
+ {
+
+ name:"Reversal",
+
+ predict:
+ ctx =>
+ ctx.reversalPred,
+
+ active:
+ ctx =>
+ true
+
+ },
+
+ {
+
+ name:"Momentum",
+
+ predict:
+ ctx =>
+ ctx.momentumPred,
+
+ active:
+ ctx =>
+ ctx.uniformity50<0.85
+
+ },
+
+ {
+
+ name:"Balanced",
+
+ predict:
+ ctx =>
+ ctx.balancedPred,
+
+ active:
+ ctx =>
+ ctx.uniformity100<0.90
+
+ }
+
+];
+
+
+/* =====================================================
+ÉVALUATION WALK FORWARD
 ===================================================== */
 
 function evaluate(
@@ -1488,7 +1666,7 @@ function evaluate(
  end
 ){
 
- const out=[];
+ const results=[];
 
  const first =
  Math.max(
@@ -1502,14 +1680,22 @@ function evaluate(
  i++
  ){
 
- const ctx =
- contextAt(
- digits,
+ const history =
+ digits.slice(
+ i-LOOKBACK,
  i
  );
 
- if(!ctx)
+ if(
+ history.length<
+ LOOKBACK
+ )
  continue;
+
+ const ctx =
+ makeContext(
+ history
+ );
 
  if(
  strategy.active &&
@@ -1526,7 +1712,7 @@ function evaluate(
  const actual =
  digits[i];
 
- out.push({
+ results.push({
 
  index:i,
 
@@ -1542,53 +1728,14 @@ function evaluate(
 
  }
 
- return out;
+ return results;
 
 }
 
 
 /* =====================================================
-   STATISTIQUES
+STATISTIQUES
 ===================================================== */
-
-function wilson(
- wins,
- n,
- z=1.96
-){
-
- if(n<=0)
- return 0;
-
- const p =
- wins/n;
-
- const den =
- 1+
- z*z/n;
-
- const center =
- p+
- z*z/(2*n);
-
- const margin =
- z*
- Math.sqrt(
- (
- p*(1-p)+
- z*z/(4*n)
- )/n
- );
-
- return Math.max(
- 0,
- (
- center-margin
- )/den
- );
-
-}
-
 
 function statistics(results){
 
@@ -1600,14 +1747,16 @@ function statistics(results){
  r=>r.win
  ).length;
 
+ const losses =
+ n-wins;
+
  return {
 
  n,
 
  wins,
 
- losses:
- n-wins,
+ losses,
 
  rate:
  n
@@ -1626,15 +1775,58 @@ function statistics(results){
 
 
 /* =====================================================
-   ECONOMIE
+WILSON
 ===================================================== */
 
-function economicStats(
- results
+function wilson(
+ wins,
+ n
 ){
 
- const payout =
- getPayout();
+ if(n<=0)
+ return 0;
+
+ const z=1.96;
+
+ const p=
+ wins/n;
+
+ const denominator=
+ 1+
+ z*z/n;
+
+ const centre=
+ p+
+ z*z/(2*n);
+
+ const margin=
+ z*
+ Math.sqrt(
+ (
+ p*(1-p)+
+ z*z/(4*n)
+ )/n
+ );
+
+ return Math.max(
+ 0,
+ (
+ centre-margin
+ )/
+ denominator
+ );
+
+}
+
+
+/* =====================================================
+ECONOMIE
+===================================================== */
+
+function economics(results){
+
+ const p =
+ payout();
 
  let equity=0;
 
@@ -1664,9 +1856,9 @@ function economicStats(
 
  wins++;
 
- profit += payout;
+ profit+=p;
 
- equity += payout;
+ equity+=p;
 
  winStreak++;
 
@@ -1676,9 +1868,9 @@ function economicStats(
 
  losses++;
 
- profit -= 1;
+ profit-=1;
 
- equity -= 1;
+ equity-=1;
 
  lossStreak++;
 
@@ -1721,7 +1913,7 @@ function economicStats(
  : 0;
 
  const ev =
- rate*payout-
+ rate*p-
  (1-rate);
 
  return {
@@ -1751,12 +1943,54 @@ function economicStats(
 
 
 /* =====================================================
-   TABLE
+SPLIT
 ===================================================== */
 
-function renderTable(
- rows
-){
+function splitData(n){
+
+ const usable =
+ n-
+ LOOKBACK;
+
+ const dev =
+ Math.floor(
+ usable*0.60
+ );
+
+ const validation =
+ Math.floor(
+ usable*0.20
+ );
+
+ return {
+
+ devStart:
+ LOOKBACK,
+
+ devEnd:
+ LOOKBACK+dev,
+
+ valStart:
+ LOOKBACK+dev,
+
+ valEnd:
+ LOOKBACK+dev+validation,
+
+ holdStart:
+ LOOKBACK+dev+validation,
+
+ holdEnd:n
+
+ };
+
+}
+
+
+/* =====================================================
+TABLEAU
+===================================================== */
+
+function table(rows){
 
  if(!rows.length)
  return "Aucun résultat.";
@@ -1798,8 +2032,8 @@ function renderTable(
 
 <td class="${
  r.stats.rate>=breakEven()
- ? "win"
- : "loss"
+ ?"green"
+ :"red"
 }">
 ${r.stats.wins}
 </td>
@@ -1814,16 +2048,16 @@ ${pct(r.stats.wilson)}
 
 <td class="${
  r.econ.ev>0
- ? "win"
- : "loss"
+ ?"green"
+ :"red"
 }">
 ${pct(r.econ.ev)}
 </td>
 
 <td class="${
  r.econ.profit>=0
- ? "win"
- : "loss"
+ ?"green"
+ :"red"
 }">
 ${money(r.econ.profit)}
 </td>
@@ -1846,50 +2080,7 @@ ${money(r.econ.profit)}
 
 
 /* =====================================================
-   SPLIT
-===================================================== */
-
-function splitData(n){
-
- const usable =
- n-LOOKBACK;
-
- const dev =
- Math.floor(
- usable*0.70
- );
-
- const val =
- Math.floor(
- usable*0.15
- );
-
- return {
-
- devStart:
- LOOKBACK,
-
- devEnd:
- LOOKBACK+dev,
-
- valStart:
- LOOKBACK+dev,
-
- valEnd:
- LOOKBACK+dev+val,
-
- holdStart:
- LOOKBACK+dev+val,
-
- holdEnd:n
-
- };
-
-}
-
-
-/* =====================================================
-   SELECTION
+SELECTION CHAMPION
 ===================================================== */
 
 function selectChampion(rows){
@@ -1903,21 +2094,24 @@ function selectChampion(rows){
  if(!eligible.length)
  return null;
 
- /*
-   Le champion est sélectionné
-   sur la validation uniquement.
 
-   Priorité :
-   1. Wilson
-   2. EV
+ /*
+    Sélection principale :
+    Wilson lower bound.
+
+    En cas d'égalité :
+    EV.
  */
 
  eligible.sort(
  (a,b)=>{
 
  if(
- b.stats.wilson !==
+ Math.abs(
+ b.stats.wilson-
  a.stats.wilson
+ )>
+ 0.000001
  ){
 
  return (
@@ -1940,15 +2134,78 @@ function selectChampion(rows){
 
 
 /* =====================================================
-   MONTE CARLO
+STABILITÉ
 ===================================================== */
 
-function seededRandom(seed){
+function stability(
+ digits,
+ strategy,
+ start,
+ end
+){
+
+ const total =
+ end-start;
+
+ const segment =
+ Math.floor(
+ total/3
+ );
+
+ const out=[];
+
+ for(
+ let k=0;
+ k<3;
+ k++
+ ){
+
+ const a =
+ start+
+ k*segment;
+
+ const b =
+ k===2
+ ? end
+ : a+segment;
+
+ const results =
+ evaluate(
+ digits,
+ strategy,
+ a,
+ b
+ );
+
+ out.push({
+
+ period:k+1,
+
+ stats:
+ statistics(results),
+
+ econ:
+ economics(results)
+
+ });
+
+ }
+
+ return out;
+
+}
+
+
+/* =====================================================
+MONTE CARLO
+===================================================== */
+
+function rng(seed){
 
  return function(){
 
  let t =
- seed +=
+ seed+=
  0x6D2B79F5;
 
  t =
@@ -1957,7 +2214,7 @@ function seededRandom(seed){
  t|1
  );
 
- t ^=
+ t^=
  t+
  Math.imul(
  t^t>>>7,
@@ -1983,18 +2240,16 @@ function monteCarlo(
  const n =
  results.length;
 
- if(!n)
- return null;
-
  const observed =
  results.filter(
  r=>r.win
  ).length;
 
- const rand =
- seededRandom(
- 784521
- );
+ if(!n)
+ return null;
+
+ const random =
+ rng(918273);
 
  let extreme=0;
 
@@ -2013,7 +2268,7 @@ function monteCarlo(
  ){
 
  if(
- rand()<0.10
+ random()<0.10
  ){
 
  wins++;
@@ -2055,70 +2310,7 @@ function monteCarlo(
 
 
 /* =====================================================
-   STABILITE
-===================================================== */
-
-function stability(
- digits,
- strategy,
- start,
- end
-){
-
- const total =
- end-start;
-
- const size =
- Math.floor(
- total/3
- );
-
- const result=[];
-
- for(
- let k=0;
- k<3;
- k++
- ){
-
- const a =
- start+
- k*size;
-
- const b =
- k===2
- ? end
- : a+size;
-
- const results =
- evaluate(
- digits,
- strategy,
- a,
- b
- );
-
- result.push({
-
- period:k+1,
-
- stats:
- statistics(results),
-
- econ:
- economicStats(results)
-
- });
-
- }
-
- return result;
-
-}
-
-
-/* =====================================================
-   DISTRIBUTION
+DISTRIBUTION
 ===================================================== */
 
 function renderDistribution(){
@@ -2140,9 +2332,9 @@ function renderDistribution(){
  `<div class="grid">`;
 
  for(
- let i=0;
- i<10;
- i++
+ let d=0;
+ d<10;
+ d++
  ){
 
  html+=`
@@ -2150,17 +2342,17 @@ function renderDistribution(){
 <div class="stat">
 
 <div class="label">
-Digit ${i}
+Digit ${d}
 </div>
 
 <div class="value">
-${c[i]}
+${c[d]}
 </div>
 
 <div class="label">
 ${
  arr.length
- ? pct(c[i]/arr.length)
+ ? pct(c[d]/arr.length)
  : "—"
 }
 </div>
@@ -2172,7 +2364,7 @@ ${
  }
 
  html+=
- `</div>`;
+ "</div>";
 
  $("distribution").innerHTML =
  html;
@@ -2181,14 +2373,14 @@ ${
 
 
 /* =====================================================
-   CONTEXTE
+CONTEXTE UI
 ===================================================== */
 
 function renderContext(){
 
  const arr =
  ticks
- .slice(-LOOKBACK)
+ .slice(-200)
  .map(
  x=>x.digit
  )
@@ -2197,8 +2389,7 @@ function renderContext(){
  );
 
  if(
- arr.length<
- LOOKBACK
+ arr.length<100
  ){
 
  $("context").innerHTML =
@@ -2209,10 +2400,20 @@ function renderContext(){
  }
 
  const ctx =
- contextAt(
- arr,
- LOOKBACK
- );
+ makeContext(arr);
+
+ $("u50").textContent =
+ pct(ctx.uniformity50);
+
+ $("u100").textContent =
+ pct(ctx.uniformity100);
+
+ $("u200").textContent =
+ pct(ctx.uniformity200);
+
+ $("regime").textContent =
+ ctx.regime;
+
 
  $("context").innerHTML=`
 
@@ -2238,10 +2439,10 @@ ${ctx.streak}
 
 <div class="stat">
 <div class="label">
-Uniformité
+Consensus
 </div>
 <div class="value">
-${pct(ctx.uniformity)}
+${ctx.consensus}
 </div>
 </div>
 
@@ -2250,27 +2451,17 @@ ${pct(ctx.uniformity)}
 Accord
 </div>
 <div class="value">
-${ctx.agreement}/6
+${ctx.agreement}/8
 </div>
 </div>
 
-<div class="stat">
-<div class="label">
-Transition N
-</div>
-<div class="value">
-${ctx.transitionSample}
-</div>
 </div>
 
-<div class="stat">
-<div class="label">
-Sequence 2 N
-</div>
-<div class="value">
-${ctx.seq2Sample}
-</div>
-</div>
+<div class="small"
+style="margin-top:8px">
+
+Régime :
+<b>${ctx.regime}</b>
 
 </div>
 
@@ -2280,10 +2471,10 @@ ${ctx.seq2Sample}
 
 
 /* =====================================================
-   LIVE
+LIVE
 ===================================================== */
 
-function getLivePrediction(){
+function livePrediction(){
 
  const arr =
  ticks
@@ -2296,22 +2487,12 @@ function getLivePrediction(){
  );
 
  if(
- arr.length<
- LOOKBACK
- ){
-
+ arr.length<LOOKBACK
+ )
  return null;
-
- }
 
  const ctx =
- contextAt(
- arr,
- LOOKBACK
- );
-
- if(!ctx)
- return null;
+ makeContext(arr);
 
  return {
 
@@ -2321,7 +2502,7 @@ function getLivePrediction(){
  agreement:
  ctx.agreement,
 
- context:ctx
+ ctx
 
  };
 
@@ -2331,7 +2512,7 @@ function getLivePrediction(){
 function renderLive(){
 
  const live =
- getLivePrediction();
+ livePrediction();
 
  if(!live){
 
@@ -2350,7 +2531,7 @@ Attente de 100 ticks
  $("livePrediction").innerHTML=`
 
 <div class="small">
-Consensus statistique actuel
+Consensus de recherche
 </div>
 
 <div class="signalDigit">
@@ -2359,14 +2540,13 @@ ${live.digit}
 
 <div class="small">
 Accord :
-${live.agreement}/6
+${live.agreement}/8
 </div>
 
-<div class="small"
-style="margin-top:5px">
+<div class="small yellow"
+style="margin-top:7px">
 
-⚠️ Sortie de recherche.
-Aucun ordre n'est envoyé.
+⚠️ Recherche uniquement — aucun ordre envoyé.
 
 </div>
 
@@ -2376,7 +2556,7 @@ Aucun ordre n'est envoyé.
 
 
 /* =====================================================
-   PAYOUT SCENARIOS
+PAYOUT SCENARIOS
 ===================================================== */
 
 function renderPayoutScenarios(){
@@ -2384,30 +2564,23 @@ function renderPayoutScenarios(){
  if(!champion){
 
  $("payoutScenarios").innerHTML =
- "En attente du holdout...";
+ "En attente du holdout.";
 
  return;
 
  }
 
- const arr =
- champion.holdoutStats;
-
- if(!arr)
- return;
-
  const rate =
- arr.rate;
+ champion.holdStats.rate;
 
- const scenarios =
- [
+ const values=[
  0.22,
  0.50,
- 1.00,
- 2.00,
- 4.00,
- 8.00,
- 9.00
+ 1,
+ 2,
+ 4,
+ 8,
+ 9
  ];
 
  let html=`
@@ -2417,10 +2590,12 @@ function renderPayoutScenarios(){
 <thead>
 
 <tr>
+
 <th>Payout net</th>
 <th>Break-even</th>
-<th>Rate champion</th>
+<th>Rate</th>
 <th>EV</th>
+
 </tr>
 
 </thead>
@@ -2429,7 +2604,7 @@ function renderPayoutScenarios(){
 `;
 
  for(
- const p of scenarios
+ const p of values
  ){
 
  const be =
@@ -2457,8 +2632,8 @@ ${pct(rate)}
 
 <td class="${
  ev>0
- ? "win"
- : "loss"
+ ?"green"
+ :"red"
 }">
 ${pct(ev)}
 </td>
@@ -2473,7 +2648,6 @@ ${pct(ev)}
 
 </tbody>
 </table>
-
 `;
 
  $("payoutScenarios").innerHTML =
@@ -2483,7 +2657,7 @@ ${pct(ev)}
 
 
 /* =====================================================
-   SHADOW
+SHADOW
 ===================================================== */
 
 function resetShadow(){
@@ -2494,7 +2668,7 @@ function resetShadow(){
 
  name:null,
 
- predictions:[],
+ observations:0,
 
  wins:0,
 
@@ -2506,11 +2680,15 @@ function resetShadow(){
 
  peak:0,
 
- drawdown:0,
+ maxDrawdown:0,
 
- lossStreak:0,
+ currentLossStreak:0,
 
- maxLossStreak:0
+ maxLossStreak:0,
+
+ currentWinStreak:0,
+
+ maxWinStreak:0
 
  };
 
@@ -2522,11 +2700,12 @@ function resetShadow(){
 
 }
 
+
 $("resetShadow").onclick =
  resetShadow;
 
 
-function championPrediction(){
+function championLivePrediction(){
 
  if(!champion)
  return null;
@@ -2542,24 +2721,112 @@ function championPrediction(){
  );
 
  if(
- arr.length<
- LOOKBACK
- ){
-
+ arr.length<LOOKBACK
+ )
  return null;
 
- }
-
  const ctx =
- contextAt(
- arr,
- LOOKBACK
- );
+ makeContext(arr);
 
- if(!ctx)
+ if(
+ !champion.strategy.active(ctx)
+ )
  return null;
 
  return champion.strategy.predict(ctx);
+
+}
+
+
+function processShadow(
+ actual
+){
+
+ if(
+ !shadow.active ||
+ !champion
+ )
+ return;
+
+
+ /*
+    La prédiction est calculée
+    à partir des ticks précédents.
+ */
+
+ const prediction =
+ championLivePrediction();
+
+ if(
+ !Number.isInteger(
+ prediction
+ )
+ )
+ return;
+
+
+ const win =
+ prediction===
+ actual;
+
+ shadow.observations++;
+
+
+ if(win){
+
+ shadow.wins++;
+
+ shadow.profit+=
+ payout();
+
+ shadow.equity+=
+ payout();
+
+ shadow.currentWinStreak++;
+
+ shadow.currentLossStreak=0;
+
+ shadow.maxWinStreak =
+ Math.max(
+ shadow.maxWinStreak,
+ shadow.currentWinStreak
+ );
+
+ }else{
+
+ shadow.losses++;
+
+ shadow.profit-=1;
+
+ shadow.equity-=1;
+
+ shadow.currentLossStreak++;
+
+ shadow.currentWinStreak=0;
+
+ shadow.maxLossStreak =
+ Math.max(
+ shadow.maxLossStreak,
+ shadow.currentLossStreak
+ );
+
+ }
+
+
+ shadow.peak =
+ Math.max(
+ shadow.peak,
+ shadow.equity
+ );
+
+ shadow.maxDrawdown =
+ Math.max(
+ shadow.maxDrawdown,
+ shadow.peak-
+ shadow.equity
+ );
+
+ renderShadow();
 
 }
 
@@ -2575,96 +2842,8 @@ function startShadow(){
  champion.name;
 
  log(
- "Shadow démarré : "+
+ "Shadow actif : "+
  champion.name
- );
-
- renderShadow();
-
-}
-
-
-function processShadowTick(
- actual
-){
-
- if(
- !shadow.active ||
- !champion
- ){
-
- return;
-
- }
-
- const prediction =
- championPrediction();
-
- if(
- !Number.isInteger(
- prediction
- )
- ){
-
- return;
-
- }
-
- const win =
- prediction===
- actual;
-
- shadow.predictions.push({
-
- prediction,
-
- actual,
-
- win
-
- });
-
- if(win){
-
- shadow.wins++;
-
- shadow.profit +=
- getPayout();
-
- shadow.equity +=
- getPayout();
-
- shadow.lossStreak=0;
-
- }else{
-
- shadow.losses++;
-
- shadow.profit -= 1;
-
- shadow.equity -= 1;
-
- shadow.lossStreak++;
-
- shadow.maxLossStreak =
- Math.max(
- shadow.maxLossStreak,
- shadow.lossStreak
- );
-
- }
-
- shadow.peak =
- Math.max(
- shadow.peak,
- shadow.equity
- );
-
- shadow.drawdown =
- Math.max(
- shadow.drawdown,
- shadow.peak-
- shadow.equity
  );
 
  renderShadow();
@@ -2676,14 +2855,15 @@ function renderShadow(){
 
  if(
  !shadow.active &&
- shadow.predictions.length===0
+ shadow.observations===0
  ){
 
  $("shadowBox").innerHTML=`
 
 <div class="small">
-Le laboratoire doit sélectionner
-un champion avant le Shadow.
+Aucun Shadow actif.
+Le Shadow démarre seulement si le résultat
+du laboratoire est suffisamment intéressant.
 </div>
 
 `;
@@ -2693,7 +2873,7 @@ un champion avant le Shadow.
  }
 
  const n =
- shadow.predictions.length;
+ shadow.observations;
 
  const rate =
  n
@@ -2701,7 +2881,7 @@ un champion avant le Shadow.
  : 0;
 
  const ev =
- rate*getPayout()-
+ rate*payout()-
  (1-rate);
 
  $("shadowBox").innerHTML=`
@@ -2737,7 +2917,7 @@ ${shadow.wins}
 
 <div class="stat">
 <div class="label">
-WIN rate
+Rate
 </div>
 <div class="value">
 ${pct(rate)}
@@ -2750,8 +2930,8 @@ EV
 </div>
 <div class="value ${
  ev>0
- ? "win"
- : "loss"
+ ?"green"
+ :"red"
 }">
 ${pct(ev)}
 </div>
@@ -2763,8 +2943,8 @@ Profit théorique
 </div>
 <div class="value ${
  shadow.profit>=0
- ? "win"
- : "loss"
+ ?"green"
+ :"red"
 }">
 ${money(shadow.profit)}
 </div>
@@ -2774,8 +2954,8 @@ ${money(shadow.profit)}
 <div class="label">
 Drawdown
 </div>
-<div class="value loss">
-${money(-shadow.drawdown)}
+<div class="value red">
+${money(-shadow.maxDrawdown)}
 </div>
 </div>
 
@@ -2790,11 +2970,11 @@ ${shadow.maxLossStreak}
 
 </div>
 
-<div class="small"
+<div class="small yellow"
 style="margin-top:8px">
 
-Shadow = observation seulement.
-Aucun contrat réel n'est envoyé.
+Shadow = simulation d'observation.
+Aucun contrat réel.
 
 </div>
 
@@ -2804,7 +2984,7 @@ Aucun contrat réel n'est envoyé.
 
 
 /* =====================================================
-   LAB PRINCIPAL
+LAB
 ===================================================== */
 
 async function runLab(){
@@ -2822,24 +3002,11 @@ async function runLab(){
  );
 
  if(
- digits.length<
- 500
+ digits.length<500
  ){
 
  alert(
- "Minimum 500 ticks nécessaires."
- );
-
- return;
-
- }
-
- if(
- getPayout()<=0
- ){
-
- alert(
- "Entre un payout net supérieur à 0."
+ "Il faut au moins 500 ticks."
  );
 
  return;
@@ -2851,7 +3018,7 @@ async function runLab(){
  $("runLab").disabled=true;
 
  $("runLab").textContent =
- "⏳ ANALYSE...";
+ "⏳ ANALYSE V10...";
 
  try{
 
@@ -2861,7 +3028,7 @@ async function runLab(){
  const split =
  splitData(n);
 
- $("historyActual").textContent =
+ $("historySize").textContent =
  n;
 
  $("devSize").textContent =
@@ -2877,15 +3044,15 @@ async function runLab(){
  split.holdStart;
 
 
- /* ==============================================
+ /* ===============================================
     DEVELOPMENT
- ============================================== */
+ =============================================== */
 
  log(
- "Développement : recherche des hypothèses."
+ "V10 : développement / recherche..."
  );
 
- const dev=[];
+ const development=[];
 
  for(
  const strategy
@@ -2900,7 +3067,7 @@ async function runLab(){
  split.devEnd
  );
 
- dev.push({
+ development.push({
 
  name:
  strategy.name,
@@ -2911,7 +3078,7 @@ async function runLab(){
  statistics(results),
 
  econ:
- economicStats(results),
+ economics(results),
 
  results
 
@@ -2919,25 +3086,25 @@ async function runLab(){
 
  }
 
- dev.sort(
+ development.sort(
  (a,b)=>
  b.econ.ev-
  a.econ.ev
  );
 
- $("developmentTable").innerHTML =
- renderTable(dev);
+ $("devTable").innerHTML =
+ table(development);
 
 
- /* ==============================================
+ /* ===============================================
     VALIDATION
- ============================================== */
+ =============================================== */
 
  log(
- "Validation : sélection du champion."
+ "V10 : validation des hypothèses..."
  );
 
- const val=[];
+ const validation=[];
 
  for(
  const strategy
@@ -2952,7 +3119,7 @@ async function runLab(){
  split.valEnd
  );
 
- val.push({
+ validation.push({
 
  name:
  strategy.name,
@@ -2963,7 +3130,7 @@ async function runLab(){
  statistics(results),
 
  econ:
- economicStats(results),
+ economics(results),
 
  results
 
@@ -2971,7 +3138,7 @@ async function runLab(){
 
  }
 
- val.sort(
+ validation.sort(
  (a,b)=>{
 
  if(
@@ -2993,24 +3160,25 @@ async function runLab(){
 
  });
 
- $("validationTable").innerHTML =
- renderTable(val);
+ $("valTable").innerHTML =
+ table(validation);
 
 
- /* ==============================================
+ /* ===============================================
     CHAMPION
- ============================================== */
+ =============================================== */
 
  champion =
- selectChampion(val);
+ selectChampion(validation);
 
  if(!champion){
 
  throw new Error(
- "Aucune stratégie avec suffisamment de tests."
+ "Aucune stratégie éligible."
  );
 
  }
+
 
  $("championBox").innerHTML=`
 
@@ -3018,7 +3186,7 @@ async function runLab(){
 
 <div class="stat">
 <div class="label">
-Stratégie
+Champion
 </div>
 <div class="value">
 ${champion.name}
@@ -3054,12 +3222,12 @@ ${pct(champion.stats.wilson)}
 
 <div class="stat">
 <div class="label">
-EV validation
+EV
 </div>
 <div class="value ${
  champion.econ.ev>0
- ? "win"
- : "loss"
+ ?"green"
+ :"red"
 }">
 ${pct(champion.econ.ev)}
 </div>
@@ -3079,23 +3247,23 @@ ${pct(breakEven())}
 <div class="small"
 style="margin-top:8px">
 
-Champion sélectionné uniquement avec la validation.
-Le holdout reste complètement séparé.
+Le champion est choisi sur la validation.
+Le holdout n'intervient pas dans cette sélection.
 
 </div>
 
 `;
 
 
- /* ==============================================
+ /* ===============================================
     HOLDOUT
- ============================================== */
+ =============================================== */
 
  log(
- "Holdout : test final verrouillé."
+ "V10 : holdout verrouillé..."
  );
 
- const hold=[];
+ const holdout=[];
 
  for(
  const strategy
@@ -3110,7 +3278,7 @@ Le holdout reste complètement séparé.
  split.holdEnd
  );
 
- hold.push({
+ holdout.push({
 
  name:
  strategy.name,
@@ -3121,7 +3289,7 @@ Le holdout reste complètement séparé.
  statistics(results),
 
  econ:
- economicStats(results),
+ economics(results),
 
  results
 
@@ -3129,14 +3297,8 @@ Le holdout reste complètement séparé.
 
  }
 
- hold.sort(
- (a,b)=>
- b.econ.ev-
- a.econ.ev
- );
-
  const championHold =
- hold.find(
+ holdout.find(
  x =>
  x.name===
  champion.name
@@ -3145,29 +3307,34 @@ Le holdout reste complètement séparé.
  if(!championHold){
 
  throw new Error(
- "Champion absent du holdout."
+ "Champion introuvable dans holdout."
  );
 
  }
 
- champion.holdoutStats =
+ champion.holdStats =
  championHold.stats;
 
+ champion.holdEcon =
+ championHold.econ;
+
+
  $("holdoutBox").innerHTML =
- renderTable(
+ table(
  [championHold]
  );
 
 
- /* ==============================================
-    PROFITABILITE
- ============================================== */
+ /* ===============================================
+    PROFIT
+ =============================================== */
 
  const hs =
  championHold.stats;
 
  const he =
  championHold.econ;
+
 
  $("profitBox").innerHTML=`
 
@@ -3188,6 +3355,15 @@ WIN
 </div>
 <div class="value">
 ${hs.wins}
+</div>
+</div>
+
+<div class="stat">
+<div class="label">
+LOSS
+</div>
+<div class="value">
+${hs.losses}
 </div>
 </div>
 
@@ -3215,8 +3391,8 @@ EV / test
 </div>
 <div class="value ${
  he.ev>0
- ? "win"
- : "loss"
+ ?"green"
+ :"red"
 }">
 ${pct(he.ev)}
 </div>
@@ -3228,8 +3404,8 @@ Profit
 </div>
 <div class="value ${
  he.profit>=0
- ? "win"
- : "loss"
+ ?"green"
+ :"red"
 }">
 ${money(he.profit)}
 </div>
@@ -3244,33 +3420,27 @@ ${pct(he.roi)}
 </div>
 </div>
 
-<div class="stat">
-<div class="label">
-Écart vs break-even
 </div>
-<div class="value">
+
+<div class="small"
+style="margin-top:8px">
+
+Écart au break-even :
+<b>
 ${pct(
  hs.rate-
  breakEven()
 )}
-</div>
-</div>
+</b>
 
 </div>
 
 `;
 
 
- /* ==============================================
-    SCENARIOS
- ============================================== */
-
- renderPayoutScenarios();
-
-
- /* ==============================================
+ /* ===============================================
     RISQUE
- ============================================== */
+ =============================================== */
 
  $("riskBox").innerHTML=`
 
@@ -3278,16 +3448,16 @@ ${pct(
 
 <div class="stat">
 <div class="label">
-Max drawdown
+Drawdown maximum
 </div>
-<div class="value loss">
+<div class="value red">
 ${money(-he.drawdown)}
 </div>
 </div>
 
 <div class="stat">
 <div class="label">
-Max série LOSS
+Max LOSS streak
 </div>
 <div class="value">
 ${he.maxLossStreak}
@@ -3296,7 +3466,7 @@ ${he.maxLossStreak}
 
 <div class="stat">
 <div class="label">
-Max série WIN
+Max WIN streak
 </div>
 <div class="value">
 ${he.maxWinStreak}
@@ -3317,9 +3487,9 @@ ${he.losses}
 `;
 
 
- /* ==============================================
-    STABILITE
- ============================================== */
+ /* ===============================================
+    STABILITÉ
+ =============================================== */
 
  const stable =
  stability(
@@ -3336,13 +3506,15 @@ ${he.losses}
 <thead>
 
 <tr>
-<th>Période</th>
+
+<th>Bloc</th>
 <th>N</th>
 <th>WIN</th>
 <th>Rate</th>
 <th>Wilson</th>
 <th>EV</th>
 <th>Profit</th>
+
 </tr>
 
 </thead>
@@ -3362,7 +3534,9 @@ ${he.losses}
 
 <td>${s.stats.n}</td>
 
-<td>${s.stats.wins}</td>
+<td>
+${s.stats.wins}
+</td>
 
 <td>
 ${pct(s.stats.rate)}
@@ -3374,16 +3548,16 @@ ${pct(s.stats.wilson)}
 
 <td class="${
  s.econ.ev>0
- ? "win"
- : "loss"
+ ?"green"
+ :"red"
 }">
 ${pct(s.econ.ev)}
 </td>
 
 <td class="${
  s.econ.profit>=0
- ? "win"
- : "loss"
+ ?"green"
+ :"red"
 }">
 ${money(s.econ.profit)}
 </td>
@@ -3398,15 +3572,16 @@ ${money(s.econ.profit)}
 
 </tbody>
 </table>
+
 `;
 
  $("stabilityBox").innerHTML =
  stableHTML;
 
 
- /* ==============================================
+ /* ===============================================
     MONTE CARLO
- ============================================== */
+ =============================================== */
 
  const mc =
  monteCarlo(
@@ -3428,7 +3603,7 @@ ${mc.observed}/${mc.n}
 
 <div class="stat">
 <div class="label">
-Taux observé
+Rate
 </div>
 <div class="value">
 ${pct(mc.rate)}
@@ -3458,148 +3633,182 @@ ${MC_RUNS}
 <div class="small"
 style="margin-top:8px">
 
-Comparaison avec un taux uniforme de 10 %.
-Ce test est descriptif et ne constitue pas une preuve
-de rentabilité.
+Test contre une référence uniforme de 10 %.
+Une p-value élevée ne permet pas de conclure à un edge.
 
 </div>
 
 `;
 
 
- /* ==============================================
-    COMPARAISON
- ============================================== */
+ /* ===============================================
+    COMPARAISON HOLDOUT
+ =============================================== */
 
- $("comparisonTable").innerHTML =
- renderTable(
- hold
+ holdout.sort(
+ (a,b)=>
+ b.econ.ev-
+ a.econ.ev
+ );
+
+ $("comparison").innerHTML =
+ table(
+ holdout
  );
 
 
- /* ==============================================
-    VERDICT
- ============================================== */
+ /* ===============================================
+    PAYOUT
+ =============================================== */
 
- const enoughSample =
+ renderPayoutScenarios();
+
+
+ /* ===============================================
+    VERDICT
+ =============================================== */
+
+ const enough =
  hs.n>=MIN_HOLDOUT;
 
- const aboveBE =
+ const above =
  hs.rate>
  breakEven();
 
- const positiveEV =
+ const evPositive =
  he.ev>0;
 
- const positiveProfit =
+ const profitPositive =
  he.profit>0;
 
  const positivePeriods =
  stable.filter(
- s =>
- s.econ.ev>0
+ x =>
+ x.econ.ev>0
  ).length;
 
- let finalVerdict =
+ const stableEnough =
+ positivePeriods>=2;
+
+ /*
+    Monte Carlo :
+    on ne l'utilise PAS comme preuve.
+    On exige seulement que le résultat
+    ne soit pas totalement incompatible
+    avec l'hypothèse observée.
+ */
+
+ const mcInteresting =
+ mc.p<0.10;
+
+
+ let verdict =
  "EDGE NON RENTABLE";
 
- let finalClass =
+ let className =
  "verdict";
 
- let text =
- "Le holdout ne démontre pas actuellement une rentabilité robuste.";
+ let message =
+ "Le holdout ne démontre pas actuellement un avantage économique robuste.";
 
 
  /*
-   On ne dit jamais "stratégie garantie".
+    EDGE CONFIRMÉ n'est volontairement
+    pas facile à obtenir.
 
-   Pour passer à "À REVALIDER" :
-   - suffisamment de données
-   - taux au-dessus du break-even
-   - EV positif
-   - profit positif
-   - au moins 2 périodes positives
+    Conditions :
+    - au moins 150 tests
+    - WIN > break-even
+    - EV positif
+    - profit positif
+    - au moins 2/3 périodes positives
+    - Monte Carlo p < 0.10
+
+    Même dans ce cas :
+    cela signifie "à confirmer",
+    pas "garanti".
  */
 
  if(
- enoughSample &&
- aboveBE &&
- positiveEV &&
- positiveProfit &&
- positivePeriods>=2
+ enough &&
+ above &&
+ evPositive &&
+ profitPositive &&
+ stableEnough &&
+ mcInteresting
  ){
 
- finalVerdict =
- "EDGE À REVALIDER";
+ verdict =
+ "EDGE À CONFIRMER";
 
- finalClass =
+ className =
  "verdict good";
 
- text =
- "Le résultat économique du holdout est positif et suffisamment intéressant pour une nouvelle phase de validation Shadow.";
-
- log(
- "EDGE À REVALIDER."
- );
+ message =
+ "Le résultat économique du holdout est suffisamment intéressant pour passer à une validation Shadow prolongée. Ce n'est toujours pas une garantie de rentabilité future.";
 
  startShadow();
 
+ log(
+ "Résultat intéressant : Shadow activé."
+ );
+
  }else if(
- enoughSample &&
- aboveBE &&
- positiveEV
+ enough &&
+ above &&
+ evPositive
  ){
 
- finalVerdict =
- "SIGNAL ÉCONOMIQUE INTÉRESSANT";
+ verdict =
+ "EDGE INTÉRESSANT";
 
- finalClass =
+ className =
  "verdict warn";
 
- text =
- "Le taux dépasse le break-even et l'EV est positif, mais la stabilité ou la robustesse reste insuffisante.";
+ message =
+ "Le taux dépasse le break-even et l'EV est positif, mais la robustesse statistique n'est pas encore suffisante.";
 
  log(
- "Signal économique intéressant mais non confirmé."
+ "Edge économique intéressant mais non confirmé."
  );
 
  }else{
 
  log(
- "EDGE NON RENTABLE."
+ "V10 : EDGE NON RENTABLE."
  );
 
  }
 
 
  $("verdict").textContent =
- finalVerdict;
+ verdict;
 
  $("verdict").className =
- finalClass;
+ className;
 
  $("verdictText").textContent =
- text;
+ message;
 
 
  log(
- "Champion = "+
+ "Champion : "+
  champion.name
  );
 
  log(
- "Payout net = "+
- getPayout().toFixed(2)+
+ "Payout net : "+
+ payout().toFixed(2)+
  " $"
  );
 
  log(
- "Break-even = "+
+ "Break-even : "+
  pct(breakEven())
  );
 
  log(
- "Holdout = "+
+ "Holdout : "+
  hs.wins+
  "/"+
  hs.n+
@@ -3608,13 +3817,18 @@ de rentabilité.
  );
 
  log(
- "EV = "+
+ "EV : "+
  pct(he.ev)
  );
 
  log(
- "Profit = "+
+ "Profit : "+
  money(he.profit)
+ );
+
+ log(
+ "Monte-Carlo p : "+
+ mc.p.toFixed(4)
  );
 
 
@@ -3643,7 +3857,7 @@ de rentabilité.
  $("runLab").disabled=false;
 
  $("runLab").textContent =
- "🚀 LANCER REAL PAYOUT EDGE LAB";
+ "🚀 LANCER V10 REAL EDGE ENGINE";
 
  }
 
@@ -3651,7 +3865,7 @@ de rentabilité.
 
 
 /* =====================================================
-   WEBSOCKET
+WEBSOCKET
 ===================================================== */
 
 function connect(){
@@ -3662,6 +3876,7 @@ function connect(){
  $("status").className =
  "status warn";
 
+
  ws =
  new WebSocket(
  WS_URL
@@ -3671,7 +3886,7 @@ function connect(){
  ws.onopen = () => {
 
  $("status").textContent =
- "🟢 Connecté — recherche R_75";
+ "🟢 Connecté — R_75";
 
  $("status").className =
  "status ok";
@@ -3679,6 +3894,7 @@ function connect(){
  log(
  "WebSocket connecté."
  );
+
 
  ws.send(
  JSON.stringify({
@@ -3736,7 +3952,7 @@ function connect(){
  if(!found){
 
  log(
- "R_75 introuvable."
+ "R_75 introuvable dans active_symbols."
  );
 
  return;
@@ -3749,8 +3965,8 @@ function connect(){
 
 
  /*
-   HISTORIQUE :
-   aucun subscribe ici.
+    IMPORTANT :
+    Pas de subscribe dans ticks_history.
  */
 
  ws.send(
@@ -3800,16 +4016,12 @@ function connect(){
 
  if(
  Number.isFinite(
- Number(
- data.pip_size
- )
+ Number(data.pip_size)
  )
  ){
 
  pipSize =
- Number(
- data.pip_size
- );
+ Number(data.pip_size);
 
  }
 
@@ -3857,8 +4069,9 @@ function connect(){
  $("tickCount").textContent =
  ticks.length;
 
- $("historyActual").textContent =
+ $("historySize").textContent =
  ticks.length;
+
 
  log(
  "Historique reçu : "+
@@ -3874,6 +4087,11 @@ function connect(){
  renderLive();
 
 
+ /*
+    Analyse une seule fois
+    après l'historique.
+ */
+
  if(
  ticks.length>=500
  ){
@@ -3884,8 +4102,7 @@ function connect(){
 
 
  /*
-   LIVE :
-   subscribe = 1 uniquement ici.
+    Puis abonnement live.
  */
 
  ws.send(
@@ -3929,16 +4146,12 @@ function connect(){
 
  if(
  Number.isFinite(
- Number(
- t.pip_size
- )
+ Number(t.pip_size)
  )
  ){
 
  pipSize =
- Number(
- t.pip_size
- );
+ Number(t.pip_size);
 
  }
 
@@ -3956,16 +4169,15 @@ function connect(){
 
 
  /*
-   IMPORTANT :
-   Shadow utilise les ticks
-   précédant ce nouveau tick.
+    Shadow avant d'ajouter
+    le nouveau tick.
  */
 
  if(
  shadow.active
  ){
 
- processShadowTick(
+ processShadow(
  digit
  );
 
@@ -4020,7 +4232,7 @@ function connect(){
 
 
  /* ==========================================
-    ERROR
+    API ERROR
  ========================================== */
 
  if(data.error){
@@ -4069,7 +4281,7 @@ function connect(){
  "status warn";
 
  log(
- "Connexion fermée. Reconnexion dans 5 s."
+ "Connexion fermée."
  );
 
  setTimeout(
@@ -4083,18 +4295,18 @@ function connect(){
 
 
 /* =====================================================
-   START
+START
 ===================================================== */
 
 $("runLab").onclick =
  runLab;
 
 log(
- "V8.5 REAL PAYOUT EDGE LAB démarré."
+ "V10 REAL EDGE ENGINE lancé."
 );
 
 log(
- "Mode recherche uniquement."
+ "Mode : recherche statistique."
 );
 
 log(
@@ -4102,7 +4314,7 @@ log(
 );
 
 log(
- "Payout = gain NET par $1 gagné."
+ "Payout = gain NET pour 1 $."
 );
 
 connect();
