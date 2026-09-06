@@ -2,4641 +2,1758 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-
-<title>Prediction R75 — V10.2 REAL EDGE LAB</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>MALISUGU EDGE DISCOVERY LAB V11</title>
 
 <style>
-
-*{
-  box-sizing:border-box;
-}
-
+*{box-sizing:border-box}
 body{
   margin:0;
-  background:#040b10;
-  color:#eef7fb;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  background:#07111f;
+  color:#e8f0f8;
 }
-
 .container{
-  width:100%;
-  max-width:900px;
+  max-width:1100px;
   margin:auto;
-  padding:12px;
+  padding:16px;
 }
-
-h1{
-  font-size:20px;
-  margin:2px 0 4px;
-}
-
-h2{
-  font-size:14px;
-  margin:0 0 10px;
-}
-
-.subtitle{
-  color:#8097a5;
-  font-size:9px;
-  line-height:1.5;
-  margin-bottom:12px;
-}
-
+h1{margin:0;font-size:25px}
+h2{font-size:18px;margin:0 0 12px}
+h3{font-size:15px;margin:0 0 8px}
+.sub{color:#8fa4b8;font-size:13px;margin-top:5px}
 .card{
-  background:#091720;
-  border:1px solid #1a3442;
-  border-radius:13px;
-  padding:12px;
-  margin-bottom:10px;
+  background:#0d1b2a;
+  border:1px solid #1c3449;
+  border-radius:14px;
+  padding:15px;
+  margin-top:14px;
 }
-
 .status{
-  padding:9px;
-  border-radius:8px;
-  font-size:11px;
-  background:#13232c;
-  border:1px solid #203d4a;
+  display:flex;
+  gap:8px;
+  align-items:center;
+  margin-top:10px;
+  font-size:13px;
 }
-
-.ok{
-  color:#42e58b;
+.dot{
+  width:10px;height:10px;border-radius:50%;
+  background:#777;
 }
-
-.bad{
-  color:#ff6575;
-}
-
-.warn{
-  color:#ffd166;
-}
+.green{background:#32d583}
+.red{background:#ff5b65}
+.yellow{background:#ffc857}
 
 .grid{
   display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:8px;
+  grid-template-columns:repeat(4,1fr);
+  gap:9px;
 }
-
 .stat{
-  background:#061118;
-  border:1px solid #19313e;
-  border-radius:9px;
-  padding:9px;
-}
-
-.label{
-  color:#718a98;
-  font-size:9px;
-}
-
-.value{
-  margin-top:3px;
-  font-size:16px;
-  font-weight:800;
-}
-
-.big{
-  font-size:29px;
-}
-
-.small{
-  color:#8399a6;
-  font-size:9px;
-  line-height:1.55;
-}
-
-.green{
-  color:#43e58b;
-}
-
-.red{
-  color:#ff6877;
-}
-
-.yellow{
-  color:#ffd166;
-}
-
-.blue{
-  color:#4daeff;
-}
-
-input{
-  width:100%;
+  background:#081522;
+  border:1px solid #1a3042;
   padding:11px;
-  margin-top:7px;
-  border-radius:8px;
-  border:1px solid #294653;
-  background:#061118;
-  color:#fff;
-  font-size:15px;
-  outline:none;
-}
-
-input:focus{
-  border-color:#198cf0;
-}
-
-button{
-  width:100%;
-  padding:12px;
-  margin-top:8px;
-  border:0;
-  border-radius:9px;
-  background:#1389ee;
-  color:#fff;
-  font-size:12px;
-  font-weight:800;
-}
-
-button.secondary{
-  background:#18313e;
-}
-
-button.warning{
-  background:#735719;
-}
-
-button.danger{
-  background:#702936;
-}
-
-button:disabled{
-  opacity:.45;
-}
-
-.buttonGrid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:8px;
-}
-
-.buttonGrid button{
-  margin-top:8px;
-}
-
-.verdict{
-  padding:15px;
   border-radius:10px;
-  text-align:center;
-  font-weight:900;
-  font-size:17px;
-  background:#28171c;
-  border:1px solid #60303a;
-  color:#ff6877;
+}
+.label{
+  font-size:11px;
+  color:#8197aa;
+}
+.value{
+  font-size:19px;
+  font-weight:700;
+  margin-top:4px;
 }
 
-.verdict.good{
-  background:#10261b;
-  border-color:#2d7048;
-  color:#43e58b;
+.controls{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
 }
-
-.verdict.warn{
-  background:#292417;
-  border-color:#675625;
-  color:#ffd166;
+input,button{
+  width:100%;
+  border-radius:9px;
+  border:1px solid #29455d;
+  padding:11px;
+  font-size:14px;
 }
-
-.note{
-  margin-top:8px;
-  padding:9px;
-  border-radius:8px;
-  background:#0d2029;
-  border:1px solid #203f4e;
-  color:#8ca1ad;
-  font-size:9px;
-  line-height:1.55;
+input{
+  background:#071522;
+  color:white;
 }
+button{
+  background:#15314a;
+  color:white;
+  cursor:pointer;
+  font-weight:700;
+}
+button:hover{background:#1b415f}
+button.danger{background:#52232a}
 
+.tableWrap{
+  overflow-x:auto;
+}
 table{
   width:100%;
   border-collapse:collapse;
-  font-size:8px;
+  font-size:12px;
 }
-
-th,
-td{
-  padding:6px 3px;
-  border-bottom:1px solid #19303b;
-  text-align:center;
+th,td{
+  padding:8px;
+  border-bottom:1px solid #203649;
+  text-align:left;
+  white-space:nowrap;
 }
+th{color:#9bb0c2}
+.good{color:#45e39b}
+.bad{color:#ff737d}
+.warn{color:#ffd166}
 
-th{
-  color:#78919f;
+.badge{
+  display:inline-block;
+  padding:4px 8px;
+  border-radius:20px;
+  font-size:11px;
+  font-weight:700;
+  background:#1b3042;
 }
-
-.signal{
-  text-align:center;
-  background:#061118;
-  border:1px solid #254656;
-  border-radius:10px;
-  padding:14px;
-}
-
-.signalDigit{
-  font-size:52px;
-  font-weight:900;
-}
-
-.mono{
-  background:#02080c;
-  border-radius:8px;
-  padding:9px;
-  max-height:300px;
-  overflow:auto;
+pre{
   white-space:pre-wrap;
   word-break:break-word;
-  font-family:monospace;
-  font-size:8px;
-  line-height:1.45;
+  font-size:11px;
+  color:#a9bfd1;
+  max-height:250px;
+  overflow:auto;
 }
 
-.progress{
-  width:100%;
-  height:8px;
-  background:#061118;
-  border:1px solid #1a3340;
-  border-radius:10px;
-  overflow:hidden;
-  margin-top:8px;
+@media(max-width:750px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .controls{grid-template-columns:1fr}
 }
-
-.progressBar{
-  height:100%;
-  width:0%;
-  background:#198cf0;
-  transition:width .2s;
-}
-
-footer{
-  text-align:center;
-  color:#526b78;
-  font-size:9px;
-  padding:20px 0;
-}
-
-@media(max-width:500px){
-
-  .grid{
-    grid-template-columns:repeat(2,minmax(0,1fr));
-  }
-
-  table{
-    font-size:7px;
-  }
-
-  th,
-  td{
-    padding:5px 2px;
-  }
-
-}
-
 </style>
 </head>
 
 <body>
-
 <div class="container">
 
-<h1>
-Prediction R75 — V10.2 REAL EDGE LAB
-</h1>
-
-<div class="subtitle">
-Laboratoire de validation indépendant • économie réelle • robustesse • Shadow
-</div>
-
-<div id="status" class="status warn">
-🟠 Connexion à Deriv...
-</div>
-
-
-<!-- =====================================================
-MARCHÉ
-===================================================== -->
-
-<div class="card">
-
-<h2>📊 MARCHÉ</h2>
-
-<div class="grid">
-
-<div class="stat">
-<div class="label">Symbole</div>
-<div class="value">R_75</div>
-</div>
-
-<div class="stat">
-<div class="label">Ticks reçus</div>
-<div id="tickCount" class="value">0</div>
-</div>
-
-<div class="stat">
-<div class="label">Prix</div>
-<div id="price" class="value">—</div>
-</div>
-
-<div class="stat">
-<div class="label">Dernier chiffre</div>
-<div id="lastDigit" class="value big">—</div>
-</div>
-
-</div>
-
-</div>
-
-
-<!-- =====================================================
-ÉCONOMIE
-===================================================== -->
-
-<div class="card">
-
-<h2>💰 PARAMÈTRES ÉCONOMIQUES</h2>
-
-<div class="small">
-
-Ces paramètres servent uniquement au calcul théorique.
-Aucun ordre réel n'est envoyé.
-
-</div>
-
-<label class="small">
-Mise par test ($)
-</label>
-
-<input
-id="stake"
-type="number"
-min="0.01"
-step="0.01"
-value="1"
->
-
-<label class="small">
-Gain net en cas de WIN ($)
-</label>
-
-<input
-id="payout"
-type="number"
-min="0.001"
-step="0.001"
-value="0.22"
->
-
-<div class="grid">
-
-<div class="stat">
-<div class="label">Mise</div>
-<div id="stakeValue" class="value">
-1.00 $
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Gain net</div>
-<div id="payoutValue" class="value">
-0.220 $
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Break-even</div>
-<div id="breakEven" class="value">
-82.0%
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Perte par LOSS</div>
-<div id="lossValue" class="value red">
--1.00 $
-</div>
-</div>
-
-</div>
-
-<div class="note">
-
-<b>Exemple :</b> mise 1 $, gain net 0,22 $ → WIN = +0,22 $,
-LOSS = −1 $. Le break-even est alors d'environ 82 %.
-
-</div>
-
-<button id="recalcEconomy" class="secondary">
-🔄 RECALCULER ÉCONOMIE
-</button>
-
-</div>
-
-
-<!-- =====================================================
-CONTRÔLES LAB
-===================================================== -->
-
-<div class="card">
-
-<h2>🎛️ CONTRÔLES</h2>
-
-<div class="buttonGrid">
-
-<button id="runLab">
-🚀 LANCER ANALYSE
-</button>
-
-<button id="recalcLab" class="secondary">
-🧪 RECALCULER LAB
-</button>
-
-</div>
-
-<div class="progress">
-<div id="progressBar" class="progressBar"></div>
-</div>
-
-<div id="progressText"
-class="small"
-style="margin-top:6px">
-Prêt.
-</div>
-
-</div>
-
-
-<!-- =====================================================
-VERDICT
-===================================================== -->
-
-<div class="card">
-
-<h2>🚦 VERDICT</h2>
-
-<div id="verdict" class="verdict">
-EN ATTENTE
-</div>
-
-<div id="verdictText"
-class="small"
-style="text-align:center;margin-top:8px">
-
-L'analyse n'a pas encore été lancée.
-
-</div>
-
-</div>
-
-
-<!-- =====================================================
-ARCHITECTURE
-===================================================== -->
-
-<div class="card">
-
-<h2>🏗️ ARCHITECTURE V10.2</h2>
-
-<div class="grid">
-
-<div class="stat">
-<div class="label">Historique demandé</div>
-<div class="value">2000</div>
-</div>
-
-<div class="stat">
-<div class="label">Historique reçu</div>
-<div id="historySize" class="value">0</div>
-</div>
-
-<div class="stat">
-<div class="label">Recherche</div>
-<div id="researchSize" class="value">—</div>
-</div>
-
-<div class="stat">
-<div class="label">Validation</div>
-<div id="validationSize" class="value">—</div>
-</div>
-
-<div class="stat">
-<div class="label">Holdout</div>
-<div id="holdoutSize" class="value">—</div>
-</div>
-
-<div class="stat">
-<div class="label">Périodes</div>
-<div class="value">6</div>
-</div>
-
-</div>
-
-<div class="note">
-
-Recherche → Validation → Champion → Holdout →
-6 périodes → économie → Monte-Carlo → Shadow.
-
-Le holdout ne sert jamais à choisir le champion.
-
-</div>
-
-</div>
-
-
-<!-- =====================================================
-MÉTHODE
-===================================================== -->
-
-<div class="card">
-
-<h2>🔬 MÉTHODOLOGIE</h2>
-
-<div class="small">
-
-<b>① Recherche :</b> exploration des hypothèses.<br>
-<b>② Validation :</b> sélection du champion.<br>
-<b>③ Holdout :</b> données jamais utilisées pour sélectionner le champion.<br>
-<b>④ Robustesse :</b> le holdout est découpé en 6 périodes.<br>
-<b>⑤ Économie :</b> calcul du vrai break-even et de l'EV selon ton payout.<br>
-<b>⑥ Monte-Carlo :</b> comparaison descriptive avec une référence de 10 %.<br>
-<b>⑦ Shadow :</b> observation en direct sans aucun contrat réel.
-
-</div>
-
-</div>
-
-
-<!-- =====================================================
-RECHERCHE
-===================================================== -->
-
-<div class="card">
-
-<h2>🔎 RECHERCHE</h2>
-
-<div id="researchTable">
-En attente...
-</div>
-
-</div>
-
-
-<!-- =====================================================
-VALIDATION
-===================================================== -->
-
-<div class="card">
-
-<h2>🧪 VALIDATION — SÉLECTION</h2>
-
-<div id="validationTable">
-En attente...
-</div>
+  <div class="card">
+    <h1>🧪 MALISUGU EDGE DISCOVERY LAB</h1>
+    <div class="sub">V11.0 — Recherche statistique R75 • TEST UNIQUEMENT</div>
+
+    <div class="status">
+      <span id="dot" class="dot"></span>
+      <span id="status">Connexion...</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📡 Marché</h2>
+
+    <div class="grid">
+      <div class="stat">
+        <div class="label">Marché</div>
+        <div class="value">R_75</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Ticks reçus</div>
+        <div class="value" id="ticks">0</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Prix</div>
+        <div class="value" id="price">—</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Dernier chiffre</div>
+        <div class="value" id="digit">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>⚙️ Paramètres de recherche</h2>
+
+    <div class="controls">
+      <div>
+        <div class="label">Historique demandé</div>
+        <input id="historyCount" type="number" value="2000" min="500" max="5000">
+      </div>
+
+      <div>
+        <div class="label">Lookback</div>
+        <input id="lookback" type="number" value="100" min="30" max="300">
+      </div>
+
+      <div>
+        <div class="label">Gain net / mise de 1 $</div>
+        <input id="payout" type="number" value="0.22" min="0" step="0.01">
+      </div>
+    </div>
+
+    <div class="controls" style="margin-top:10px">
+      <button onclick="runLab()">🔬 Lancer EDGE DISCOVERY</button>
+      <button onclick="recalculateEconomics()">💰 Recalculer économie</button>
+      <button class="danger" onclick="clearLab()">🧹 Effacer résultats</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>💰 Économie</h2>
+
+    <div class="grid">
+      <div class="stat">
+        <div class="label">Break-even</div>
+        <div class="value" id="breakEven">—</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Gain net</div>
+        <div class="value" id="payoutView">—</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Référence hasard</div>
+        <div class="value">10%</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Trades réels</div>
+        <div class="value bad">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🔎 Recherche des situations</h2>
+    <div id="researchStatus" class="sub">
+      Aucun test lancé.
+    </div>
+
+    <div class="tableWrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Situation</th>
+            <th>Tests</th>
+            <th>Wins</th>
+            <th>Taux</th>
+            <th>Wilson</th>
+            <th>Écart vs 10%</th>
+            <th>EV</th>
+            <th>Profit</th>
+          </tr>
+        </thead>
+        <tbody id="researchTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🏆 Meilleures situations</h2>
+    <div id="topSituations">
+      Pas encore de résultat.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🧠 Conditions étudiées</h2>
+
+    <div class="grid">
+      <div class="stat">
+        <div class="label">Streak</div>
+        <div class="value">✓</div>
+      </div>
+      <div class="stat">
+        <div class="label">Transition</div>
+        <div class="value">✓</div>
+      </div>
+      <div class="stat">
+        <div class="label">Séquence 2</div>
+        <div class="value">✓</div>
+      </div>
+      <div class="stat">
+        <div class="label">Séquence 3</div>
+        <div class="value">✓</div>
+      </div>
+      <div class="stat">
+        <div class="label">Déséquilibre</div>
+        <div class="value">✓</div>
+      </div>
+      <div class="stat">
+        <div class="label">Uniformité</div>
+        <div class="value">✓</div>
+      </div>
+      <div class="stat">
+        <div class="label">Alternance</div>
+        <div class="value">✓</div>
+      </div>
+      <div class="stat">
+        <div class="label">Répétition</div>
+        <div class="value">✓</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🧪 Validation hors échantillon</h2>
+    <div id="validation">
+      Le champion sera choisi sur validation uniquement.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🔒 Holdout final</h2>
+    <div id="holdout">
+      Le holdout restera séparé de la sélection.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📊 Stabilité</h2>
+    <div id="stability">
+      —
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🎲 Test Monte Carlo</h2>
+    <div id="monte">
+      —
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>💡 Contexte actuel</h2>
+
+    <div class="grid">
+      <div class="stat">
+        <div class="label">Dernier chiffre</div>
+        <div class="value" id="ctxDigit">—</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Streak</div>
+        <div class="value" id="ctxStreak">—</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Uniformité 100</div>
+        <div class="value" id="ctxUniform">—</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Régime</div>
+        <div class="value" id="ctxRegime">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📜 Journal</h2>
+    <pre id="journal"></pre>
+  </div>
 
 </div>
-
-
-<!-- =====================================================
-CHAMPION
-===================================================== -->
-
-<div class="card">
-
-<h2>🏆 CHAMPION DE RECHERCHE</h2>
-
-<div id="championBox">
-En attente...
-</div>
-
-</div>
-
-
-<!-- =====================================================
-HOLDOUT
-===================================================== -->
-
-<div class="card">
-
-<h2>🔒 HOLDOUT — TEST FINAL</h2>
-
-<div id="holdoutBox">
-En attente...
-</div>
-
-</div>
-
-
-<!-- =====================================================
-ROBUSTESSE
-===================================================== -->
-
-<div class="card">
-
-<h2>🛡️ ROBUSTESSE — 6 PÉRIODES</h2>
-
-<div id="robustnessBox">
-En attente...
-</div>
-
-</div>
-
-
-<!-- =====================================================
-RENTABILITÉ
-===================================================== -->
-
-<div class="card">
-
-<h2>💵 RENTABILITÉ DU CHAMPION</h2>
-
-<div id="profitBox">
-En attente...
-</div>
-
-</div>
-
-
-<!-- =====================================================
-RISQUE
-===================================================== -->
-
-<div class="card">
-
-<h2>📉 RISQUE</h2>
-
-<div id="riskBox">
-En attente...
-</div>
-
-</div>
-
-
-<!-- =====================================================
-MONTE CARLO
-===================================================== -->
-
-<div class="card">
-
-<h2>🎲 MONTE-CARLO</h2>
-
-<div id="monteBox">
-En attente...
-</div>
-
-</div>
-
-
-<!-- =====================================================
-COMPARAISON
-===================================================== -->
-
-<div class="card">
-
-<h2>🏁 COMPARAISON HOLDOUT</h2>
-
-<div id="comparisonBox">
-En attente...
-</div>
-
-</div>
-
-
-<!-- =====================================================
-PAYOUT SENSITIVITY
-===================================================== -->
-
-<div class="card">
-
-<h2>🧮 SENSIBILITÉ AU PAYOUT</h2>
-
-<div id="payoutBox">
-En attente...
-</div>
-
-</div>
-
-
-<!-- =====================================================
-DISTRIBUTION
-===================================================== -->
-
-<div class="card">
-
-<h2>🔢 DISTRIBUTION — 100 DERNIERS TICKS</h2>
-
-<div id="distribution">
-En attente...
-</div>
-
-</div>
-
-
-<!-- =====================================================
-CONTEXTE
-===================================================== -->
-
-<div class="card">
-
-<h2>🧠 CONTEXTE ACTUEL</h2>
-
-<div id="context">
-En attente...
-</div>
-
-</div>
-
-
-<!-- =====================================================
-LIVE
-===================================================== -->
-
-<div class="card">
-
-<h2>🔮 RECHERCHE LIVE</h2>
-
-<div id="liveBox" class="signal">
-
-<div class="small">
-Attente de 100 ticks
-</div>
-
-<div class="signalDigit">
-—
-</div>
-
-</div>
-
-</div>
-
-
-<!-- =====================================================
-SHADOW
-===================================================== -->
-
-<div class="card">
-
-<h2>👻 SHADOW — VALIDATION FUTURE</h2>
-
-<div class="small">
-
-Le Shadow observe le champion sur les nouveaux ticks.
-Il ne place aucun contrat.
-
-</div>
-
-<div id="shadowBox"
-style="margin-top:9px">
-
-Aucun Shadow actif.
-
-</div>
-
-<div class="buttonGrid">
-
-<button id="startShadow">
-▶️ DÉMARRER SHADOW
-</button>
-
-<button id="pauseShadow"
-class="warning">
-⏸️ PAUSE SHADOW
-</button>
-
-</div>
-
-<button id="resetShadow"
-class="danger">
-♻️ RÉINITIALISER SHADOW
-</button>
-
-</div>
-
-
-<!-- =====================================================
-JOURNAL
-===================================================== -->
-
-<div class="card">
-
-<h2>📓 JOURNAL</h2>
-
-<div id="journal" class="mono">
-V10.2 initialisé...
-</div>
-
-<button id="clearJournal"
-class="secondary">
-EFFACER JOURNAL
-</button>
-
-</div>
-
-
-<footer>
-V10.2 REAL EDGE LAB — TEST UNIQUEMENT — AUCUN TRADE
-</footer>
-
-</div>
-
 
 <script>
+"use strict";
 
-/* =====================================================
-CONFIG
-===================================================== */
+/* =========================================================
+   MALISUGU EDGE DISCOVERY LAB V11.0
+   - Public Deriv WebSocket
+   - Aucun ordre
+   - Recherche statistique
+   - Walk-forward
+   - Validation / Holdout
+   - Wilson
+   - EV
+   - Drawdown
+   - Monte Carlo
+========================================================= */
+
+const WS_URL =
+  "wss://api.derivws.com/trading/v1/options/ws/public";
 
 const SYMBOL = "R_75";
 
-const WS_URL =
-"wss://api.derivws.com/trading/v1/options/ws/public";
-
-const HISTORY_COUNT = 2000;
-
-const LOOKBACK = 100;
-
-const MIN_TESTS = 30;
-
-const MC_RUNS = 3000;
-
-const PERIODS = 6;
-
-const SHADOW_TARGET = 150;
-
-
-/* =====================================================
-ÉTAT
-===================================================== */
-
 let ws = null;
-
+let reconnectTimer = null;
 let ticks = [];
+let connected = false;
+let lastPrice = null;
+let lastDigit = null;
 
-let pipSize = 4;
+let labResults = [];
+let currentChampion = null;
 
-let running = false;
+const $ = id => document.getElementById(id);
 
-let champion = null;
-
-let lastLab = null;
-
-
-/* =====================================================
-SHADOW
-===================================================== */
-
-let shadow = {
-
-active:false,
-
-paused:false,
-
-name:null,
-
-observations:0,
-
-wins:0,
-
-losses:0,
-
-profit:0,
-
-equity:0,
-
-peak:0,
-
-maxDrawdown:0,
-
-currentLossStreak:0,
-
-maxLossStreak:0,
-
-currentWinStreak:0,
-
-maxWinStreak:0
-
-};
-
-
-/* =====================================================
-DOM
-===================================================== */
-
-function $(id){
-
-return document.getElementById(id);
-
-}
-
-
-/* =====================================================
-LOG
-===================================================== */
-
-function log(message){
-
-const time =
-new Date().toLocaleTimeString();
-
-$("journal").textContent +=
-"["+
-time+
-"] "+
-message+
-"\n";
-
-$("journal").scrollTop =
-$("journal").scrollHeight;
-
-}
-
-
-/* =====================================================
-FORMAT
-===================================================== */
-
-function pct(x){
-
-if(!Number.isFinite(x))
-return "—";
-
-return (
-x*100
-).toFixed(1)+
-"%";
-
-}
-
-
-function money(x){
-
-if(!Number.isFinite(x))
-return "—";
-
-return (
-x>=0
-?"+"
-:""
-)+
-x.toFixed(2)+
-" $";
-
-}
-
-
-function clamp(x,a,b){
-
-return Math.max(
-a,
-Math.min(b,x)
-);
-
-}
-
-
-/* =====================================================
-PARAMÈTRES
-===================================================== */
-
-function getStake(){
-
-const x =
-Number(
-$("stake").value
-);
-
-return (
-Number.isFinite(x) &&
-x>0
-)
-?x
-:1;
-
-}
-
-
-function getPayout(){
-
-const x =
-Number(
-$("payout").value
-);
-
-return (
-Number.isFinite(x) &&
-x>0
-)
-?x
-:0.22;
-
-}
-
-
-function getBreakEven(){
-
-return 1/
-(
-1+
-getPayout()
-);
-
-}
-
-
-function updateEconomics(){
-
-const stake =
-getStake();
-
-const payout =
-getPayout();
-
-$("stakeValue").textContent =
-stake.toFixed(2)+
-" $";
-
-$("payoutValue").textContent =
-payout.toFixed(3)+
-" $";
-
-$("lossValue").textContent =
-"-"+
-stake.toFixed(2)+
-" $";
-
-$("breakEven").textContent =
-pct(
-getBreakEven()
-);
-
-}
-
-
-$("stake").addEventListener(
-"input",
-updateEconomics
-);
-
-$("payout").addEventListener(
-"input",
-updateEconomics
-);
-
-$("recalcEconomy").onclick=()=>{
-
-updateEconomics();
-
-if(lastLab){
-
-renderEconomicRecalculation();
-
-}
-
-log(
-"Paramètres économiques recalculés."
-);
-
-};
-
-updateEconomics();
-
-
-/* =====================================================
-DIGIT
-===================================================== */
-
-function digitFromQuote(
-quote,
-pip
-){
-
-const q =
-Number(quote);
-
-if(!Number.isFinite(q))
-return null;
-
-const p =
-Number.isFinite(
-Number(pip)
-)
-?Number(pip)
-:4;
-
-const factor =
-Math.pow(10,p);
-
-const integer =
-Math.round(q*factor);
-
-const text =
-String(
-Math.abs(integer)
-);
-
-return Number(
-text.charAt(
-text.length-1
-)
-);
-
-}
-
-
-/* =====================================================
-COUNTS
-===================================================== */
-
-function counts(arr){
-
-const c =
-Array(10).fill(0);
-
-for(
-const d of arr
-){
-
-if(
-Number.isInteger(d) &&
-d>=0 &&
-d<=9
-){
-
-c[d]++;
-
-}
-
-}
-
-return c;
-
-}
-
-
-function argmax(arr){
-
-let best=0;
-
-for(
-let i=1;
-i<arr.length;
-i++
-){
-
-if(
-arr[i]>
-arr[best]
-){
-
-best=i;
-
-}
-
-}
-
-return best;
-
-}
-
-
-/* =====================================================
-UNIFORMITY
-===================================================== */
-
-function uniformity(arr){
-
-if(
-arr.length<10
-)
-return 0;
-
-const c =
-counts(arr);
-
-const expected =
-arr.length/10;
-
-let chi=0;
-
-for(
-const x of c
-){
-
-chi +=
-Math.pow(
-x-expected,
-2
-)/
-expected;
-
-}
-
-const maxChi =
-arr.length*9/10;
-
-return clamp(
-1-
-chi/maxChi,
-0,
-1
-);
-
-}
-
-
-/* =====================================================
-STREAK
-===================================================== */
-
-function streak(arr){
-
-if(!arr.length)
-return 0;
-
-const last =
-arr[arr.length-1];
-
-let n=1;
-
-for(
-let i=arr.length-2;
-i>=0;
-i--
-){
-
-if(
-arr[i]===last
-){
-
-n++;
-
-}else{
-
-break;
-
-}
-
-}
-
-return n;
-
-}
-
-
-/* =====================================================
-TRANSITION
-===================================================== */
-
-function transition(arr){
-
-const last =
-arr[arr.length-1];
-
-const c =
-Array(10).fill(0);
-
-for(
-let i=0;
-i<arr.length-1;
-i++
-){
-
-if(
-arr[i]===last
-){
-
-c[arr[i+1]]++;
-
-}
-
-}
-
-const sample =
-c.reduce(
-(a,b)=>a+b,
-0
-);
-
-return {
-
-prediction:
-sample>=1
-?argmax(c)
-:argmax(counts(arr)),
-
-sample
-
-};
-
-}
-
-
-/* =====================================================
-SEQUENCE
-===================================================== */
-
-function sequence(
-arr,
-order
-){
-
-if(
-arr.length<=order
-){
-
-return {
-
-prediction:
-argmax(counts(arr)),
-
-sample:0
-
-};
-
-}
-
-const key =
-arr
-.slice(-order)
-.join(",");
-
-const c =
-Array(10).fill(0);
-
-for(
-let i=order;
-i<arr.length;
-i++
-){
-
-const previous =
-arr
-.slice(
-i-order,
-i
-)
-.join(",");
-
-if(
-previous===key
-){
-
-c[arr[i]]++;
-
-}
-
-}
-
-const sample =
-c.reduce(
-(a,b)=>a+b,
-0
-);
-
-return {
-
-prediction:
-sample>=1
-?argmax(c)
-:argmax(counts(arr)),
-
-sample
-
-};
-
-}
-
-
-/* =====================================================
-RÉGIME
-===================================================== */
-
-function regime(arr){
-
-const u50 =
-uniformity(
-arr.slice(-50)
-);
-
-const u100 =
-uniformity(
-arr.slice(-100)
-);
-
-const u200 =
-uniformity(
-arr.slice(-200)
-);
-
-if(
-u50<0.45 &&
-u100<0.60
-){
-
-return "DÉSÉQUILIBRE";
-
-}
-
-if(
-u50>0.90 &&
-u100>0.85
-){
-
-return "UNIFORME";
-
-}
-
-if(
-Math.abs(
-u50-u200
-)>0.25
-){
-
-return "TRANSITION";
-
-}
-
-return "NORMAL";
-
-}
-
-
-/* =====================================================
-CONTEXTE
-===================================================== */
-
-function context(arr){
-
-const global =
-arr.slice(-100);
-
-const recent =
-arr.slice(-30);
-
-const cg =
-counts(global);
-
-const cr =
-counts(recent);
-
-const tr =
-transition(global);
-
-const s2 =
-sequence(global,2);
-
-const s3 =
-sequence(global,3);
-
-const last =
-global[global.length-1];
-
-const rev =
-[...cg];
-
-rev[last]=-1;
-
-
-/* momentum */
-
-const momentumScores =
-Array(10).fill(0);
-
-for(
-let d=0;
-d<10;
-d++
-){
-
-momentumScores[d]=
-(
-cr[d]/recent.length
-)-
-(
-cg[d]/global.length
-);
-
-}
-
-const momentum =
-argmax(
-momentumScores
-);
-
-
-/* balanced */
-
-const expected =
-global.length/10;
-
-const balancedScores =
-cg.map(
-x =>
-Math.abs(
-x-expected
-)
-);
-
-const balanced =
-argmax(
-balancedScores
-);
-
-
-const predictions=[
-
-argmax(cg),
-
-argmax(cr),
-
-tr.prediction,
-
-s2.prediction,
-
-s3.prediction,
-
-argmax(rev),
-
-momentum,
-
-balanced
-
-];
-
-
-const votes =
-Array(10).fill(0);
-
-for(
-const p of predictions
-){
-
-votes[p]++;
-
-}
-
-const consensus =
-argmax(votes);
-
-
-return {
-
-global:argmax(cg),
-
-recent:argmax(cr),
-
-transition:tr.prediction,
-
-seq2:s2.prediction,
-
-seq3:s3.prediction,
-
-reversal:argmax(rev),
-
-momentum,
-
-balanced,
-
-transitionSample:tr.sample,
-
-seq2Sample:s2.sample,
-
-seq3Sample:s3.sample,
-
-consensus,
-
-agreement:votes[consensus],
-
-uniformity50:
-uniformity(
-arr.slice(-50)
-),
-
-uniformity100:
-uniformity(
-arr.slice(-100)
-),
-
-uniformity200:
-uniformity(
-arr.slice(-200)
-),
-
-regime:
-regime(arr),
-
-last,
-
-streak:
-streak(global)
-
-};
-
-}
-
-
-/* =====================================================
-STRATÉGIES
-===================================================== */
-
-const STRATEGIES=[
-
-{
-
-name:"Global",
-
-predict:
-ctx=>ctx.global,
-
-active:
-ctx=>true
-
-},
-
-{
-
-name:"Recent",
-
-predict:
-ctx=>ctx.recent,
-
-active:
-ctx=>true
-
-},
-
-{
-
-name:"Transition",
-
-predict:
-ctx=>ctx.transition,
-
-active:
-ctx=>ctx.transitionSample>=3
-
-},
-
-{
-
-name:"Sequence 2",
-
-predict:
-ctx=>ctx.seq2,
-
-active:
-ctx=>ctx.seq2Sample>=3
-
-},
-
-{
-
-name:"Sequence 3",
-
-predict:
-ctx=>ctx.seq3,
-
-active:
-ctx=>ctx.seq3Sample>=3
-
-},
-
-{
-
-name:"Reversal",
-
-predict:
-ctx=>ctx.reversal,
-
-active:
-ctx=>true
-
-},
-
-{
-
-name:"Momentum",
-
-predict:
-ctx=>ctx.momentum,
-
-active:
-ctx=>ctx.uniformity50<0.85
-
-},
-
-{
-
-name:"Balanced",
-
-predict:
-ctx=>ctx.balanced,
-
-active:
-ctx=>ctx.uniformity100<0.90
-
-}
-
-];
-
-
-/* =====================================================
-ÉVALUATION WALK-FORWARD
-===================================================== */
-
-function evaluate(
-digits,
-strategy,
-start,
-end
-){
-
-const results=[];
-
-const first =
-Math.max(
-start,
-LOOKBACK
-);
-
-for(
-let i=first;
-i<end;
-i++
-){
-
-const history =
-digits.slice(
-i-LOOKBACK,
-i
-);
-
-if(
-history.length<
-LOOKBACK
-)
-continue;
-
-const ctx =
-context(history);
-
-if(
-strategy.active &&
-!strategy.active(ctx)
-){
-
-continue;
-
-}
-
-const prediction =
-strategy.predict(ctx);
-
-const actual =
-digits[i];
-
-results.push({
-
-index:i,
-
-prediction,
-
-actual,
-
-win:
-prediction===actual
-
-});
-
-}
-
-return results;
-
-}
-
-
-/* =====================================================
-STATISTIQUES
-===================================================== */
-
-function stats(results){
-
-const n =
-results.length;
-
-const wins =
-results.filter(
-r=>r.win
-).length;
-
-const losses =
-n-wins;
-
-return {
-
-n,
-
-wins,
-
-losses,
-
-rate:
-n
-?wins/n
-:0,
-
-wilson:
-wilson(
-wins,
-n
-)
-
-};
-
-}
-
-
-/* =====================================================
-WILSON
-===================================================== */
-
-function wilson(
-wins,
-n
-){
-
-if(n<=0)
-return 0;
-
-const z=1.96;
-
-const p =
-wins/n;
-
-const den =
-1+
-z*z/n;
-
-const centre =
-p+
-z*z/(2*n);
-
-const margin =
-z*
-Math.sqrt(
-(
-p*(1-p)+
-z*z/(4*n)
-)/n
-);
-
-return Math.max(
-0,
-(
-centre-margin
-)/
-den
-);
-
-}
-
-
-/* =====================================================
-ÉCONOMIE
-===================================================== */
-
-function economics(results){
-
-const stake =
-getStake();
-
-const payout =
-getPayout();
-
-let profit=0;
-
-let equity=0;
-
-let peak=0;
-
-let maxDD=0;
-
-let lossStreak=0;
-
-let maxLossStreak=0;
-
-let winStreak=0;
-
-let maxWinStreak=0;
-
-let wins=0;
-
-let losses=0;
-
-for(
-const r of results
-){
-
-if(r.win){
-
-wins++;
-
-profit +=
-stake*payout;
-
-equity +=
-stake*payout;
-
-winStreak++;
-
-lossStreak=0;
-
-}else{
-
-losses++;
-
-profit -=
-stake;
-
-equity -=
-stake;
-
-lossStreak++;
-
-winStreak=0;
-
-}
-
-maxLossStreak =
-Math.max(
-maxLossStreak,
-lossStreak
-);
-
-maxWinStreak =
-Math.max(
-maxWinStreak,
-winStreak
-);
-
-peak =
-Math.max(
-peak,
-equity
-);
-
-maxDD =
-Math.max(
-maxDD,
-peak-equity
-);
-
-}
-
-const n =
-results.length;
-
-const rate =
-n
-?wins/n
-:0;
-
-const evPerStake =
-rate*payout-
-(1-rate);
-
-const evMoney =
-stake*evPerStake;
-
-return {
-
-profit,
-
-ev:
-evPerStake,
-
-evMoney,
-
-roi:
-n
-?profit/(n*stake)
-:0,
-
-drawdown:
-maxDD,
-
-wins,
-
-losses,
-
-maxLossStreak,
-
-maxWinStreak
-
-};
-
-}
-
-
-/* =====================================================
-SPLIT
-===================================================== */
-
-function makeSplit(n){
-
-const usable =
-n-LOOKBACK;
-
-const research =
-Math.floor(
-usable*0.55
-);
-
-const validation =
-Math.floor(
-usable*0.20
-);
-
-const holdout =
-usable-
-research-
-validation;
-
-return {
-
-researchStart:
-LOOKBACK,
-
-researchEnd:
-LOOKBACK+research,
-
-validationStart:
-LOOKBACK+research,
-
-validationEnd:
-LOOKBACK+
-research+
-validation,
-
-holdoutStart:
-LOOKBACK+
-research+
-validation,
-
-holdoutEnd:n,
-
-research,
-
-validation,
-
-holdout
-
-};
-
-}
-
-
-/* =====================================================
-TABLE
-===================================================== */
-
-function renderTable(rows){
-
-if(!rows.length)
-return "Aucun résultat.";
-
-let html=`
-
-<table>
-
-<thead>
-
-<tr>
-<th>Stratégie</th>
-<th>N</th>
-<th>WIN</th>
-<th>Rate</th>
-<th>Wilson</th>
-<th>EV</th>
-<th>Profit</th>
-</tr>
-
-</thead>
-
-<tbody>
-`;
-
-for(
-const r of rows
-){
-
-html+=`
-
-<tr>
-
-<td>${r.name}</td>
-
-<td>${r.stats.n}</td>
-
-<td>${r.stats.wins}</td>
-
-<td class="${
-r.stats.rate>=getBreakEven()
-?"green"
-:"red"
-}">
-${pct(r.stats.rate)}
-</td>
-
-<td>
-${pct(r.stats.wilson)}
-</td>
-
-<td class="${
-r.econ.ev>0
-?"green"
-:"red"
-}">
-${pct(r.econ.ev)}
-</td>
-
-<td class="${
-r.econ.profit>=0
-?"green"
-:"red"
-}">
-${money(r.econ.profit)}
-</td>
-
-</tr>
-
-`;
-
-}
-
-html+=`
-
-</tbody>
-</table>
-`;
-
-return html;
-
-}
-
-
-/* =====================================================
-CHOIX CHAMPION
-===================================================== */
-
-function chooseChampion(rows){
-
-const eligible =
-rows.filter(
-r =>
-r.stats.n>=MIN_TESTS
-);
-
-if(!eligible.length)
-return null;
-
-eligible.sort(
-(a,b)=>{
-
-if(
-Math.abs(
-b.stats.wilson-
-a.stats.wilson
-)>0.000001
-){
-
-return (
-b.stats.wilson-
-a.stats.wilson
-);
-
-}
-
-return (
-b.econ.ev-
-a.econ.ev
-);
-
-});
-
-return eligible[0];
-
-}
-
-
-/* =====================================================
-6 PÉRIODES
-===================================================== */
-
-function sixPeriodTest(
-digits,
-strategy,
-start,
-end
-){
-
-const total =
-end-start;
-
-const size =
-Math.floor(
-total/PERIODS
-);
-
-const output=[];
-
-for(
-let p=0;
-p<PERIODS;
-p++
-){
-
-const a =
-start+
-p*size;
-
-const b =
-p===
-PERIODS-1
-?end
-:a+size;
-
-const results =
-evaluate(
-digits,
-strategy,
-a,
-b
-);
-
-output.push({
-
-period:p+1,
-
-stats:
-stats(results),
-
-econ:
-economics(results),
-
-results
-
-});
-
-}
-
-return output;
-
-}
-
-
-/* =====================================================
-MONTE CARLO
-===================================================== */
-
-function seededRandom(seed){
-
-return function(){
-
-let t =
-seed +=
-0x6D2B79F5;
-
-t =
-Math.imul(
-t^t>>>15,
-t|1
-);
-
-t ^=
-t+
-Math.imul(
-t^t>>>7,
-t|61
-);
-
-return (
-(
-t^t>>>14
-)>>>0
-)/
-4294967296;
-
-};
-
-}
-
-
-function monteCarlo(results){
-
-const n =
-results.length;
-
-const observed =
-results.filter(
-r=>r.win
-).length;
-
-if(!n)
-return null;
-
-const random =
-seededRandom(1234567);
-
-let extreme=0;
-
-let totalWins=0;
-
-for(
-let s=0;
-s<MC_RUNS;
-s++
-){
-
-let wins=0;
-
-for(
-let i=0;
-i<n;
-i++
-){
-
-if(
-random()<0.10
-){
-
-wins++;
-
-}
-
-}
-
-totalWins+=wins;
-
-if(
-wins>=observed
-){
-
-extreme++;
-
-}
-
-}
-
-return {
-
-observed,
-
-n,
-
-rate:
-observed/n,
-
-p:
-(extreme+1)/
-(MC_RUNS+1),
-
-averageSimulated:
-totalWins/MC_RUNS
-
-};
-
-}
-
-
-/* =====================================================
-DISTRIBUTION
-===================================================== */
-
-function renderDistribution(){
-
-const arr =
-ticks
-.slice(-100)
-.map(
-x=>x.digit
-)
-.filter(
-Number.isInteger
-);
-
-const c =
-counts(arr);
-
-let html=
-`<div class="grid">`;
-
-for(
-let d=0;
-d<10;
-d++
-){
-
-html+=`
-
-<div class="stat">
-
-<div class="label">
-Digit ${d}
-</div>
-
-<div class="value">
-${c[d]}
-</div>
-
-<div class="label">
-${
-arr.length
-?pct(c[d]/arr.length)
-:"—"
-}
-</div>
-
-</div>
-
-`;
-
-}
-
-html+=
-"</div>";
-
-$("distribution").innerHTML=
-html;
-
-}
-
-
-/* =====================================================
-CONTEXTE
-===================================================== */
-
-function renderContext(){
-
-const arr =
-ticks
-.slice(-200)
-.map(
-x=>x.digit
-)
-.filter(
-Number.isInteger
-);
-
-if(
-arr.length<100
-){
-
-$("context").innerHTML=
-"100 ticks nécessaires.";
-
-return;
-
-}
-
-const c =
-context(arr);
-
-$("context").innerHTML=`
-
-<div class="grid">
-
-<div class="stat">
-<div class="label">Dernier</div>
-<div class="value">${c.last}</div>
-</div>
-
-<div class="stat">
-<div class="label">Streak</div>
-<div class="value">${c.streak}</div>
-</div>
-
-<div class="stat">
-<div class="label">Consensus</div>
-<div class="value">${c.consensus}</div>
-</div>
-
-<div class="stat">
-<div class="label">Accord</div>
-<div class="value">${c.agreement}/8</div>
-</div>
-
-<div class="stat">
-<div class="label">Uniformité 50</div>
-<div class="value">${pct(c.uniformity50)}</div>
-</div>
-
-<div class="stat">
-<div class="label">Régime</div>
-<div class="value">${c.regime}</div>
-</div>
-
-</div>
-
-`;
-
-}
-
-
-/* =====================================================
-LIVE
-===================================================== */
-
-function renderLive(){
-
-const arr =
-ticks
-.slice(-LOOKBACK)
-.map(
-x=>x.digit
-)
-.filter(
-Number.isInteger
-);
-
-if(
-arr.length<LOOKBACK
-){
-
-$("liveBox").innerHTML=`
-
-<div class="small">
-Attente de 100 ticks
-</div>
-
-`;
-
-return;
-
-}
-
-const c =
-context(arr);
-
-$("liveBox").innerHTML=`
-
-<div class="small">
-Consensus de recherche
-</div>
-
-<div class="signalDigit">
-${c.consensus}
-</div>
-
-<div class="small">
-Accord : ${c.agreement}/8
-</div>
-
-<div class="small yellow"
-style="margin-top:7px">
-
-⚠️ Recherche uniquement.
-Aucun ordre.
-
-</div>
-
-`;
-
-}
-
-
-/* =====================================================
-ROBUSTESSE
-===================================================== */
-
-function renderRobustness(periods){
-
-let html=`
-
-<table>
-
-<thead>
-
-<tr>
-<th>Période</th>
-<th>N</th>
-<th>WIN</th>
-<th>Rate</th>
-<th>Wilson</th>
-<th>EV</th>
-<th>Profit</th>
-</tr>
-
-</thead>
-
-<tbody>
-`;
-
-for(
-const p of periods
-){
-
-html+=`
-
-<tr>
-
-<td>P${p.period}</td>
-
-<td>${p.stats.n}</td>
-
-<td>${p.stats.wins}</td>
-
-<td>${pct(p.stats.rate)}</td>
-
-<td>${pct(p.stats.wilson)}</td>
-
-<td class="${
-p.econ.ev>0
-?"green"
-:"red"
-}">
-${pct(p.econ.ev)}
-</td>
-
-<td class="${
-p.econ.profit>=0
-?"green"
-:"red"
-}">
-${money(p.econ.profit)}
-</td>
-
-</tr>
-
-`;
-
-}
-
-html+=`
-
-</tbody>
-</table>
-`;
-
-$("robustnessBox").innerHTML=
-html;
-
-return periods.filter(
-p=>p.econ.ev>0
-).length;
-
-}
-
-
-/* =====================================================
-PAYOUT
-===================================================== */
-
-function renderPayoutBox(rate){
-
-const payouts=[
-0.10,
-0.22,
-0.50,
-1,
-2,
-4,
-8
-];
-
-let html=`
-
-<table>
-
-<thead>
-
-<tr>
-<th>Payout net</th>
-<th>Break-even</th>
-<th>Rate</th>
-<th>EV</th>
-</tr>
-
-</thead>
-
-<tbody>
-`;
-
-for(
-const p of payouts
-){
-
-const be=
-1/(1+p);
-
-const ev=
-rate*p-
-(1-rate);
-
-html+=`
-
-<tr>
-
-<td>
-${p.toFixed(2)} $
-</td>
-
-<td>
-${pct(be)}
-</td>
-
-<td>
-${pct(rate)}
-</td>
-
-<td class="${
-ev>0
-?"green"
-:"red"
-}">
-${pct(ev)}
-</td>
-
-</tr>
-
-`;
-
-}
-
-html+=`
-
-</tbody>
-</table>
-`;
-
-$("payoutBox").innerHTML=
-html;
-
-}
-
-
-/* =====================================================
-RECALCUL CALCUL ÉCONOMIQUE
-===================================================== */
-
-function renderEconomicRecalculation(){
-
-if(!lastLab)
-return;
-
-const h =
-lastLab.holdStats;
-
-const e =
-economics(
-lastLab.holdResults
-);
-
-$("profitBox").innerHTML=`
-
-<div class="grid">
-
-<div class="stat">
-<div class="label">Profit</div>
-<div class="value ${
-e.profit>=0
-?"green"
-:"red"
-}">
-${money(e.profit)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">ROI</div>
-<div class="value ${
-e.roi>=0
-?"green"
-:"red"
-}">
-${pct(e.roi)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">EV / mise</div>
-<div class="value ${
-e.ev>0
-?"green"
-:"red"
-}">
-${pct(e.ev)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">EV en $</div>
-<div class="value ${
-e.evMoney>0
-?"green"
-:"red"
-}">
-${money(e.evMoney)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Break-even</div>
-<div class="value">
-${pct(getBreakEven())}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Rate holdout</div>
-<div class="value">
-${pct(h.rate)}
-</div>
-</div>
-
-</div>
-
-<div class="note">
-
-Les statistiques WIN/LOSS ne changent pas.
-Seule l'interprétation économique change avec la mise
-et le gain net.
-
-</div>
-
-`;
-
-renderPayoutBox(
-h.rate
-);
-
-}
-
-
-/* =====================================================
-SHADOW — RENDU
-===================================================== */
-
-function renderShadow(){
-
-if(
-!shadow.active &&
-shadow.observations===0
-){
-
-$("shadowBox").innerHTML=
-"Aucun Shadow actif.";
-
-return;
-
-}
-
-const n =
-shadow.observations;
-
-const rate =
-n
-?shadow.wins/n
-:0;
-
-const ev =
-rate*getPayout()-
-(1-rate);
-
-$("shadowBox").innerHTML=`
-
-<div class="grid">
-
-<div class="stat">
-<div class="label">Champion</div>
-<div class="value">
-${shadow.name||"—"}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">État</div>
-<div class="value ${
-shadow.paused
-?"yellow"
-:"green"
-}">
-${
-shadow.paused
-?"PAUSE"
-:"ACTIF"
-}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Observations</div>
-<div class="value">
-${n}/${SHADOW_TARGET}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">WIN</div>
-<div class="value">
-${shadow.wins}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">LOSS</div>
-<div class="value">
-${shadow.losses}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Rate</div>
-<div class="value">
-${pct(rate)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">EV</div>
-<div class="value ${
-ev>0
-?"green"
-:"red"
-}">
-${pct(ev)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Profit théorique</div>
-<div class="value ${
-shadow.profit>=0
-?"green"
-:"red"
-}">
-${money(shadow.profit)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Drawdown</div>
-<div class="value red">
-${money(-shadow.maxDrawdown)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Max LOSS</div>
-<div class="value">
-${shadow.maxLossStreak}
-</div>
-</div>
-
-</div>
-
-<div class="progress">
-
-<div
-class="progressBar"
-style="width:${
-Math.min(
-100,
-n/SHADOW_TARGET*100
-)
-}%"
-></div>
-
-</div>
-
-<div class="note yellow">
-
-👻 Shadow = simulation uniquement.
-Aucun contrat réel n'est envoyé à Deriv.
-
-</div>
-
-`;
-
-}
-
-
-/* =====================================================
-PRÉDICTION DU CHAMPION
-===================================================== */
-
-function liveChampionPrediction(){
-
-if(!champion)
-return null;
-
-const arr =
-ticks
-.slice(-LOOKBACK)
-.map(
-x=>x.digit
-)
-.filter(
-Number.isInteger
-);
-
-if(
-arr.length<LOOKBACK
-)
-return null;
-
-const ctx =
-context(arr);
-
-if(
-champion.strategy.active &&
-!champion.strategy.active(ctx)
-)
-return null;
-
-return champion.strategy.predict(ctx);
-
-}
-
-
-/* =====================================================
-SHADOW
-===================================================== */
-
-function processShadow(actual){
-
-if(
-!shadow.active ||
-shadow.paused ||
-!champion
-)
-return;
-
-const prediction =
-liveChampionPrediction();
-
-if(
-!Number.isInteger(prediction)
-)
-return;
-
-const win =
-prediction===actual;
-
-shadow.observations++;
-
-const stake =
-getStake();
-
-const payout =
-getPayout();
-
-if(win){
-
-shadow.wins++;
-
-shadow.profit +=
-stake*payout;
-
-shadow.equity +=
-stake*payout;
-
-shadow.currentWinStreak++;
-
-shadow.currentLossStreak=0;
-
-shadow.maxWinStreak=
-Math.max(
-shadow.maxWinStreak,
-shadow.currentWinStreak
-);
-
-}else{
-
-shadow.losses++;
-
-shadow.profit -=
-stake;
-
-shadow.equity -=
-stake;
-
-shadow.currentLossStreak++;
-
-shadow.currentWinStreak=0;
-
-shadow.maxLossStreak=
-Math.max(
-shadow.maxLossStreak,
-shadow.currentLossStreak
-);
-
-}
-
-shadow.peak =
-Math.max(
-shadow.peak,
-shadow.equity
-);
-
-shadow.maxDrawdown =
-Math.max(
-shadow.maxDrawdown,
-shadow.peak-
-shadow.equity
-);
-
-renderShadow();
-
-if(
-shadow.observations>=
-SHADOW_TARGET
-){
-
-shadow.paused=true;
-
-log(
-"Shadow a atteint "+
-SHADOW_TARGET+
-" observations. Pause automatique."
-);
-
-}
-
-}
-
-
-/* =====================================================
-START SHADOW
-===================================================== */
-
-function startShadow(){
-
-if(!champion){
-
-alert(
-"Lance d'abord V10.2 et sélectionne un champion."
-);
-
-return;
-
-}
-
-if(
-shadow.observations===0
-){
-
-shadow.name=
-champion.name;
-
-}
-
-shadow.active=true;
-
-shadow.paused=false;
-
-log(
-"Shadow démarré : "+
-champion.name
-);
-
-renderShadow();
-
-}
-
-
-/* =====================================================
-PAUSE SHADOW
-===================================================== */
-
-function pauseShadow(){
-
-if(
-!shadow.active
-)
-return;
-
-shadow.paused=true;
-
-log(
-"Shadow mis en pause."
-);
-
-renderShadow();
-
-}
-
-
-/* =====================================================
-RESET SHADOW
-===================================================== */
-
-function resetShadow(){
-
-shadow={
-
-active:false,
-
-paused:false,
-
-name:null,
-
-observations:0,
-
-wins:0,
-
-losses:0,
-
-profit:0,
-
-equity:0,
-
-peak:0,
-
-maxDrawdown:0,
-
-currentLossStreak:0,
-
-maxLossStreak:0,
-
-currentWinStreak:0,
-
-maxWinStreak:0
-
-};
-
-renderShadow();
-
-log(
-"Shadow réinitialisé."
-);
-
-}
-
-
-$("startShadow").onclick=
-startShadow;
-
-$("pauseShadow").onclick=
-pauseShadow;
-
-$("resetShadow").onclick=
-resetShadow;
-
-
-/* =====================================================
-VERDICT
-===================================================== */
-
-function setVerdict(
-title,
-type,
-text
-){
-
-$("verdict").textContent=
-title;
-
-$("verdict").className=
-"verdict"+
-(
-type
-?" "+type
-:""
-);
-
-$("verdictText").textContent=
-text;
-
-}
-
-
-/* =====================================================
-LAB PRINCIPAL
-===================================================== */
-
-async function runLab(){
-
-if(running)
-return;
-
-const digits =
-ticks
-.map(
-x=>x.digit
-)
-.filter(
-Number.isInteger
-);
-
-if(
-digits.length<800
-){
-
-alert(
-"Il faut au minimum 800 ticks pour lancer V10.2."
-);
-
-return;
-
-}
-
-running=true;
-
-$("runLab").disabled=true;
-
-$("recalcLab").disabled=true;
-
-$("progressBar").style.width=
-"5%";
-
-$("progressText").textContent=
-"Préparation...";
-
-try{
-
-const n =
-digits.length;
-
-const split =
-makeSplit(n);
-
-$("historySize").textContent=n;
-
-$("researchSize").textContent=
-split.research;
-
-$("validationSize").textContent=
-split.validation;
-
-$("holdoutSize").textContent=
-split.holdout;
-
-
-/* =================================================
-RECHERCHE
-================================================= */
-
-log(
-"Début recherche..."
-);
-
-$("progressBar").style.width=
-"15%";
-
-$("progressText").textContent=
-"Recherche des hypothèses...";
-
-const research=[];
-
-for(
-const strategy of STRATEGIES
-){
-
-const results =
-evaluate(
-digits,
-strategy,
-split.researchStart,
-split.researchEnd
-);
-
-research.push({
-
-name:
-strategy.name,
-
-strategy,
-
-stats:
-stats(results),
-
-econ:
-economics(results),
-
-results
-
-});
-
-}
-
-research.sort(
-(a,b)=>
-b.econ.ev-
-a.econ.ev
-);
-
-$("researchTable").innerHTML=
-renderTable(research);
-
-
-/* =================================================
-VALIDATION
-================================================= */
-
-log(
-"Validation indépendante..."
-);
-
-$("progressBar").style.width=
-"30%";
-
-$("progressText").textContent=
-"Validation indépendante...";
-
-const validation=[];
-
-for(
-const strategy of STRATEGIES
-){
-
-const results =
-evaluate(
-digits,
-strategy,
-split.validationStart,
-split.validationEnd
-);
-
-validation.push({
-
-name:
-strategy.name,
-
-strategy,
-
-stats:
-stats(results),
-
-econ:
-economics(results),
-
-results
-
-});
-
-}
-
-validation.sort(
-(a,b)=>{
-
-if(
-b.stats.wilson !==
-a.stats.wilson
-){
-
-return (
-b.stats.wilson-
-a.stats.wilson
-);
-
+function log(msg){
+  const time = new Date().toLocaleTimeString();
+  $("journal").textContent =
+    `[${time}] ${msg}\n` + $("journal").textContent;
 }
-
-return (
-b.econ.ev-
-a.econ.ev
-);
-
-});
 
-$("validationTable").innerHTML=
-renderTable(validation);
-
-
-/* =================================================
-CHAMPION
-================================================= */
-
-champion =
-chooseChampion(
-validation
-);
-
-if(!champion){
-
-throw new Error(
-"Aucun champion avec suffisamment de tests."
-);
-
+function setStatus(text,type="yellow"){
+  $("status").textContent = text;
+  $("dot").className = "dot " + type;
 }
-
-$("championBox").innerHTML=`
-
-<div class="grid">
-
-<div class="stat">
-<div class="label">Champion</div>
-<div class="value">
-${champion.name}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Tests</div>
-<div class="value">
-${champion.stats.n}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">WIN rate</div>
-<div class="value">
-${pct(champion.stats.rate)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Wilson</div>
-<div class="value">
-${pct(champion.stats.wilson)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">EV</div>
-<div class="value ${
-champion.econ.ev>0
-?"green"
-:"red"
-}">
-${pct(champion.econ.ev)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Break-even</div>
-<div class="value">
-${pct(getBreakEven())}
-</div>
-</div>
-
-</div>
-
-<div class="note">
-
-🏆 Champion choisi avec la validation.
-Le holdout n'a pas servi à cette sélection.
-
-</div>
-
-`;
-
-
-/* =================================================
-HOLDOUT
-================================================= */
-
-log(
-"Test holdout..."
-);
-
-$("progressBar").style.width=
-"45%";
-
-$("progressText").textContent=
-"Test final holdout...";
-
-const holdResults =
-evaluate(
-digits,
-champion.strategy,
-split.holdoutStart,
-split.holdoutEnd
-);
-
-const holdStats =
-stats(holdResults);
-
-const holdEcon =
-economics(holdResults);
-
-champion.holdResults =
-holdResults;
-
-champion.holdStats =
-holdStats;
-
-champion.holdEcon =
-holdEcon;
-
-$("holdoutBox").innerHTML=`
-
-<div class="grid">
-
-<div class="stat">
-<div class="label">Tests</div>
-<div class="value">
-${holdStats.n}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">WIN</div>
-<div class="value">
-${holdStats.wins}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">LOSS</div>
-<div class="value">
-${holdStats.losses}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Rate</div>
-<div class="value">
-${pct(holdStats.rate)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Wilson</div>
-<div class="value">
-${pct(holdStats.wilson)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Break-even</div>
-<div class="value">
-${pct(getBreakEven())}
-</div>
-</div>
-
-</div>
-
-<div class="note">
-
-🔒 Données jamais utilisées pour choisir le champion.
-
-</div>
-
-`;
-
-
-/* =================================================
-ROBUSTESSE
-================================================= */
-
-log(
-"Test des 6 périodes..."
-);
-
-$("progressBar").style.width=
-"60%";
-
-$("progressText").textContent=
-"Analyse de robustesse...";
 
-const periods =
-sixPeriodTest(
-digits,
-champion.strategy,
-split.holdoutStart,
-split.holdoutEnd
-);
-
-const positivePeriods =
-renderRobustness(
-periods
-);
-
-
-/* =================================================
-RENTABILITÉ
-================================================= */
-
-$("profitBox").innerHTML=`
-
-<div class="grid">
-
-<div class="stat">
-<div class="label">Profit</div>
-<div class="value ${
-holdEcon.profit>=0
-?"green"
-:"red"
-}">
-${money(holdEcon.profit)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">ROI</div>
-<div class="value ${
-holdEcon.roi>=0
-?"green"
-:"red"
-}">
-${pct(holdEcon.roi)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">EV / mise</div>
-<div class="value ${
-holdEcon.ev>0
-?"green"
-:"red"
-}">
-${pct(holdEcon.ev)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">EV en $</div>
-<div class="value ${
-holdEcon.evMoney>0
-?"green"
-:"red"
-}">
-${money(holdEcon.evMoney)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Break-even</div>
-<div class="value">
-${pct(getBreakEven())}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Rate holdout</div>
-<div class="value">
-${pct(holdStats.rate)}
-</div>
-</div>
-
-</div>
-
-`;
-
-
-/* =================================================
-RISQUE
-================================================= */
-
-$("riskBox").innerHTML=`
-
-<div class="grid">
-
-<div class="stat">
-<div class="label">Drawdown max</div>
-<div class="value red">
-${money(-holdEcon.drawdown)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Max LOSS</div>
-<div class="value">
-${holdEcon.maxLossStreak}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Max WIN</div>
-<div class="value">
-${holdEcon.maxWinStreak}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Pertes</div>
-<div class="value">
-${holdEcon.losses}
-</div>
-</div>
-
-</div>
-
-`;
-
-
-/* =================================================
-MONTE CARLO
-================================================= */
-
-$("progressBar").style.width=
-"75%";
-
-$("progressText").textContent=
-"Monte-Carlo...";
-
-const mc =
-monteCarlo(
-holdResults
-);
-
-$("monteBox").innerHTML=`
-
-<div class="grid">
-
-<div class="stat">
-<div class="label">Observé</div>
-<div class="value">
-${mc.observed}/${mc.n}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Rate</div>
-<div class="value">
-${pct(mc.rate)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Référence</div>
-<div class="value">
-10.0%
-</div>
-</div>
-
-<div class="stat">
-<div class="label">p-value</div>
-<div class="value">
-${mc.p.toFixed(4)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Moyenne simulée</div>
-<div class="value">
-${mc.averageSimulated.toFixed(1)}
-</div>
-</div>
-
-<div class="stat">
-<div class="label">Simulations</div>
-<div class="value">
-${MC_RUNS}
-</div>
-</div>
-
-</div>
-
-<div class="note">
-
-La p-value est un indicateur complémentaire.
-Elle ne constitue pas une preuve de rentabilité.
-
-</div>
-
-`;
-
-
-/* =================================================
-COMPARAISON HOLDOUT
-================================================= */
-
-$("progressText").textContent=
-"Comparaison des stratégies...";
-
-const allHoldout=[];
-
-for(
-const strategy of STRATEGIES
-){
-
-const results =
-evaluate(
-digits,
-strategy,
-split.holdoutStart,
-split.holdoutEnd
-);
-
-allHoldout.push({
-
-name:
-strategy.name,
-
-strategy,
-
-stats:
-stats(results),
-
-econ:
-economics(results),
-
-results
-
-});
-
+function digitFromQuote(q){
+  const s = String(q);
+  const parts = s.split(".");
+  const dec = parts[1] || "";
+  return Number(dec[dec.length-1] || 0);
 }
-
-allHoldout.sort(
-(a,b)=>
-b.econ.ev-
-a.econ.ev
-);
-
-$("comparisonBox").innerHTML=
-renderTable(
-allHoldout
-);
-
-
-/* =================================================
-PAYOUT
-================================================= */
-
-renderPayoutBox(
-holdStats.rate
-);
-
-
-/* =================================================
-DISTRIBUTION
-================================================= */
-
-renderDistribution();
-
 
-/* =================================================
-CONTEXTE
-================================================= */
+function updateMarket(){
+  $("ticks").textContent = ticks.length;
+  $("price").textContent =
+    lastPrice === null ? "—" : Number(lastPrice).toFixed(4);
 
-renderContext();
+  $("digit").textContent =
+    lastDigit === null ? "—" : lastDigit;
 
-renderLive();
-
-
-/* =================================================
-STOCK LAB
-================================================= */
-
-lastLab={
-
-champion,
-
-holdResults,
-
-holdStats,
-
-holdEcon,
-
-periods,
-
-mc
-
-};
-
-
-/* =================================================
-VERDICT
-================================================= */
-
-const enough =
-holdStats.n>=150;
-
-const profitable =
-holdEcon.ev>0 &&
-holdEcon.profit>0;
-
-const aboveBreakEven =
-holdStats.rate>
-getBreakEven();
-
-const robust =
-positivePeriods>=4;
-
-const wilsonAbove =
-holdStats.wilson>
-getBreakEven();
-
-
-let verdict =
-"EDGE NON DÉMONTRÉ";
-
-let type="";
-
-let text =
-"La stratégie ne fournit pas actuellement une preuve suffisante d'un avantage rentable et robuste.";
-
-
-if(
-enough &&
-profitable &&
-aboveBreakEven &&
-robust &&
-wilsonAbove
-){
-
-verdict =
-"EDGE À CONFIRMER EN SHADOW";
-
-type="good";
-
-text =
-"Le résultat passe les principaux tests du laboratoire. Il doit maintenant être confirmé sur de nouvelles données en Shadow, sans argent réel.";
-
-}else if(
-enough &&
-profitable &&
-aboveBreakEven
-){
-
-verdict =
-"EDGE INTÉRESSANT MAIS FRAGILE";
-
-type="warn";
-
-text =
-"Le résultat est économiquement positif sur ce holdout, mais la robustesse reste insuffisante pour conclure.";
-
+  updateContext();
 }
-
 
-setVerdict(
-verdict,
-type,
-text
-);
+function updateContext(){
 
+  if(!ticks.length){
+    return;
+  }
 
-/* =================================================
-LOG FINAL
-================================================= */
+  const d = ticks[ticks.length-1];
 
-$("progressBar").style.width=
-"100%";
+  let streak = 1;
 
-$("progressText").textContent=
-"Analyse terminée.";
+  for(let i=ticks.length-2;i>=0;i--){
+    if(ticks[i] === d) streak++;
+    else break;
+  }
 
-log(
-"================================"
-);
+  const recent = ticks.slice(-100);
+  const counts = Array(10).fill(0);
 
-log(
-"V10.2 TERMINÉ"
-);
+  recent.forEach(x=>counts[x]++);
 
-log(
-"Champion : "+
-champion.name
-);
+  const max = Math.max(...counts);
+  const uniformity =
+    100 - ((max/recent.length)*100 - 10) * 100;
 
-log(
-"Holdout : "+
-holdStats.wins+
-"/"+
-holdStats.n+
-" = "+
-pct(holdStats.rate)
-);
+  const range =
+    Math.max(...counts) - Math.min(...counts);
 
-log(
-"Break-even : "+
-pct(getBreakEven())
-);
+  let regime = "ÉQUILIBRÉ";
 
-log(
-"EV : "+
-pct(holdEcon.ev)
-);
+  if(range <= 3) regime = "UNIFORME";
+  else if(range >= 10) regime = "DÉSÉQUILIBRÉ";
 
-log(
-"Profit : "+
-money(holdEcon.profit)
-);
-
-log(
-"Périodes positives : "+
-positivePeriods+
-"/"+
-PERIODS
-);
-
-log(
-"Wilson : "+
-pct(holdStats.wilson)
-);
-
-log(
-"Monte-Carlo p : "+
-mc.p.toFixed(4)
-);
-
-log(
-"Verdict : "+
-verdict
-);
-
-log(
-"================================"
-);
-
-
-}catch(error){
-
-console.error(error);
-
-log(
-"ERREUR : "+
-error.message
-);
-
-setVerdict(
-"ERREUR",
-"",
-error.message
-);
-
-}finally{
-
-running=false;
-
-$("runLab").disabled=false;
-
-$("recalcLab").disabled=false;
-
-}
-
-}
-
-
-/* =====================================================
-RECALCUL LAB
-===================================================== */
-
-$("recalcLab").onclick=()=>{
-
-if(!ticks.length){
-
-alert(
-"Aucune donnée disponible."
-);
-
-return;
-
+  $("ctxDigit").textContent = d;
+  $("ctxStreak").textContent = streak;
+  $("ctxUniform").textContent =
+    Math.max(0,Math.min(100,uniformity)).toFixed(1)+"%";
+  $("ctxRegime").textContent = regime;
 }
-
-runLab();
-
-};
-
-
-/* =====================================================
-JOURNAL
-===================================================== */
-
-$("clearJournal").onclick=()=>{
-
-$("journal").textContent=
-"Journal effacé.\n";
-
-};
-
 
-/* =====================================================
-WEBSOCKET
-===================================================== */
+/* =========================================================
+   WEBSOCKET
+========================================================= */
 
 function connect(){
 
-$("status").textContent=
-"🟠 Connexion à Deriv...";
+  clearTimeout(reconnectTimer);
 
-$("status").className=
-"status warn";
+  setStatus("Connexion...", "yellow");
 
+  try{
+    ws = new WebSocket(WS_URL);
+  }catch(e){
+    scheduleReconnect();
+    return;
+  }
 
-ws=
-new WebSocket(
-WS_URL
-);
+  ws.onopen = () => {
 
+    connected = true;
+    setStatus("Connecté R75", "green");
 
-ws.onopen=()=>{
+    log("WebSocket connecté.");
 
-$("status").textContent=
-"🟢 Connecté — R_75";
+    requestHistory();
+    subscribeTicks();
+  };
 
-$("status").className=
-"status ok";
+  ws.onmessage = event => {
 
-log(
-"WebSocket connecté."
-);
+    let data;
 
-ws.send(
-JSON.stringify({
+    try{
+      data = JSON.parse(event.data);
+    }catch(e){
+      return;
+    }
 
-active_symbols:
-"brief",
+    if(data.error){
+      log("API: " + data.error.message);
+      return;
+    }
 
-req_id:1
+    if(data.msg_type === "history"){
+      handleHistory(data);
+    }
 
-})
-);
+    if(data.msg_type === "tick"){
+      handleTick(data);
+    }
+  };
 
-};
+  ws.onerror = () => {
+    setStatus("Erreur WebSocket","red");
+  };
 
+  ws.onclose = () => {
 
-ws.onmessage=(event)=>{
+    connected = false;
+    setStatus("Déconnecté — reconnexion...", "yellow");
 
-let data;
-
-try{
-
-data=
-JSON.parse(
-event.data
-);
-
-}catch(e){
-
-return;
-
+    scheduleReconnect();
+  };
 }
 
+function scheduleReconnect(){
 
-/* ==========================================
-ACTIVE SYMBOLS
-========================================== */
+  clearTimeout(reconnectTimer);
 
-if(
-data.msg_type===
-"active_symbols"
+  reconnectTimer = setTimeout(()=>{
+    connect();
+  },5000);
+}
+
+function requestHistory(){
+
+  const count =
+    Math.max(500,Math.min(5000,
+      Number($("historyCount").value)||2000
+    ));
+
+  const req = {
+    ticks_history: SYMBOL,
+    count: count,
+    end: "latest",
+    style: "ticks"
+  };
+
+  ws.send(JSON.stringify(req));
+
+  log("Demande historique: "+count+" ticks.");
+}
+
+function subscribeTicks(){
+
+  const req = {
+    ticks: SYMBOL,
+    subscribe: 1
+  };
+
+  ws.send(JSON.stringify(req));
+
+  log("Abonnement ticks R75 actif.");
+}
+
+function handleHistory(data){
+
+  let prices = [];
+
+  if(data.history && Array.isArray(data.history.prices)){
+    prices = data.history.prices;
+  }
+
+  if(!prices.length && data.history && Array.isArray(data.history)){
+    prices = data.history;
+  }
+
+  if(!prices.length){
+    log("Historique reçu mais aucun prix exploitable.");
+    return;
+  }
+
+  ticks = prices.map(x=>digitFromQuote(x));
+
+  lastPrice =
+    prices[prices.length-1];
+
+  lastDigit =
+    ticks[ticks.length-1];
+
+  updateMarket();
+
+  log("Historique chargé: "+ticks.length+" ticks.");
+
+  if(ticks.length >= 200){
+    setTimeout(runLab,300);
+  }
+}
+
+function handleTick(data){
+
+  if(!data.tick) return;
+
+  const quote = data.tick.quote;
+
+  lastPrice = quote;
+  lastDigit = digitFromQuote(quote);
+
+  ticks.push(lastDigit);
+
+  const max =
+    Math.max(5000,Number($("historyCount").value)||2000);
+
+  if(ticks.length > max){
+    ticks.splice(0,ticks.length-max);
+  }
+
+  updateMarket();
+}
+
+/* =========================================================
+   STATISTIQUES
+========================================================= */
+
+function counts(arr){
+
+  const c = Array(10).fill(0);
+
+  arr.forEach(x=>{
+    if(Number.isInteger(x)) c[x]++;
+  });
+
+  return c;
+}
+
+function argmax(arr){
+
+  let best=0;
+
+  for(let i=1;i<arr.length;i++){
+    if(arr[i]>arr[best]) best=i;
+  }
+
+  return best;
+}
+
+function wilsonLower(wins,n){
+
+  if(!n) return 0;
+
+  const z=1.959963984540054;
+
+  const p=wins/n;
+
+  const den=1+(z*z/n);
+
+  const center =
+    p+(z*z/(2*n));
+
+  const margin =
+    z*Math.sqrt(
+      (p*(1-p)/n)+
+      (z*z/(4*n*n))
+    );
+
+  return Math.max(
+    0,
+    (center-margin)/den
+  );
+}
+
+function ev(rate,payout){
+
+  return rate*payout-(1-rate);
+}
+
+function profit(wins,tests,payout){
+
+  return wins*payout-(tests-wins);
+}
+
+function maxLossStreak(results){
+
+  let cur=0;
+  let max=0;
+
+  for(const r of results){
+
+    if(r===0){
+      cur++;
+      max=Math.max(max,cur);
+    }else{
+      cur=0;
+    }
+  }
+
+  return max;
+}
+
+function maxDrawdown(results,payout){
+
+  let equity=0;
+  let peak=0;
+  let dd=0;
+
+  for(const r of results){
+
+    equity +=
+      r ? payout : -1;
+
+    peak=Math.max(peak,equity);
+
+    dd=Math.min(dd,equity-peak);
+  }
+
+  return dd;
+}
+
+/* =========================================================
+   CONTEXT FEATURES
+========================================================= */
+
+function streakLength(arr){
+
+  if(!arr.length) return 0;
+
+  const d=arr[arr.length-1];
+
+  let n=1;
+
+  for(let i=arr.length-2;i>=0;i--){
+
+    if(arr[i]===d) n++;
+    else break;
+  }
+
+  return n;
+}
+
+function uniformity(arr){
+
+  if(!arr.length) return 0;
+
+  const c=counts(arr);
+
+  const ideal=arr.length/10;
+
+  let deviation=0;
+
+  c.forEach(x=>{
+    deviation += Math.abs(x-ideal);
+  });
+
+  return Math.max(
+    0,
+    100-(deviation/(arr.length*2))*100
+  );
+}
+
+function transitionPrediction(arr){
+
+  if(arr.length<2) return null;
+
+  const current=arr[arr.length-1];
+
+  const c=Array(10).fill(0);
+
+  for(let i=0;i<arr.length-1;i++){
+
+    if(arr[i]===current){
+      c[arr[i+1]]++;
+    }
+  }
+
+  const total=c.reduce((a,b)=>a+b,0);
+
+  if(total<5) return null;
+
+  return argmax(c);
+}
+
+function sequencePrediction(arr,len){
+
+  if(arr.length <= len) return null;
+
+  const key =
+    arr.slice(-len).join(",");
+
+  const c=Array(10).fill(0);
+
+  for(let i=len;i<arr.length;i++){
+
+    const k =
+      arr.slice(i-len,i).join(",");
+
+    if(k===key){
+      c[arr[i]]++;
+    }
+  }
+
+  const total=c.reduce((a,b)=>a+b,0);
+
+  if(total<5) return null;
+
+  return argmax(c);
+}
+
+function recentPrediction(arr,n=30){
+
+  const c=counts(arr.slice(-n));
+
+  return argmax(c);
+}
+
+function globalPrediction(arr){
+
+  return argmax(counts(arr));
+}
+
+function reversalPrediction(arr){
+
+  if(!arr.length) return null;
+
+  const current =
+    arr[arr.length-1];
+
+  const c=counts(arr)
+    .map((v,i)=>i===current ? -1 : v);
+
+  return argmax(c);
+}
+
+function alternating(arr){
+
+  if(arr.length<4) return false;
+
+  const a=arr[arr.length-1];
+  const b=arr[arr.length-2];
+
+  if(a===b) return false;
+
+  return (
+    arr[arr.length-3]===a &&
+    arr[arr.length-4]===b
+  );
+}
+
+/* =========================================================
+   STRATEGIES
+========================================================= */
+
+function strategies(arr){
+
+  const last =
+    arr[arr.length-1];
+
+  const streak =
+    streakLength(arr);
+
+  const uni =
+    uniformity(arr.slice(-100));
+
+  const seq2 =
+    sequencePrediction(arr,2);
+
+  const trans =
+    transitionPrediction(arr);
+
+  const result=[];
+
+  result.push({
+    name:"Global",
+    prediction:globalPrediction(arr)
+  });
+
+  result.push({
+    name:"Recent",
+    prediction:recentPrediction(arr,30)
+  });
+
+  result.push({
+    name:"Transition",
+    prediction:trans
+  });
+
+  result.push({
+    name:"Sequence 2",
+    prediction:seq2
+  });
+
+  result.push({
+    name:"Sequence 3",
+    prediction:sequencePrediction(arr,3)
+  });
+
+  result.push({
+    name:"Reversal",
+    prediction:reversalPrediction(arr)
+  });
+
+  /*
+    Hypothèses conditionnelles.
+  */
+
+  if(streak>=2 && trans!==null){
+
+    result.push({
+      name:"Transition + Streak",
+      prediction:trans
+    });
+  }
+
+  if(streak>=2 && seq2!==null){
+
+    result.push({
+      name:"Sequence 2 + Streak",
+      prediction:seq2
+    });
+  }
+
+  if(uni<80 && seq2!==null){
+
+    result.push({
+      name:"Sequence 2 + Déséquilibre",
+      prediction:seq2
+    });
+  }
+
+  if(uni<80 && trans!==null){
+
+    result.push({
+      name:"Transition + Déséquilibre",
+      prediction:trans
+    });
+  }
+
+  if(uni>=90 && seq2!==null){
+
+    result.push({
+      name:"Sequence 2 + Uniformité",
+      prediction:seq2
+    });
+  }
+
+  if(alternating(arr)){
+
+    result.push({
+      name:"Alternance",
+      prediction:recentPrediction(arr,20)
+    });
+  }
+
+  return result.filter(
+    x=>x.prediction!==null &&
+       x.prediction!==undefined
+  );
+}
+
+/* =========================================================
+   WALK FORWARD
+========================================================= */
+
+function evaluateStrategy(data,name,lookback,start,end){
+
+  const results=[];
+
+  let tests=0;
+  let wins=0;
+
+  for(let i=start;i<end;i++){
+
+    if(i<lookback) continue;
+
+    const train =
+      data.slice(i-lookback,i);
+
+    const actual =
+      data[i];
+
+    const preds =
+      strategies(train);
+
+    const model =
+      preds.find(x=>x.name===name);
+
+    if(!model) continue;
+
+    tests++;
+
+    const win =
+      model.prediction===actual;
+
+    if(win) wins++;
+
+    results.push(win?1:0);
+  }
+
+  const rate =
+    tests ? wins/tests : 0;
+
+  return {
+    name,
+    tests,
+    wins,
+    rate,
+    wilson:wilsonLower(wins,tests),
+    results
+  };
+}
+
+/* =========================================================
+   BUILD STRATEGY NAMES
+========================================================= */
+
+function strategyNames(){
+
+  return [
+    "Global",
+    "Recent",
+    "Transition",
+    "Sequence 2",
+    "Sequence 3",
+    "Reversal",
+    "Transition + Streak",
+    "Sequence 2 + Streak",
+    "Sequence 2 + Déséquilibre",
+    "Transition + Déséquilibre",
+    "Sequence 2 + Uniformité",
+    "Alternance"
+  ];
+}
+
+/* =========================================================
+   LAB
+========================================================= */
+
+function runLab(){
+
+  if(ticks.length<300){
+
+    $("researchStatus").textContent =
+      "Pas assez de données. Attente de l'historique...";
+
+    return;
+  }
+
+  const data=ticks.slice();
+
+  const lookback =
+    Math.max(30,Number($("lookback").value)||100);
+
+  /*
+    Architecture:
+    55% recherche
+    20% validation
+    25% holdout
+  */
+
+  const usable =
+    data.length-lookback;
+
+  const researchEnd =
+    lookback+
+    Math.floor(usable*0.55);
+
+  const validationEnd =
+    researchEnd+
+    Math.floor(usable*0.20);
+
+  const holdoutEnd =
+    data.length;
+
+  $("researchStatus").textContent =
+    `Analyse ${data.length} ticks • `
+    +`lookback ${lookback} • `
+    +`Recherche jusqu'à ${researchEnd} • `
+    +`Validation jusqu'à ${validationEnd} • `
+    +`Holdout ${validationEnd}→${holdoutEnd}`;
+
+  const names=strategyNames();
+
+  /*
+    Recherche
+  */
+
+  const research=[];
+
+  names.forEach(name=>{
+
+    const r=evaluateStrategy(
+      data,
+      name,
+      lookback,
+      lookback,
+      researchEnd
+    );
+
+    research.push(r);
+  });
+
+  /*
+    Affichage recherche
+  */
+
+  renderResults(
+    research,
+    "researchTable"
+  );
+
+  labResults=research;
+
+  /*
+    Sélection validation
+  */
+
+  const validation=[];
+
+  names.forEach(name=>{
+
+    validation.push(
+      evaluateStrategy(
+        data,
+        name,
+        lookback,
+        researchEnd,
+        validationEnd
+      )
+    );
+
+  });
+
+  /*
+    Champion:
+    Wilson supérieur,
+    avec minimum 30 tests.
+  */
+
+  const eligible =
+    validation.filter(x=>x.tests>=30);
+
+  eligible.sort(
+    (a,b)=>b.wilson-a.wilson
+  );
+
+  currentChampion =
+    eligible[0] || null;
+
+  renderValidation(
+    validation,
+    currentChampion
+  );
+
+  /*
+    Holdout.
+  */
+
+  let holdout=[];
+
+  if(currentChampion){
+
+    holdout =
+      evaluateStrategy(
+        data,
+        currentChampion.name,
+        lookback,
+        validationEnd,
+        holdoutEnd
+      );
+  }
+
+  renderHoldout(
+    holdout,
+    currentChampion
+  );
+
+  /*
+    Top situations
+  */
+
+  renderTop(
+    validation
+      .filter(x=>x.tests>=20)
+      .sort((a,b)=>b.wilson-a.wilson)
+      .slice(0,5)
+  );
+
+  /*
+    Robustesse du champion.
+  */
+
+  if(currentChampion){
+
+    runStability(
+      data,
+      currentChampion.name,
+      lookback,
+      validationEnd,
+      holdoutEnd
+    );
+
+    runMonteCarlo(
+      holdout
+    );
+  }
+
+  log(
+    "EDGE DISCOVERY terminé. Champion validation: "
+    +(currentChampion ? currentChampion.name : "aucun")
+  );
+
+  /*
+    IMPORTANT:
+    Aucun ordre n'est envoyé.
+  */
+}
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+function renderResults(results,id){
+
+  const payout =
+    Number($("payout").value)||0;
+
+  const html =
+    results.map(r=>{
+
+      const e=ev(r.rate,payout);
+
+      const p=profit(
+        r.wins,
+        r.tests,
+        payout
+      );
+
+      const diff =
+        (r.rate-0.10)*100;
+
+      return `
+        <tr>
+          <td><b>${r.name}</b></td>
+          <td>${r.tests}</td>
+          <td>${r.wins}</td>
+          <td>${(r.rate*100).toFixed(1)}%</td>
+          <td>${(r.wilson*100).toFixed(1)}%</td>
+          <td class="${diff>=0?'good':'bad'}">
+            ${diff>=0?'+':''}${diff.toFixed(1)}%
+          </td>
+          <td class="${e>=0?'good':'bad'}">
+            ${(e*100).toFixed(1)}%
+          </td>
+          <td class="${p>=0?'good':'bad'}">
+            ${p.toFixed(2)}$
+          </td>
+        </tr>
+      `;
+
+    }).join("");
+
+  $(id).innerHTML=html;
+}
+
+/* =========================================================
+   VALIDATION
+========================================================= */
+
+function renderValidation(results,champion){
+
+  const sorted =
+    results
+      .slice()
+      .sort((a,b)=>b.wilson-a.wilson);
+
+  let html =
+    `<div class="tableWrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Stratégie</th>
+            <th>Tests</th>
+            <th>Wins</th>
+            <th>Taux</th>
+            <th>Wilson</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+  sorted.forEach(r=>{
+
+    html += `
+      <tr>
+        <td>
+          ${r.name}
+          ${
+            champion &&
+            champion.name===r.name
+            ? `<span class="badge">CHAMPION</span>`
+            : ""
+          }
+        </td>
+        <td>${r.tests}</td>
+        <td>${r.wins}</td>
+        <td>${(r.rate*100).toFixed(1)}%</td>
+        <td>${(r.wilson*100).toFixed(1)}%</td>
+      </tr>
+    `;
+  });
+
+  html+=`</tbody></table></div>`;
+
+  if(champion){
+
+    html += `
+      <div style="margin-top:12px">
+        🏆 Champion sélectionné:
+        <b>${champion.name}</b><br>
+        Validation:
+        ${(champion.rate*100).toFixed(2)}%
+        • Wilson:
+        ${(champion.wilson*100).toFixed(2)}%
+      </div>
+    `;
+  }else{
+
+    html += `
+      <div class="warn">
+        Aucun champion suffisamment documenté.
+      </div>
+    `;
+  }
+
+  $("validation").innerHTML=html;
+}
+
+/* =========================================================
+   HOLDOUT
+========================================================= */
+
+function renderHoldout(r,champion){
+
+  if(!champion || !r){
+
+    $("holdout").innerHTML =
+      "Holdout non disponible.";
+
+    return;
+  }
+
+  const payout =
+    Number($("payout").value)||0;
+
+  const e =
+    ev(r.rate,payout);
+
+  const p =
+    profit(r.wins,r.tests,payout);
+
+  const dd =
+    maxDrawdown(r.results,payout);
+
+  const streak =
+    maxLossStreak(r.results);
+
+  const diff =
+    (r.rate-0.10)*100;
+
+  $("holdout").innerHTML = `
+    <div class="grid">
+      <div class="stat">
+        <div class="label">Champion</div>
+        <div class="value">${champion.name}</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Tests</div>
+        <div class="value">${r.tests}</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Wins</div>
+        <div class="value">${r.wins}</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Taux</div>
+        <div class="value">
+          ${(r.rate*100).toFixed(2)}%
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Wilson</div>
+        <div class="value">
+          ${(r.wilson*100).toFixed(2)}%
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Écart vs hasard</div>
+        <div class="value">
+          ${diff>=0?"+":""}${diff.toFixed(2)}%
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="label">EV / mise</div>
+        <div class="value ${e>=0?'good':'bad'}">
+          ${(e*100).toFixed(2)}%
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Profit théorique</div>
+        <div class="value ${p>=0?'good':'bad'}">
+          ${p.toFixed(2)}$
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Drawdown</div>
+        <div class="value bad">
+          ${dd.toFixed(2)}$
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Max pertes consécutives</div>
+        <div class="value bad">
+          ${streak}
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      ${
+        e>=0
+        ? "🟢 EV théorique positive — nécessite confirmation."
+        : "🔴 EV théorique négative."
+      }
+    </div>
+  `;
+}
+
+/* =========================================================
+   TOP
+========================================================= */
+
+function renderTop(results){
+
+  if(!results.length){
+
+    $("topSituations").innerHTML =
+      "Aucune situation suffisamment testée.";
+
+    return;
+  }
+
+  $("topSituations").innerHTML =
+    results.map((r,i)=>{
+
+      return `
+        <div class="stat" style="margin-top:8px">
+          <b>#${i+1} ${r.name}</b><br>
+          Tests: ${r.tests}
+          • Wins: ${r.wins}
+          • Taux: ${(r.rate*100).toFixed(2)}%
+          • Wilson: ${(r.wilson*100).toFixed(2)}%
+        </div>
+      `;
+
+    }).join("");
+}
+
+/* =========================================================
+   STABILITY
+========================================================= */
+
+function runStability(
+  data,
+  name,
+  lookback,
+  start,
+  end
 ){
 
-const list =
-data.active_symbols||
-[];
+  const n=end-start;
 
-const found =
-list.find(
-x =>
-x.underlying_symbol===
-SYMBOL
-);
+  if(n<30){
 
-if(!found){
+    $("stability").textContent =
+      "Holdout trop petit pour une stabilité sérieuse.";
 
-log(
-"R_75 non trouvé."
-);
+    return;
+  }
 
-return;
+  const parts=6;
 
+  let html=
+    `<div class="tableWrap">
+      <table>
+      <thead>
+        <tr>
+          <th>Période</th>
+          <th>Tests</th>
+          <th>Wins</th>
+          <th>Taux</th>
+          <th>Wilson</th>
+          <th>EV</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+  const payout =
+    Number($("payout").value)||0;
+
+  let positive=0;
+
+  for(let p=0;p<parts;p++){
+
+    const a =
+      start+
+      Math.floor(n*p/parts);
+
+    const b =
+      start+
+      Math.floor(n*(p+1)/parts);
+
+    const r =
+      evaluateStrategy(
+        data,
+        name,
+        lookback,
+        a,
+        b
+      );
+
+    const e=
+      ev(r.rate,payout);
+
+    if(e>0) positive++;
+
+    html += `
+      <tr>
+        <td>P${p+1}</td>
+        <td>${r.tests}</td>
+        <td>${r.wins}</td>
+        <td>${(r.rate*100).toFixed(1)}%</td>
+        <td>${(r.wilson*100).toFixed(1)}%</td>
+        <td class="${e>=0?'good':'bad'}">
+          ${(e*100).toFixed(1)}%
+        </td>
+      </tr>
+    `;
+  }
+
+  html+=`
+      </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:10px">
+      Périodes avec EV positive:
+      <b>${positive}/${parts}</b>
+    </div>
+  `;
+
+  $("stability").innerHTML=html;
 }
 
-log(
-"R_75 trouvé."
-);
+/* =========================================================
+   MONTE CARLO
+========================================================= */
 
+function seededRandom(seed){
 
-/*
- IMPORTANT :
- ticks_history sans subscribe
- */
+  return function(){
 
-ws.send(
-JSON.stringify({
+    seed += 0x6D2B79F5;
 
-ticks_history:
-SYMBOL,
+    let t=seed;
 
-end:
-"latest",
+    t=Math.imul(
+      t^(t>>>15),
+      t|1
+    );
 
-count:
-HISTORY_COUNT,
+    t^=
+      t+
+      Math.imul(
+        t^(t>>>7),
+        t|61
+      );
 
-style:
-"ticks",
-
-req_id:2
-
-})
-);
-
+    return (
+      (t^(t>>>14))>>>0
+    )/4294967296;
+  };
 }
 
+function runMonteCarlo(r){
 
-/* ==========================================
-HISTORY
-========================================== */
+  if(!r || !r.tests){
 
-if(
-data.msg_type===
-"history"
-){
+    $("monte").textContent="—";
+    return;
+  }
 
-const prices =
-data.history &&
-data.history.prices
-?data.history.prices
-:[];
+  const runs=3000;
 
-const times =
-data.history &&
-data.history.times
-?data.history.times
-:[];
+  const observed=r.wins;
+  const n=r.tests;
 
+  const rand=seededRandom(123456789);
 
-if(
-Number.isFinite(
-Number(data.pip_size)
-)
-){
+  let extreme=0;
+  let total=0;
 
-pipSize=
-Number(data.pip_size);
+  for(let k=0;k<runs;k++){
 
+    let wins=0;
+
+    for(let i=0;i<n;i++){
+
+      if(rand()<0.10){
+        wins++;
+      }
+    }
+
+    total+=wins;
+
+    if(wins>=observed){
+      extreme++;
+    }
+  }
+
+  const p=
+    (extreme+1)/(runs+1);
+
+  const avg=
+    total/runs;
+
+  let verdict;
+
+  if(p<0.05){
+    verdict=
+      "Résultat rare sous l'hypothèse 10%.";
+  }else{
+    verdict=
+      "Résultat compatible avec le hasard.";
+  }
+
+  $("monte").innerHTML=`
+    <div class="grid">
+
+      <div class="stat">
+        <div class="label">Observé</div>
+        <div class="value">
+          ${observed}/${n}
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Référence</div>
+        <div class="value">10%</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Moyenne simulée</div>
+        <div class="value">
+          ${avg.toFixed(1)}
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="label">p-value</div>
+        <div class="value">
+          ${p.toFixed(4)}
+        </div>
+      </div>
+
+    </div>
+
+    <div style="margin-top:12px">
+      ${verdict}
+    </div>
+
+    <div class="sub" style="margin-top:8px">
+      ${runs} simulations • hypothèse nulle = 10%.
+      Ce test ne prouve pas à lui seul une stratégie rentable.
+    </div>
+  `;
 }
 
+/* =========================================================
+   ECONOMICS
+========================================================= */
 
-ticks=[];
+function recalculateEconomics(){
 
-for(
-let i=0;
-i<prices.length;
-i++
-){
+  const payout =
+    Math.max(
+      0,
+      Number($("payout").value)||0
+    );
 
-const quote =
-Number(
-prices[i]
-);
+  const be =
+    payout>0
+    ? 1/(1+payout)
+    : 1;
 
-const digit =
-digitFromQuote(
-quote,
-pipSize
-);
+  $("breakEven").textContent =
+    (be*100).toFixed(2)+"%";
 
-if(
-digit===null
-)
-continue;
+  $("payoutView").textContent =
+    "+"+payout.toFixed(2)+" $";
 
-ticks.push({
-
-quote,
-
-epoch:
-times[i]||
-null,
-
-digit
-
-});
-
+  log(
+    "Économie recalculée. BE="+
+    (be*100).toFixed(2)+"%"
+  );
 }
 
+/* =========================================================
+   CLEAR
+========================================================= */
 
-$("tickCount").textContent=
-ticks.length;
+function clearLab(){
 
-$("historySize").textContent=
-ticks.length;
+  labResults=[];
+  currentChampion=null;
 
-log(
-"Historique reçu : "+
-ticks.length+
-" ticks."
-);
+  $("researchTable").innerHTML="";
+  $("topSituations").textContent=
+    "Pas encore de résultat.";
 
-renderDistribution();
+  $("validation").textContent=
+    "Le champion sera choisi sur validation uniquement.";
 
-renderContext();
+  $("holdout").textContent=
+    "Le holdout restera séparé de la sélection.";
 
-renderLive();
+  $("stability").textContent="—";
+  $("monte").textContent="—";
 
+  $("researchStatus").textContent=
+    "Résultats effacés.";
 
-if(
-ticks.length>=800
-){
-
-$("progressText").textContent=
-"Historique suffisant. Analyse manuelle disponible.";
-
-}else{
-
-$("progressText").textContent=
-"Il faut au moins 800 ticks.";
-
+  log("Résultats du laboratoire effacés.");
 }
 
-
-/*
- abonnement live
- */
-
-ws.send(
-JSON.stringify({
-
-ticks:
-SYMBOL,
-
-subscribe:
-1,
-
-req_id:3
-
-})
-);
-
-}
-
-
-/* ==========================================
-LIVE TICK
-========================================== */
-
-if(
-data.msg_type===
-"tick"
-){
-
-const t =
-data.tick;
-
-if(!t)
-return;
-
-const quote =
-Number(
-t.quote
-);
-
-if(
-Number.isFinite(
-Number(t.pip_size)
-)
-){
-
-pipSize=
-Number(t.pip_size);
-
-}
-
-const digit =
-digitFromQuote(
-quote,
-pipSize
-);
-
-if(
-digit===null
-)
-return;
-
-
-/*
- IMPORTANT :
- le Shadow prédit avant
- d'ajouter le tick actuel.
- */
-
-if(
-shadow.active &&
-!shadow.paused
-){
-
-processShadow(
-digit
-);
-
-}
-
-
-ticks.push({
-
-quote,
-
-epoch:
-t.epoch||
-null,
-
-digit
-
-});
-
-
-if(
-ticks.length>
-HISTORY_COUNT
-){
-
-ticks=
-ticks.slice(
--HISTORY_COUNT
-);
-
-}
-
-
-$("tickCount").textContent=
-ticks.length;
-
-$("price").textContent=
-quote.toFixed(
-pipSize
-);
-
-$("lastDigit").textContent=
-digit;
-
-renderDistribution();
-
-renderContext();
-
-renderLive();
-
-}
-
-
-/* ==========================================
-ERREUR API
-========================================== */
-
-if(data.error){
-
-const message =
-data.error.message||
-"Erreur API";
-
-log(
-"API ERROR : "+
-message
-);
-
-$("status").textContent=
-"🔴 Erreur API";
-
-$("status").className=
-"status bad";
-
-}
-
-};
-
-
-ws.onerror=()=>{
-
-$("status").textContent=
-"🔴 Erreur WebSocket";
-
-$("status").className=
-"status bad";
-
-log(
-"Erreur WebSocket."
-);
-
-};
-
-
-ws.onclose=()=>{
-
-$("status").textContent=
-"🟠 Connexion fermée";
-
-$("status").className=
-"status warn";
-
-log(
-"Connexion fermée."
-);
-
-setTimeout(
-connect,
-5000
-);
-
-};
-
-}
-
-
-/* =====================================================
-START
-===================================================== */
-
-log(
-"V10.2 REAL EDGE LAB démarré."
-);
-
-log(
-"Mode : recherche + validation + Shadow."
-);
-
-log(
-"Aucun trade réel."
-);
-
-log(
-"Martingale désactivée."
-);
-
+/* =========================================================
+   START
+========================================================= */
+
+recalculateEconomics();
 connect();
 
 </script>
