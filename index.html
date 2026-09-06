@@ -706,7 +706,7 @@ function maxDrawdown(results,payout){
   for(const r of results){
 
     equity +=
-      r ? payout : -100;
+      r ? payout : -0;
 
     peak=Math.max(peak,equity);
 
