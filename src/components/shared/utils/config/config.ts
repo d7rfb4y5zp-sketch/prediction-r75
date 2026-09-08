@@ -26,8 +26,8 @@ export const STAGING_DOMAINS = {
 
 // WebSocket server URLs
 export const WS_SERVERS = {
-    STAGING: `${brandConfig.platform.derivws.url.staging}options/ws/public`,
-    PRODUCTION: `${brandConfig.platform.derivws.url.production}options/ws/public`,
+    STAGING: `${brandConfig.platform.derivws.url.staging.replace(/^https:/, 'wss:')}options/ws/public`,
+    PRODUCTION: `${brandConfig.platform.derivws.url.production.replace(/^https:/, 'wss:')}options/ws/public`,
 } as const;
 
 // =============================================================================
