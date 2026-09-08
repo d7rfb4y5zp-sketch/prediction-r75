@@ -65,7 +65,7 @@ export default defineConfig({
     },
   },
   output: {
-    assetPrefix: isStaticBuild ? '/bot/preview/' : '/',
+    assetPrefix: '/prediction-r75/',
     distPath: {
       root: isStaticBuild ? 'out/preview' : 'dist',
     },
