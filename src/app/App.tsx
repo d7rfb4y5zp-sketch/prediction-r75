@@ -83,7 +83,7 @@ function App() {
             try {
                 const authInfo = await handleOAuthCallback(window.location.href, {
                     clientId: process.env.NEXT_PUBLIC_DERIV_APP_ID || '',
-                    redirectUri: window.location.origin,
+                 redirectUri: `${window.location.origin}/prediction-r75/`,
                     scopes: 'trade',
                 });
 
