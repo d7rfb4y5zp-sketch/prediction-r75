@@ -58,7 +58,7 @@ class ErrorBoundary extends React.Component {
                             fontSize: '14px',
                         }}
                     >
-                        {error?.message || String(error) || 'Erreur inconnue'}
+                     {error?.stack || error?.message || String(error) || 'Erreur inconnue'}
                     </pre>
 
                     <p style={{ marginTop: '20px', color: '#55a7ff' }}>
