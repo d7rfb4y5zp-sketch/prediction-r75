@@ -26,12 +26,10 @@ import './app.scss';
 import 'react-toastify/dist/ReactToastify.css';
 import '../components/bot-notification/bot-notification.scss';
 
-// App Builder live-preview branding listener. Mounted only in the preview deployment
-// (NEXT_PUBLIC_APP_BUILD === 'true'); the inline check is constant-folded by rsbuild so
-// the import — and all of src/preview/ — is dead-code-eliminated from standalone partner
-// builds (where the BFF strips src/preview/ entirely).
 const PreviewBranding =
-    process.env.NEXT_PUBLIC_APP_BUILD === 'true' ? lazy(() => import('../preview/preview-branding')) : null;
+    process.env.NEXT_PUBLIC_APP_BUILD === 'true'
+        ? lazy(() => import('../preview/preview-branding'))
+        : null;
 
 const AppContent = observer(() => {
     const [is_api_initialized, setIsApiInitialized] = React.useState(false);
@@ -46,16 +44,17 @@ const AppContent = observer(() => {
     const msg_listener = React.useRef(null);
     const { connectionStatus } = useApiBase();
 
-    // Initialize dev mode keyboard shortcuts
     useDevMode();
 
-    // Warn (once) when the OAuth app id isn't configured, so a developer running
-    // locally understands why Log in / Sign up are disabled. Skipped inside the
-    // App Builder static preview, which intentionally runs without env vars.
     useEffect(() => {
         if (isPreviewMode()) return;
+
         if (!process.env.NEXT_PUBLIC_DERIV_APP_ID) {
-            botNotification(localize('Waiting for environment variables to be set…'), undefined, { type: 'warning' });
+            botNotification(
+                localize('Waiting for environment variables to be set…'),
+                undefined,
+                { type: 'warning' }
+            );
         }
     }, []);
 
@@ -72,33 +71,39 @@ const AppContent = observer(() => {
 
     useLiveChat(livechat_client_information);
 
-    // NOTE: Disabled Intercom until further notice
-    // const token = V2GetActiveToken() ?? null;
-    // useIntercom(token);
-
     useEffect(() => {
         if (connectionStatus === CONNECTION_STATUS.OPENED) {
             setIsApiInitialized(true);
             common.setSocketOpened(true);
-        } else if (connectionStatus !== CONNECTION_STATUS.OPENED) {
+        } else {
             common.setSocketOpened(false);
         }
     }, [common, connectionStatus]);
 
     const { current_language } = common;
     const html = document.documentElement;
+
     React.useEffect(() => {
         html?.setAttribute('lang', current_language.toLowerCase());
-        html?.setAttribute('dir', current_language.toLowerCase() === 'ar' ? 'rtl' : 'ltr');
+        html?.setAttribute(
+            'dir',
+            current_language.toLowerCase() === 'ar' ? 'rtl' : 'ltr'
+        );
     }, [current_language, html]);
 
     const handleMessage = React.useCallback(
         ({ data }) => {
-            if (data?.msg_type === 'proposal_open_contract' && !data?.error) {
+            if (
+                data?.msg_type === 'proposal_open_contract' &&
+                !data?.error
+            ) {
                 const { proposal_open_contract } = data;
+
                 if (
                     proposal_open_contract?.status !== 'open' &&
-                    !recovered_transactions?.includes(proposal_open_contract?.contract_id)
+                    !recovered_transactions?.includes(
+                        proposal_open_contract?.contract_id
+                    )
                 ) {
                     recoverPendingContracts(proposal_open_contract);
                 }
@@ -112,25 +117,42 @@ const AppContent = observer(() => {
     }, []);
 
     React.useEffect(() => {
-        // Check if api is initialized and then subscribe to the api messages
-        // Also we should only subscribe to the messages once user is logged in
-        // And is not already subscribed to the messages
-        if (!is_subscribed_to_msg_listener.current && client.is_logged_in && is_api_initialized && api_base?.api) {
+        if (
+            !is_subscribed_to_msg_listener.current &&
+            client.is_logged_in &&
+            is_api_initialized &&
+            api_base?.api
+        ) {
             is_subscribed_to_msg_listener.current = true;
-            msg_listener.current = api_base.api.onMessage()?.subscribe(handleMessage);
+
+            msg_listener.current = api_base.api
+                .onMessage()
+                ?.subscribe(handleMessage);
         }
+
         return () => {
-            if (is_subscribed_to_msg_listener.current && msg_listener.current) {
+            if (
+                is_subscribed_to_msg_listener.current &&
+                msg_listener.current
+            ) {
                 is_subscribed_to_msg_listener.current = false;
                 msg_listener.current.unsubscribe?.();
             }
         };
-    }, [is_api_initialized, client.is_logged_in, client.loginid, handleMessage, connectionStatus]);
+    }, [
+        is_api_initialized,
+        client.is_logged_in,
+        client.loginid,
+        handleMessage,
+        connectionStatus,
+    ]);
 
     const init = () => {
         ServerTime.init(common);
         app.setDBotEngineStores();
+
         ApiHelpers.setInstance(app.api_helpers_store);
+
         import('@/utils/gtm').then(({ default: GTM }) => {
             GTM.init(store);
         });
@@ -150,8 +172,6 @@ const AppContent = observer(() => {
         if (ApiHelpers?.instance?.active_symbols) {
             retrieveActiveSymbols();
         } else {
-            // This is a workaround to fix the issue where the active symbols are not loaded immediately
-            // when the API is initialized. Should be replaced with RxJS pubsub
             const intervalId = setInterval(() => {
                 if (ApiHelpers?.instance?.active_symbols) {
                     clearInterval(intervalId);
@@ -165,10 +185,12 @@ const AppContent = observer(() => {
         if (is_api_initialized) {
             init();
             setIsLoading(true);
+
             if (!client.is_logged_in) {
                 changeActiveSymbolLoadingState();
             }
         }
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [is_api_initialized]);
 
@@ -176,6 +198,7 @@ const AppContent = observer(() => {
         if (client.is_logged_in && is_api_initialized) {
             changeActiveSymbolLoadingState();
         }
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [is_api_initialized, client.loginid]);
 
@@ -188,19 +211,30 @@ const AppContent = observer(() => {
                     <PreviewBranding uiReady={!is_loading} />
                 </Suspense>
             )}
+
             {is_loading ? (
                 <ChunkLoader message={localize('Initializing Deriv Bot account...')} />
             ) : (
                 <AuthLoadingWrapper>
                     <ThemeProvider theme={is_dark_mode_on ? 'dark' : 'light'}>
                         <BlocklyLoading />
-                        <div className='bot-dashboard bot' data-testid='dt_bot_dashboard'>
+
+                        <div
+                            className='bot-dashboard bot'
+                            data-testid='dt_bot_dashboard'
+                        >
                             <Audio />
+
                             <Main />
-                            <BotBuilder />
+
                             <BotStopped />
+
                             <TransactionDetailsModal />
-                            <ToastContainer limit={3} draggable={false} />
+
+                            <ToastContainer
+                                limit={3}
+                                draggable={false}
+                            />
                         </div>
                     </ThemeProvider>
                 </AuthLoadingWrapper>
