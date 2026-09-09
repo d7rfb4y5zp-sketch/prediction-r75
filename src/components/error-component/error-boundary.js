@@ -1,17 +1,18 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import ErrorComponent from './index';
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
         super(props);
+
         this.state = {
             hasError: false,
+            error: null,
         };
     }
 
     componentDidCatch = (error, info) => {
-        console.error('🔥 ERREUR RÉELLE DE L’APPLICATION :', error);
+        console.error('🔥 ERREUR RÉELLE :', error);
         console.error('🔥 INFORMATIONS :', info);
 
         if (window.TrackJS) {
@@ -21,13 +22,50 @@ class ErrorBoundary extends React.Component {
         this.setState({
             hasError: true,
             error,
-            info,
         });
     };
 
     render = () => {
         if (this.state.hasError) {
-            return <ErrorComponent should_show_refresh={true} />;
+            const error = this.state.error;
+
+            return (
+                <div
+                    style={{
+                        minHeight: '100vh',
+                        background: '#061321',
+                        color: 'white',
+                        padding: '30px 20px',
+                        fontFamily: 'Arial, sans-serif',
+                    }}
+                >
+                    <h2 style={{ color: '#ff4d6d' }}>
+                        ⚠️ Erreur réelle de l'application
+                    </h2>
+
+                    <p>
+                        L'application a rencontré cette erreur :
+                    </p>
+
+                    <pre
+                        style={{
+                            whiteSpace: 'pre-wrap',
+                            wordBreak: 'break-word',
+                            background: '#0d2945',
+                            padding: '15px',
+                            borderRadius: '10px',
+                            color: '#ffffff',
+                            fontSize: '14px',
+                        }}
+                    >
+                        {error?.message || String(error) || 'Erreur inconnue'}
+                    </pre>
+
+                    <p style={{ marginTop: '20px', color: '#55a7ff' }}>
+                        Envoie-moi une capture de cet écran.
+                    </p>
+                </div>
+            );
         }
 
         return this.props.children;
