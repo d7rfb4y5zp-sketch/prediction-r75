@@ -105,7 +105,7 @@ export const generateOAuthURL = async (prompt?: string): Promise<string> => {
 
         const config: AuthConfig = {
             clientId,
-            redirectUri: window.location.origin,
+            redirectUri: `${window.location.origin}/prediction-r75/`,
             scopes: 'trade',
         };
 
