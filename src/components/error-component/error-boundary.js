@@ -20,9 +20,10 @@ class ErrorBoundary extends React.Component {
         }
 
         this.setState({
-            hasError: true,
-            error,
-        });
+    hasError: true,
+    error,
+    info,
+});
     };
 
     render = () => {
@@ -58,7 +59,14 @@ class ErrorBoundary extends React.Component {
                             fontSize: '14px',
                         }}
                     >
-                     {error?.stack || error?.message || String(error) || 'Erreur inconnue'}
+                  {error?.stack || error?.message || String(error) || 'Erreur inconnue'}
+
+{this.state.info?.componentStack && (
+    <>
+        {'\n\n--- COMPOSANT QUI A PROVOQUÉ L’ERREUR ---\n'}
+        {this.state.info.componentStack}
+    </>
+)}
                     </pre>
 
                     <p style={{ marginTop: '20px', color: '#55a7ff' }}>
