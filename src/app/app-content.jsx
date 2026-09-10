@@ -1,12 +1,10 @@
 import React, { lazy, Suspense, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { ToastContainer } from 'react-toastify';
 import AuthLoadingWrapper from '@/components/auth-loading-wrapper';
 import { botNotification } from '@/components/bot-notification/bot-notification';
 import useLiveChat from '@/components/chat/useLiveChat';
 import ChunkLoader from '@/components/loader/chunk-loader';
 import { getUrlBase } from '@/components/shared';
-import TransactionDetailsModal from '@/components/transaction-details';
 import { api_base, ApiHelpers, ServerTime } from '@/external/bot-skeleton';
 import { CONNECTION_STATUS } from '@/external/bot-skeleton/services/api/observables/connection-status-stream';
 import { useApiBase } from '@/hooks/useApiBase';
@@ -14,16 +12,9 @@ import useDevMode from '@/hooks/useDevMode';
 import { useStore } from '@/hooks/useStore';
 import useThemeSwitcher from '@/hooks/useThemeSwitcher';
 import { isPreviewMode } from '@/utils/is-preview-mode';
-import { ThemeProvider } from '@deriv-com/quill-ui';
 import { setSmartChartsPublicPath } from '@deriv-com/smartcharts-champion';
 import { localize } from '@deriv-com/translations';
-import Audio from '../components/audio';
-import BlocklyLoading from '../components/blockly-loading';
-import BotStopped from '../components/bot-stopped';
-import BotBuilder from '../pages/bot-builder';
-import Main from '../pages/main';
 import './app.scss';
-import 'react-toastify/dist/ReactToastify.css';
 import '../components/bot-notification/bot-notification.scss';
 
 const PreviewBranding =
@@ -37,13 +28,15 @@ const AppContent = observer(() => {
 
     const store = useStore();
     const { app, transactions, common, client } = store;
-    const { is_dark_mode_on } = useThemeSwitcher();
 
     const { recovered_transactions, recoverPendingContracts } = transactions;
+
     const is_subscribed_to_msg_listener = React.useRef(false);
     const msg_listener = React.useRef(null);
+
     const { connectionStatus } = useApiBase();
 
+    useThemeSwitcher();
     useDevMode();
 
     useEffect(() => {
@@ -59,7 +52,9 @@ const AppContent = observer(() => {
     }, []);
 
     const livechat_client_information = {
-        is_client_store_initialized: client?.is_logged_in ? true : !!client,
+        is_client_store_initialized: client?.is_logged_in
+            ? true
+            : !!client,
         is_logged_in: client?.is_logged_in,
         loginid: client?.loginid,
         currency: client?.currency,
@@ -84,10 +79,16 @@ const AppContent = observer(() => {
     const html = document.documentElement;
 
     React.useEffect(() => {
-        html?.setAttribute('lang', current_language.toLowerCase());
+        html?.setAttribute(
+            'lang',
+            current_language.toLowerCase()
+        );
+
         html?.setAttribute(
             'dir',
-            current_language.toLowerCase() === 'ar' ? 'rtl' : 'ltr'
+            current_language.toLowerCase() === 'ar'
+                ? 'rtl'
+                : 'ltr'
         );
     }, [current_language, html]);
 
@@ -109,11 +110,16 @@ const AppContent = observer(() => {
                 }
             }
         },
-        [recovered_transactions, recoverPendingContracts]
+        [
+            recovered_transactions,
+            recoverPendingContracts,
+        ]
     );
 
     React.useEffect(() => {
-        setSmartChartsPublicPath(getUrlBase('/js/smartcharts/'));
+        setSmartChartsPublicPath(
+            getUrlBase('/js/smartcharts/')
+        );
     }, []);
 
     React.useEffect(() => {
@@ -149,9 +155,12 @@ const AppContent = observer(() => {
 
     const init = () => {
         ServerTime.init(common);
+
         app.setDBotEngineStores();
 
-        ApiHelpers.setInstance(app.api_helpers_store);
+        ApiHelpers.setInstance(
+            app.api_helpers_store
+        );
 
         import('@/utils/gtm').then(({ default: GTM }) => {
             GTM.init(store);
@@ -162,18 +171,24 @@ const AppContent = observer(() => {
         init();
 
         const retrieveActiveSymbols = () => {
-            const { active_symbols } = ApiHelpers.instance;
+            const { active_symbols } =
+                ApiHelpers.instance;
 
-            active_symbols.retrieveActiveSymbols(true).then(() => {
-                setIsLoading(false);
-            });
+            active_symbols
+                .retrieveActiveSymbols(true)
+                .then(() => {
+                    setIsLoading(false);
+                });
         };
 
         if (ApiHelpers?.instance?.active_symbols) {
             retrieveActiveSymbols();
         } else {
             const intervalId = setInterval(() => {
-                if (ApiHelpers?.instance?.active_symbols) {
+                if (
+                    ApiHelpers?.instance
+                        ?.active_symbols
+                ) {
                     clearInterval(intervalId);
                     retrieveActiveSymbols();
                 }
@@ -184,6 +199,7 @@ const AppContent = observer(() => {
     React.useEffect(() => {
         if (is_api_initialized) {
             init();
+
             setIsLoading(true);
 
             if (!client.is_logged_in) {
@@ -195,50 +211,57 @@ const AppContent = observer(() => {
     }, [is_api_initialized]);
 
     React.useEffect(() => {
-        if (client.is_logged_in && is_api_initialized) {
+        if (
+            client.is_logged_in &&
+            is_api_initialized
+        ) {
             changeActiveSymbolLoadingState();
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [is_api_initialized, client.loginid]);
+    }, [
+        is_api_initialized,
+        client.loginid,
+    ]);
 
     if (common?.error) return null;
 
     return (
         <React.Fragment>
+
             {PreviewBranding && (
                 <Suspense fallback={null}>
-                    <PreviewBranding uiReady={!is_loading} />
+                    <PreviewBranding
+                        uiReady={!is_loading}
+                    />
                 </Suspense>
             )}
 
             {is_loading ? (
-                <ChunkLoader message={localize('Initializing Deriv Bot account...')} />
+                <ChunkLoader
+                    message={localize(
+                        'Initializing Deriv Bot account...'
+                    )}
+                />
             ) : (
                 <AuthLoadingWrapper>
-                    <ThemeProvider theme={is_dark_mode_on ? 'dark' : 'light'}>
-                        <BlocklyLoading />
-
-                        <div
-                            className='bot-dashboard bot'
-                            data-testid='dt_bot_dashboard'
-                        >
-                            <Audio />
-
-                            
-
-                            <BotStopped />
-
-                            <TransactionDetailsModal />
-
-                            <ToastContainer
-                                limit={3}
-                                draggable={false}
-                            />
-                        </div>
-                    </ThemeProvider>
+                    <div
+                        className="bot-dashboard bot"
+                        data-testid="dt_bot_dashboard"
+                        style={{
+                            padding: '40px',
+                            color: 'white',
+                            background: '#061321',
+                            minHeight: '100vh',
+                            fontSize: '22px',
+                            textAlign: 'center',
+                        }}
+                    >
+                        TEST APP-CONTENT OK
+                    </div>
                 </AuthLoadingWrapper>
             )}
+
         </React.Fragment>
     );
 });
