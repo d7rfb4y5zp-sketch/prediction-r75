@@ -225,7 +225,7 @@ const AppContent = observer(() => {
                         >
                             <Audio />
 
-                            <Main />
+                            
 
                             <BotStopped />
 
