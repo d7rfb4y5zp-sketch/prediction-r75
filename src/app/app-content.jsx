@@ -2,10 +2,7 @@ import React, { lazy, Suspense, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import AuthLoadingWrapper from '@/components/auth-loading-wrapper';
-import {
-    botNotification,
-    NotificationContainer,
-} from '@/components/bot-notification/bot-notification';
+import { botNotification } from '@/components/bot-notification/bot-notification';
 import useLiveChat from '@/components/chat/useLiveChat';
 import ChunkLoader from '@/components/loader/chunk-loader';
 import { getUrlBase } from '@/components/shared';
@@ -346,7 +343,7 @@ const AppContent = observer(() => {
 
                         <TransactionDetailsModal />
 
-                        <NotificationContainer />
+                        
 
                     </div>
 
