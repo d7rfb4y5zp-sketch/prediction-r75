@@ -21,6 +21,8 @@ import { setSmartChartsPublicPath } from '@deriv-com/smartcharts-champion';
 import { localize } from '@deriv-com/translations';
 
 import Audio from '../components/audio';
+import BotStopped from '../components/bot-stopped';
+
 import Main from '../pages/main';
 import BotBuilder from '../pages/bot-builder';
 
@@ -335,6 +337,8 @@ const AppContent = observer(() => {
                         <BotBuilder />
 
                         <Audio />
+
+                        <BotStopped />
 
                     </div>
 
