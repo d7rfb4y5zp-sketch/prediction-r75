@@ -1,12 +1,5 @@
-import { toast, ToastPosition, TypeOptions } from 'react-toastify';
 import { isDbotRTL } from '@/external/bot-skeleton/utils/workspace';
 import { localize } from '@deriv-com/translations';
-
-const getToastPosition = () => {
-    const is_RTL = isDbotRTL();
-    if (is_RTL) return toast.POSITION.BOTTOM_RIGHT;
-    return toast.POSITION.BOTTOM_LEFT;
-};
 
 export type TNotificationContent = {
     message: string;
@@ -20,14 +13,20 @@ export type TAction = {
 };
 
 export type TNotificationStyle = {
-    type: TypeOptions;
-    position: ToastPosition;
-    autoClose: number;
-    hideProgressBar: boolean;
-    closeOnClick: boolean;
-    pauseOnHover: boolean;
-    pauseOnFocusLoss: boolean;
-    closeButton: boolean;
+    type?: 'default' | 'success' | 'error' | 'warning' | 'info';
+    position?:
+        | 'top-left'
+        | 'top-center'
+        | 'top-right'
+        | 'bottom-left'
+        | 'bottom-center'
+        | 'bottom-right';
+    autoClose?: number | false;
+    hideProgressBar?: boolean;
+    closeOnClick?: boolean;
+    pauseOnHover?: boolean;
+    pauseOnFocusLoss?: boolean;
+    closeButton?: boolean;
     className?: string;
 };
 
@@ -45,15 +44,24 @@ export const notification_message = () => ({
     [NOTIFICATION_TYPE.BOT_DELETE]: localize('You’ve successfully deleted a bot.'),
     strategy_conversion: localize('Save this strategy as an XML file from Deriv Bot for faster re-imports.'),
     google_drive_error: localize('Your session has expired. Please sign in again.'),
-    xml_import_error: localize('Unsupported file format. Please import a valid XML file.'),
+    xml_import_error: localize('Unsupported file format. Please import a valid file.'),
 });
 
-export const notification_style = {
-    type: toast.TYPE.DEFAULT,
-    position: getToastPosition(),
+const getNotificationPosition = (): TNotificationStyle['position'] => {
+    try {
+        return isDbotRTL() ? 'bottom-right' : 'bottom-left';
+    } catch {
+        return 'bottom-left';
+    }
+};
+
+export const notification_style: TNotificationStyle = {
+    type: 'default',
+    position: getNotificationPosition(),
     autoClose: 6000,
     hideProgressBar: true,
     closeOnClick: false,
     pauseOnHover: true,
     pauseOnFocusLoss: false,
+    closeButton: true,
 };
