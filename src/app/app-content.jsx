@@ -1,6 +1,5 @@
 import React, { lazy, Suspense, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { ToastContainer } from 'react-toastify';
 
 import AuthLoadingWrapper from '@/components/auth-loading-wrapper';
 import { botNotification } from '@/components/bot-notification/bot-notification';
@@ -29,7 +28,6 @@ import Main from '../pages/main';
 import BotBuilder from '../pages/bot-builder';
 
 import './app.scss';
-import 'react-toastify/dist/ReactToastify.css';
 import '../components/bot-notification/bot-notification.scss';
 
 const PreviewBranding =
@@ -344,11 +342,6 @@ const AppContent = observer(() => {
                         <BotStopped />
 
                         <TransactionDetailsModal />
-
-                        <ToastContainer
-                            limit={3}
-                            draggable={false}
-                        />
 
                     </div>
 
