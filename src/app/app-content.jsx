@@ -12,8 +12,8 @@ import { CONNECTION_STATUS } from '@/external/bot-skeleton/services/api/observab
 
 import { useApiBase } from '@/hooks/useApiBase';
 import useDevMode from '@/hooks/useDevMode';
-import { useStore } from '@/hooks/useStore';
 import useThemeSwitcher from '@/hooks/useThemeSwitcher';
+import { useStore } from '@/hooks/useStore';
 
 import { isPreviewMode } from '@/utils/is-preview-mode';
 
@@ -33,15 +33,24 @@ const PreviewBranding =
         : null;
 
 const AppContent = observer(() => {
-    const [is_api_initialized, setIsApiInitialized] = React.useState(false);
-    const [is_loading, setIsLoading] = React.useState(true);
+    const [is_api_initialized, setIsApiInitialized] =
+        React.useState(false);
+
+    const [is_loading, setIsLoading] =
+        React.useState(true);
 
     const store = useStore();
+
     const { app, transactions, common, client } = store;
 
-    const { recovered_transactions, recoverPendingContracts } = transactions;
+    const {
+        recovered_transactions,
+        recoverPendingContracts,
+    } = transactions;
 
-    const is_subscribed_to_msg_listener = React.useRef(false);
+    const is_subscribed_to_msg_listener =
+        React.useRef(false);
+
     const msg_listener = React.useRef(null);
 
     const { connectionStatus } = useApiBase();
@@ -54,7 +63,9 @@ const AppContent = observer(() => {
 
         if (!process.env.NEXT_PUBLIC_DERIV_APP_ID) {
             botNotification(
-                localize('Waiting for environment variables to be set…'),
+                localize(
+                    'Waiting for environment variables to be set…'
+                ),
                 undefined,
                 { type: 'warning' }
             );
@@ -65,27 +76,46 @@ const AppContent = observer(() => {
         is_client_store_initialized: client?.is_logged_in
             ? true
             : !!client,
+
         is_logged_in: client?.is_logged_in,
+
         loginid: client?.loginid,
+
         currency: client?.currency,
+
         residence: client?.residence,
+
         email: '',
+
         first_name: '',
+
         last_name: '',
     };
 
-    useLiveChat(livechat_client_information);
+    useLiveChat(
+        livechat_client_information
+    );
 
     useEffect(() => {
-        if (connectionStatus === CONNECTION_STATUS.OPENED) {
+        if (
+            connectionStatus ===
+            CONNECTION_STATUS.OPENED
+        ) {
             setIsApiInitialized(true);
+
             common.setSocketOpened(true);
         } else {
             common.setSocketOpened(false);
         }
-    }, [common, connectionStatus]);
+    }, [
+        common,
+        connectionStatus,
+    ]);
 
-    const { current_language } = common;
+    const {
+        current_language,
+    } = common;
+
     const html = document.documentElement;
 
     React.useEffect(() => {
@@ -100,35 +130,47 @@ const AppContent = observer(() => {
                 ? 'rtl'
                 : 'ltr'
         );
-    }, [current_language, html]);
+    }, [
+        current_language,
+        html,
+    ]);
 
-    const handleMessage = React.useCallback(
-        ({ data }) => {
-            if (
-                data?.msg_type === 'proposal_open_contract' &&
-                !data?.error
-            ) {
-                const { proposal_open_contract } = data;
-
+    const handleMessage =
+        React.useCallback(
+            ({ data }) => {
                 if (
-                    proposal_open_contract?.status !== 'open' &&
-                    !recovered_transactions?.includes(
-                        proposal_open_contract?.contract_id
-                    )
+                    data?.msg_type ===
+                        'proposal_open_contract' &&
+                    !data?.error
                 ) {
-                    recoverPendingContracts(proposal_open_contract);
+                    const {
+                        proposal_open_contract,
+                    } = data;
+
+                    if (
+                        proposal_open_contract?.status !==
+                            'open' &&
+                        !recovered_transactions?.includes(
+                            proposal_open_contract?.contract_id
+                        )
+                    ) {
+                        recoverPendingContracts(
+                            proposal_open_contract
+                        );
+                    }
                 }
-            }
-        },
-        [
-            recovered_transactions,
-            recoverPendingContracts,
-        ]
-    );
+            },
+            [
+                recovered_transactions,
+                recoverPendingContracts,
+            ]
+        );
 
     React.useEffect(() => {
         setSmartChartsPublicPath(
-            getUrlBase('/js/smartcharts/')
+            getUrlBase(
+                '/js/smartcharts/'
+            )
         );
     }, []);
 
@@ -139,11 +181,15 @@ const AppContent = observer(() => {
             is_api_initialized &&
             api_base?.api
         ) {
-            is_subscribed_to_msg_listener.current = true;
+            is_subscribed_to_msg_listener.current =
+                true;
 
-            msg_listener.current = api_base.api
-                .onMessage()
-                ?.subscribe(handleMessage);
+            msg_listener.current =
+                api_base.api
+                    .onMessage()
+                    ?.subscribe(
+                        handleMessage
+                    );
         }
 
         return () => {
@@ -151,7 +197,9 @@ const AppContent = observer(() => {
                 is_subscribed_to_msg_listener.current &&
                 msg_listener.current
             ) {
-                is_subscribed_to_msg_listener.current = false;
+                is_subscribed_to_msg_listener.current =
+                    false;
+
                 msg_listener.current.unsubscribe?.();
             }
         };
@@ -172,39 +220,56 @@ const AppContent = observer(() => {
             app.api_helpers_store
         );
 
-        import('@/utils/gtm').then(({ default: GTM }) => {
-            GTM.init(store);
-        });
+        import('@/utils/gtm').then(
+            ({ default: GTM }) => {
+                GTM.init(store);
+            }
+        );
     };
 
-    const changeActiveSymbolLoadingState = () => {
-        init();
+    const changeActiveSymbolLoadingState =
+        () => {
+            init();
 
-        const retrieveActiveSymbols = () => {
-            const { active_symbols } =
-                ApiHelpers.instance;
+            const retrieveActiveSymbols =
+                () => {
+                    const {
+                        active_symbols,
+                    } = ApiHelpers.instance;
 
-            active_symbols
-                .retrieveActiveSymbols(true)
-                .then(() => {
-                    setIsLoading(false);
-                });
+                    active_symbols
+                        .retrieveActiveSymbols(
+                            true
+                        )
+                        .then(() => {
+                            setIsLoading(
+                                false
+                            );
+                        });
+                };
+
+            if (
+                ApiHelpers?.instance
+                    ?.active_symbols
+            ) {
+                retrieveActiveSymbols();
+            } else {
+                const intervalId =
+                    setInterval(() => {
+                        if (
+                            ApiHelpers
+                                ?.instance
+                                ?.active_symbols
+                        ) {
+                            clearInterval(
+                                intervalId
+                            );
+
+                            retrieveActiveSymbols();
+                        }
+                    }, 1000);
+            }
         };
-
-        if (ApiHelpers?.instance?.active_symbols) {
-            retrieveActiveSymbols();
-        } else {
-            const intervalId = setInterval(() => {
-                if (
-                    ApiHelpers?.instance
-                        ?.active_symbols
-                ) {
-                    clearInterval(intervalId);
-                    retrieveActiveSymbols();
-                }
-            }, 1000);
-        }
-    };
 
     React.useEffect(() => {
         if (is_api_initialized) {
@@ -218,7 +283,9 @@ const AppContent = observer(() => {
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [is_api_initialized]);
+    }, [
+        is_api_initialized,
+    ]);
 
     React.useEffect(() => {
         if (
@@ -234,7 +301,9 @@ const AppContent = observer(() => {
         client.loginid,
     ]);
 
-    if (common?.error) return null;
+    if (common?.error) {
+        return null;
+    }
 
     return (
         <React.Fragment>
