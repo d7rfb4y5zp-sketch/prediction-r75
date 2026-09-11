@@ -55,7 +55,11 @@ export async function buildAuthorizationUrl(config: AuthConfig): Promise<string>
   if (config.utmMedium)   params.set('utm_medium', config.utmMedium);
   if (config.utmCampaign) params.set('utm_campaign', config.utmCampaign);
 
-  return `${getAuthBaseUrl()}/auth?${params.toString()}`;
+  const authUrl = `${getAuthBaseUrl()}/auth?${params.toString()}`;
+
+console.log('DERIV OAUTH URL =', authUrl);
+
+return authUrl;
 }
 
 /**
