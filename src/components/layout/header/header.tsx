@@ -154,7 +154,7 @@ const AppHeader = observer(() => {
     }, [setIsAuthorizing]);
 
     // ============================================================
-    // LOGIN — TEMPORARY DIAGNOSTIC
+    // LOGIN
     // ============================================================
 
     const handleLogin = useCallback(async () => {
@@ -178,30 +178,9 @@ const AppHeader = observer(() => {
                 return;
             }
 
-            // ====================================================
-            // TEMPORAIRE :
-            // On affiche l'URL au lieu de rediriger.
-            // ====================================================
+            // Redirection réelle vers Deriv OAuth
+            window.location.replace(oauthUrl);
 
-            console.log(
-                '[OAUTH DIAGNOSTIC] URL générée:',
-                oauthUrl
-            );
-
-            window.alert(
-                'URL OAUTH GÉNÉRÉE :\n\n' +
-                oauthUrl
-            );
-
-            // IMPORTANT :
-            // La redirection automatique est volontairement
-            // désactivée pendant ce test.
-            //
-            // Après diagnostic, nous remettrons :
-            //
-            // window.location.replace(oauthUrl);
-
-            setIsAuthorizing(false);
         } catch (error) {
             console.error(
                 'Login redirection failed:',
