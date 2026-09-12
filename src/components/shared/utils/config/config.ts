@@ -41,7 +41,8 @@ export const isProduction = () => {
 
     const hostname = window.location.hostname;
 
-    const productionDomains = Object.values(PRODUCTION_DOMAINS) as string[];
+    const productionDomains =
+        Object.values(PRODUCTION_DOMAINS) as string[];
 
     return productionDomains.includes(hostname);
 };
@@ -123,12 +124,12 @@ export const getDebugServiceWorker = () => {
  * Generates the OAuth Login or Sign Up URL.
  *
  * LOGIN:
- * - Uses standard OAuth2 + PKCE only.
- * - NO referral / affiliate / UTM parameters.
+ * - Standard OAuth2 + PKCE.
+ * - No referral parameters.
  *
  * SIGN UP:
- * - Uses OAuth2 + PKCE.
- * - May include referral / affiliate / UTM parameters.
+ * - OAuth2 + PKCE.
+ * - Referral / affiliate / UTM parameters allowed.
  */
 export const generateOAuthURL = async (
     prompt?: string
@@ -145,51 +146,58 @@ export const generateOAuthURL = async (
             return '';
         }
 
+        // IMPORTANT:
+        // Use the current GitHub Pages URL exactly.
+        // This must match the redirect URL registered
+        // in the Deriv OAuth application.
+        const redirectUri =
+            `${window.location.origin}/prediction-r75/`;
+
         const config: AuthConfig = {
             clientId,
-
-            redirectUri:
-                `${window.location.origin}/prediction-r75/`,
-
+            redirectUri,
             scopes: 'trade',
         };
 
         // =============================================================
         // LOGIN
         // =============================================================
-        //
-        // IMPORTANT:
-        // Login must use the standard OAuth2 + PKCE flow.
-        //
-        // We intentionally DO NOT add:
-        // - affiliateToken
-        // - affiliateTokenParam
-        // - utmSource
-        // - utmMedium
-        // - utmCampaign
-        //
-        // Deriv's OAuth documentation specifies that these
-        // attribution parameters are for Sign Up.
-        //
+
         if (prompt !== 'registration') {
-            return await buildAuthorizationUrl(
-                config
+            console.log(
+                '[OAuth] Login client_id:',
+                clientId
             );
+
+            console.log(
+                '[OAuth] Login redirect_uri:',
+                redirectUri
+            );
+
+            const loginUrl =
+                await buildAuthorizationUrl(
+                    config
+                );
+
+            console.log(
+                '[OAuth] Login URL generated successfully.'
+            );
+
+            return loginUrl;
         }
 
         // =============================================================
         // SIGN UP
         // =============================================================
-        //
-        // Referral / affiliate parameters are allowed for registration.
-        //
 
         const referralLink =
             process.env.NEXT_PUBLIC_DERIV_REFERRAL_LINK;
 
         if (referralLink) {
             const referral =
-                parseReferralLink(referralLink);
+                parseReferralLink(
+                    referralLink
+                );
 
             if (referral) {
                 config.affiliateToken =
@@ -285,6 +293,7 @@ export const generateOAuthURL = async (
         return await buildSignUpUrl(
             config
         );
+
     } catch (error) {
         console.error(
             '[OAuth] Error generating OAuth URL:',
