@@ -29,19 +29,23 @@ import type {
 
 const transformations = {
     /**
-     * Transform a live Deriv response into the quote format
+     * Transform live Deriv response into the format
      * expected by SmartCharts.
      */
     toTQuoteFromStream(
         message: any,
         granularity: TGranularity
     ): TQuote | null {
-        if (!message) return null;
+        if (!message) {
+            return null;
+        }
 
         /**
+         * -------------------------------------------------
          * Live tick
+         * -------------------------------------------------
          */
-        if (granularity === 0 && message.tick) {
+        if (message.tick) {
             const tick = message.tick;
 
             if (
@@ -55,14 +59,18 @@ const transformations = {
                 Date: String(tick.epoch),
                 Close: Number(tick.quote),
                 tick,
-                DT: new Date(Number(tick.epoch) * 1000),
+                DT: new Date(
+                    Number(tick.epoch) * 1000
+                ),
             };
         }
 
         /**
+         * -------------------------------------------------
          * Live OHLC candle
+         * -------------------------------------------------
          */
-        if (granularity > 0 && message.ohlc) {
+        if (message.ohlc) {
             const ohlc = message.ohlc;
 
             if (
@@ -79,12 +87,16 @@ const transformations = {
                 Low: Number(ohlc.low),
                 Close: Number(ohlc.close),
                 ohlc,
-                DT: new Date(Number(ohlc.epoch) * 1000),
+                DT: new Date(
+                    Number(ohlc.epoch) * 1000
+                ),
             };
         }
 
         /**
-         * Direct tick fallback.
+         * -------------------------------------------------
+         * Direct quote fallback
+         * -------------------------------------------------
          */
         if (
             message.epoch !== undefined &&
@@ -98,9 +110,15 @@ const transformations = {
                     ? message.quote
                     : message.price;
 
+            const numericQuote = Number(quote);
+
+            if (!Number.isFinite(numericQuote)) {
+                return null;
+            }
+
             return {
                 Date: String(message.epoch),
-                Close: Number(quote),
+                Close: numericQuote,
                 DT: new Date(
                     Number(message.epoch) * 1000
                 ),
@@ -111,7 +129,9 @@ const transformations = {
     },
 
     /**
-     * Transform active_symbols response.
+     * ---------------------------------------------------------
+     * Active symbols
+     * ---------------------------------------------------------
      */
     toActiveSymbols(
         activeSymbolsData: any[]
@@ -123,13 +143,17 @@ const transformations = {
         const symbols: ActiveSymbol[] = [];
 
         for (const item of activeSymbolsData) {
-            if (!item) continue;
+            if (!item) {
+                continue;
+            }
 
             const symbol =
                 item.underlying_symbol ||
                 item.symbol;
 
-            if (!symbol) continue;
+            if (!symbol) {
+                continue;
+            }
 
             symbols.push({
                 display_name:
@@ -184,32 +208,35 @@ const transformations = {
     },
 
     /**
-     * Transform trading times.
+     * ---------------------------------------------------------
+     * Trading times
+     * ---------------------------------------------------------
      */
     toTradingTimesMap(
         data: any
     ): TradingTimesMap {
         const result: TradingTimesMap = {};
 
-        if (!data || typeof data !== 'object') {
+        if (
+            !data ||
+            typeof data !== 'object'
+        ) {
             return result;
         }
 
-        /**
-         * Some Deriv responses are wrapped inside
-         * { trading_times: ... }.
-         */
         const source =
             data.trading_times ||
             data;
 
-        /**
-         * Already normalized format.
-         */
-        for (const symbol of Object.keys(source)) {
-            const value = source[symbol];
+        for (
+            const symbol of Object.keys(source)
+        ) {
+            const value =
+                source[symbol];
 
-            if (!value) continue;
+            if (!value) {
+                continue;
+            }
 
             if (
                 typeof value === 'object' &&
@@ -219,7 +246,9 @@ const transformations = {
             ) {
                 result[symbol] = {
                     isOpen:
-                        Boolean(value.isOpen),
+                        Boolean(
+                            value.isOpen
+                        ),
 
                     openTime:
                         value.openTime || '',
@@ -246,7 +275,10 @@ export function buildSmartchartsChampionAdapter(
     config: AdapterConfig = {}
 ): SmartchartsChampionAdapter {
     const subscriptions =
-        new Map<string, TUnsubscribeFunction>();
+        new Map<
+            string,
+            TUnsubscribeFunction
+        >();
 
     const debug =
         config.debug === true;
@@ -276,35 +308,48 @@ export function buildSmartchartsChampionAdapter(
         );
     };
 
-    const adapter: SmartchartsChampionAdapter = {
+    const adapter:
+        SmartchartsChampionAdapter = {
+
         transport,
         services,
 
         /**
-         * ---------------------------------------------------
-         * Historical data
-         * ---------------------------------------------------
+         * -----------------------------------------------------
+         * HISTORICAL DATA
+         * -----------------------------------------------------
          *
-         * IMPORTANT:
-         * SmartCharts expects the ORIGINAL Deriv structure:
+         * SmartCharts expects:
          *
          * ticks:
          * {
          *   history: {
-         *      times: [...],
-         *      prices: [...]
+         *     times: [],
+         *     prices: []
          *   }
          * }
          *
          * candles:
          * {
-         *   candles: [...]
+         *   candles: []
          * }
          */
         async getQuotes(
             request: TGetQuotesRequest
         ): Promise<any> {
+
             try {
+                /**
+                 * Respect SmartCharts style when supplied.
+                 */
+                const style =
+                    (request as any).style ??
+                    (
+                        request.granularity === 0
+                            ? 'ticks'
+                            : 'candles'
+                    );
+
                 const apiRequest: any = {
                     ticks_history:
                         request.symbol,
@@ -314,11 +359,12 @@ export function buildSmartchartsChampionAdapter(
                         'latest',
 
                     adjust_start_time: 1,
+
+                    style,
                 };
 
                 /**
-                 * IMPORTANT:
-                 * SmartCharts sends count/start/end/style.
+                 * Count
                  */
                 if (
                     request.count !== undefined
@@ -327,42 +373,30 @@ export function buildSmartchartsChampionAdapter(
                         request.count;
                 }
 
+                /**
+                 * Explicit start
+                 */
                 if (
                     request.start !== undefined
                 ) {
                     apiRequest.start =
                         request.start;
 
-                    /**
-                     * Deriv does not need count when
-                     * explicit start/end are provided.
-                     */
                     delete apiRequest.count;
                 }
 
                 /**
-                 * Tick history.
+                 * Candle granularity
                  */
                 if (
-                    request.granularity === 0
+                    style === 'candles'
                 ) {
-                    apiRequest.style =
-                        'ticks';
-                }
-
-                /**
-                 * Candle history.
-                 */
-                else {
-                    apiRequest.style =
-                        'candles';
-
                     apiRequest.granularity =
                         request.granularity;
                 }
 
                 log(
-                    'HISTORY REQUEST',
+                    'GET QUOTES REQUEST',
                     apiRequest
                 );
 
@@ -372,33 +406,32 @@ export function buildSmartchartsChampionAdapter(
                     );
 
                 log(
-                    'HISTORY RESPONSE',
+                    'GET QUOTES RESPONSE',
                     response
                 );
 
                 /**
-                 * VERY IMPORTANT:
+                 * IMPORTANT:
                  *
-                 * Return the raw Deriv response.
-                 *
-                 * SmartCharts itself understands:
-                 * - history.times
-                 * - history.prices
-                 * - candles
+                 * Return the ORIGINAL Deriv
+                 * response.
                  */
                 return response;
+
             } catch (err) {
+
                 error(
                     'getQuotes failed:',
                     err
                 );
 
                 /**
-                 * SmartCharts can handle an empty
-                 * history response better than a
-                 * custom incompatible structure.
+                 * Empty fallback for ticks.
                  */
                 if (
+                    (
+                        request as any
+                    ).style === 'ticks' ||
                     request.granularity === 0
                 ) {
                     return {
@@ -409,6 +442,9 @@ export function buildSmartchartsChampionAdapter(
                     };
                 }
 
+                /**
+                 * Empty fallback for candles.
+                 */
                 return {
                     candles: [],
                 };
@@ -416,62 +452,65 @@ export function buildSmartchartsChampionAdapter(
         },
 
         /**
-         * ---------------------------------------------------
-         * Live quotes
-         * ---------------------------------------------------
+         * -----------------------------------------------------
+         * LIVE QUOTES
+         * -----------------------------------------------------
          */
         subscribeQuotes(
             request: TGetQuotesRequest,
             callback: TSubscriptionCallback
         ): TUnsubscribeFunction {
+
             const key =
                 `${request.symbol}-${request.granularity}`;
 
             /**
              * Remove previous subscription.
              */
-            const old =
+            const previous =
                 subscriptions.get(key);
 
-            if (old) {
-                old();
+            if (previous) {
+                previous();
             }
 
             /**
-             * Tick stream.
+             * -------------------------------------------------
+             * Tick stream
+             * -------------------------------------------------
              */
             const apiRequest: any =
                 request.granularity === 0
                     ? {
-                          ticks:
-                              request.symbol,
+                        ticks:
+                            request.symbol,
 
-                          subscribe: 1,
-                      }
+                        subscribe: 1,
+                    }
 
                     /**
-                     * Candle stream.
-                     *
-                     * Deriv supports ticks_history
-                     * with subscription for OHLC updates.
+                     * -------------------------------------------------
+                     * Candle stream
+                     * -------------------------------------------------
                      */
                     : {
-                          ticks_history:
-                              request.symbol,
+                        ticks_history:
+                            request.symbol,
 
-                          subscribe: 1,
+                        end:
+                            'latest',
 
-                          end:
-                              'latest',
+                        style:
+                            'candles',
 
-                          style:
-                              'candles',
+                        granularity:
+                            request.granularity,
 
-                          granularity:
-                              request.granularity,
-                      };
+                        subscribe: 1,
+                    };
 
             try {
+
                 log(
                     'SUBSCRIBE REQUEST',
                     apiRequest
@@ -480,17 +519,20 @@ export function buildSmartchartsChampionAdapter(
                 const subscriptionId =
                     transport.subscribe(
                         apiRequest,
-                        (response: any) => {
+                        (
+                            response: any
+                        ) => {
+
                             try {
+
                                 log(
                                     'STREAM RESPONSE',
                                     response
                                 );
 
                                 /**
-                                 * Ignore history packets.
-                                 * SmartCharts already received
-                                 * historical data through getQuotes.
+                                 * Convert Deriv response
+                                 * into SmartCharts quote.
                                  */
                                 const quote =
                                     transformations
@@ -519,7 +561,9 @@ export function buildSmartchartsChampionAdapter(
                                 callback(
                                     quote
                                 );
+
                             } catch (err) {
+
                                 error(
                                     'Stream transformation failed:',
                                     err
@@ -530,7 +574,9 @@ export function buildSmartchartsChampionAdapter(
 
                 const unsubscribe =
                     () => {
+
                         try {
+
                             log(
                                 'UNSUBSCRIBE',
                                 key
@@ -539,7 +585,9 @@ export function buildSmartchartsChampionAdapter(
                             transport.unsubscribe(
                                 subscriptionId
                             );
+
                         } catch (err) {
+
                             error(
                                 'unsubscribe failed:',
                                 err
@@ -557,7 +605,9 @@ export function buildSmartchartsChampionAdapter(
                 );
 
                 return unsubscribe;
+
             } catch (err) {
+
                 error(
                     'subscribeQuotes failed:',
                     err
@@ -568,13 +618,14 @@ export function buildSmartchartsChampionAdapter(
         },
 
         /**
-         * ---------------------------------------------------
-         * Forget subscription
-         * ---------------------------------------------------
+         * -----------------------------------------------------
+         * UNSUBSCRIBE
+         * -----------------------------------------------------
          */
         unsubscribeQuotes(
             request: TGetQuotesRequest
         ): void {
+
             const key =
                 `${request.symbol}-${request.granularity}`;
 
@@ -582,8 +633,11 @@ export function buildSmartchartsChampionAdapter(
                 subscriptions.get(key);
 
             if (unsubscribe) {
+
                 unsubscribe();
+
             } else {
+
                 warn(
                     'No subscription:',
                     key
@@ -592,21 +646,26 @@ export function buildSmartchartsChampionAdapter(
         },
 
         /**
-         * ---------------------------------------------------
-         * Chart reference data
-         * ---------------------------------------------------
+         * -----------------------------------------------------
+         * CHART DATA
+         * -----------------------------------------------------
          */
         async getChartData(): Promise<{
             activeSymbols: ActiveSymbols;
             tradingTimes: TradingTimesMap;
         }> {
+
             try {
+
                 const [
                     activeSymbolsData,
                     tradingTimesData,
                 ] = await Promise.all([
+
                     services.getActiveSymbols(),
+
                     services.getTradingTimes(),
+
                 ]);
 
                 log(
@@ -645,7 +704,9 @@ export function buildSmartchartsChampionAdapter(
                     activeSymbols,
                     tradingTimes,
                 };
+
             } catch (err) {
+
                 error(
                     'getChartData failed:',
                     err
@@ -663,8 +724,11 @@ export function buildSmartchartsChampionAdapter(
 }
 
 /**
- * Convenience exports.
+ * ---------------------------------------------------------
+ * Convenience exports
+ * ---------------------------------------------------------
  */
+
 export type {
     SmartchartsChampionAdapter,
     TGetQuotesRequest,
