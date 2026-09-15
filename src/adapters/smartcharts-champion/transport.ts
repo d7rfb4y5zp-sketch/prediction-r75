@@ -1,153 +1,247 @@
 /**
  * Transport layer wrapper for SmartCharts Champion Adapter
- * Wraps the existing chart_api.api to match the TTransport interface
+ *
+ * Connects SmartCharts Champion to the existing Deriv chart_api.
  */
-
 import chart_api from '@/external/bot-skeleton/services/api/chart-api';
 import type { TTransport } from './types';
-
-// Logger utility for transport layer
+type StoredSubscription = {
+    request: any;
+    callback: (response: any) => void;
+    messageSubscription?: any;
+    realSubscriptionId: string | null;
+};
 const logger = {
-    log: () => {}, // Disabled in production
+    log: (...args: any[]) => {
+        if (import.meta.env?.DEV) {
+            console.log('[SmartCharts Transport]', ...args);
+        }
+    },
     warn: console.warn.bind(console, '[SmartCharts Transport]'),
     error: console.error.bind(console, '[SmartCharts Transport]'),
 };
-
-/**
- * Create transport wrapper around chart_api.api
- * @returns TTransport implementation
- */
 export function createTransport(): TTransport {
-    const subscriptions = new Map<string, any>();
-
+    const subscriptions = new Map<string, StoredSubscription>();
+    /**
+     * Make sure the Deriv API connection exists.
+     */
+    const ensureApi = async () => {
+        if (!chart_api.api) {
+            await chart_api.init();
+        }
+        if (!chart_api.api) {
+            throw new Error('Deriv Chart API is not initialized');
+        }
+        return chart_api.api;
+    };
     return {
         /**
-         * Send one-shot API request
+         * Send a one-shot Deriv API request.
          */
         async send(request: any): Promise<any> {
-            if (!chart_api.api) {
-                await chart_api.init();
+            const api = await ensureApi();
+            logger.log('SEND', request);
+            try {
+                const response = await api.send(request);
+                logger.log('RESPONSE', response);
+                return response;
+            } catch (error) {
+                logger.error('Send failed', error, request);
+                throw error;
             }
-            return chart_api.api.send(request);
         },
-
         /**
-         * Subscribe to streaming data
-         * @param request - API request with subscribe: 1
-         * @param callback - Callback for streaming updates
-         * @returns subscription ID
+         * Subscribe to real-time Deriv data.
+         *
+         * SmartCharts expects:
+         *   subscribe(request, callback) -> subscriptionId
          */
-        subscribe(request: any, callback: (response: any) => void): string {
+        subscribe(
+            request: any,
+            callback: (response: any) => void
+        ): string {
             if (!chart_api.api) {
-                throw new Error('Chart API not initialized');
+                throw new Error('Deriv Chart API not initialized');
             }
-            // Generate a unique temporary ID for tracking
-            const tempId = `temp-${Date.now()}-${Math.random()}`;
-
-            // Send initial subscription request
-            const subscribeRequest = { ...request, subscribe: 1 };
-
-            // Set up global message listener first (before sending request)
-            const messageSubscription = chart_api.api.onMessage()?.subscribe(({ data }: { data: any }) => {
-                const subscriptionId = data?.subscription?.id;
-
-                // Check if this message belongs to our subscription
-                const storedSub = subscriptions.get(tempId);
-                if (storedSub && subscriptionId) {
-                    // Update the subscription with the real ID
-                    if (!storedSub.realSubscriptionId) {
-                        storedSub.realSubscriptionId = subscriptionId;
-                        subscriptions.set(tempId, storedSub);
-                    }
-
-                    // Forward the message if it matches our subscription
-                    if (subscriptionId === storedSub.realSubscriptionId) {
-                        callback(data);
-                    }
-                }
-            });
-
-            // Store subscription info with temp ID
-            subscriptions.set(tempId, {
+            const api = chart_api.api;
+            const tempId = `smartcharts-${Date.now()}-${Math.random()
+                .toString(36)
+                .slice(2)}`;
+            const subscribeRequest = {
+                ...request,
+                subscribe: 1,
+            };
+            const storedSubscription: StoredSubscription = {
                 request: subscribeRequest,
                 callback,
-                messageSubscription,
-                realSubscriptionId: null, // Will be set when we get the first response
+                messageSubscription: undefined,
+                realSubscriptionId: null,
+            };
+            subscriptions.set(tempId, storedSubscription);
+            logger.log('SUBSCRIBE', {
+                tempId,
+                request: subscribeRequest,
             });
-
-            // Send the subscription request
-            chart_api.api
-                .send(subscribeRequest)
-                .then((response: any) => {
-                    const subscriptionId = response?.subscription?.id;
-
-                    if (subscriptionId) {
-                        // Update stored subscription with real ID
-                        const storedSub = subscriptions.get(tempId);
-                        if (storedSub) {
-                            storedSub.realSubscriptionId = subscriptionId;
-                            subscriptions.set(tempId, storedSub);
+            /**
+             * Listen for WebSocket messages.
+             *
+             * IMPORTANT:
+             * We do NOT assign the first random subscription ID
+             * we receive to this subscription.
+             *
+             * We only forward messages after the real subscription
+             * ID has been obtained from the initial API response.
+             */
+            const messageObservable = api.onMessage?.();
+            if (messageObservable?.subscribe) {
+                storedSubscription.messageSubscription =
+                    messageObservable.subscribe(
+                        ({ data }: { data: any }) => {
+                            const current =
+                                subscriptions.get(tempId);
+                            if (!current) {
+                                return;
+                            }
+                            const messageSubscriptionId =
+                                data?.subscription?.id;
+                            if (!messageSubscriptionId) {
+                                return;
+                            }
+                            if (
+                                current.realSubscriptionId &&
+                                messageSubscriptionId ===
+                                    current.realSubscriptionId
+                            ) {
+                                logger.log(
+                                    'STREAM',
+                                    messageSubscriptionId,
+                                    data
+                                );
+                                current.callback(data);
+                            }
                         }
-
-                        // Call callback with initial response
-                        callback(response);
-                    } else {
-                        logger.error('No subscription ID in response:', response);
+                    );
+            }
+            /**
+             * Send the actual subscription request.
+             */
+            api.send(subscribeRequest)
+                .then((response: any) => {
+                    const current = subscriptions.get(tempId);
+                    if (!current) {
+                        return;
                     }
+                    const realSubscriptionId =
+                        response?.subscription?.id;
+                    if (!realSubscriptionId) {
+                        logger.error(
+                            'Subscription response has no subscription ID',
+                            response
+                        );
+                        return;
+                    }
+                    current.realSubscriptionId =
+                        realSubscriptionId;
+                    subscriptions.set(tempId, current);
+                    logger.log('SUBSCRIBED', {
+                        tempId,
+                        realSubscriptionId,
+                    });
+                    /**
+                     * Send the initial response to SmartCharts.
+                     *
+                     * This is important for the first live quote/candle.
+                     */
+                    current.callback(response);
                 })
                 .catch((error: any) => {
-                    logger.error('Subscription failed:', error);
-                    // Clean up failed subscription
-                    const storedSub = subscriptions.get(tempId);
-                    if (storedSub?.messageSubscription) {
-                        storedSub.messageSubscription.unsubscribe();
+                    logger.error(
+                        'Subscription request failed',
+                        error
+                    );
+                    const current =
+                        subscriptions.get(tempId);
+                    if (current?.messageSubscription) {
+                        current.messageSubscription.unsubscribe();
                     }
                     subscriptions.delete(tempId);
                 });
-
             return tempId;
         },
-
         /**
-         * Unsubscribe from streaming data
-         * @param subscriptionId - Subscription ID to cancel (temp ID)
+         * Unsubscribe one SmartCharts subscription.
          */
         unsubscribe(subscriptionId: string): void {
-            const subscription = subscriptions.get(subscriptionId);
-
-            if (subscription) {
-                // Cancel RxJS subscription
+            const subscription =
+                subscriptions.get(subscriptionId);
+            if (!subscription) {
+                logger.warn(
+                    'Subscription not found:',
+                    subscriptionId
+                );
+                return;
+            }
+            logger.log('UNSUBSCRIBE', {
+                tempId: subscriptionId,
+                realSubscriptionId:
+                    subscription.realSubscriptionId,
+            });
+            /**
+             * Stop local RxJS/WebSocket listener.
+             */
+            if (subscription.messageSubscription) {
+                subscription.messageSubscription.unsubscribe();
+            }
+            /**
+             * Tell Deriv to forget the real subscription.
+             */
+            if (
+                chart_api.api &&
+                subscription.realSubscriptionId
+            ) {
+                try {
+                    chart_api.api.forget(
+                        subscription.realSubscriptionId
+                    );
+                } catch (error) {
+                    logger.warn(
+                        'Unable to forget subscription',
+                        error
+                    );
+                }
+            }
+            subscriptions.delete(subscriptionId);
+        },
+        /**
+         * Unsubscribe all subscriptions.
+         */
+        unsubscribeAll(msgType?: string): void {
+            logger.log(
+                'UNSUBSCRIBE ALL',
+                msgType
+            );
+            if (chart_api.api) {
+                try {
+                    if (msgType) {
+                        chart_api.api.forgetAll(msgType);
+                    } else {
+                        chart_api.api.forgetAll('ticks');
+                    }
+                } catch (error) {
+                    logger.warn(
+                        'Unable to forget all subscriptions',
+                        error
+                    );
+                }
+            }
+            /**
+             * Remove all local listeners.
+             */
+            subscriptions.forEach(subscription => {
                 if (subscription.messageSubscription) {
                     subscription.messageSubscription.unsubscribe();
                 }
-
-                // Send forget request to server using the real subscription ID
-                if (chart_api.api && subscription.realSubscriptionId) {
-                    chart_api.api.forget(subscription.realSubscriptionId);
-                }
-
-                // Clean up local storage
-                subscriptions.delete(subscriptionId);
-            } else {
-                logger.warn('No subscription found for ID:', subscriptionId);
-            }
-        },
-
-        /**
-         * Unsubscribe from all streaming data of a specific type
-         * @param msgType - Message type to unsubscribe from (optional)
-         */
-        unsubscribeAll(msgType?: string): void {
-            if (chart_api.api) {
-                if (msgType) {
-                    chart_api.api.forgetAll(msgType);
-                } else {
-                    // Forget all ticks by default
-                    chart_api.api.forgetAll('ticks');
-                }
-            }
-
-            // Clean up local subscriptions
+            });
             subscriptions.clear();
         },
     };
