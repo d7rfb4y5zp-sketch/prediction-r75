@@ -1,10 +1,10 @@
 /**
  * SmartCharts Champion Adapter
- * Provides the adapter pattern implementation for migrating
- * from derivatives-charts to smartcharts-champion.
+ *
+ * Adapter Deriv API -> @deriv-com/smartcharts-champion
  */
 
-import { ActiveSymbol } from '@deriv-com/smartcharts-champion';
+import type { ActiveSymbol } from '@deriv-com/smartcharts-champion';
 
 import type {
     ActiveSymbols,
@@ -22,126 +22,27 @@ import type {
 } from './types';
 
 /**
- * Transformation utilities
+ * ---------------------------------------------------------
+ * Transformations
+ * ---------------------------------------------------------
  */
+
 const transformations = {
     /**
-     * Transform Deriv API ticks_history response
-     * to the SmartCharts TGetQuotesResult format.
-     */
-    toTGetQuotesResult(
-        response: any,
-        granularity: TGranularity
-    ): TGetQuotesResult {
-        const quotes: TQuote[] = [];
-
-        if (!response) {
-            return {
-                quotes,
-                meta: {
-                    symbol: '',
-                    granularity,
-                },
-            };
-        }
-
-        const { history, candles, prices, times } = response;
-
-        const symbol =
-            response.echo_req?.ticks_history ||
-            response.echo_req?.ticks ||
-            '';
-
-        /**
-         * Tick data
-         */
-        if (granularity === 0 && history) {
-            const tickPrices = history.prices;
-            const tickTimes = history.times;
-
-            if (
-                Array.isArray(tickPrices) &&
-                Array.isArray(tickTimes)
-            ) {
-                for (
-                    let i = 0;
-                    i < Math.min(tickPrices.length, tickTimes.length);
-                    i++
-                ) {
-                    quotes.push({
-                        Date: String(tickTimes[i]),
-                        Close: tickPrices[i],
-                        DT: new Date(tickTimes[i] * 1000),
-                    });
-                }
-            }
-        }
-
-        /**
-         * Candle data
-         */
-        else if (granularity > 0 && Array.isArray(candles)) {
-            candles.forEach((candle: any) => {
-                if (candle?.epoch === undefined) return;
-
-                quotes.push({
-                    Date: String(candle.epoch),
-                    Open: candle.open,
-                    High: candle.high,
-                    Low: candle.low,
-                    Close: candle.close,
-                    DT: new Date(candle.epoch * 1000),
-                });
-            });
-        }
-
-        /**
-         * Fallback for direct prices/times arrays
-         */
-        else if (
-            Array.isArray(prices) &&
-            Array.isArray(times)
-        ) {
-            for (
-                let i = 0;
-                i < Math.min(prices.length, times.length);
-                i++
-            ) {
-                quotes.push({
-                    Date: String(times[i]),
-                    Close: prices[i],
-                    DT: new Date(times[i] * 1000),
-                });
-            }
-        }
-
-        return {
-            quotes,
-            meta: {
-                symbol,
-                granularity,
-                delay_amount: response.pip_size || 0,
-            },
-        };
-    },
-
-    /**
-     * Transform a live Deriv tick/candle response
-     * into a SmartCharts quote.
+     * Transform a live Deriv response into the quote format
+     * expected by SmartCharts.
      */
     toTQuoteFromStream(
         message: any,
         granularity: TGranularity
     ): TQuote | null {
-        if (!message) {
-            return null;
-        }
+        if (!message) return null;
 
         /**
          * Live tick
          */
         if (granularity === 0 && message.tick) {
-            const { tick } = message;
+            const tick = message.tick;
 
             if (
                 tick.quote === undefined ||
@@ -152,17 +53,17 @@ const transformations = {
 
             return {
                 Date: String(tick.epoch),
-                Close: tick.quote,
+                Close: Number(tick.quote),
                 tick,
-                DT: new Date(tick.epoch * 1000),
+                DT: new Date(Number(tick.epoch) * 1000),
             };
         }
 
         /**
-         * Live candle
+         * Live OHLC candle
          */
         if (granularity > 0 && message.ohlc) {
-            const { ohlc } = message;
+            const ohlc = message.ohlc;
 
             if (
                 ohlc.close === undefined ||
@@ -173,22 +74,24 @@ const transformations = {
 
             return {
                 Date: String(ohlc.epoch),
-                Open: ohlc.open,
-                High: ohlc.high,
-                Low: ohlc.low,
-                Close: ohlc.close,
+                Open: Number(ohlc.open),
+                High: Number(ohlc.high),
+                Low: Number(ohlc.low),
+                Close: Number(ohlc.close),
                 ohlc,
-                DT: new Date(ohlc.epoch * 1000),
+                DT: new Date(Number(ohlc.epoch) * 1000),
             };
         }
 
         /**
-         * Direct tick fallback
+         * Direct tick fallback.
          */
         if (
             message.epoch !== undefined &&
-            (message.quote !== undefined ||
-                message.price !== undefined)
+            (
+                message.quote !== undefined ||
+                message.price !== undefined
+            )
         ) {
             const quote =
                 message.quote !== undefined
@@ -197,8 +100,10 @@ const transformations = {
 
             return {
                 Date: String(message.epoch),
-                Close: quote,
-                DT: new Date(message.epoch * 1000),
+                Close: Number(quote),
+                DT: new Date(
+                    Number(message.epoch) * 1000
+                ),
             };
         }
 
@@ -206,65 +111,72 @@ const transformations = {
     },
 
     /**
-     * Transform active symbols response
-     * to SmartCharts ActiveSymbol format.
+     * Transform active_symbols response.
      */
     toActiveSymbols(
         activeSymbolsData: any[]
     ): ActiveSymbol[] {
-        const symbols: ActiveSymbol[] = [];
-
         if (!Array.isArray(activeSymbolsData)) {
-            return symbols;
+            return [];
         }
 
-        for (const symbol of activeSymbolsData) {
+        const symbols: ActiveSymbol[] = [];
+
+        for (const item of activeSymbolsData) {
+            if (!item) continue;
+
+            const symbol =
+                item.underlying_symbol ||
+                item.symbol;
+
             if (!symbol) continue;
-
-            const symbolCode =
-                symbol.underlying_symbol ||
-                symbol.symbol;
-
-            if (!symbolCode) continue;
 
             symbols.push({
                 display_name:
-                    symbol.display_name ||
-                    symbolCode,
+                    item.display_name || symbol,
 
-                market: symbol.market,
+                market:
+                    item.market || '',
 
                 market_display_name:
-                    symbol.market_display_name,
+                    item.market_display_name || '',
 
-                subgroup: symbol.subgroup,
+                subgroup:
+                    item.subgroup || '',
 
                 subgroup_display_name:
-                    symbol.subgroup_display_name,
+                    item.subgroup_display_name || '',
 
-                submarket: symbol.submarket,
+                submarket:
+                    item.submarket || '',
 
                 submarket_display_name:
-                    symbol.submarket_display_name,
+                    item.submarket_display_name || '',
 
-                symbol: symbolCode,
+                symbol,
 
                 symbol_type:
-                    symbol.symbol_type || '',
+                    item.symbol_type || '',
 
                 pip:
-                    symbol.pip ||
-                    symbol.pip_size ||
-                    0.01,
+                    Number(
+                        item.pip ??
+                        item.pip_size ??
+                        0.01
+                    ),
 
                 exchange_is_open:
-                    symbol.exchange_is_open || 0,
+                    Number(
+                        item.exchange_is_open ?? 0
+                    ),
 
                 is_trading_suspended:
-                    symbol.is_trading_suspended || 0,
+                    Number(
+                        item.is_trading_suspended ?? 0
+                    ),
 
                 delay_amount:
-                    symbol.delay_amount,
+                    item.delay_amount,
             });
         }
 
@@ -272,164 +184,96 @@ const transformations = {
     },
 
     /**
-     * Transform trading times data
-     * to SmartCharts format.
+     * Transform trading times.
      */
     toTradingTimesMap(
-        tradingTimesData: any
+        data: any
     ): TradingTimesMap {
-        const tradingTimes: TradingTimesMap = {};
+        const result: TradingTimesMap = {};
 
-        if (
-            !tradingTimesData ||
-            typeof tradingTimesData !== 'object'
-        ) {
-            return tradingTimes;
+        if (!data || typeof data !== 'object') {
+            return result;
         }
 
-        Object.keys(tradingTimesData).forEach(symbol => {
-            const symbolData =
-                tradingTimesData[symbol];
+        /**
+         * Some Deriv responses are wrapped inside
+         * { trading_times: ... }.
+         */
+        const source =
+            data.trading_times ||
+            data;
 
-            if (!symbolData) return;
+        /**
+         * Already normalized format.
+         */
+        for (const symbol of Object.keys(source)) {
+            const value = source[symbol];
 
-            /**
-             * Format:
-             * open / close arrays
-             */
+            if (!value) continue;
+
             if (
-                symbolData.open &&
-                symbolData.close
+                typeof value === 'object' &&
+                'isOpen' in value &&
+                'openTime' in value &&
+                'closeTime' in value
             ) {
-                const openTimes = Array.isArray(
-                    symbolData.open
-                )
-                    ? symbolData.open
-                    : [symbolData.open];
-
-                const closeTimes = Array.isArray(
-                    symbolData.close
-                )
-                    ? symbolData.close
-                    : [symbolData.close];
-
-                tradingTimes[symbol] = {
+                result[symbol] = {
                     isOpen:
-                        openTimes.length > 0 &&
-                        openTimes[0] !== '--',
+                        Boolean(value.isOpen),
 
                     openTime:
-                        openTimes[0] || '',
+                        value.openTime || '',
 
                     closeTime:
-                        closeTimes[0] || '',
-                };
-
-                return;
-            }
-
-            /**
-             * Legacy format:
-             * times array
-             */
-            if (
-                Array.isArray(symbolData.times)
-            ) {
-                const firstSession =
-                    symbolData.times[0];
-
-                if (
-                    firstSession?.open &&
-                    firstSession?.close
-                ) {
-                    const openTime =
-                        new Date(
-                            firstSession.open
-                        )
-                            .toISOString()
-                            .substring(11, 19);
-
-                    const closeTime =
-                        new Date(
-                            firstSession.close
-                        )
-                            .toISOString()
-                            .substring(11, 19);
-
-                    tradingTimes[symbol] = {
-                        isOpen: true,
-                        openTime,
-                        closeTime,
-                    };
-                }
-
-                return;
-            }
-
-            /**
-             * Already normalized format
-             */
-            if (
-                'isOpen' in symbolData &&
-                'openTime' in symbolData &&
-                'closeTime' in symbolData
-            ) {
-                tradingTimes[symbol] = {
-                    isOpen: Boolean(
-                        symbolData.isOpen
-                    ),
-
-                    openTime:
-                        symbolData.openTime || '',
-
-                    closeTime:
-                        symbolData.closeTime || '',
+                        value.closeTime || '',
                 };
             }
-        });
+        }
 
-        return tradingTimes;
+        return result;
     },
 };
 
 /**
- * Build SmartCharts Champion adapter.
+ * ---------------------------------------------------------
+ * Adapter
+ * ---------------------------------------------------------
  */
+
 export function buildSmartchartsChampionAdapter(
     transport: TTransport,
     services: TServices,
     config: AdapterConfig = {}
 ): SmartchartsChampionAdapter {
-    /**
-     * Active subscriptions.
-     */
     const subscriptions =
-        new Map<string, () => void>();
+        new Map<string, TUnsubscribeFunction>();
 
-    const debug = config.debug || false;
+    const debug =
+        config.debug === true;
 
-    /**
-     * Logger.
-     */
-    const logger = {
-        log: debug
-            ? console.log.bind(
-                  console,
-                  '[SmartCharts]'
-              )
-            : () => {},
+    const log = (...args: any[]) => {
+        if (debug) {
+            console.log(
+                '[SmartCharts]',
+                ...args
+            );
+        }
+    };
 
-        warn: debug
-            ? console.warn.bind(
-                  console,
-                  '[SmartCharts]'
-              )
-            : () => {},
+    const warn = (...args: any[]) => {
+        if (debug) {
+            console.warn(
+                '[SmartCharts]',
+                ...args
+            );
+        }
+    };
 
-        error: console.error.bind(
-            console,
-            '[SmartCharts]'
-        ),
+    const error = (...args: any[]) => {
+        console.error(
+            '[SmartCharts]',
+            ...args
+        );
     };
 
     const adapter: SmartchartsChampionAdapter = {
@@ -437,127 +281,164 @@ export function buildSmartchartsChampionAdapter(
         services,
 
         /**
-         * Get historical quotes.
+         * ---------------------------------------------------
+         * Historical data
+         * ---------------------------------------------------
+         *
+         * IMPORTANT:
+         * SmartCharts expects the ORIGINAL Deriv structure:
+         *
+         * ticks:
+         * {
+         *   history: {
+         *      times: [...],
+         *      prices: [...]
+         *   }
+         * }
+         *
+         * candles:
+         * {
+         *   candles: [...]
+         * }
          */
         async getQuotes(
             request: TGetQuotesRequest
-        ): Promise<TGetQuotesResult> {
+        ): Promise<any> {
             try {
                 const apiRequest: any = {
                     ticks_history:
                         request.symbol,
 
                     end:
-                        request.end ||
+                        request.end ??
                         'latest',
-
-                    count:
-                        request.count ||
-                        1000,
 
                     adjust_start_time: 1,
                 };
 
                 /**
-                 * Tick chart.
+                 * IMPORTANT:
+                 * SmartCharts sends count/start/end/style.
                  */
-                if (request.granularity === 0) {
-                    apiRequest.style = 'ticks';
+                if (
+                    request.count !== undefined
+                ) {
+                    apiRequest.count =
+                        request.count;
+                }
+
+                if (
+                    request.start !== undefined
+                ) {
+                    apiRequest.start =
+                        request.start;
+
+                    /**
+                     * Deriv does not need count when
+                     * explicit start/end are provided.
+                     */
+                    delete apiRequest.count;
                 }
 
                 /**
-                 * Candle chart.
+                 * Tick history.
+                 */
+                if (
+                    request.granularity === 0
+                ) {
+                    apiRequest.style =
+                        'ticks';
+                }
+
+                /**
+                 * Candle history.
                  */
                 else {
-                    apiRequest.style = 'candles';
+                    apiRequest.style =
+                        'candles';
 
                     apiRequest.granularity =
                         request.granularity;
                 }
 
-                /**
-                 * Start time.
-                 */
-                if (request.start) {
-                    apiRequest.start =
-                        request.start;
-
-                    delete apiRequest.count;
-                }
-
-                if (debug) {
-                    logger.log(
-                        'getQuotes request:',
-                        apiRequest
-                    );
-                }
+                log(
+                    'HISTORY REQUEST',
+                    apiRequest
+                );
 
                 const response =
                     await transport.send(
                         apiRequest
                     );
 
-                if (debug) {
-                    logger.log(
-                        'getQuotes response:',
-                        response
-                    );
+                log(
+                    'HISTORY RESPONSE',
+                    response
+                );
+
+                /**
+                 * VERY IMPORTANT:
+                 *
+                 * Return the raw Deriv response.
+                 *
+                 * SmartCharts itself understands:
+                 * - history.times
+                 * - history.prices
+                 * - candles
+                 */
+                return response;
+            } catch (err) {
+                error(
+                    'getQuotes failed:',
+                    err
+                );
+
+                /**
+                 * SmartCharts can handle an empty
+                 * history response better than a
+                 * custom incompatible structure.
+                 */
+                if (
+                    request.granularity === 0
+                ) {
+                    return {
+                        history: {
+                            times: [],
+                            prices: [],
+                        },
+                    };
                 }
 
-                return transformations.toTGetQuotesResult(
-                    response,
-                    request.granularity
-                );
-            } catch (error) {
-                logger.error(
-                    'Error in getQuotes:',
-                    error
-                );
-
                 return {
-                    quotes: [],
-
-                    meta: {
-                        symbol:
-                            request.symbol,
-
-                        granularity:
-                            request.granularity,
-                    },
+                    candles: [],
                 };
             }
         },
 
         /**
-         * Subscribe to live quote updates.
-         *
-         * IMPORTANT:
-         * - Tick charts use `ticks`
-         * - Candle charts use `ticks_history`
-         *   with subscription
+         * ---------------------------------------------------
+         * Live quotes
+         * ---------------------------------------------------
          */
         subscribeQuotes(
             request: TGetQuotesRequest,
             callback: TSubscriptionCallback
         ): TUnsubscribeFunction {
-            const subscriptionKey =
+            const key =
                 `${request.symbol}-${request.granularity}`;
 
             /**
-             * Remove an existing subscription
-             * for the same symbol/granularity.
+             * Remove previous subscription.
              */
-            const existingSubscription =
-                subscriptions.get(
-                    subscriptionKey
-                );
+            const old =
+                subscriptions.get(key);
 
-            if (existingSubscription) {
-                existingSubscription();
+            if (old) {
+                old();
             }
 
             /**
-             * Tick subscription.
+             * Tick stream.
              */
             const apiRequest: any =
                 request.granularity === 0
@@ -567,101 +448,119 @@ export function buildSmartchartsChampionAdapter(
 
                           subscribe: 1,
                       }
+
+                    /**
+                     * Candle stream.
+                     *
+                     * Deriv supports ticks_history
+                     * with subscription for OHLC updates.
+                     */
                     : {
                           ticks_history:
                               request.symbol,
 
                           subscribe: 1,
 
-                          end: 'latest',
+                          end:
+                              'latest',
 
-                          count: 1,
-
-                          style: 'candles',
+                          style:
+                              'candles',
 
                           granularity:
                               request.granularity,
                       };
 
             try {
-                if (debug) {
-                    logger.log(
-                        'subscribeQuotes request:',
-                        apiRequest
-                    );
-                }
+                log(
+                    'SUBSCRIBE REQUEST',
+                    apiRequest
+                );
 
                 const subscriptionId =
                     transport.subscribe(
                         apiRequest,
                         (response: any) => {
                             try {
-                                if (debug) {
-                                    logger.log(
-                                        'stream response:',
-                                        response
-                                    );
-                                }
-
-                                const quote =
-                                    transformations.toTQuoteFromStream(
-                                        response,
-                                        request.granularity
-                                    );
+                                log(
+                                    'STREAM RESPONSE',
+                                    response
+                                );
 
                                 /**
-                                 * Ignore unrelated
-                                 * WebSocket messages.
+                                 * Ignore history packets.
+                                 * SmartCharts already received
+                                 * historical data through getQuotes.
                                  */
+                                const quote =
+                                    transformations
+                                        .toTQuoteFromStream(
+                                            response,
+                                            request.granularity
+                                        );
+
+                                if (!quote) {
+                                    return;
+                                }
+
                                 if (
-                                    !quote ||
-                                    quote.Close ===
-                                        undefined
+                                    !Number.isFinite(
+                                        quote.Close
+                                    )
                                 ) {
                                     return;
                                 }
 
-                                callback(quote);
-                            } catch (error) {
-                                logger.error(
-                                    'Error transforming stream message:',
-                                    error
+                                log(
+                                    'QUOTE',
+                                    quote
+                                );
+
+                                callback(
+                                    quote
+                                );
+                            } catch (err) {
+                                error(
+                                    'Stream transformation failed:',
+                                    err
                                 );
                             }
                         }
                     );
 
-                /**
-                 * Unsubscribe function.
-                 */
                 const unsubscribe =
                     () => {
                         try {
+                            log(
+                                'UNSUBSCRIBE',
+                                key
+                            );
+
                             transport.unsubscribe(
                                 subscriptionId
                             );
-                        } catch (error) {
-                            logger.error(
-                                'Error unsubscribing:',
-                                error
+                        } catch (err) {
+                            error(
+                                'unsubscribe failed:',
+                                err
                             );
                         }
 
                         subscriptions.delete(
-                            subscriptionKey
+                            key
                         );
                     };
 
                 subscriptions.set(
-                    subscriptionKey,
+                    key,
                     unsubscribe
                 );
 
                 return unsubscribe;
-            } catch (error) {
-                logger.error(
-                    'Error in subscribeQuotes:',
-                    error
+            } catch (err) {
+                error(
+                    'subscribeQuotes failed:',
+                    err
                 );
 
                 return () => {};
@@ -669,31 +568,33 @@ export function buildSmartchartsChampionAdapter(
         },
 
         /**
-         * Unsubscribe from live quotes.
+         * ---------------------------------------------------
+         * Forget subscription
+         * ---------------------------------------------------
          */
         unsubscribeQuotes(
             request: TGetQuotesRequest
         ): void {
-            const subscriptionKey =
+            const key =
                 `${request.symbol}-${request.granularity}`;
 
             const unsubscribe =
-                subscriptions.get(
-                    subscriptionKey
-                );
+                subscriptions.get(key);
 
             if (unsubscribe) {
                 unsubscribe();
-            } else if (debug) {
-                logger.warn(
-                    'No active subscription found for:',
-                    subscriptionKey
+            } else {
+                warn(
+                    'No subscription:',
+                    key
                 );
             }
         },
 
         /**
-         * Get chart reference data.
+         * ---------------------------------------------------
+         * Chart reference data
+         * ---------------------------------------------------
          */
         async getChartData(): Promise<{
             activeSymbols: ActiveSymbols;
@@ -708,32 +609,51 @@ export function buildSmartchartsChampionAdapter(
                     services.getTradingTimes(),
                 ]);
 
+                log(
+                    'ACTIVE SYMBOLS RAW',
+                    activeSymbolsData
+                );
+
+                log(
+                    'TRADING TIMES RAW',
+                    tradingTimesData
+                );
+
                 const activeSymbols =
-                    transformations.toActiveSymbols(
-                        activeSymbolsData
-                    );
+                    transformations
+                        .toActiveSymbols(
+                            activeSymbolsData
+                        );
 
                 const tradingTimes =
-                    transformations.toTradingTimesMap(
-                        tradingTimesData
-                    );
+                    transformations
+                        .toTradingTimesMap(
+                            tradingTimesData
+                        );
+
+                log(
+                    'ACTIVE SYMBOLS',
+                    activeSymbols
+                );
+
+                log(
+                    'TRADING TIMES',
+                    tradingTimes
+                );
 
                 return {
                     activeSymbols,
                     tradingTimes,
                 };
-            } catch (error) {
-                logger.error(
-                    'Error in getChartData:',
-                    error
+            } catch (err) {
+                error(
+                    'getChartData failed:',
+                    err
                 );
 
                 return {
-                    activeSymbols:
-                        [] as ActiveSymbols,
-
-                    tradingTimes:
-                        {} as TradingTimesMap,
+                    activeSymbols: [],
+                    tradingTimes: {},
                 };
             }
         },
@@ -743,7 +663,7 @@ export function buildSmartchartsChampionAdapter(
 }
 
 /**
- * Export types for convenience.
+ * Convenience exports.
  */
 export type {
     SmartchartsChampionAdapter,
