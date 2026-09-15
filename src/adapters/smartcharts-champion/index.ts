@@ -1,7 +1,7 @@
 /**
  * SmartCharts Champion Adapter
  *
- * Adapter Deriv API -> @deriv-com/smartcharts-champion
+ * Deriv API -> @deriv-com/smartcharts-champion
  */
 
 import type { ActiveSymbol } from '@deriv-com/smartcharts-champion';
@@ -11,7 +11,6 @@ import type {
     AdapterConfig,
     SmartchartsChampionAdapter,
     TGetQuotesRequest,
-    TGetQuotesResult,
     TGranularity,
     TQuote,
     TradingTimesMap,
@@ -29,8 +28,7 @@ import type {
 
 const transformations = {
     /**
-     * Transform live Deriv response into the format
-     * expected by SmartCharts.
+     * Convert a live Deriv message to our internal TQuote.
      */
     toTQuoteFromStream(
         message: any,
@@ -40,11 +38,7 @@ const transformations = {
             return null;
         }
 
-        /**
-         * -------------------------------------------------
-         * Live tick
-         * -------------------------------------------------
-         */
+        // Live tick
         if (message.tick) {
             const tick = message.tick;
 
@@ -55,21 +49,22 @@ const transformations = {
                 return null;
             }
 
+            const quote = Number(tick.quote);
+            const epoch = Number(tick.epoch);
+
+            if (!Number.isFinite(quote) || !Number.isFinite(epoch)) {
+                return null;
+            }
+
             return {
-                Date: String(tick.epoch),
-                Close: Number(tick.quote),
+                Date: String(epoch),
+                Close: quote,
                 tick,
-                DT: new Date(
-                    Number(tick.epoch) * 1000
-                ),
+                DT: new Date(epoch * 1000),
             };
         }
 
-        /**
-         * -------------------------------------------------
-         * Live OHLC candle
-         * -------------------------------------------------
-         */
+        // Live candle / OHLC
         if (message.ohlc) {
             const ohlc = message.ohlc;
 
@@ -80,24 +75,34 @@ const transformations = {
                 return null;
             }
 
+            const close = Number(ohlc.close);
+            const epoch = Number(ohlc.epoch);
+
+            if (!Number.isFinite(close) || !Number.isFinite(epoch)) {
+                return null;
+            }
+
             return {
-                Date: String(ohlc.epoch),
-                Open: Number(ohlc.open),
-                High: Number(ohlc.high),
-                Low: Number(ohlc.low),
-                Close: Number(ohlc.close),
+                Date: String(epoch),
+                Open:
+                    ohlc.open !== undefined
+                        ? Number(ohlc.open)
+                        : close,
+                High:
+                    ohlc.high !== undefined
+                        ? Number(ohlc.high)
+                        : close,
+                Low:
+                    ohlc.low !== undefined
+                        ? Number(ohlc.low)
+                        : close,
+                Close: close,
                 ohlc,
-                DT: new Date(
-                    Number(ohlc.epoch) * 1000
-                ),
+                DT: new Date(epoch * 1000),
             };
         }
 
-        /**
-         * -------------------------------------------------
-         * Direct quote fallback
-         * -------------------------------------------------
-         */
+        // Direct quote fallback
         if (
             message.epoch !== undefined &&
             (
@@ -105,23 +110,25 @@ const transformations = {
                 message.price !== undefined
             )
         ) {
-            const quote =
+            const value =
                 message.quote !== undefined
                     ? message.quote
                     : message.price;
 
-            const numericQuote = Number(quote);
+            const quote = Number(value);
+            const epoch = Number(message.epoch);
 
-            if (!Number.isFinite(numericQuote)) {
+            if (
+                !Number.isFinite(quote) ||
+                !Number.isFinite(epoch)
+            ) {
                 return null;
             }
 
             return {
-                Date: String(message.epoch),
-                Close: numericQuote,
-                DT: new Date(
-                    Number(message.epoch) * 1000
-                ),
+                Date: String(epoch),
+                Close: quote,
+                DT: new Date(epoch * 1000),
             };
         }
 
@@ -129,20 +136,153 @@ const transformations = {
     },
 
     /**
-     * ---------------------------------------------------------
-     * Active symbols
-     * ---------------------------------------------------------
+     * Convert Deriv history response to TQuote[].
      */
-    toActiveSymbols(
-        activeSymbolsData: any[]
-    ): ActiveSymbol[] {
-        if (!Array.isArray(activeSymbolsData)) {
+    toQuotesFromHistory(
+        response: any,
+        style: 'ticks' | 'candles'
+    ): TQuote[] {
+        if (!response) {
             return [];
         }
 
+        /**
+         * -------------------------------------------------
+         * TICKS
+         * -------------------------------------------------
+         */
+        if (style === 'ticks') {
+            const prices =
+                response?.history?.prices ?? [];
+
+            const times =
+                response?.history?.times ?? [];
+
+            if (
+                !Array.isArray(prices) ||
+                !Array.isArray(times)
+            ) {
+                return [];
+            }
+
+            const quotes: TQuote[] = [];
+
+            const length =
+                Math.min(
+                    prices.length,
+                    times.length
+                );
+
+            for (let i = 0; i < length; i += 1) {
+                const price = Number(prices[i]);
+                const epoch = Number(times[i]);
+
+                if (
+                    !Number.isFinite(price) ||
+                    !Number.isFinite(epoch)
+                ) {
+                    continue;
+                }
+
+                quotes.push({
+                    Date: String(epoch),
+                    Close: price,
+                    DT: new Date(epoch * 1000),
+                });
+            }
+
+            return quotes;
+        }
+
+        /**
+         * -------------------------------------------------
+         * CANDLES
+         * -------------------------------------------------
+         */
+        const candles =
+            response?.candles ?? [];
+
+        if (!Array.isArray(candles)) {
+            return [];
+        }
+
+        return candles
+            .map((candle: any): TQuote | null => {
+                if (
+                    candle?.epoch === undefined ||
+                    candle?.close === undefined
+                ) {
+                    return null;
+                }
+
+                const epoch =
+                    Number(candle.epoch);
+
+                const close =
+                    Number(candle.close);
+
+                if (
+                    !Number.isFinite(epoch) ||
+                    !Number.isFinite(close)
+                ) {
+                    return null;
+                }
+
+                const open =
+                    candle.open !== undefined
+                        ? Number(candle.open)
+                        : close;
+
+                const high =
+                    candle.high !== undefined
+                        ? Number(candle.high)
+                        : close;
+
+                const low =
+                    candle.low !== undefined
+                        ? Number(candle.low)
+                        : close;
+
+                return {
+                    Date: String(epoch),
+                    Open: Number.isFinite(open)
+                        ? open
+                        : close,
+                    High: Number.isFinite(high)
+                        ? high
+                        : close,
+                    Low: Number.isFinite(low)
+                        ? low
+                        : close,
+                    Close: close,
+                    ohlc: candle,
+                    DT: new Date(epoch * 1000),
+                };
+            })
+            .filter(
+                (quote): quote is TQuote =>
+                    quote !== null
+            );
+    },
+
+    /**
+     * Convert active_symbols response.
+     */
+    toActiveSymbols(
+        activeSymbolsData: any
+    ): ActiveSymbol[] {
+        const source =
+            Array.isArray(activeSymbolsData)
+                ? activeSymbolsData
+                : Array.isArray(
+                      activeSymbolsData?.active_symbols
+                  )
+                ? activeSymbolsData.active_symbols
+                : [];
+
         const symbols: ActiveSymbol[] = [];
 
-        for (const item of activeSymbolsData) {
+        for (const item of source) {
             if (!item) {
                 continue;
             }
@@ -208,9 +348,7 @@ const transformations = {
     },
 
     /**
-     * ---------------------------------------------------------
-     * Trading times
-     * ---------------------------------------------------------
+     * Convert trading times.
      */
     toTradingTimesMap(
         data: any
@@ -228,9 +366,7 @@ const transformations = {
             data.trading_times ||
             data;
 
-        for (
-            const symbol of Object.keys(source)
-        ) {
+        for (const symbol of Object.keys(source)) {
             const value =
                 source[symbol];
 
@@ -238,6 +374,9 @@ const transformations = {
                 continue;
             }
 
+            /**
+             * Already normalized format.
+             */
             if (
                 typeof value === 'object' &&
                 'isOpen' in value &&
@@ -246,16 +385,61 @@ const transformations = {
             ) {
                 result[symbol] = {
                     isOpen:
-                        Boolean(
-                            value.isOpen
-                        ),
+                        Boolean(value.isOpen),
 
                     openTime:
-                        value.openTime || '',
+                        String(
+                            value.openTime ?? ''
+                        ),
 
                     closeTime:
-                        value.closeTime || '',
+                        String(
+                            value.closeTime ?? ''
+                        ),
                 };
+
+                continue;
+            }
+
+            /**
+             * Deriv trading_times can contain
+             * market/submarket/symbol structures.
+             *
+             * We only add entries when a usable
+             * open/close structure is available.
+             */
+            if (
+                typeof value === 'object'
+            ) {
+                const openTime =
+                    value.openTime ??
+                    value.open_time ??
+                    '';
+
+                const closeTime =
+                    value.closeTime ??
+                    value.close_time ??
+                    '';
+
+                if (
+                    openTime !== '' ||
+                    closeTime !== ''
+                ) {
+                    result[symbol] = {
+                        isOpen:
+                            Boolean(
+                                value.isOpen ??
+                                value.is_open ??
+                                true
+                            ),
+
+                        openTime:
+                            String(openTime),
+
+                        closeTime:
+                            String(closeTime),
+                    };
+                }
             }
         }
 
@@ -315,33 +499,14 @@ export function buildSmartchartsChampionAdapter(
         services,
 
         /**
-         * -----------------------------------------------------
+         * -------------------------------------------------
          * HISTORICAL DATA
-         * -----------------------------------------------------
-         *
-         * SmartCharts expects:
-         *
-         * ticks:
-         * {
-         *   history: {
-         *     times: [],
-         *     prices: []
-         *   }
-         * }
-         *
-         * candles:
-         * {
-         *   candles: []
-         * }
+         * -------------------------------------------------
          */
         async getQuotes(
             request: TGetQuotesRequest
         ): Promise<any> {
-
             try {
-                /**
-                 * Respect SmartCharts style when supplied.
-                 */
                 const style =
                     (request as any).style ??
                     (
@@ -364,17 +529,19 @@ export function buildSmartchartsChampionAdapter(
                 };
 
                 /**
-                 * Count
+                 * Count is used when no explicit
+                 * start is supplied.
                  */
                 if (
-                    request.count !== undefined
+                    request.count !== undefined &&
+                    request.start === undefined
                 ) {
                     apiRequest.count =
                         request.count;
                 }
 
                 /**
-                 * Explicit start
+                 * Explicit start/end request.
                  */
                 if (
                     request.start !== undefined
@@ -386,7 +553,7 @@ export function buildSmartchartsChampionAdapter(
                 }
 
                 /**
-                 * Candle granularity
+                 * Candles require granularity.
                  */
                 if (
                     style === 'candles'
@@ -411,50 +578,59 @@ export function buildSmartchartsChampionAdapter(
                 );
 
                 /**
-                 * IMPORTANT:
-                 *
-                 * Return the ORIGINAL Deriv
-                 * response.
+                 * Transform Deriv response into
+                 * the internal { quotes: TQuote[] }
+                 * format expected by the hook.
                  */
-                return response;
+                const quotes =
+                    transformations.toQuotesFromHistory(
+                        response,
+                        style === 'candles'
+                            ? 'candles'
+                            : 'ticks'
+                    );
+
+                log(
+                    'TRANSFORMED QUOTES',
+                    quotes.length
+                );
+
+                return {
+                    quotes,
+
+                    meta: {
+                        symbol:
+                            request.symbol,
+
+                        granularity:
+                            request.granularity,
+                    },
+                };
 
             } catch (err) {
-
                 error(
                     'getQuotes failed:',
                     err
                 );
 
-                /**
-                 * Empty fallback for ticks.
-                 */
-                if (
-                    (
-                        request as any
-                    ).style === 'ticks' ||
-                    request.granularity === 0
-                ) {
-                    return {
-                        history: {
-                            times: [],
-                            prices: [],
-                        },
-                    };
-                }
-
-                /**
-                 * Empty fallback for candles.
-                 */
                 return {
-                    candles: [],
+                    quotes: [],
+
+                    meta: {
+                        symbol:
+                            request.symbol,
+
+                        granularity:
+                            request.granularity,
+                    },
                 };
             }
         },
 
         /**
-         * -----------------------------------------------------
+         * -------------------------------------------------
          * LIVE QUOTES
-         * -----------------------------------------------------
+         * -------------------------------------------------
          */
         subscribeQuotes(
             request: TGetQuotesRequest,
@@ -465,19 +641,28 @@ export function buildSmartchartsChampionAdapter(
                 `${request.symbol}-${request.granularity}`;
 
             /**
-             * Remove previous subscription.
+             * Remove previous subscription
+             * for the same symbol/granularity.
              */
             const previous =
                 subscriptions.get(key);
 
             if (previous) {
-                previous();
+                try {
+                    previous();
+                } catch (err) {
+                    error(
+                        'Previous unsubscribe failed:',
+                        err
+                    );
+                }
             }
 
             /**
-             * -------------------------------------------------
-             * Tick stream
-             * -------------------------------------------------
+             * Tick stream.
+             *
+             * IMPORTANT:
+             * ticks_history is NOT used here.
              */
             const apiRequest: any =
                 request.granularity === 0
@@ -487,12 +672,6 @@ export function buildSmartchartsChampionAdapter(
 
                         subscribe: 1,
                     }
-
-                    /**
-                     * -------------------------------------------------
-                     * Candle stream
-                     * -------------------------------------------------
-                     */
                     : {
                         ticks_history:
                             request.symbol,
@@ -510,7 +689,6 @@ export function buildSmartchartsChampionAdapter(
                     };
 
             try {
-
                 log(
                     'SUBSCRIBE REQUEST',
                     apiRequest
@@ -519,21 +697,13 @@ export function buildSmartchartsChampionAdapter(
                 const subscriptionId =
                     transport.subscribe(
                         apiRequest,
-                        (
-                            response: any
-                        ) => {
-
+                        (response: any) => {
                             try {
-
                                 log(
                                     'STREAM RESPONSE',
                                     response
                                 );
 
-                                /**
-                                 * Convert Deriv response
-                                 * into SmartCharts quote.
-                                 */
                                 const quote =
                                     transformations
                                         .toTQuoteFromStream(
@@ -553,17 +723,11 @@ export function buildSmartchartsChampionAdapter(
                                     return;
                                 }
 
-                                log(
-                                    'QUOTE',
-                                    quote
-                                );
-
                                 callback(
                                     quote
                                 );
 
                             } catch (err) {
-
                                 error(
                                     'Stream transformation failed:',
                                     err
@@ -574,9 +738,7 @@ export function buildSmartchartsChampionAdapter(
 
                 const unsubscribe =
                     () => {
-
                         try {
-
                             log(
                                 'UNSUBSCRIBE',
                                 key
@@ -585,9 +747,7 @@ export function buildSmartchartsChampionAdapter(
                             transport.unsubscribe(
                                 subscriptionId
                             );
-
                         } catch (err) {
-
                             error(
                                 'unsubscribe failed:',
                                 err
@@ -607,7 +767,6 @@ export function buildSmartchartsChampionAdapter(
                 return unsubscribe;
 
             } catch (err) {
-
                 error(
                     'subscribeQuotes failed:',
                     err
@@ -618,14 +777,13 @@ export function buildSmartchartsChampionAdapter(
         },
 
         /**
-         * -----------------------------------------------------
+         * -------------------------------------------------
          * UNSUBSCRIBE
-         * -----------------------------------------------------
+         * -------------------------------------------------
          */
         unsubscribeQuotes(
             request: TGetQuotesRequest
         ): void {
-
             const key =
                 `${request.symbol}-${request.granularity}`;
 
@@ -633,11 +791,8 @@ export function buildSmartchartsChampionAdapter(
                 subscriptions.get(key);
 
             if (unsubscribe) {
-
                 unsubscribe();
-
             } else {
-
                 warn(
                     'No subscription:',
                     key
@@ -646,26 +801,21 @@ export function buildSmartchartsChampionAdapter(
         },
 
         /**
-         * -----------------------------------------------------
+         * -------------------------------------------------
          * CHART DATA
-         * -----------------------------------------------------
+         * -------------------------------------------------
          */
         async getChartData(): Promise<{
             activeSymbols: ActiveSymbols;
             tradingTimes: TradingTimesMap;
         }> {
-
             try {
-
                 const [
                     activeSymbolsData,
                     tradingTimesData,
                 ] = await Promise.all([
-
                     services.getActiveSymbols(),
-
                     services.getTradingTimes(),
-
                 ]);
 
                 log(
@@ -679,16 +829,14 @@ export function buildSmartchartsChampionAdapter(
                 );
 
                 const activeSymbols =
-                    transformations
-                        .toActiveSymbols(
-                            activeSymbolsData
-                        );
+                    transformations.toActiveSymbols(
+                        activeSymbolsData
+                    );
 
                 const tradingTimes =
-                    transformations
-                        .toTradingTimesMap(
-                            tradingTimesData
-                        );
+                    transformations.toTradingTimesMap(
+                        tradingTimesData
+                    );
 
                 log(
                     'ACTIVE SYMBOLS',
@@ -706,7 +854,6 @@ export function buildSmartchartsChampionAdapter(
                 };
 
             } catch (err) {
-
                 error(
                     'getChartData failed:',
                     err
@@ -732,5 +879,4 @@ export function buildSmartchartsChampionAdapter(
 export type {
     SmartchartsChampionAdapter,
     TGetQuotesRequest,
-    TGetQuotesResult,
 } from './types';
