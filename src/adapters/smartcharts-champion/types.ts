@@ -46,7 +46,10 @@ export interface SubscriptionInfo {
 // Internal transformation utilities
 export interface TransformationUtils {
     toTGetQuotesResult: (response: any, granularity: TGranularity) => TGetQuotesResult;
-    toTQuoteFromStream: (message: any, granularity: TGranularity) => TQuote;
+    toTQuoteFromStream: (
+    message: any,
+    granularity: TGranularity
+) => TQuote | null;
     toTradingTimesMap: (source: any) => TradingTimesMap;
     toActiveSymbols: (source: any) => ActiveSymbols;
 }
