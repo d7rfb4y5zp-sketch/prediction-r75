@@ -4,7 +4,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import GuideContent from './guide-content';
 
-const TutorialsTab = observer(({ handleTabChange }) => {
+const TutorialsTab = observer(() => {
     return (
         <div
             style={{
@@ -18,16 +18,19 @@ const TutorialsTab = observer(({ handleTabChange }) => {
         >
             <h2>Tutorials</h2>
 
-            <div
-                style={{
-                    marginTop: '20px',
-                    padding: '16px',
-                    borderRadius: '10px',
-                    background: '#f9fafb',
-                }}
-            >
-                <GuideContent handleTabChange={handleTabChange} />
-            </div>
+            <p>
+                Test 3 : GuideContent est importé mais n'est pas affiché.
+            </p>
+
+            <p>
+                Si cette page fonctionne, le problème est dans le rendu
+                de GuideContent.
+            </p>
+
+            <p>
+                Si l'erreur revient, le problème est dans GuideContent
+                ou dans l'un de ses imports.
+            </p>
         </div>
     );
 });
