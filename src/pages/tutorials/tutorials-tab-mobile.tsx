@@ -10,7 +10,7 @@ import { LegacyCloseCircle1pxBlackIcon } from '@deriv/quill-icons/Legacy';
 /* [AI] - Analytics event tracking removed - see migrate-docs/MONITORING_PACKAGES.md for re-implementation guide */
 /* [/AI] */
 import SearchInput from './common/search-input';
-import { TTutorialsTabItem } from './tutorials';
+import type { TTutorialsTabItem } from './tutorials';
 
 type TListItem = {
     id: string;
