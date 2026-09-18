@@ -39,6 +39,7 @@ import { LegacyGuide1pxIcon } from '@deriv/quill-icons/Legacy';
 import { Localize, localize } from '@deriv-com/translations';
 import { useDevice } from '@deriv-com/ui';
 import RunPanel from '../../components/run-panel';
+import R75TickMonitor from '@/components/r75-tick-monitor';
 import ChartModal from '../chart/chart-modal';
 import Dashboard from '../dashboard';
 import Tutorial from '../tutorials';
@@ -466,6 +467,9 @@ const AppWrapper = observer(() => {
                 <TradingViewModal />
             </DesktopWrapper>
             <MobileWrapper>{!is_open && <RunPanel />}</MobileWrapper>
+            <div style={{ padding: '20px' }}>
+    <R75TickMonitor />
+</div>
             <Dialog
                 cancel_button_text={cancel_button_text || localize('Cancel')}
                 className='dc-dialog__wrapper--fixed'
