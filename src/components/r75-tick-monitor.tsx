@@ -5,7 +5,6 @@ const R75TickMonitor = () => {
     const [status, setStatus] = useState('🟠 Connexion à Deriv…');
     const [price, setPrice] = useState('—');
     const [digit, setDigit] = useState('—');
-    const [ticks, setTicks] = useState(0);
     const [digits, setDigits] = useState<number[]>([]);
 
     useEffect(() => {
@@ -33,15 +32,11 @@ const R75TickMonitor = () => {
 
                     const pipSize = Number(tick.pip_size ?? 4);
                     const formattedPrice = quote.toFixed(pipSize);
+
                     const lastDigit = Number(formattedPrice.replace('.', '').slice(-1));
 
                     setPrice(formattedPrice);
                     setDigit(String(lastDigit));
-
-                    setTicks(prev => {
-                        const next = prev + 1;
-                        return next > 100 ? 100 : next;
-                    });
 
                     setDigits(prev => {
                         const next = [...prev, lastDigit];
@@ -80,6 +75,15 @@ const R75TickMonitor = () => {
             counts[value]++;
         }
     });
+
+    const maxCount = Math.max(...counts);
+
+    const mostFrequentDigit = counts.indexOf(maxCount);
+
+    const frequency =
+        digits.length > 0
+            ? ((maxCount / digits.length) * 100).toFixed(1)
+            : '0.0';
 
     return (
         <div
@@ -124,14 +128,37 @@ const R75TickMonitor = () => {
             </div>
 
             {digits.length >= 100 && (
-                <p>
-                    ✅ Analyse de 100 ticks terminée.
-                </p>
+                <div>
+                    <h3>Analyse statistique</h3>
+
+                    <p>
+                        <strong>Chiffre le plus fréquent :</strong>{' '}
+                        {mostFrequentDigit}
+                    </p>
+
+                    <p>
+                        <strong>Occurrences :</strong> {maxCount} / 100
+                    </p>
+
+                    <p>
+                        <strong>Fréquence observée :</strong> {frequency}%
+                    </p>
+
+                    <p>
+                        ⚠️ Signal statistique expérimental uniquement.
+                    </p>
+
+                    <p>
+                        ❌ Aucun trade automatique.
+                    </p>
+                </div>
             )}
 
-            <p>
-                ⚠️ Analyse uniquement — aucun trade automatique.
-            </p>
+            {digits.length < 100 && (
+                <p>
+                    📊 Collecte des données en cours...
+                </p>
+            )}
         </div>
     );
 };
