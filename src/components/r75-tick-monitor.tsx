@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { api_base } from '@/external/bot-skeleton/services/api/api-base';
 
 const R75TickMonitor = () => {
@@ -6,10 +6,18 @@ const R75TickMonitor = () => {
     const [price, setPrice] = useState('—');
     const [digit, setDigit] = useState('—');
 
-    const [digits, setDigits] = useState<number[]>([]);
+    // Affichage de la base d'apprentissage
+    const [trainingTicks, setTrainingTicks] = useState<number[]>([]);
 
-    const [testPredictions, setTestPredictions] = useState<number[]>([]);
-    const [testResults, setTestResults] = useState<boolean[]>([]);
+    // Résultats du test hors-échantillon
+    const [predictions, setPredictions] = useState<number[]>([]);
+    const [results, setResults] = useState<boolean[]>([]);
+
+    // Refs pour conserver les données sans problème de fermeture React
+    const trainingRef = useRef<number[]>([]);
+    const trainingCountsRef = useRef<number[]>(Array(10).fill(0));
+    const testPredictionsRef = useRef<number[]>([]);
+    const testResultsRef = useRef<boolean[]>([]);
 
     useEffect(() => {
         let subscription: any;
@@ -54,62 +62,53 @@ const R75TickMonitor = () => {
                         setPrice(formattedPrice);
                         setDigit(String(lastDigit));
 
-                        setDigits(prev => {
-                            const previous = [...prev];
+                        // ==========================================
+                        // PHASE 1 : CONSTRUCTION DES 1000 TICKS
+                        // ==========================================
 
-                            /*
-                             * Tant que nous n'avons pas 1000 ticks,
-                             * nous construisons notre référence.
-                             */
-                            if (previous.length < 1000) {
-                                return [...previous, lastDigit];
-                            }
+                        if (trainingRef.current.length < 1000) {
+                            trainingRef.current.push(lastDigit);
 
-                            /*
-                             * À partir du 1001e tick :
-                             * la prédiction est calculée uniquement
-                             * à partir des données déjà observées.
-                             */
-                            const counts = Array(10).fill(0);
+                            trainingCountsRef.current[lastDigit]++;
 
-                            previous.forEach(value => {
-                                if (value >= 0 && value <= 9) {
-                                    counts[value]++;
-                                }
-                            });
-
-                            let prediction = 0;
-                            let bestCount = counts[0];
-
-                            for (let i = 1; i < 10; i++) {
-                                if (counts[i] > bestCount) {
-                                    bestCount = counts[i];
-                                    prediction = i;
-                                }
-                            }
-
-                            const success = prediction === lastDigit;
-
-                            setTestPredictions(old => [
-                                ...old,
-                                prediction,
+                            setTrainingTicks([
+                                ...trainingRef.current,
                             ]);
 
-                            setTestResults(old => [
-                                ...old,
-                                success,
-                            ]);
+                            return;
+                        }
 
-                            /*
-                             * Fenêtre glissante :
-                             * on retire le plus ancien tick et
-                             * on ajoute le nouveau.
-                             */
-                            previous.shift();
-                            previous.push(lastDigit);
+                        // ==========================================
+                        // PHASE 2 : TEST HORS-ÉCHANTILLON
+                        // ==========================================
 
-                            return previous;
-                        });
+                        // IMPORTANT :
+                        // La base de 1000 ticks reste FIXE.
+                        const counts = trainingCountsRef.current;
+
+                        let prediction = 0;
+                        let highestCount = counts[0];
+
+                        for (let i = 1; i < 10; i++) {
+                            if (counts[i] > highestCount) {
+                                highestCount = counts[i];
+                                prediction = i;
+                            }
+                        }
+
+                        // On prédit AVANT d'utiliser le nouveau tick.
+                        const success = prediction === lastDigit;
+
+                        testPredictionsRef.current.push(prediction);
+                        testResultsRef.current.push(success);
+
+                        setPredictions([
+                            ...testPredictionsRef.current,
+                        ]);
+
+                        setResults([
+                            ...testResultsRef.current,
+                        ]);
                     });
 
                 api_base.api.send({
@@ -132,57 +131,51 @@ const R75TickMonitor = () => {
     }, []);
 
     // ==================================================
-    // STATISTIQUES DES 1000 TICKS ACTUELS
+    // STATISTIQUES DE LA BASE FIXE
     // ==================================================
 
-    const counts: number[] = Array(10).fill(0);
+    const trainingCounts = trainingCountsRef.current;
 
-    digits.forEach(value => {
-        if (value >= 0 && value <= 9) {
-            counts[value]++;
-        }
-    });
+    const trainingTotal = trainingRef.current.length;
 
-    const totalTicks = digits.length;
-
-    let mostFrequentDigit = 0;
-    let highestCount = counts[0];
+    let trainingMostFrequent = 0;
+    let trainingHighestCount = trainingCounts[0];
 
     for (let i = 1; i < 10; i++) {
-        if (counts[i] > highestCount) {
-            highestCount = counts[i];
-            mostFrequentDigit = i;
+        if (trainingCounts[i] > trainingHighestCount) {
+            trainingHighestCount = trainingCounts[i];
+            trainingMostFrequent = i;
         }
     }
 
-    const mostFrequentPercentage =
-        totalTicks > 0
-            ? ((highestCount / totalTicks) * 100).toFixed(1)
+    const trainingFrequency =
+        trainingTotal > 0
+            ? ((trainingHighestCount / trainingTotal) * 100).toFixed(1)
             : '0.0';
 
     // ==================================================
-    // TEST HORS-ÉCHANTILLON
+    // RÉSULTATS DU TEST
     // ==================================================
 
-    const testCount = testResults.length;
+    const testTotal = results.length;
 
-    const successCount = testResults.filter(
+    const successes = results.filter(
         result => result === true
     ).length;
 
-    const failureCount = testCount - successCount;
+    const failures = testTotal - successes;
 
-    const successRate =
-        testCount > 0
-            ? ((successCount / testCount) * 100).toFixed(1)
+    const testRate =
+        testTotal > 0
+            ? ((successes / testTotal) * 100).toFixed(1)
             : '0.0';
 
     // ==================================================
-    // DERNIÈRES PRÉDICTIONS
+    // DERNIERS TESTS
     // ==================================================
 
-    const recentPredictions = testPredictions.slice(-20);
-    const recentResults = testResults.slice(-20);
+    const lastTests = predictions.slice(-20);
+    const lastResults = results.slice(-20);
 
     return (
         <div
@@ -214,93 +207,56 @@ const R75TickMonitor = () => {
 
             <hr />
 
-            <h3>Base statistique</h3>
+            <h3>Phase 1 — Base d'apprentissage</h3>
 
             <p>
                 <strong>Ticks de référence :</strong>{' '}
-                {totalTicks} / 1000
+                {trainingTotal} / 1000
             </p>
 
-            {totalTicks < 1000 && (
+            {trainingTotal < 1000 && (
                 <p>
                     📊 Construction de la base statistique...
                 </p>
             )}
 
-            {totalTicks >= 1000 && (
+            {trainingTotal >= 1000 && (
                 <>
                     <p>
-                        ✅ Base de 1000 ticks disponible.
+                        ✅ Base de 1000 ticks terminée.
                     </p>
 
                     <p>
-                        <strong>Chiffre le plus fréquent :</strong>{' '}
-                        {mostFrequentDigit}
+                        🔒 Base d'apprentissage verrouillée.
+                    </p>
+
+                    <p>
+                        <strong>Chiffre dominant :</strong>{' '}
+                        {trainingMostFrequent}
                     </p>
 
                     <p>
                         <strong>Occurrences :</strong>{' '}
-                        {highestCount} / 1000
+                        {trainingHighestCount} / 1000
                     </p>
 
                     <p>
                         <strong>Fréquence :</strong>{' '}
-                        {mostFrequentPercentage}%
-                    </p>
-                </>
-            )}
-
-            <hr />
-
-            <h3>Test hors-échantillon</h3>
-
-            {testCount === 0 && (
-                <p>
-                    ⏳ Le test commencera après les 1000 ticks
-                    de référence.
-                </p>
-            )}
-
-            {testCount > 0 && (
-                <>
-                    <p>
-                        <strong>Prédictions testées :</strong>{' '}
-                        {testCount}
+                        {trainingFrequency}%
                     </p>
 
-                    <p>
-                        <strong>Réussites :</strong>{' '}
-                        {successCount}
-                    </p>
-
-                    <p>
-                        <strong>Échecs :</strong>{' '}
-                        {failureCount}
-                    </p>
-
-                    <p>
-                        <strong>Taux observé :</strong>{' '}
-                        {successRate}%
-                    </p>
-                </>
-            )}
-
-            {testCount >= 20 && (
-                <>
                     <hr />
 
-                    <h3>20 derniers tests</h3>
+                    <h3>Répartition de la base fixe</h3>
 
-                    {recentPredictions.map((prediction, index) => {
-                        const result = recentResults[index];
+                    {trainingCounts.map((count, index) => {
+                        const percentage =
+                            ((count / 1000) * 100).toFixed(1);
 
                         return (
                             <p key={index}>
-                                Test {testCount - 19 + index} :
-                                prédiction{' '}
-                                <strong>{prediction}</strong>{' '}
-                                →{' '}
-                                {result ? '✅ réussi' : '❌ échec'}
+                                <strong>{index} :</strong>{' '}
+                                {count} ({percentage}%)
                             </p>
                         );
                     })}
@@ -309,14 +265,114 @@ const R75TickMonitor = () => {
 
             <hr />
 
+            <h3>Phase 2 — Test hors-échantillon</h3>
+
+            {trainingTotal < 1000 && (
+                <p>
+                    ⏳ Le test commencera après les 1000 ticks
+                    d'apprentissage.
+                </p>
+            )}
+
+            {trainingTotal >= 1000 && testTotal === 0 && (
+                <p>
+                    🧪 Base terminée. En attente des nouveaux ticks
+                    pour commencer le test...
+                </p>
+            )}
+
+            {testTotal > 0 && (
+                <>
+                    <p>
+                        <strong>Tests réalisés :</strong>{' '}
+                        {testTotal}
+                    </p>
+
+                    <p>
+                        <strong>Réussites :</strong>{' '}
+                        {successes}
+                    </p>
+
+                    <p>
+                        <strong>Échecs :</strong>{' '}
+                        {failures}
+                    </p>
+
+                    <p>
+                        <strong>Taux observé :</strong>{' '}
+                        {testRate}%
+                    </p>
+
+                    <p>
+                        📌 Référence uniforme : environ 10 % par
+                        chiffre.
+                    </p>
+                </>
+            )}
+
+            {testTotal >= 20 && (
+                <>
+                    <hr />
+
+                    <h3>20 derniers tests</h3>
+
+                    {lastTests.map((prediction, index) => {
+                        const result = lastResults[index];
+
+                        const testNumber =
+                            testTotal - lastTests.length + index + 1;
+
+                        return (
+                            <p key={index}>
+                                Test {testNumber} : prédiction{' '}
+                                <strong>{prediction}</strong> →{' '}
+                                {result
+                                    ? '✅ réussi'
+                                    : '❌ échec'}
+                            </p>
+                        );
+                    })}
+                </>
+            )}
+
+            {testTotal >= 100 && (
+                <>
+                    <hr />
+
+                    <h3>🧪 Premier bilan</h3>
+
+                    <p>
+                        <strong>Échantillon de test :</strong>{' '}
+                        {testTotal} nouveaux ticks
+                    </p>
+
+                    <p>
+                        <strong>Réussites :</strong>{' '}
+                        {successes} / {testTotal}
+                    </p>
+
+                    <p>
+                        <strong>Taux :</strong>{' '}
+                        {testRate}%
+                    </p>
+
+                    <p>
+                        ⚠️ Ce résultat mesure cette méthode sur
+                        des données nouvelles. Il ne constitue pas
+                        une garantie de prédiction future.
+                    </p>
+                </>
+            )}
+
+            <hr />
+
             <p>
-                📌 La prédiction actuelle utilise uniquement les
-                données déjà observées avant chaque nouveau tick.
+                🔒 Les 1000 ticks d'apprentissage restent fixes
+                pendant le test.
             </p>
 
             <p>
-                ⚠️ Un taux observé sur quelques tests ne constitue
-                pas une preuve de pouvoir prédictif.
+                ⚠️ Analyse expérimentale uniquement.
             </p>
 
             <p>
