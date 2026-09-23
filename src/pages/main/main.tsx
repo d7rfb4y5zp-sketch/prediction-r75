@@ -468,19 +468,6 @@ const AppWrapper = observer(() => {
             </DesktopWrapper>
             <MobileWrapper>{!is_open && <RunPanel />}</MobileWrapper>
 
-<div
-    style={{
-        padding: '20px',
-        margin: '20px',
-        background: '#ffffff',
-        color: '#000000',
-        borderRadius: '12px',
-        position: 'relative',
-        zIndex: 9999,
-    }}
->
-    <R75TickMonitor />
-</div>
 
 <Dialog
                 cancel_button_text={cancel_button_text || localize('Cancel')}
