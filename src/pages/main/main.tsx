@@ -467,10 +467,22 @@ const AppWrapper = observer(() => {
                 <TradingViewModal />
             </DesktopWrapper>
             <MobileWrapper>{!is_open && <RunPanel />}</MobileWrapper>
-            <div style={{ padding: '20px' }}>
+
+<div
+    style={{
+        padding: '20px',
+        margin: '20px',
+        background: '#ffffff',
+        color: '#000000',
+        borderRadius: '12px',
+        position: 'relative',
+        zIndex: 9999,
+    }}
+>
     <R75TickMonitor />
 </div>
-            <Dialog
+
+<Dialog
                 cancel_button_text={cancel_button_text || localize('Cancel')}
                 className='dc-dialog__wrapper--fixed'
                 confirm_button_text={ok_button_text || localize('Ok')}
