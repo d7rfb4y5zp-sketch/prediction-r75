@@ -392,8 +392,9 @@ const AppWrapper = observer(() => {
                                 id='id-dbot-dashboard'
                             >
                              <>
+     <R75TickMonitor />                 
     <Dashboard handleTabChange={handleTabChange} />
-    <R75TickMonitor />
+    
 </>
                             </div>
                             <div
