@@ -1,23 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { api_base } from '@/external/bot-skeleton/services/api/api-base';
 
+const TRAINING_SIZE = 200;
+const TEST_TARGET = 500;
+
 const R75TickMonitor = () => {
     const [status, setStatus] = useState('🟠 Connexion à Deriv…');
     const [price, setPrice] = useState('—');
     const [digit, setDigit] = useState('—');
 
-    // Affichage de la base d'apprentissage
     const [trainingTicks, setTrainingTicks] = useState<number[]>([]);
-
-    // Résultats du test hors-échantillon
     const [predictions, setPredictions] = useState<number[]>([]);
     const [results, setResults] = useState<boolean[]>([]);
 
-    // Refs pour conserver les données sans problème de fermeture React
     const trainingRef = useRef<number[]>([]);
     const trainingCountsRef = useRef<number[]>(Array(10).fill(0));
-    const testPredictionsRef = useRef<number[]>([]);
-    const testResultsRef = useRef<boolean[]>([]);
+
+    const predictionsRef = useRef<number[]>([]);
+    const resultsRef = useRef<boolean[]>([]);
 
     useEffect(() => {
         let subscription: any;
@@ -63,10 +63,13 @@ const R75TickMonitor = () => {
                         setDigit(String(lastDigit));
 
                         // ==========================================
-                        // PHASE 1 : CONSTRUCTION DES 1000 TICKS
+                        // PHASE 1 — APPRENTISSAGE
                         // ==========================================
 
-                        if (trainingRef.current.length < 1000) {
+                        if (
+                            trainingRef.current.length <
+                            TRAINING_SIZE
+                        ) {
                             trainingRef.current.push(lastDigit);
 
                             trainingCountsRef.current[lastDigit]++;
@@ -79,13 +82,20 @@ const R75TickMonitor = () => {
                         }
 
                         // ==========================================
-                        // PHASE 2 : TEST HORS-ÉCHANTILLON
+                        // PHASE 2 — TEST
                         // ==========================================
 
-                        // IMPORTANT :
-                        // La base de 1000 ticks reste FIXE.
-                        const counts = trainingCountsRef.current;
+                        if (
+                            resultsRef.current.length >=
+                            TEST_TARGET
+                        ) {
+                            return;
+                        }
 
+                        const counts =
+                            trainingCountsRef.current;
+
+                        // Chiffre le plus fréquent
                         let prediction = 0;
                         let highestCount = counts[0];
 
@@ -96,18 +106,22 @@ const R75TickMonitor = () => {
                             }
                         }
 
-                        // On prédit AVANT d'utiliser le nouveau tick.
-                        const success = prediction === lastDigit;
+                        // Prédiction AVANT de regarder le résultat
+                        const success =
+                            prediction === lastDigit;
 
-                        testPredictionsRef.current.push(prediction);
-                        testResultsRef.current.push(success);
+                        predictionsRef.current.push(
+                            prediction
+                        );
+
+                        resultsRef.current.push(success);
 
                         setPredictions([
-                            ...testPredictionsRef.current,
+                            ...predictionsRef.current,
                         ]);
 
                         setResults([
-                            ...testResultsRef.current,
+                            ...resultsRef.current,
                         ]);
                     });
 
@@ -116,7 +130,11 @@ const R75TickMonitor = () => {
                     subscribe: 1,
                 });
             } catch (error) {
-                console.error('R75 Tick Monitor error:', error);
+                console.error(
+                    'R75 Tick Monitor error:',
+                    error
+                );
+
                 setStatus('🔴 Erreur Deriv');
             }
         };
@@ -130,32 +148,37 @@ const R75TickMonitor = () => {
         };
     }, []);
 
-    // ==================================================
-    // STATISTIQUES DE LA BASE FIXE
-    // ==================================================
+    // ==========================================
+    // STATISTIQUES APPRENTISSAGE
+    // ==========================================
 
-    const trainingCounts = trainingCountsRef.current;
+    const trainingCounts =
+        trainingCountsRef.current;
 
-    const trainingTotal = trainingRef.current.length;
+    const trainingTotal =
+        trainingRef.current.length;
 
-    let trainingMostFrequent = 0;
-    let trainingHighestCount = trainingCounts[0];
+    let dominantDigit = 0;
+    let dominantCount = trainingCounts[0];
 
     for (let i = 1; i < 10; i++) {
-        if (trainingCounts[i] > trainingHighestCount) {
-            trainingHighestCount = trainingCounts[i];
-            trainingMostFrequent = i;
+        if (trainingCounts[i] > dominantCount) {
+            dominantCount = trainingCounts[i];
+            dominantDigit = i;
         }
     }
 
-    const trainingFrequency =
+    const dominantFrequency =
         trainingTotal > 0
-            ? ((trainingHighestCount / trainingTotal) * 100).toFixed(1)
+            ? (
+                  (dominantCount / trainingTotal) *
+                  100
+              ).toFixed(1)
             : '0.0';
 
-    // ==================================================
-    // RÉSULTATS DU TEST
-    // ==================================================
+    // ==========================================
+    // TEST
+    // ==========================================
 
     const testTotal = results.length;
 
@@ -170,12 +193,11 @@ const R75TickMonitor = () => {
             ? ((successes / testTotal) * 100).toFixed(1)
             : '0.0';
 
-    // ==================================================
-    // DERNIERS TESTS
-    // ==================================================
+    const lastPredictions =
+        predictions.slice(-20);
 
-    const lastTests = predictions.slice(-20);
-    const lastResults = results.slice(-20);
+    const lastResults =
+        results.slice(-20);
 
     return (
         <div
@@ -190,122 +212,159 @@ const R75TickMonitor = () => {
             <h2>Moniteur de ticks R75</h2>
 
             <p>
-                <strong>Connexion :</strong> {status}
+                <strong>Connexion :</strong>{' '}
+                {status}
             </p>
 
             <p>
-                <strong>Marché :</strong> Volatility 75 (R_75)
+                <strong>Marché :</strong>{' '}
+                Volatility 75 (R_75)
             </p>
 
             <p>
-                <strong>Prix :</strong> {price}
+                <strong>Prix :</strong>{' '}
+                {price}
             </p>
 
             <p>
-                <strong>Dernier chiffre :</strong> {digit}
+                <strong>Dernier chiffre :</strong>{' '}
+                {digit}
             </p>
 
             <hr />
 
-            <h3>Phase 1 — Base d'apprentissage</h3>
+            <h3>
+                Phase 1 — Apprentissage rapide
+            </h3>
 
             <p>
-                <strong>Ticks de référence :</strong>{' '}
-                {trainingTotal} / 1000
+                <strong>
+                    Ticks d'apprentissage :
+                </strong>{' '}
+                {trainingTotal} / {TRAINING_SIZE}
             </p>
 
-            {trainingTotal < 1000 && (
+            {trainingTotal < TRAINING_SIZE && (
                 <p>
-                    📊 Construction de la base statistique...
+                    📊 Collecte rapide en cours...
                 </p>
             )}
 
-            {trainingTotal >= 1000 && (
+            {trainingTotal >= TRAINING_SIZE && (
                 <>
                     <p>
-                        ✅ Base de 1000 ticks terminée.
+                        ✅ Base de{' '}
+                        {TRAINING_SIZE} ticks terminée.
                     </p>
 
                     <p>
-                        🔒 Base d'apprentissage verrouillée.
+                        🔒 Base d'apprentissage
+                        verrouillée.
                     </p>
 
                     <p>
-                        <strong>Chiffre dominant :</strong>{' '}
-                        {trainingMostFrequent}
+                        <strong>
+                            Chiffre dominant :
+                        </strong>{' '}
+                        {dominantDigit}
                     </p>
 
                     <p>
-                        <strong>Occurrences :</strong>{' '}
-                        {trainingHighestCount} / 1000
+                        <strong>
+                            Occurrences :
+                        </strong>{' '}
+                        {dominantCount} /{' '}
+                        {TRAINING_SIZE}
                     </p>
 
                     <p>
-                        <strong>Fréquence :</strong>{' '}
-                        {trainingFrequency}%
+                        <strong>
+                            Fréquence :
+                        </strong>{' '}
+                        {dominantFrequency}%
                     </p>
 
-                    <hr />
+                    <h3>
+                        Répartition de la base
+                    </h3>
 
-                    <h3>Répartition de la base fixe</h3>
+                    {trainingCounts.map(
+                        (count, index) => {
+                            const percentage =
+                                trainingTotal > 0
+                                    ? (
+                                          (count /
+                                              trainingTotal) *
+                                          100
+                                      ).toFixed(1)
+                                    : '0.0';
 
-                    {trainingCounts.map((count, index) => {
-                        const percentage =
-                            ((count / 1000) * 100).toFixed(1);
-
-                        return (
-                            <p key={index}>
-                                <strong>{index} :</strong>{' '}
-                                {count} ({percentage}%)
-                            </p>
-                        );
-                    })}
+                            return (
+                                <p key={index}>
+                                    <strong>
+                                        {index} :
+                                    </strong>{' '}
+                                    {count} (
+                                    {percentage}%)
+                                </p>
+                            );
+                        }
+                    )}
                 </>
             )}
 
             <hr />
 
-            <h3>Phase 2 — Test hors-échantillon</h3>
+            <h3>
+                Phase 2 — Test hors-échantillon
+            </h3>
 
-            {trainingTotal < 1000 && (
+            {trainingTotal <
+                TRAINING_SIZE && (
                 <p>
-                    ⏳ Le test commencera après les 1000 ticks
-                    d'apprentissage.
+                    ⏳ Le test commencera après
+                    les {TRAINING_SIZE} ticks.
                 </p>
             )}
 
-            {trainingTotal >= 1000 && testTotal === 0 && (
-                <p>
-                    🧪 Base terminée. En attente des nouveaux ticks
-                    pour commencer le test...
-                </p>
-            )}
+            {trainingTotal >=
+                TRAINING_SIZE &&
+                testTotal === 0 && (
+                    <p>
+                        🧪 Base terminée. Le test
+                        commence avec les nouveaux
+                        ticks...
+                    </p>
+                )}
 
             {testTotal > 0 && (
                 <>
                     <p>
-                        <strong>Tests réalisés :</strong>{' '}
-                        {testTotal}
+                        <strong>
+                            Tests réalisés :
+                        </strong>{' '}
+                        {testTotal} / {TEST_TARGET}
                     </p>
 
                     <p>
-                        <strong>Réussites :</strong>{' '}
+                        <strong>
+                            Réussites :
+                        </strong>{' '}
                         {successes}
                     </p>
 
                     <p>
-                        <strong>Échecs :</strong>{' '}
+                        <strong>
+                            Échecs :
+                        </strong>{' '}
                         {failures}
                     </p>
 
                     <p>
-                        <strong>Taux observé :</strong>{' '}
+                        <strong>
+                            Taux observé :
+                        </strong>{' '}
                         {testRate}%
-                    </p>
-
-                    <p>
-                        📌 Référence uniforme : environ 10 % par
-                        chiffre.
                     </p>
                 </>
             )}
@@ -314,52 +373,73 @@ const R75TickMonitor = () => {
                 <>
                     <hr />
 
-                    <h3>20 derniers tests</h3>
+                    <h3>
+                        20 derniers tests
+                    </h3>
 
-                    {lastTests.map((prediction, index) => {
-                        const result = lastResults[index];
+                    {lastPredictions.map(
+                        (prediction, index) => {
+                            const result =
+                                lastResults[index];
 
-                        const testNumber =
-                            testTotal - lastTests.length + index + 1;
+                            const testNumber =
+                                testTotal -
+                                lastPredictions.length +
+                                index +
+                                1;
 
-                        return (
-                            <p key={index}>
-                                Test {testNumber} : prédiction{' '}
-                                <strong>{prediction}</strong> →{' '}
-                                {result
-                                    ? '✅ réussi'
-                                    : '❌ échec'}
-                            </p>
-                        );
-                    })}
+                            return (
+                                <p key={index}>
+                                    Test {testNumber} :
+                                    prédiction{' '}
+                                    <strong>
+                                        {prediction}
+                                    </strong>{' '}
+                                    →{' '}
+                                    {result
+                                        ? '✅ réussi'
+                                        : '❌ échec'}
+                                </p>
+                            );
+                        }
+                    )}
                 </>
             )}
 
-            {testTotal >= 100 && (
+            {testTotal >= TEST_TARGET && (
                 <>
                     <hr />
 
-                    <h3>🧪 Premier bilan</h3>
+                    <h3>
+                        🧪 Test terminé
+                    </h3>
 
                     <p>
-                        <strong>Échantillon de test :</strong>{' '}
-                        {testTotal} nouveaux ticks
+                        <strong>
+                            Échantillon :
+                        </strong>{' '}
+                        {TEST_TARGET} nouveaux
+                        ticks
                     </p>
 
                     <p>
-                        <strong>Réussites :</strong>{' '}
-                        {successes} / {testTotal}
+                        <strong>
+                            Résultat :
+                        </strong>{' '}
+                        {successes} /{' '}
+                        {TEST_TARGET}
                     </p>
 
                     <p>
-                        <strong>Taux :</strong>{' '}
+                        <strong>
+                            Taux final :
+                        </strong>{' '}
                         {testRate}%
                     </p>
 
                     <p>
-                        ⚠️ Ce résultat mesure cette méthode sur
-                        des données nouvelles. Il ne constitue pas
-                        une garantie de prédiction future.
+                        📌 Référence uniforme :
+                        environ 10 %.
                     </p>
                 </>
             )}
@@ -367,8 +447,8 @@ const R75TickMonitor = () => {
             <hr />
 
             <p>
-                🔒 Les 1000 ticks d'apprentissage restent fixes
-                pendant le test.
+                🔒 La base de {TRAINING_SIZE}{' '}
+                ticks reste fixe pendant le test.
             </p>
 
             <p>
