@@ -5,6 +5,8 @@ const R75TickMonitor = () => {
     const [status, setStatus] = useState('🟠 Connexion à Deriv…');
     const [price, setPrice] = useState('—');
     const [digit, setDigit] = useState('—');
+
+    // Historique complet jusqu'à 1000 ticks
     const [digits, setDigits] = useState<number[]>([]);
 
     useEffect(() => {
@@ -19,35 +21,49 @@ const R75TickMonitor = () => {
 
                 setStatus('🟢 Connecté à Deriv');
 
-                subscription = api_base.api.onMessage().subscribe(({ data }: any) => {
-                    if (data?.msg_type !== 'tick') return;
+                subscription = api_base.api
+                    .onMessage()
+                    .subscribe(({ data }: any) => {
+                        if (data?.msg_type !== 'tick') return;
 
-                    const tick = data.tick;
+                        const tick = data.tick;
 
-                    if (!tick || tick.symbol !== 'R_75') return;
+                        if (!tick || tick.symbol !== 'R_75') return;
 
-                    const quote = Number(tick.quote);
+                        const quote = Number(tick.quote);
 
-                    if (!Number.isFinite(quote)) return;
+                        if (!Number.isFinite(quote)) return;
 
-                    const pipSize = Number(tick.pip_size ?? 4);
-                    const formattedPrice = quote.toFixed(pipSize);
+                        const pipSize = Number(tick.pip_size ?? 4);
 
-                    const lastDigit = Number(formattedPrice.replace('.', '').slice(-1));
+                        const formattedPrice = quote.toFixed(pipSize);
 
-                    setPrice(formattedPrice);
-                    setDigit(String(lastDigit));
+                        const lastDigit = Number(
+                            formattedPrice.replace('.', '').slice(-1)
+                        );
 
-                    setDigits(prev => {
-                        const next = [...prev, lastDigit];
-
-                        if (next.length > 100) {
-                            next.shift();
+                        if (
+                            !Number.isInteger(lastDigit) ||
+                            lastDigit < 0 ||
+                            lastDigit > 9
+                        ) {
+                            return;
                         }
 
-                        return next;
+                        setPrice(formattedPrice);
+                        setDigit(String(lastDigit));
+
+                        setDigits(prev => {
+                            const next = [...prev, lastDigit];
+
+                            // Maximum 1000 ticks conservés
+                            if (next.length > 1000) {
+                                next.shift();
+                            }
+
+                            return next;
+                        });
                     });
-                });
 
                 api_base.api.send({
                     ticks: 'R_75',
@@ -68,21 +84,53 @@ const R75TickMonitor = () => {
         };
     }, []);
 
-    const counts = Array(10).fill(0);
+    // --------------------------------------------------
+    // STATISTIQUES SUR LES 1000 TICKS
+    // --------------------------------------------------
+
+    const counts1000 = Array(10).fill(0);
 
     digits.forEach(value => {
         if (value >= 0 && value <= 9) {
-            counts[value]++;
+            counts1000[value]++;
         }
     });
 
-    const maxCount = Math.max(...counts);
+    // --------------------------------------------------
+    // STATISTIQUES SUR LES 100 DERNIERS TICKS
+    // --------------------------------------------------
 
-    const mostFrequentDigit = counts.indexOf(maxCount);
+    const recentDigits = digits.slice(-100);
 
-    const frequency =
+    const counts100 = Array(10).fill(0);
+
+    recentDigits.forEach(value => {
+        if (value >= 0 && value <= 9) {
+            counts100[value]++;
+        }
+    });
+
+    // Chiffre le plus fréquent sur les 100 derniers ticks
+    const maxCount100 = Math.max(...counts100);
+
+    const mostFrequent100 = counts100.indexOf(maxCount100);
+
+    const frequency100 =
+        recentDigits.length > 0
+            ? ((maxCount100 / recentDigits.length) * 100).toFixed(1)
+            : '0.0';
+
+    // --------------------------------------------------
+    // CHIFFRE LE PLUS FRÉQUENT SUR 1000 TICKS
+    // --------------------------------------------------
+
+    const maxCount1000 = Math.max(...counts1000);
+
+    const mostFrequent1000 = counts1000.indexOf(maxCount1000);
+
+    const frequency1000 =
         digits.length > 0
-            ? ((maxCount / digits.length) * 100).toFixed(1)
+            ? ((maxCount1000 / digits.length) * 100).toFixed(1)
             : '0.0';
 
     return (
@@ -95,7 +143,7 @@ const R75TickMonitor = () => {
                 borderRadius: '10px',
             }}
         >
-            <h2>Moniteur de tiques R75</h2>
+            <h2>Moniteur de ticks R75</h2>
 
             <p>
                 <strong>Connexion :</strong> {status}
@@ -113,52 +161,116 @@ const R75TickMonitor = () => {
                 <strong>Dernier chiffre :</strong> {digit}
             </p>
 
+            <hr />
+
+            <h3>Collecte des données</h3>
+
             <p>
-                <strong>Ticks analysés :</strong> {digits.length} / 100
+                <strong>Ticks collectés :</strong>{' '}
+                {digits.length} / 1000
             </p>
 
-            <h3>Statistiques des chiffres</h3>
+            <p>
+                {digits.length < 1000
+                    ? '📊 Collecte des données en cours...'
+                    : '✅ 1000 ticks disponibles pour analyse'}
+            </p>
 
-            <div>
-                {counts.map((count, index) => (
-                    <p key={index}>
-                        <strong>{index} :</strong> {count}
+            <hr />
+
+            <h3>Statistiques — 100 derniers ticks</h3>
+
+            {counts100.map((count, index) => {
+                const percentage =
+                    recentDigits.length > 0
+                        ? ((count / recentDigits.length) * 100).toFixed(1)
+                        : '0.0';
+
+                return (
+                    <p key={`recent-${index}`}>
+                        <strong>{index} :</strong> {count} (
+                        {percentage}%)
                     </p>
-                ))}
-            </div>
+                );
+            })}
 
-            {digits.length >= 100 && (
+            {recentDigits.length >= 100 && (
+                <>
+                    <p>
+                        <strong>
+                            Plus fréquent :
+                        </strong>{' '}
+                        {mostFrequent100}
+                    </p>
+
+                    <p>
+                        <strong>
+                            Occurrences :
+                        </strong>{' '}
+                        {maxCount100} / 100
+                    </p>
+
+                    <p>
+                        <strong>
+                            Fréquence :
+                        </strong>{' '}
+                        {frequency100}%
+                    </p>
+                </>
+            )}
+
+            <hr />
+
+            <h3>Statistiques — historique jusqu'à 1000 ticks</h3>
+
+            {counts1000.map((count, index) => {
+                const percentage =
+                    digits.length > 0
+                        ? ((count / digits.length) * 100).toFixed(1)
+                        : '0.0';
+
+                return (
+                    <p key={`all-${index}`}>
+                        <strong>{index} :</strong> {count} (
+                        {percentage}%)
+                    </p>
+                );
+            })}
+
+            {digits.length >= 1000 && (
                 <div>
-                    <h3>Analyse statistique</h3>
-
                     <p>
-                        <strong>Chiffre le plus fréquent :</strong>{' '}
-                        {mostFrequentDigit}
+                        <strong>
+                            Plus fréquent sur 1000 :
+                        </strong>{' '}
+                        {mostFrequent1000}
                     </p>
 
                     <p>
-                        <strong>Occurrences :</strong> {maxCount} / 100
+                        <strong>
+                            Occurrences :
+                        </strong>{' '}
+                        {maxCount1000} / 1000
                     </p>
 
                     <p>
-                        <strong>Fréquence observée :</strong> {frequency}%
-                    </p>
-
-                    <p>
-                        ⚠️ Signal statistique expérimental uniquement.
-                    </p>
-
-                    <p>
-                        ❌ Aucun trade automatique.
+                        <strong>
+                            Fréquence :
+                        </strong>{' '}
+                        {frequency1000}%
                     </p>
                 </div>
             )}
 
-            {digits.length < 100 && (
-                <p>
-                    📊 Collecte des données en cours...
-                </p>
-            )}
+            <hr />
+
+            <p>
+                ⚠️ Analyse statistique expérimentale uniquement.
+            </p>
+
+            <p>
+                ❌ Aucun trade automatique.
+            </p>
         </div>
     );
 };
