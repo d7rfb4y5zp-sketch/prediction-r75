@@ -6,11 +6,12 @@ const R75TickMonitor = () => {
     const [price, setPrice] = useState('—');
     const [digit, setDigit] = useState('—');
     const [ticks, setTicks] = useState(0);
+    const [digits, setDigits] = useState<number[]>([]);
 
     useEffect(() => {
         let subscription: any;
 
-        const connect = async () => {
+        const connect = () => {
             try {
                 if (!api_base.api) {
                     setStatus('🔴 API Deriv non disponible');
@@ -30,17 +31,27 @@ const R75TickMonitor = () => {
 
                     if (!Number.isFinite(quote)) return;
 
-                    const formattedPrice = quote.toFixed(
-                        Number(tick.pip_size ?? 4)
-                    );
-
-                    const lastDigit = formattedPrice
-                        .replace('.', '')
-                        .slice(-1);
+                    const pipSize = Number(tick.pip_size ?? 4);
+                    const formattedPrice = quote.toFixed(pipSize);
+                    const lastDigit = Number(formattedPrice.replace('.', '').slice(-1));
 
                     setPrice(formattedPrice);
-                    setDigit(lastDigit);
-                    setTicks(prev => prev + 1);
+                    setDigit(String(lastDigit));
+
+                    setTicks(prev => {
+                        const next = prev + 1;
+                        return next > 100 ? 100 : next;
+                    });
+
+                    setDigits(prev => {
+                        const next = [...prev, lastDigit];
+
+                        if (next.length > 100) {
+                            next.shift();
+                        }
+
+                        return next;
+                    });
                 });
 
                 api_base.api.send({
@@ -62,9 +73,25 @@ const R75TickMonitor = () => {
         };
     }, []);
 
+    const counts = Array(10).fill(0);
+
+    digits.forEach(value => {
+        if (value >= 0 && value <= 9) {
+            counts[value]++;
+        }
+    });
+
     return (
-        <div>
-            <h2>R75 Tick Monitor</h2>
+        <div
+            style={{
+                padding: '15px',
+                margin: '10px 0',
+                background: '#ffffff',
+                color: '#000000',
+                borderRadius: '10px',
+            }}
+        >
+            <h2>Moniteur de tiques R75</h2>
 
             <p>
                 <strong>Connexion :</strong> {status}
@@ -83,11 +110,27 @@ const R75TickMonitor = () => {
             </p>
 
             <p>
-                <strong>Ticks reçus :</strong> {ticks}
+                <strong>Ticks analysés :</strong> {digits.length} / 100
             </p>
 
+            <h3>Statistiques des chiffres</h3>
+
+            <div>
+                {counts.map((count, index) => (
+                    <p key={index}>
+                        <strong>{index} :</strong> {count}
+                    </p>
+                ))}
+            </div>
+
+            {digits.length >= 100 && (
+                <p>
+                    ✅ Analyse de 100 ticks terminée.
+                </p>
+            )}
+
             <p>
-                ⚠️ Test uniquement — aucun trade automatique.
+                ⚠️ Analyse uniquement — aucun trade automatique.
             </p>
         </div>
     );
