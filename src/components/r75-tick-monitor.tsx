@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { api_base } from '../external/bot-skeleton';
+import TicksService from '../external/bot-skeleton/services/api/ticks_service';
 
 const MARKET_SYMBOL = 'frxEURUSD';
 const MARKET_NAME = 'EUR/USD';
@@ -10,30 +10,10 @@ const BLOCK_SIZE = 100;
 
 type Direction = 'UP' | 'DOWN' | 'FLAT';
 
-type Stats = {
-    tests: number;
-    wins: number;
-    losses: number;
-    skipped: number;
-    virtualProfit: number;
-};
-
 type Matrix = {
-    UP: {
-        UP: number;
-        DOWN: number;
-        FLAT: number;
-    };
-    DOWN: {
-        UP: number;
-        DOWN: number;
-        FLAT: number;
-    };
-    FLAT: {
-        UP: number;
-        DOWN: number;
-        FLAT: number;
-    };
+    UP: Record<Direction, number>;
+    DOWN: Record<Direction, number>;
+    FLAT: Record<Direction, number>;
 };
 
 const createMatrix = (): Matrix => ({
@@ -42,950 +22,547 @@ const createMatrix = (): Matrix => ({
     FLAT: { UP: 0, DOWN: 0, FLAT: 0 },
 });
 
-const getDirection = (
-    previous: number,
-    current: number
-): Direction => {
+const getDirection = (previous: number, current: number): Direction => {
     if (current > previous) return 'UP';
     if (current < previous) return 'DOWN';
     return 'FLAT';
 };
 
-const directionLabel = (direction: Direction) => {
-    if (direction === 'UP') return '🟢 HAUSSE';
-    if (direction === 'DOWN') return '🔴 BAISSE';
-    return '⚪ STABLE';
+const getPrediction = (matrix: Matrix, direction: Direction): Direction => {
+    const row = matrix[direction];
+
+    const values = [
+        { direction: 'UP' as Direction, value: row.UP },
+        { direction: 'DOWN' as Direction, value: row.DOWN },
+        { direction: 'FLAT' as Direction, value: row.FLAT },
+    ];
+
+    values.sort((a, b) => b.value - a.value);
+
+    return values[0].direction;
+};
+
+const getTotal = (matrix: Matrix, direction: Direction) =>
+    matrix[direction].UP +
+    matrix[direction].DOWN +
+    matrix[direction].FLAT;
+
+const getFrequency = (matrix: Matrix, direction: Direction, target: Direction) => {
+    const total = getTotal(matrix, direction);
+
+    if (!total) return 0;
+
+    return (matrix[direction][target] / total) * 100;
 };
 
 export default function R75TickMonitor() {
     const [connected, setConnected] = useState(false);
     const [price, setPrice] = useState<number | null>(null);
-    const [error, setError] = useState<string | null>(null);
-
     const [historyCount, setHistoryCount] = useState(0);
-
-    const [phase, setPhase] = useState<
-        'learning' | 'testing' | 'done'
-    >('learning');
 
     const [currentDirection, setCurrentDirection] =
         useState<Direction>('FLAT');
 
     const [prediction, setPrediction] =
-        useState<Direction | null>(null);
+        useState<Direction>('FLAT');
 
-    const [predictionStrength, setPredictionStrength] =
-        useState(0);
+    const [predictionFrequency, setPredictionFrequency] = useState(0);
 
-    const [stats, setStats] = useState<Stats>({
-        tests: 0,
-        wins: 0,
-        losses: 0,
-        skipped: 0,
-        virtualProfit: 0,
-    });
+    const [tests, setTests] = useState(0);
+    const [successes, setSuccesses] = useState(0);
+    const [failures, setFailures] = useState(0);
 
     const [blocks, setBlocks] = useState<number[]>([]);
-    const [currentBlockWins, setCurrentBlockWins] =
-        useState(0);
+    const [currentBlockSuccess, setCurrentBlockSuccess] = useState(0);
+    const [currentBlockTests, setCurrentBlockTests] = useState(0);
 
-    const [matrix, setMatrix] =
-        useState<Matrix>(createMatrix());
+    const [matrix, setMatrix] = useState<Matrix>(createMatrix());
 
-    const previousPriceRef =
-        useRef<number | null>(null);
+    const [error, setError] = useState('');
 
-    const historyRef =
-        useRef<Direction[]>([]);
+    const serviceRef = useRef<TicksService | null>(null);
+    const monitorKeyRef = useRef<string | null>(null);
 
-    const matrixRef =
-        useRef<Matrix>(createMatrix());
+    const initializedRef = useRef(false);
+    const lastEpochRef = useRef<number | null>(null);
 
-    const predictionRef =
-        useRef<Direction | null>(null);
+    const previousDirectionRef = useRef<Direction>('FLAT');
+    const predictionRef = useRef<Direction>('FLAT');
 
     const testsRef = useRef(0);
-    const winsRef = useRef(0);
-    const lossesRef = useRef(0);
-    const skippedRef = useRef(0);
+    const successesRef = useRef(0);
 
-    const blockWinsRef = useRef(0);
+    const blockSuccessRef = useRef(0);
     const blockTestsRef = useRef(0);
 
-    const virtualProfitRef = useRef(0);
-
-    const calculatePrediction = (
-        current: Direction
-    ) => {
-        const row = matrixRef.current[current];
-
-        const up = row.UP;
-        const down = row.DOWN;
-        const flat = row.FLAT;
-
-        const total = up + down + flat;
-
-        if (total === 0) {
-            return {
-                direction: 'FLAT' as Direction,
-                strength: 0,
-            };
-        }
-
-        let direction: Direction = 'FLAT';
-        let highest = flat;
-
-        if (up > highest) {
-            direction = 'UP';
-            highest = up;
-        }
-
-        if (down > highest) {
-            direction = 'DOWN';
-            highest = down;
-        }
-
-        return {
-            direction,
-            strength: (highest / total) * 100,
-        };
-    };
+    const matrixRef = useRef<Matrix>(createMatrix());
 
     useEffect(() => {
         let active = true;
 
-        const handleMessage = (message: any) => {
-            if (!active) return;
-
-            /*
-             * Erreur Deriv
-             */
-            if (message?.error) {
-                setError(
-                    message.error.message ||
-                        'Erreur Deriv'
-                );
-                return;
-            }
-
-            /*
-             * Nous traitons uniquement
-             * les messages tick.
-             */
-            if (message?.msg_type !== 'tick') {
-                return;
-            }
-
-            const tick = message?.tick;
-
-            if (!tick) return;
-
-            /*
-             * Sécurité symbole.
-             */
-            if (
-                tick.symbol !== MARKET_SYMBOL
-            ) {
-                return;
-            }
-
-            const currentPrice =
-                Number(tick.quote);
-
-            if (
-                !Number.isFinite(
-                    currentPrice
-                )
-            ) {
-                return;
-            }
-
-            setConnected(true);
-            setError(null);
-            setPrice(currentPrice);
-
-            /*
-             * Premier prix reçu.
-             */
-            if (
-                previousPriceRef.current === null
-            ) {
-                previousPriceRef.current =
-                    currentPrice;
-
-                return;
-            }
-
-            const previousPrice =
-                previousPriceRef.current;
-
-            const direction =
-                getDirection(
-                    previousPrice,
-                    currentPrice
-                );
-
-            previousPriceRef.current =
-                currentPrice;
-
-            setCurrentDirection(direction);
-
-            /*
-             * =================================================
-             * PHASE 1 : APPRENTISSAGE
-             * =================================================
-             */
-
-            if (
-                historyRef.current.length <
-                HISTORY_SIZE
-            ) {
-                const history =
-                    historyRef.current;
-
-                history.push(direction);
+        const start = async () => {
+            try {
+                setError('');
+                setConnected(false);
 
                 /*
-                 * Construire la matrice.
+                 * L'application peut avoir besoin de quelques instants
+                 * pour initialiser api_base.
                  */
-                if (history.length >= 2) {
-                    const previousDirection =
-                        history[
-                            history.length - 2
-                        ];
+                let attempts = 0;
 
-                    const currentDirection =
-                        history[
-                            history.length - 1
-                        ];
-
-                    matrixRef.current[
-                        previousDirection
-                    ][currentDirection] += 1;
-
-                    setMatrix({
-                        ...matrixRef.current,
-                    });
-                }
-
-                setHistoryCount(
-                    history.length
-                );
-
-                /*
-                 * 500 ticks atteints.
-                 */
-                if (
-                    history.length ===
-                    HISTORY_SIZE
-                ) {
-                    setPhase('testing');
-
-                    /*
-                     * Première prédiction.
-                     */
-                    const firstPrediction =
-                        calculatePrediction(
-                            direction
-                        );
-
-                    predictionRef.current =
-                        firstPrediction.direction;
-
-                    setPrediction(
-                        firstPrediction.direction
+                while (active && attempts < 40) {
+                    const { api_base } = await import(
+                        '../external/bot-skeleton/services/api/api-base'
                     );
 
-                    setPredictionStrength(
-                        firstPrediction.strength
-                    );
-                }
-
-                return;
-            }
-
-            /*
-             * =================================================
-             * PHASE 2 : PAPER TRADING
-             * =================================================
-             */
-
-            /*
-             * Vérifier la prédiction
-             * du tick précédent.
-             */
-            if (
-                predictionRef.current !== null &&
-                testsRef.current <
-                    PAPER_TEST_LIMIT
-            ) {
-                const predicted =
-                    predictionRef.current;
-
-                /*
-                 * STABLE = pas de trade.
-                 */
-                if (
-                    predicted === 'FLAT'
-                ) {
-                    skippedRef.current += 1;
-                } else {
-                    testsRef.current += 1;
-                    blockTestsRef.current += 1;
-
-                    if (
-                        predicted ===
-                        direction
-                    ) {
-                        winsRef.current += 1;
-                        blockWinsRef.current += 1;
-
-                        virtualProfitRef.current += 1;
-                    } else {
-                        lossesRef.current += 1;
-
-                        virtualProfitRef.current -= 1;
+                    if (api_base?.api) {
+                        break;
                     }
 
-                    /*
-                     * Fin du bloc.
-                     */
-                    if (
-                        blockTestsRef.current ===
-                        BLOCK_SIZE
-                    ) {
-                        const rate =
-                            (blockWinsRef.current /
-                                BLOCK_SIZE) *
-                            100;
+                    attempts += 1;
 
-                        setBlocks(
-                            previous => [
-                                ...previous,
-                                rate,
-                            ]
-                        );
-
-                        blockTestsRef.current = 0;
-                        blockWinsRef.current = 0;
-                    }
-
-                    setCurrentBlockWins(
-                        blockWinsRef.current
+                    await new Promise(resolve =>
+                        setTimeout(resolve, 250)
                     );
                 }
 
-                setStats({
-                    tests: testsRef.current,
-                    wins: winsRef.current,
-                    losses: lossesRef.current,
-                    skipped:
-                        skippedRef.current,
-                    virtualProfit:
-                        virtualProfitRef.current,
+                if (!active) return;
+
+                const { api_base } = await import(
+                    '../external/bot-skeleton/services/api/api-base'
+                );
+
+                if (!api_base?.api) {
+                    setError('API Deriv non prête après attente.');
+                    return;
+                }
+
+                const service = new TicksService();
+
+                serviceRef.current = service;
+
+                const key = await service.monitor({
+                    symbol: MARKET_SYMBOL,
+                    callback: (ticks: Array<{ epoch: number; quote: number }>) => {
+                        if (!active || !ticks?.length) return;
+
+                        const validTicks = ticks.filter(
+                            tick =>
+                                Number.isFinite(tick?.quote) &&
+                                Number.isFinite(tick?.epoch)
+                        );
+
+                        if (!validTicks.length) return;
+
+                        const lastTick = validTicks[validTicks.length - 1];
+
+                        setConnected(true);
+                        setPrice(lastTick.quote);
+
+                        /*
+                         * =========================
+                         * PHASE 1 : APPRENTISSAGE
+                         * =========================
+                         */
+                        if (!initializedRef.current) {
+                            if (validTicks.length < HISTORY_SIZE) {
+                                setHistoryCount(validTicks.length);
+                                return;
+                            }
+
+                            const history = validTicks.slice(-HISTORY_SIZE);
+
+                            const initialMatrix = createMatrix();
+
+                            let previousDirection: Direction = 'FLAT';
+
+                            for (let i = 1; i < history.length; i += 1) {
+                                const direction = getDirection(
+                                    history[i - 1].quote,
+                                    history[i].quote
+                                );
+
+                                if (i > 1) {
+                                    initialMatrix[previousDirection][direction] += 1;
+                                }
+
+                                previousDirection = direction;
+                            }
+
+                            matrixRef.current = initialMatrix;
+                            setMatrix(initialMatrix);
+
+                            const lastDirection = getDirection(
+                                history[history.length - 2].quote,
+                                history[history.length - 1].quote
+                            );
+
+                            previousDirectionRef.current = lastDirection;
+                            setCurrentDirection(lastDirection);
+
+                            const nextPrediction = getPrediction(
+                                initialMatrix,
+                                lastDirection
+                            );
+
+                            predictionRef.current = nextPrediction;
+                            setPrediction(nextPrediction);
+
+                            setPredictionFrequency(
+                                getFrequency(
+                                    initialMatrix,
+                                    lastDirection,
+                                    nextPrediction
+                                )
+                            );
+
+                            lastEpochRef.current = lastTick.epoch;
+                            initializedRef.current = true;
+
+                            setHistoryCount(HISTORY_SIZE);
+
+                            return;
+                        }
+
+                        /*
+                         * Évite de traiter deux fois le même tick.
+                         */
+                        if (lastEpochRef.current === lastTick.epoch) {
+                            return;
+                        }
+
+                        lastEpochRef.current = lastTick.epoch;
+
+                        if (testsRef.current >= PAPER_TEST_LIMIT) {
+                            return;
+                        }
+
+                        const previousTick =
+                            validTicks.length >= 2
+                                ? validTicks[validTicks.length - 2]
+                                : null;
+
+                        if (!previousTick) return;
+
+                        const actualDirection = getDirection(
+                            previousTick.quote,
+                            lastTick.quote
+                        );
+
+                        const oldPrediction = predictionRef.current;
+                        const oldDirection = previousDirectionRef.current;
+
+                        /*
+                         * =========================
+                         * TEST PAPER
+                         * =========================
+                         */
+                        const testNumber = testsRef.current + 1;
+
+                        let newSuccesses = successesRef.current;
+
+                        if (oldPrediction !== 'FLAT') {
+                            if (oldPrediction === actualDirection) {
+                                newSuccesses += 1;
+                                successesRef.current = newSuccesses;
+                                setSuccesses(newSuccesses);
+
+                                blockSuccessRef.current += 1;
+                                setCurrentBlockSuccess(
+                                    blockSuccessRef.current
+                                );
+                            } else {
+                                setFailures(
+                                    testNumber - newSuccesses
+                                );
+                            }
+
+                            blockTestsRef.current += 1;
+                            setCurrentBlockTests(
+                                blockTestsRef.current
+                            );
+                        }
+
+                        testsRef.current = testNumber;
+                        setTests(testNumber);
+
+                        /*
+                         * =========================
+                         * MATRICE DE TRANSITION
+                         * =========================
+                         */
+                        const updatedMatrix = {
+                            UP: { ...matrixRef.current.UP },
+                            DOWN: { ...matrixRef.current.DOWN },
+                            FLAT: { ...matrixRef.current.FLAT },
+                        };
+
+                        updatedMatrix[oldDirection][actualDirection] += 1;
+
+                        matrixRef.current = updatedMatrix;
+                        setMatrix(updatedMatrix);
+
+                        /*
+                         * Nouveau signal pour le prochain tick.
+                         */
+                        const nextPrediction = getPrediction(
+                            updatedMatrix,
+                            actualDirection
+                        );
+
+                        predictionRef.current = nextPrediction;
+                        previousDirectionRef.current = actualDirection;
+
+                        setCurrentDirection(actualDirection);
+                        setPrediction(nextPrediction);
+
+                        setPredictionFrequency(
+                            getFrequency(
+                                updatedMatrix,
+                                actualDirection,
+                                nextPrediction
+                            )
+                        );
+
+                        /*
+                         * =========================
+                         * BLOC DE 100
+                         * =========================
+                         */
+                        if (blockTestsRef.current >= BLOCK_SIZE) {
+                            setBlocks(prev => [
+                                ...prev,
+                                blockSuccessRef.current,
+                            ]);
+
+                            blockSuccessRef.current = 0;
+                            blockTestsRef.current = 0;
+
+                            setCurrentBlockSuccess(0);
+                            setCurrentBlockTests(0);
+                        }
+                    },
                 });
+
+                monitorKeyRef.current = key;
+                setConnected(true);
+            } catch (e) {
+                console.error('V4.3 connection error:', e);
+
+                if (active) {
+                    setConnected(false);
+                    setError('Erreur de connexion au flux EUR/USD.');
+                }
             }
-
-            /*
-             * Fin du test.
-             */
-            if (
-                testsRef.current >=
-                PAPER_TEST_LIMIT
-            ) {
-                setPhase('done');
-                return;
-            }
-
-            /*
-             * =================================================
-             * MISE À JOUR DE LA MATRICE
-             * =================================================
-             */
-
-            const history =
-                historyRef.current;
-
-            const lastDirection =
-                history[
-                    history.length - 1
-                ];
-
-            if (lastDirection) {
-                matrixRef.current[
-                    lastDirection
-                ][direction] += 1;
-            }
-
-            /*
-             * Historique roulant.
-             */
-            history.push(direction);
-
-            if (
-                history.length >
-                HISTORY_SIZE
-            ) {
-                history.shift();
-            }
-
-            setHistoryCount(
-                history.length
-            );
-
-            setMatrix({
-                ...matrixRef.current,
-            });
-
-            /*
-             * =================================================
-             * NOUVELLE PRÉDICTION
-             * =================================================
-             */
-
-            const nextPrediction =
-                calculatePrediction(
-                    direction
-                );
-
-            predictionRef.current =
-                nextPrediction.direction;
-
-            setPrediction(
-                nextPrediction.direction
-            );
-
-            setPredictionStrength(
-                nextPrediction.strength
-            );
         };
 
-        /*
-         * IMPORTANT :
-         * on écoute d'abord,
-         * puis on demande le flux.
-         */
-        const unsubscribe =
-            api_base.api.onMessage(
-                handleMessage
-            );
-
-        try {
-            /*
-             * Flux direct EUR/USD.
-             *
-             * C'est cette méthode que notre
-             * ancienne V4 utilisait avec succès.
-             */
-            api_base.api.send({
-                ticks: MARKET_SYMBOL,
-                subscribe: 1,
-            });
-        } catch (sendError) {
-            setError(
-                'Impossible de démarrer le flux EUR/USD.'
-            );
-        }
+        start();
 
         return () => {
             active = false;
 
-            if (
-                typeof unsubscribe ===
-                'function'
-            ) {
-                unsubscribe();
+            const service = serviceRef.current;
+            const key = monitorKeyRef.current;
+
+            if (service && key) {
+                service
+                    .stopMonitor({
+                        symbol: MARKET_SYMBOL,
+                        key,
+                    })
+                    .catch(() => {});
             }
+
+            serviceRef.current = null;
+            monitorKeyRef.current = null;
         };
     }, []);
 
-    const winRate =
-        stats.tests > 0
-            ? (stats.wins /
-                  stats.tests) *
-              100
-            : 0;
+    const successRate =
+        tests > 0 ? (successes / tests) * 100 : 0;
 
-    const lossRate =
-        stats.tests > 0
-            ? (stats.losses /
-                  stats.tests) *
-              100
-            : 0;
+    const completedBlocks = blocks.length;
 
     const averageBlock =
         blocks.length > 0
-            ? blocks.reduce(
-                  (sum, value) =>
-                      sum + value,
-                  0
-              ) / blocks.length
+            ? blocks.reduce((sum, value) => sum + value, 0) /
+              blocks.length
             : 0;
 
-    const minimumBlock =
-        blocks.length > 0
-            ? Math.min(...blocks)
-            : 0;
+    const minBlock =
+        blocks.length > 0 ? Math.min(...blocks) : 0;
 
-    const maximumBlock =
-        blocks.length > 0
-            ? Math.max(...blocks)
-            : 0;
-
-    const currentRow =
-        matrix[currentDirection];
-
-    const rowTotal =
-        currentRow.UP +
-        currentRow.DOWN +
-        currentRow.FLAT;
-
-    const displayPrice =
-        price !== null
-            ? price.toFixed(5)
-            : '—';
+    const maxBlock =
+        blocks.length > 0 ? Math.max(...blocks) : 0;
 
     return (
         <div
             style={{
-                background: '#ffffff',
-                color: '#111111',
-                padding: '20px',
                 margin: '16px',
+                padding: '20px',
                 borderRadius: '12px',
-                fontFamily:
-                    'Arial, sans-serif',
-                lineHeight: 1.45,
+                background: '#111',
+                color: '#fff',
+                fontFamily: 'Arial, sans-serif',
             }}
         >
-            <h2>
-                Moniteur Forex EUR/USD —
-                V4.2 Paper Trader
+            <h2 style={{ marginTop: 0 }}>
+                Moniteur Forex EUR/USD — V4.3 Paper Trader
             </h2>
 
-            <div>
-                <strong>
-                    Connexion :
-                </strong>{' '}
-                {connected ? (
-                    '🟢 Connecté à Deriv — EUR/USD'
-                ) : (
-                    '🟠 Connexion à Deriv…'
-                )}
+            <div
+                style={{
+                    padding: '10px',
+                    borderRadius: '8px',
+                    background: connected ? '#123d22' : '#3d3212',
+                    marginBottom: '15px',
+                }}
+            >
+                {connected
+                    ? '🟢 Connecté à Deriv — EUR/USD'
+                    : '🟠 Connexion à Deriv…'}
             </div>
 
             {error && (
                 <div
                     style={{
-                        marginTop: 8,
-                        padding: 10,
-                        background:
-                            '#ffe5e5',
-                        borderRadius: 8,
-                        color: '#b00000',
+                        padding: '10px',
+                        marginBottom: '15px',
+                        borderRadius: '8px',
+                        background: '#4a1616',
                     }}
                 >
                     ❌ {error}
                 </div>
             )}
 
-            <div>
-                <strong>
-                    Marché :
-                </strong>{' '}
-                {MARKET_NAME}
+            <div style={{ marginBottom: '15px' }}>
+                <strong>Prix :</strong>{' '}
+                {price !== null ? price.toFixed(5) : '—'}
             </div>
 
-            <div>
-                <strong>
-                    Symbole :
-                </strong>{' '}
-                {MARKET_SYMBOL}
-            </div>
-
-            <div>
-                <strong>
-                    Prix :
-                </strong>{' '}
-                {displayPrice}
+            <div style={{ marginBottom: '15px' }}>
+                <strong>Historique :</strong>{' '}
+                {historyCount} / {HISTORY_SIZE}
             </div>
 
             <hr />
 
-            <h3>
-                Phase 1 — Apprentissage
-            </h3>
+            <h3>Analyse</h3>
 
             <div>
-                <strong>
-                    Historique :
-                </strong>{' '}
-                {historyCount} /{' '}
-                {HISTORY_SIZE}
+                <strong>Direction actuelle :</strong>{' '}
+                {currentDirection}
             </div>
 
-            {historyCount >=
-            HISTORY_SIZE ? (
-                <div>
-                    ✅ 500 ticks collectés.
-                </div>
-            ) : (
-                <div>
-                    ⏳ Collecte des ticks en direct…
-                </div>
-            )}
+            <div>
+                <strong>Prédiction :</strong>{' '}
+                {prediction}
+            </div>
+
+            <div>
+                <strong>Fréquence historique :</strong>{' '}
+                {predictionFrequency.toFixed(1)}%
+            </div>
 
             <hr />
 
-            <h3>
-                Analyse des transitions
-            </h3>
-
-            <div>
-                <strong>
-                    Direction actuelle :
-                </strong>{' '}
-                {directionLabel(
-                    currentDirection
-                )}
-            </div>
-
-            <div>
-                <strong>
-                    Prédiction suivante :
-                </strong>{' '}
-                {prediction
-                    ? directionLabel(
-                          prediction
-                      )
-                    : '⏳ —'}
-            </div>
-
-            <div>
-                <strong>
-                    Force du signal :
-                </strong>{' '}
-                {prediction
-                    ? `${predictionStrength.toFixed(
-                          1
-                      )} %`
-                    : '—'}
-            </div>
-
-            <div>
-                <strong>
-                    Observations :
-                </strong>{' '}
-                {rowTotal}
-            </div>
-
-            <h3>
-                Matrice de transitions
-            </h3>
-
-            <div
-                style={{
-                    fontSize: 13,
-                }}
-            >
-                Ligne = direction actuelle
-                → colonne = direction suivante.
-            </div>
+            <h3>Matrice de transition</h3>
 
             <table
                 style={{
                     width: '100%',
-                    borderCollapse:
-                        'collapse',
-                    marginTop: 10,
+                    borderCollapse: 'collapse',
+                    textAlign: 'center',
                 }}
             >
                 <thead>
                     <tr>
-                        <th
-                            style={{
-                                border:
-                                    '1px solid #ccc',
-                                padding: 8,
-                            }}
-                        >
-                            →
-                        </th>
-                        <th
-                            style={{
-                                border:
-                                    '1px solid #ccc',
-                                padding: 8,
-                            }}
-                        >
-                            HAUSSE
-                        </th>
-                        <th
-                            style={{
-                                border:
-                                    '1px solid #ccc',
-                                padding: 8,
-                            }}
-                        >
-                            BAISSE
-                        </th>
-                        <th
-                            style={{
-                                border:
-                                    '1px solid #ccc',
-                                padding: 8,
-                            }}
-                        >
-                            STABLE
-                        </th>
+                        <th>De / Vers</th>
+                        <th>UP</th>
+                        <th>DOWN</th>
+                        <th>FLAT</th>
                     </tr>
                 </thead>
 
                 <tbody>
                     <tr>
-                        <td style={{
-                            border: '1px solid #ccc',
-                            padding: 8,
-                        }}>
-                            🟢 HAUSSE
-                        </td>
-
-                        <td style={{
-                            border: '1px solid #ccc',
-                            padding: 8,
-                            textAlign: 'center',
-                        }}>
-                            {matrix.UP.UP}
-                        </td>
-
-                        <td style={{
-                            border: '1px solid #ccc',
-                            padding: 8,
-                            textAlign: 'center',
-                        }}>
-                            {matrix.UP.DOWN}
-                        </td>
-
-                        <td style={{
-                            border: '1px solid #ccc',
-                            padding: 8,
-                            textAlign: 'center',
-                        }}>
-                            {matrix.UP.FLAT}
-                        </td>
+                        <td>UP</td>
+                        <td>{matrix.UP.UP}</td>
+                        <td>{matrix.UP.DOWN}</td>
+                        <td>{matrix.UP.FLAT}</td>
                     </tr>
 
                     <tr>
-                        <td style={{
-                            border: '1px solid #ccc',
-                            padding: 8,
-                        }}>
-                            🔴 BAISSE
-                        </td>
-
-                        <td style={{
-                            border: '1px solid #ccc',
-                            padding: 8,
-                            textAlign: 'center',
-                        }}>
-                            {matrix.DOWN.UP}
-                        </td>
-
-                        <td style={{
-                            border: '1px solid #ccc',
-                            padding: 8,
-                            textAlign: 'center',
-                        }}>
-                            {matrix.DOWN.DOWN}
-                        </td>
-
-                        <td style={{
-                            border: '1px solid #ccc',
-                            padding: 8,
-                            textAlign: 'center',
-                        }}>
-                            {matrix.DOWN.FLAT}
-                        </td>
+                        <td>DOWN</td>
+                        <td>{matrix.DOWN.UP}</td>
+                        <td>{matrix.DOWN.DOWN}</td>
+                        <td>{matrix.DOWN.FLAT}</td>
                     </tr>
 
                     <tr>
-                        <td style={{
-                            border: '1px solid #ccc',
-                            padding: 8,
-                        }}>
-                            ⚪ STABLE
-                        </td>
-
-                        <td style={{
-                            border: '1px solid #ccc',
-                            padding: 8,
-                            textAlign: 'center',
-                        }}>
-                            {matrix.FLAT.UP}
-                        </td>
-
-                        <td style={{
-                            border: '1px solid #ccc',
-                            padding: 8,
-                            textAlign: 'center',
-                        }}>
-                            {matrix.FLAT.DOWN}
-                        </td>
-
-                        <td style={{
-                            border: '1px solid #ccc',
-                            padding: 8,
-                            textAlign: 'center',
-                        }}>
-                            {matrix.FLAT.FLAT}
-                        </td>
+                        <td>FLAT</td>
+                        <td>{matrix.FLAT.UP}</td>
+                        <td>{matrix.FLAT.DOWN}</td>
+                        <td>{matrix.FLAT.FLAT}</td>
                     </tr>
                 </tbody>
             </table>
 
             <hr />
 
-            <h3>
-                Phase 2 — Paper Trading
-            </h3>
+            <h3>Paper Test</h3>
 
             <div>
-                <strong>
-                    Tests :
-                </strong>{' '}
-                {stats.tests} /{' '}
-                {PAPER_TEST_LIMIT}
+                Tests réalisés : {tests} / {PAPER_TEST_LIMIT}
             </div>
 
             <div>
-                🟢 <strong>Gagnants :</strong>{' '}
-                {stats.wins}
+                🟢 Succès : {successes}
             </div>
 
             <div>
-                🔴 <strong>Perdants :</strong>{' '}
-                {stats.losses}
+                🔴 Échecs : {failures}
             </div>
 
             <div>
-                ⚪ <strong>Ignorés :</strong>{' '}
-                {stats.skipped}
+                📊 Taux : {successRate.toFixed(2)}%
             </div>
 
             <div>
-                <strong>
-                    Taux de réussite :
-                </strong>{' '}
-                {winRate.toFixed(2)} %
-            </div>
-
-            <div>
-                <strong>
-                    Taux d'échec :
-                </strong>{' '}
-                {lossRate.toFixed(2)} %
-            </div>
-
-            <div>
-                <strong>
-                    Résultat virtuel :
-                </strong>{' '}
-                {stats.virtualProfit >= 0
-                    ? '+'
-                    : ''}
-                {stats.virtualProfit}
-            </div>
-
-            <div
-                style={{
-                    marginTop: 10,
-                    padding: 10,
-                    background:
-                        '#f3f3f3',
-                    borderRadius: 8,
-                }}
-            >
-                💰 1 gain = +1
-                <br />
-                💸 1 perte = -1
-                <br />
-                🚫 Aucun argent réel.
+                Bloc actuel : {currentBlockSuccess} / {currentBlockTests}
             </div>
 
             <hr />
 
-            <h3>
-                📊 Blocs de 100
-            </h3>
+            <h3>Blocs de {BLOCK_SIZE}</h3>
 
             <div>
-                <strong>
-                    Blocs terminés :
-                </strong>{' '}
-                {blocks.length}
-            </div>
-
-            {blocks.map(
-                (rate, index) => (
-                    <div key={index}>
-                        Bloc {index + 1} :{' '}
-                        {rate.toFixed(1)} %
-                    </div>
-                )
-            )}
-
-            <div>
-                <strong>
-                    Moyenne :
-                </strong>{' '}
-                {averageBlock.toFixed(2)} %
+                Blocs terminés : {completedBlocks}
             </div>
 
             <div>
-                <strong>
-                    Minimum :
-                </strong>{' '}
-                {minimumBlock.toFixed(2)} %
+                Moyenne : {averageBlock.toFixed(2)}
             </div>
 
             <div>
-                <strong>
-                    Maximum :
-                </strong>{' '}
-                {maximumBlock.toFixed(2)} %
+                Minimum : {minBlock}
             </div>
 
-            <hr />
-
-            {phase === 'done' ? (
-                <div>
-                    ✅ Paper test terminé.
-                    <br />
-                    📈 Taux final :{' '}
-                    {winRate.toFixed(2)} %
-                    <br />
-                    💰 Résultat virtuel :{' '}
-                    {stats.virtualProfit >= 0
-                        ? '+'
-                        : ''}
-                    {stats.virtualProfit}
-                </div>
-            ) : (
-                <div>
-                    🔬 Paper trading uniquement.
-                    <br />
-                    ⚠️ Aucun taux de réussite garanti.
-                </div>
-            )}
+            <div>
+                Maximum : {maxBlock}
+            </div>
 
             <div
                 style={{
-                    marginTop: 8,
+                    marginTop: '10px',
+                    fontSize: '13px',
+                    opacity: 0.75,
                 }}
             >
-                ❌ <strong>
-                    Aucun trade automatique réel.
-                </strong>
+                ⚪ Analyse et paper trading uniquement.
+                Aucun trade réel n'est envoyé.
             </div>
         </div>
     );
