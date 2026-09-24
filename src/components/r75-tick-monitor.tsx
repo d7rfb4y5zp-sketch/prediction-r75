@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { api_base } from '@/external/bot-skeleton/services/api/api-base';
 
 const HISTORY_SIZE = 500;
-const RECENT_SIZE = 100;
 const TEST_LIMIT = 3000;
+const BLOCK_SIZE = 100;
 
 const R75TickMonitor = () => {
     const [status, setStatus] = useState('🟠 Connexion à Deriv…');
@@ -14,13 +14,18 @@ const R75TickMonitor = () => {
     const [tests, setTests] = useState(0);
     const [successes, setSuccesses] = useState(0);
 
-    // Refs : valeurs toujours à jour sans recréer
-    // l'abonnement Deriv.
+    const [blockResults, setBlockResults] = useState<number[]>([]);
+    const [currentBlockSuccess, setCurrentBlockSuccess] =
+        useState(0);
+
     const historyRef = useRef<number[]>([]);
     const predictionRef = useRef<number | null>(null);
 
     const testsRef = useRef(0);
     const successesRef = useRef(0);
+
+    const currentBlockSuccessRef = useRef(0);
+    const blockResultsRef = useRef<number[]>([]);
 
     useEffect(() => {
         let subscription: any;
@@ -28,7 +33,9 @@ const R75TickMonitor = () => {
         const connect = () => {
             try {
                 if (!api_base.api) {
-                    setStatus('🔴 API Deriv non disponible');
+                    setStatus(
+                        '🔴 API Deriv non disponible'
+                    );
                     return;
                 }
 
@@ -50,7 +57,9 @@ const R75TickMonitor = () => {
                             return;
                         }
 
-                        const quote = Number(tick.quote);
+                        const quote = Number(
+                            tick.quote
+                        );
 
                         if (!Number.isFinite(quote)) {
                             return;
@@ -70,7 +79,9 @@ const R75TickMonitor = () => {
                         );
 
                         if (
-                            !Number.isInteger(lastDigit) ||
+                            !Number.isInteger(
+                                lastDigit
+                            ) ||
                             lastDigit < 0 ||
                             lastDigit > 9
                         ) {
@@ -78,13 +89,15 @@ const R75TickMonitor = () => {
                         }
 
                         setPrice(formattedPrice);
-                        setDigit(String(lastDigit));
+                        setDigit(
+                            String(lastDigit)
+                        );
 
                         const oldHistory =
                             historyRef.current;
 
                         // =================================================
-                        // PHASE 1 : CONSTITUTION DE LA BASE
+                        // PHASE 1 : APPRENTISSAGE
                         // =================================================
 
                         if (
@@ -103,7 +116,6 @@ const R75TickMonitor = () => {
                                 ...nextHistory,
                             ]);
 
-                            // Pas encore de test.
                             predictionRef.current =
                                 null;
 
@@ -117,9 +129,10 @@ const R75TickMonitor = () => {
                         if (
                             testsRef.current <
                                 TEST_LIMIT &&
-                            predictionRef.current !== null
+                            predictionRef.current !==
+                                null
                         ) {
-                            const currentPrediction =
+                            const prediction =
                                 predictionRef.current;
 
                             testsRef.current += 1;
@@ -129,19 +142,54 @@ const R75TickMonitor = () => {
                             );
 
                             if (
-                                currentPrediction ===
+                                prediction ===
                                 lastDigit
                             ) {
-                                successesRef.current += 1;
+                                successesRef.current +=
+                                    1;
+
+                                currentBlockSuccessRef.current +=
+                                    1;
 
                                 setSuccesses(
                                     successesRef.current
+                                );
+
+                                setCurrentBlockSuccess(
+                                    currentBlockSuccessRef.current
+                                );
+                            }
+
+                            // Fin d'un bloc de 100
+                            if (
+                                testsRef.current %
+                                    BLOCK_SIZE ===
+                                0
+                            ) {
+                                const result =
+                                    currentBlockSuccessRef.current;
+
+                                blockResultsRef.current =
+                                    [
+                                        ...blockResultsRef.current,
+                                        result,
+                                    ];
+
+                                setBlockResults([
+                                    ...blockResultsRef.current,
+                                ]);
+
+                                currentBlockSuccessRef.current =
+                                    0;
+
+                                setCurrentBlockSuccess(
+                                    0
                                 );
                             }
                         }
 
                         // =================================================
-                        // AJOUT DU NOUVEAU TICK
+                        // AJOUT DU TICK
                         // =================================================
 
                         const nextHistory = [
@@ -164,73 +212,74 @@ const R75TickMonitor = () => {
                         ]);
 
                         // =================================================
-                        // CALCUL DE LA NOUVELLE ANALYSE
+                        // SI LE TEST EST TERMINÉ
                         // =================================================
 
                         if (
                             testsRef.current >=
                             TEST_LIMIT
                         ) {
+                            predictionRef.current =
+                                null;
+
                             return;
                         }
 
-                        const recent =
-                            nextHistory.slice(
-                                -RECENT_SIZE
+                        // =================================================
+                        // CONSTRUCTION DE LA MATRICE
+                        // DES TRANSITIONS
+                        // =================================================
+
+                        const transitions =
+                            Array.from(
+                                { length: 10 },
+                                () =>
+                                    Array(10).fill(0)
                             );
-
-                        const globalCounts =
-                            Array(10).fill(0);
-
-                        const recentCounts =
-                            Array(10).fill(0);
-
-                        nextHistory.forEach(value => {
-                            if (
-                                value >= 0 &&
-                                value <= 9
-                            ) {
-                                globalCounts[value]++;
-                            }
-                        });
-
-                        recent.forEach(value => {
-                            if (
-                                value >= 0 &&
-                                value <= 9
-                            ) {
-                                recentCounts[value]++;
-                            }
-                        });
-
-                        // =================================================
-                        // SCORE V2
-                        // 50 % historique
-                        // 50 % récent
-                        // =================================================
-
-                        const scores =
-                            Array(10).fill(0);
 
                         for (
                             let i = 0;
-                            i < 10;
+                            i <
+                            nextHistory.length - 1;
                             i++
                         ) {
-                            const globalFrequency =
-                                globalCounts[i] /
-                                HISTORY_SIZE;
+                            const from =
+                                nextHistory[i];
 
-                            const recentFrequency =
-                                recentCounts[i] /
-                                RECENT_SIZE;
+                            const to =
+                                nextHistory[i + 1];
 
-                            scores[i] =
-                                globalFrequency * 50 +
-                                recentFrequency * 50;
+                            if (
+                                from >= 0 &&
+                                from <= 9 &&
+                                to >= 0 &&
+                                to <= 9
+                            ) {
+                                transitions[
+                                    from
+                                ][to]++;
+                            }
                         }
 
-                        let bestDigit = 0;
+                        // =================================================
+                        // DERNIER CHIFFRE
+                        // =================================================
+
+                        const previousDigit =
+                            lastDigit;
+
+                        const row =
+                            transitions[
+                                previousDigit
+                            ];
+
+                        // =================================================
+                        // CHOIX DU PROCHAIN CHIFFRE
+                        // =================================================
+
+                        let bestNextDigit = 0;
+                        let highestCount =
+                            row[0];
 
                         for (
                             let i = 1;
@@ -238,29 +287,33 @@ const R75TickMonitor = () => {
                             i++
                         ) {
                             if (
-                                scores[i] >
-                                scores[bestDigit]
+                                row[i] >
+                                highestCount
                             ) {
-                                bestDigit = i;
+                                highestCount =
+                                    row[i];
+
+                                bestNextDigit = i;
                             }
                         }
 
                         predictionRef.current =
-                            bestDigit;
+                            bestNextDigit;
                     });
 
-                // Une seule souscription R_75.
                 api_base.api.send({
                     ticks: 'R_75',
                     subscribe: 1,
                 });
             } catch (error) {
                 console.error(
-                    'R75 Tick Monitor error:',
+                    'R75 V3 error:',
                     error
                 );
 
-                setStatus('🔴 Erreur Deriv');
+                setStatus(
+                    '🔴 Erreur Deriv'
+                );
             }
         };
 
@@ -274,57 +327,81 @@ const R75TickMonitor = () => {
     }, []);
 
     // =====================================================
-    // STATISTIQUES AFFICHÉES
+    // MATRICE DES TRANSITIONS POUR AFFICHAGE
     // =====================================================
 
-    const globalCounts = Array(10).fill(0);
-    const recentCounts = Array(10).fill(0);
+    const transitions =
+        Array.from(
+            { length: 10 },
+            () => Array(10).fill(0)
+        );
 
-    history.forEach(value => {
-        if (value >= 0 && value <= 9) {
-            globalCounts[value]++;
+    for (
+        let i = 0;
+        i < history.length - 1;
+        i++
+    ) {
+        const from = history[i];
+        const to = history[i + 1];
+
+        if (
+            from >= 0 &&
+            from <= 9 &&
+            to >= 0 &&
+            to <= 9
+        ) {
+            transitions[from][to]++;
         }
-    });
-
-    const recent =
-        history.slice(-RECENT_SIZE);
-
-    recent.forEach(value => {
-        if (value >= 0 && value <= 9) {
-            recentCounts[value]++;
-        }
-    });
-
-    const scores = Array(10).fill(0);
-
-    for (let i = 0; i < 10; i++) {
-        const globalFrequency =
-            history.length > 0
-                ? globalCounts[i] /
-                  history.length
-                : 0;
-
-        const recentFrequency =
-            recent.length > 0
-                ? recentCounts[i] /
-                  recent.length
-                : 0;
-
-        scores[i] =
-            globalFrequency * 50 +
-            recentFrequency * 50;
     }
 
-    let bestDigit = 0;
+    // =====================================================
+    // DERNIÈRE LIGNE DE TRANSITION
+    // =====================================================
+
+    const currentDigit =
+        history.length > 0
+            ? history[history.length - 1]
+            : null;
+
+    const currentRow =
+        currentDigit !== null
+            ? transitions[currentDigit]
+            : Array(10).fill(0);
+
+    let displayedPrediction = 0;
+    let displayedHighest =
+        currentRow[0];
 
     for (let i = 1; i < 10; i++) {
         if (
-            scores[i] >
-            scores[bestDigit]
+            currentRow[i] >
+            displayedHighest
         ) {
-            bestDigit = i;
+            displayedHighest =
+                currentRow[i];
+
+            displayedPrediction = i;
         }
     }
+
+    const transitionTotal =
+        currentRow.reduce(
+            (sum, value) => sum + value,
+            0
+        );
+
+    const predictionFrequency =
+        transitionTotal > 0
+            ? (
+                  (displayedHighest /
+                      transitionTotal) *
+                  100
+              ).toFixed(1)
+            : '0.0';
+
+    // =====================================================
+    // STATISTIQUES
+    // =====================================================
 
     const testRate =
         tests > 0
@@ -333,6 +410,35 @@ const R75TickMonitor = () => {
                   100
               ).toFixed(1)
             : '0.0';
+
+    const completedBlocks =
+        blockResults.length;
+
+    const blockAverage =
+        completedBlocks > 0
+            ? (
+                  blockResults.reduce(
+                      (sum, value) =>
+                          sum + value,
+                      0
+                  ) /
+                  completedBlocks
+              ).toFixed(2)
+            : '—';
+
+    const minBlock =
+        completedBlocks > 0
+            ? Math.min(
+                  ...blockResults
+              )
+            : '—';
+
+    const maxBlock =
+        completedBlocks > 0
+            ? Math.max(
+                  ...blockResults
+              )
+            : '—';
 
     return (
         <div
@@ -345,7 +451,7 @@ const R75TickMonitor = () => {
             }}
         >
             <h2>
-                Moniteur de ticks R75 — V2.1
+                Moniteur de ticks R75 — V3
             </h2>
 
             <p>
@@ -379,7 +485,7 @@ const R75TickMonitor = () => {
             <hr />
 
             <h3>
-                Phase 1 — Base d'analyse
+                Phase 1 — Apprentissage
             </h3>
 
             <p>
@@ -391,10 +497,10 @@ const R75TickMonitor = () => {
             </p>
 
             {history.length <
-                HISTORY_SIZE ? (
+            HISTORY_SIZE ? (
                 <p>
-                    📊 Collecte de la base
-                    de 500 ticks en cours...
+                    📊 Construction de la
+                    matrice des transitions...
                 </p>
             ) : (
                 <>
@@ -411,84 +517,182 @@ const R75TickMonitor = () => {
                     <hr />
 
                     <h3>
-                        Fréquence des 500 ticks
+                        Transition actuelle
                     </h3>
-
-                    {globalCounts.map(
-                        (count, index) => (
-                            <p key={index}>
-                                <strong>
-                                    {index} :
-                                </strong>{' '}
-                                {count} (
-                                {(
-                                    (count /
-                                        HISTORY_SIZE) *
-                                    100
-                                ).toFixed(1)}
-                                %)
-                            </p>
-                        )
-                    )}
-
-                    <hr />
-
-                    <h3>
-                        100 derniers ticks
-                    </h3>
-
-                    {recentCounts.map(
-                        (count, index) => (
-                            <p key={index}>
-                                <strong>
-                                    {index} :
-                                </strong>{' '}
-                                {count} (
-                                {(
-                                    (count /
-                                        RECENT_SIZE) *
-                                    100
-                                ).toFixed(1)}
-                                %)
-                            </p>
-                        )
-                    )}
-
-                    <hr />
-
-                    <h3>
-                        Score expérimental V2.1
-                    </h3>
-
-                    {scores.map(
-                        (score, index) => (
-                            <p key={index}>
-                                <strong>
-                                    {index} :
-                                </strong>{' '}
-                                {score.toFixed(2)}
-                            </p>
-                        )
-                    )}
 
                     <p>
                         <strong>
-                            Sélection expérimentale :
+                            Dernier chiffre :
                         </strong>{' '}
-                        {bestDigit}
+                        {currentDigit}
+                    </p>
+
+                    <p>
+                        <strong>
+                            Observations après
+                            ce chiffre :
+                        </strong>{' '}
+                        {transitionTotal}
+                    </p>
+
+                    <p>
+                        <strong>
+                            Transition la plus
+                            fréquente :
+                        </strong>{' '}
+                        {displayedPrediction}
+                    </p>
+
+                    <p>
+                        <strong>
+                            Occurrences :
+                        </strong>{' '}
+                        {displayedHighest}
+                    </p>
+
+                    <p>
+                        <strong>
+                            Fréquence historique :
+                        </strong>{' '}
+                        {predictionFrequency}%
                     </p>
 
                     <hr />
 
                     <h3>
-                        Phase 2 — Test
+                        Matrice des transitions
+                    </h3>
+
+                    <p>
+                        Ligne = chiffre actuel
+                        → colonne = chiffre
+                        suivant.
+                    </p>
+
+                    <div
+                        style={{
+                            overflowX:
+                                'auto',
+                        }}
+                    >
+                        <table
+                            style={{
+                                borderCollapse:
+                                    'collapse',
+                                width:
+                                    '100%',
+                                minWidth:
+                                    '650px',
+                            }}
+                        >
+                            <thead>
+                                <tr>
+                                    <th
+                                        style={{
+                                            border:
+                                                '1px solid #ccc',
+                                            padding:
+                                                '6px',
+                                        }}
+                                    >
+                                        →
+                                    </th>
+
+                                    {Array.from(
+                                        {
+                                            length: 10,
+                                        },
+                                        (
+                                            _,
+                                            index
+                                        ) => (
+                                            <th
+                                                key={
+                                                    index
+                                                }
+                                                style={{
+                                                    border:
+                                                        '1px solid #ccc',
+                                                    padding:
+                                                        '6px',
+                                                }}
+                                            >
+                                                {
+                                                    index
+                                                }
+                                            </th>
+                                        )
+                                    )}
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {transitions.map(
+                                    (
+                                        row,
+                                        from
+                                    ) => (
+                                        <tr
+                                            key={
+                                                from
+                                            }
+                                        >
+                                            <th
+                                                style={{
+                                                    border:
+                                                        '1px solid #ccc',
+                                                    padding:
+                                                        '6px',
+                                                }}
+                                            >
+                                                {
+                                                    from
+                                                }
+                                            </th>
+
+                                            {row.map(
+                                                (
+                                                    value,
+                                                    to
+                                                ) => (
+                                                    <td
+                                                        key={
+                                                            to
+                                                        }
+                                                        style={{
+                                                            border:
+                                                                '1px solid #ccc',
+                                                            padding:
+                                                                '6px',
+                                                            textAlign:
+                                                                'center',
+                                                        }}
+                                                    >
+                                                        {
+                                                            value
+                                                        }
+                                                    </td>
+                                                )
+                                            )}
+                                        </tr>
+                                    )
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <hr />
+
+                    <h3>
+                        Phase 2 — Test V3
                     </h3>
 
                     <p>
                         <strong>
                             Tests réalisés :
                         </strong>{' '}
-                        {tests} / {TEST_LIMIT}
+                        {tests} /{' '}
+                        {TEST_LIMIT}
                     </p>
 
                     <p>
@@ -517,22 +721,104 @@ const R75TickMonitor = () => {
                         environ 10 %.
                     </p>
 
-                    {tests >= TEST_LIMIT && (
-                        <p>
-                            ✅ Test de 3000 ticks
-                            terminé.
-                        </p>
+                    <hr />
+
+                    <h3>
+                        📊 Blocs de 100
+                    </h3>
+
+                    <p>
+                        <strong>
+                            Blocs terminés :
+                        </strong>{' '}
+                        {completedBlocks}
+                    </p>
+
+                    {blockResults.map(
+                        (
+                            value,
+                            index
+                        ) => (
+                            <p
+                                key={
+                                    index
+                                }
+                            >
+                                <strong>
+                                    Bloc{' '}
+                                    {index +
+                                        1}
+                                    :
+                                </strong>{' '}
+                                {value} / 100 (
+                                {value.toFixed(
+                                    1
+                                )}
+                                %)
+                            </p>
+                        )
+                    )}
+
+                    {completedBlocks >
+                        0 && (
+                        <>
+                            <hr />
+
+                            <p>
+                                <strong>
+                                    Moyenne :
+                                </strong>{' '}
+                                {
+                                    blockAverage
+                                }{' '}
+                                / 100
+                            </p>
+
+                            <p>
+                                <strong>
+                                    Minimum :
+                                </strong>{' '}
+                                {
+                                    minBlock
+                                }{' '}
+                                / 100
+                            </p>
+
+                            <p>
+                                <strong>
+                                    Maximum :
+                                </strong>{' '}
+                                {
+                                    maxBlock
+                                }{' '}
+                                / 100
+                            </p>
+                        </>
+                    )}
+
+                    {tests >=
+                        TEST_LIMIT && (
+                        <>
+                            <hr />
+
+                            <p>
+                                ✅ Test V3 de
+                                3000 ticks
+                                terminé.
+                            </p>
+                        </>
                     )}
 
                     <hr />
 
                     <p>
-                        ⚠️ Analyse statistique
-                        expérimentale uniquement.
+                        ⚠️ Test statistique
+                        uniquement.
                     </p>
 
                     <p>
-                        ❌ Aucun trade automatique.
+                        ❌ Aucun trade
+                        automatique.
                     </p>
                 </>
             )}
