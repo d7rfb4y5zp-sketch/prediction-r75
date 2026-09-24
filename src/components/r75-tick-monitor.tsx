@@ -42,12 +42,6 @@ const createMatrix = (): Matrix => ({
     FLAT: { UP: 0, DOWN: 0, FLAT: 0 },
 });
 
-const directionLabel = (direction: Direction) => {
-    if (direction === 'UP') return '🟢 HAUSSE';
-    if (direction === 'DOWN') return '🔴 BAISSE';
-    return '⚪ STABLE';
-};
-
 const getDirection = (
     previous: number,
     current: number
@@ -55,6 +49,12 @@ const getDirection = (
     if (current > previous) return 'UP';
     if (current < previous) return 'DOWN';
     return 'FLAT';
+};
+
+const directionLabel = (direction: Direction) => {
+    if (direction === 'UP') return '🟢 HAUSSE';
+    if (direction === 'DOWN') return '🔴 BAISSE';
+    return '⚪ STABLE';
 };
 
 export default function R75TickMonitor() {
@@ -92,71 +92,38 @@ export default function R75TickMonitor() {
     const [matrix, setMatrix] =
         useState<Matrix>(createMatrix());
 
-    /*
-     * Dernier prix reçu.
-     */
     const previousPriceRef =
         useRef<number | null>(null);
 
-    /*
-     * Historique des directions.
-     */
     const historyRef =
         useRef<Direction[]>([]);
 
-    /*
-     * Matrice.
-     */
     const matrixRef =
         useRef<Matrix>(createMatrix());
 
-    /*
-     * Dernière prédiction.
-     */
     const predictionRef =
         useRef<Direction | null>(null);
 
-    /*
-     * Statistiques.
-     */
     const testsRef = useRef(0);
     const winsRef = useRef(0);
     const lossesRef = useRef(0);
     const skippedRef = useRef(0);
 
-    /*
-     * Blocs.
-     */
     const blockWinsRef = useRef(0);
     const blockTestsRef = useRef(0);
 
-    /*
-     * Résultat virtuel.
-     */
     const virtualProfitRef = useRef(0);
 
-    /*
-     * Empêche de traiter deux fois
-     * le même historique.
-     */
-    const historyInitializedRef =
-        useRef(false);
-
-    /*
-     * Calcul de la prochaine direction.
-     */
     const calculatePrediction = (
         current: Direction
     ) => {
-        const row =
-            matrixRef.current[current];
+        const row = matrixRef.current[current];
 
         const up = row.UP;
         const down = row.DOWN;
         const flat = row.FLAT;
 
-        const total =
-            up + down + flat;
+        const total = up + down + flat;
 
         if (total === 0) {
             return {
@@ -180,37 +147,72 @@ export default function R75TickMonitor() {
 
         return {
             direction,
-            strength:
-                (highest / total) * 100,
+            strength: (highest / total) * 100,
         };
     };
 
     useEffect(() => {
         let active = true;
 
-        /*
-         * =====================================================
-         * TRAITEMENT D'UN PRIX
-         * =====================================================
-         */
-        const processPrice = (
-            currentPrice: number,
-            isLiveTick = true
-        ) => {
+        const handleMessage = (message: any) => {
             if (!active) return;
 
-            setConnected(true);
-            setPrice(currentPrice);
-            setError(null);
+            /*
+             * Erreur Deriv
+             */
+            if (message?.error) {
+                setError(
+                    message.error.message ||
+                        'Erreur Deriv'
+                );
+                return;
+            }
 
             /*
-             * Premier prix.
+             * Nous traitons uniquement
+             * les messages tick.
+             */
+            if (message?.msg_type !== 'tick') {
+                return;
+            }
+
+            const tick = message?.tick;
+
+            if (!tick) return;
+
+            /*
+             * Sécurité symbole.
+             */
+            if (
+                tick.symbol !== MARKET_SYMBOL
+            ) {
+                return;
+            }
+
+            const currentPrice =
+                Number(tick.quote);
+
+            if (
+                !Number.isFinite(
+                    currentPrice
+                )
+            ) {
+                return;
+            }
+
+            setConnected(true);
+            setError(null);
+            setPrice(currentPrice);
+
+            /*
+             * Premier prix reçu.
              */
             if (
                 previousPriceRef.current === null
             ) {
                 previousPriceRef.current =
                     currentPrice;
+
                 return;
             }
 
@@ -230,9 +232,10 @@ export default function R75TickMonitor() {
 
             /*
              * =================================================
-             * APPRENTISSAGE
+             * PHASE 1 : APPRENTISSAGE
              * =================================================
              */
+
             if (
                 historyRef.current.length <
                 HISTORY_SIZE
@@ -240,13 +243,10 @@ export default function R75TickMonitor() {
                 const history =
                     historyRef.current;
 
-                /*
-                 * Ajouter la nouvelle direction.
-                 */
                 history.push(direction);
 
                 /*
-                 * Ajouter la transition.
+                 * Construire la matrice.
                  */
                 if (history.length >= 2) {
                     const previousDirection =
@@ -272,13 +272,13 @@ export default function R75TickMonitor() {
                     history.length
                 );
 
+                /*
+                 * 500 ticks atteints.
+                 */
                 if (
                     history.length ===
                     HISTORY_SIZE
                 ) {
-                    historyInitializedRef.current =
-                        true;
-
                     setPhase('testing');
 
                     /*
@@ -306,10 +306,14 @@ export default function R75TickMonitor() {
 
             /*
              * =================================================
-             * VALIDATION / PAPER TRADING
+             * PHASE 2 : PAPER TRADING
              * =================================================
              */
 
+            /*
+             * Vérifier la prédiction
+             * du tick précédent.
+             */
             if (
                 predictionRef.current !== null &&
                 testsRef.current <
@@ -318,7 +322,12 @@ export default function R75TickMonitor() {
                 const predicted =
                     predictionRef.current;
 
-                if (predicted === 'FLAT') {
+                /*
+                 * STABLE = pas de trade.
+                 */
+                if (
+                    predicted === 'FLAT'
+                ) {
                     skippedRef.current += 1;
                 } else {
                     testsRef.current += 1;
@@ -339,7 +348,7 @@ export default function R75TickMonitor() {
                     }
 
                     /*
-                     * Bloc de 100.
+                     * Fin du bloc.
                      */
                     if (
                         blockTestsRef.current ===
@@ -378,7 +387,7 @@ export default function R75TickMonitor() {
             }
 
             /*
-             * Fin.
+             * Fin du test.
              */
             if (
                 testsRef.current >=
@@ -390,7 +399,7 @@ export default function R75TickMonitor() {
 
             /*
              * =================================================
-             * NOUVELLE TRANSITION
+             * MISE À JOUR DE LA MATRICE
              * =================================================
              */
 
@@ -408,6 +417,9 @@ export default function R75TickMonitor() {
                 ][direction] += 1;
             }
 
+            /*
+             * Historique roulant.
+             */
             history.push(direction);
 
             if (
@@ -426,8 +438,11 @@ export default function R75TickMonitor() {
             });
 
             /*
-             * Nouvelle prédiction.
+             * =================================================
+             * NOUVELLE PRÉDICTION
+             * =================================================
              */
+
             const nextPrediction =
                 calculatePrediction(
                     direction
@@ -446,257 +461,29 @@ export default function R75TickMonitor() {
         };
 
         /*
-         * =====================================================
-         * MESSAGE DERIV
-         * =====================================================
-         */
-        const handleMessage = (
-            message: any
-        ) => {
-            if (!active) return;
-
-            /*
-             * Erreur API.
-             */
-            if (message?.error) {
-                setError(
-                    message.error.message ||
-                        'Erreur Deriv'
-                );
-                return;
-            }
-
-            /*
-             * Historique de ticks.
-             */
-            if (
-                message?.msg_type ===
-                    'history' &&
-                message?.history?.prices
-            ) {
-                const prices =
-                    message.history.prices;
-
-                if (
-                    Array.isArray(prices) &&
-                    prices.length > 0 &&
-                    !historyInitializedRef.current
-                ) {
-                    /*
-                     * Repartir proprement.
-                     */
-                    previousPriceRef.current =
-                        null;
-
-                    historyRef.current = [];
-
-                    matrixRef.current =
-                        createMatrix();
-
-                    /*
-                     * Utiliser les derniers
-                     * 500 prix historiques.
-                     */
-                    const usablePrices =
-                        prices.slice(
-                            -HISTORY_SIZE
-                        );
-
-                    for (
-                        let i = 0;
-                        i <
-                        usablePrices.length;
-                        i++
-                    ) {
-                        const current =
-                            Number(
-                                usablePrices[i]
-                            );
-
-                        if (
-                            !Number.isFinite(
-                                current
-                            )
-                        ) {
-                            continue;
-                        }
-
-                        if (
-                            previousPriceRef.current ===
-                            null
-                        ) {
-                            previousPriceRef.current =
-                                current;
-                            continue;
-                        }
-
-                        const previous =
-                            previousPriceRef.current;
-
-                        const direction =
-                            getDirection(
-                                previous,
-                                current
-                            );
-
-                        previousPriceRef.current =
-                            current;
-
-                        historyRef.current.push(
-                            direction
-                        );
-
-                        if (
-                            historyRef.current
-                                .length >= 2
-                        ) {
-                            const previousDirection =
-                                historyRef.current[
-                                    historyRef.current
-                                        .length - 2
-                                ];
-
-                            const currentDirection =
-                                historyRef.current[
-                                    historyRef.current
-                                        .length - 1
-                                ];
-
-                            matrixRef.current[
-                                previousDirection
-                            ][currentDirection] +=
-                                1;
-                        }
-                    }
-
-                    setHistoryCount(
-                        historyRef.current.length
-                    );
-
-                    setMatrix({
-                        ...matrixRef.current,
-                    });
-
-                    /*
-                     * Afficher le dernier prix.
-                     */
-                    const lastPrice =
-                        Number(
-                            usablePrices[
-                                usablePrices.length -
-                                    1
-                            ]
-                        );
-
-                    if (
-                        Number.isFinite(
-                            lastPrice
-                        )
-                    ) {
-                        setPrice(lastPrice);
-                    }
-
-                    /*
-                     * Si nous avons 500 directions,
-                     * passer directement au test.
-                     */
-                    if (
-                        historyRef.current.length >=
-                        HISTORY_SIZE
-                    ) {
-                        historyInitializedRef.current =
-                            true;
-
-                        setConnected(true);
-                        setPhase('testing');
-
-                        const last =
-                            historyRef.current[
-                                historyRef.current
-                                    .length - 1
-                            ];
-
-                        setCurrentDirection(last);
-
-                        const firstPrediction =
-                            calculatePrediction(
-                                last
-                            );
-
-                        predictionRef.current =
-                            firstPrediction.direction;
-
-                        setPrediction(
-                            firstPrediction.direction
-                        );
-
-                        setPredictionStrength(
-                            firstPrediction.strength
-                        );
-                    }
-
-                    return;
-                }
-            }
-
-            /*
-             * Tick temps réel.
-             */
-            if (
-                message?.msg_type === 'tick' &&
-                message?.tick
-            ) {
-                const tick =
-                    message.tick;
-
-                if (
-                    tick.symbol !==
-                    MARKET_SYMBOL
-                ) {
-                    return;
-                }
-
-                const quote =
-                    Number(tick.quote);
-
-                if (
-                    !Number.isFinite(quote)
-                ) {
-                    return;
-                }
-
-                processPrice(
-                    quote,
-                    true
-                );
-            }
-        };
-
-        /*
-         * Installer l'écoute AVANT la demande.
+         * IMPORTANT :
+         * on écoute d'abord,
+         * puis on demande le flux.
          */
         const unsubscribe =
             api_base.api.onMessage(
                 handleMessage
             );
 
-        /*
-         * =====================================================
-         * DEMANDE HISTORIQUE + ABONNEMENT
-         * =====================================================
-         */
         try {
+            /*
+             * Flux direct EUR/USD.
+             *
+             * C'est cette méthode que notre
+             * ancienne V4 utilisait avec succès.
+             */
             api_base.api.send({
-                ticks_history:
-                    MARKET_SYMBOL,
-                end: 'latest',
-                count: HISTORY_SIZE,
-                style: 'ticks',
+                ticks: MARKET_SYMBOL,
                 subscribe: 1,
             });
         } catch (sendError) {
             setError(
-                'Impossible d’envoyer la demande EUR/USD.'
+                'Impossible de démarrer le flux EUR/USD.'
             );
         }
 
@@ -712,26 +499,17 @@ export default function R75TickMonitor() {
         };
     }, []);
 
-    /*
-     * =========================================================
-     * CALCULS AFFICHAGE
-     * =========================================================
-     */
-
-    const totalTests =
-        stats.tests;
-
     const winRate =
-        totalTests > 0
+        stats.tests > 0
             ? (stats.wins /
-                  totalTests) *
+                  stats.tests) *
               100
             : 0;
 
     const lossRate =
-        totalTests > 0
+        stats.tests > 0
             ? (stats.losses /
-                  totalTests) *
+                  stats.tests) *
               100
             : 0;
 
@@ -770,8 +548,7 @@ export default function R75TickMonitor() {
     return (
         <div
             style={{
-                background:
-                    '#ffffff',
+                background: '#ffffff',
                 color: '#111111',
                 padding: '20px',
                 margin: '16px',
@@ -783,7 +560,7 @@ export default function R75TickMonitor() {
         >
             <h2>
                 Moniteur Forex EUR/USD —
-                V4.1 Paper Trader
+                V4.2 Paper Trader
             </h2>
 
             <div>
@@ -836,8 +613,7 @@ export default function R75TickMonitor() {
             <hr />
 
             <h3>
-                Phase 1 —
-                Apprentissage
+                Phase 1 — Apprentissage
             </h3>
 
             <div>
@@ -851,22 +627,18 @@ export default function R75TickMonitor() {
             {historyCount >=
             HISTORY_SIZE ? (
                 <div>
-                    ✅ 500 ticks
-                    historiques
-                    analysés.
+                    ✅ 500 ticks collectés.
                 </div>
             ) : (
                 <div>
-                    ⏳ Collecte des
-                    données…
+                    ⏳ Collecte des ticks en direct…
                 </div>
             )}
 
             <hr />
 
             <h3>
-                Analyse des
-                transitions
+                Analyse des transitions
             </h3>
 
             <div>
@@ -916,10 +688,8 @@ export default function R75TickMonitor() {
                     fontSize: 13,
                 }}
             >
-                Ligne = direction
-                actuelle →
-                colonne = direction
-                suivante.
+                Ligne = direction actuelle
+                → colonne = direction suivante.
             </div>
 
             <table
@@ -973,136 +743,100 @@ export default function R75TickMonitor() {
 
                 <tbody>
                     <tr>
-                        <td
-                            style={{
-                                border:
-                                    '1px solid #ccc',
-                                padding: 8,
-                            }}
-                        >
+                        <td style={{
+                            border: '1px solid #ccc',
+                            padding: 8,
+                        }}>
                             🟢 HAUSSE
                         </td>
-                        <td
-                            style={{
-                                border:
-                                    '1px solid #ccc',
-                                padding: 8,
-                                textAlign:
-                                    'center',
-                            }}
-                        >
+
+                        <td style={{
+                            border: '1px solid #ccc',
+                            padding: 8,
+                            textAlign: 'center',
+                        }}>
                             {matrix.UP.UP}
                         </td>
-                        <td
-                            style={{
-                                border:
-                                    '1px solid #ccc',
-                                padding: 8,
-                                textAlign:
-                                    'center',
-                            }}
-                        >
+
+                        <td style={{
+                            border: '1px solid #ccc',
+                            padding: 8,
+                            textAlign: 'center',
+                        }}>
                             {matrix.UP.DOWN}
                         </td>
-                        <td
-                            style={{
-                                border:
-                                    '1px solid #ccc',
-                                padding: 8,
-                                textAlign:
-                                    'center',
-                            }}
-                        >
+
+                        <td style={{
+                            border: '1px solid #ccc',
+                            padding: 8,
+                            textAlign: 'center',
+                        }}>
                             {matrix.UP.FLAT}
                         </td>
                     </tr>
 
                     <tr>
-                        <td
-                            style={{
-                                border:
-                                    '1px solid #ccc',
-                                padding: 8,
-                            }}
-                        >
+                        <td style={{
+                            border: '1px solid #ccc',
+                            padding: 8,
+                        }}>
                             🔴 BAISSE
                         </td>
-                        <td
-                            style={{
-                                border:
-                                    '1px solid #ccc',
-                                padding: 8,
-                                textAlign:
-                                    'center',
-                            }}
-                        >
+
+                        <td style={{
+                            border: '1px solid #ccc',
+                            padding: 8,
+                            textAlign: 'center',
+                        }}>
                             {matrix.DOWN.UP}
                         </td>
-                        <td
-                            style={{
-                                border:
-                                    '1px solid #ccc',
-                                padding: 8,
-                                textAlign:
-                                    'center',
-                            }}
-                        >
+
+                        <td style={{
+                            border: '1px solid #ccc',
+                            padding: 8,
+                            textAlign: 'center',
+                        }}>
                             {matrix.DOWN.DOWN}
                         </td>
-                        <td
-                            style={{
-                                border:
-                                    '1px solid #ccc',
-                                padding: 8,
-                                textAlign:
-                                    'center',
-                            }}
-                        >
+
+                        <td style={{
+                            border: '1px solid #ccc',
+                            padding: 8,
+                            textAlign: 'center',
+                        }}>
                             {matrix.DOWN.FLAT}
                         </td>
                     </tr>
 
                     <tr>
-                        <td
-                            style={{
-                                border:
-                                    '1px solid #ccc',
-                                padding: 8,
-                            }}
-                        >
+                        <td style={{
+                            border: '1px solid #ccc',
+                            padding: 8,
+                        }}>
                             ⚪ STABLE
                         </td>
-                        <td
-                            style={{
-                                border:
-                                    '1px solid #ccc',
-                                padding: 8,
-                                textAlign:
-                                    'center',
-                            }}
-                        >
+
+                        <td style={{
+                            border: '1px solid #ccc',
+                            padding: 8,
+                            textAlign: 'center',
+                        }}>
                             {matrix.FLAT.UP}
                         </td>
-                        <td
-                            style={{
-                                border:
-                                    '1px solid #ccc',
-                                padding: 8,
-                                textAlign:
-                                    'center',
-                            }}
-                        >
+
+                        <td style={{
+                            border: '1px solid #ccc',
+                            padding: 8,
+                            textAlign: 'center',
+                        }}>
                             {matrix.FLAT.DOWN}
                         </td>
-                        <td
-                            style={{
-                                border:
-                                    '1px solid #ccc',
-                                padding: 8,
-                                textAlign:
-                                    'center',
-                            }}
-                        >
+
+                        <td style={{
+                            border: '1px solid #ccc',
+                            padding: 8,
+                            textAlign: 'center',
+                        }}>
                             {matrix.FLAT.FLAT}
                         </td>
                     </tr>
@@ -1112,8 +846,7 @@ export default function R75TickMonitor() {
             <hr />
 
             <h3>
-                Phase 2 —
-                Paper Trading
+                Phase 2 — Paper Trading
             </h3>
 
             <div>
@@ -1125,26 +858,17 @@ export default function R75TickMonitor() {
             </div>
 
             <div>
-                🟢{' '}
-                <strong>
-                    Trades gagnants :
-                </strong>{' '}
+                🟢 <strong>Gagnants :</strong>{' '}
                 {stats.wins}
             </div>
 
             <div>
-                🔴{' '}
-                <strong>
-                    Trades perdants :
-                </strong>{' '}
+                🔴 <strong>Perdants :</strong>{' '}
                 {stats.losses}
             </div>
 
             <div>
-                ⚪{' '}
-                <strong>
-                    Signaux ignorés :
-                </strong>{' '}
+                ⚪ <strong>Ignorés :</strong>{' '}
                 {stats.skipped}
             </div>
 
@@ -1166,8 +890,7 @@ export default function R75TickMonitor() {
                 <strong>
                     Résultat virtuel :
                 </strong>{' '}
-                {stats.virtualProfit >=
-                0
+                {stats.virtualProfit >= 0
                     ? '+'
                     : ''}
                 {stats.virtualProfit}
@@ -1182,14 +905,11 @@ export default function R75TickMonitor() {
                     borderRadius: 8,
                 }}
             >
-                💰 1 gain =
-                +1 virtuel
+                💰 1 gain = +1
                 <br />
-                💸 1 perte =
-                -1 virtuel
+                💸 1 perte = -1
                 <br />
-                🚫 Aucun argent
-                réel engagé.
+                🚫 Aucun argent réel.
             </div>
 
             <hr />
@@ -1207,90 +927,54 @@ export default function R75TickMonitor() {
 
             {blocks.map(
                 (rate, index) => (
-                    <div
-                        key={index}
-                    >
-                        Bloc {index + 1} :
-                        {' '}
-                        {rate.toFixed(
-                            1
-                        )}{' '}
-                        %
+                    <div key={index}>
+                        Bloc {index + 1} :{' '}
+                        {rate.toFixed(1)} %
                     </div>
                 )
             )}
 
-            <div
-                style={{
-                    marginTop: 8,
-                }}
-            >
+            <div>
                 <strong>
                     Moyenne :
                 </strong>{' '}
-                {averageBlock.toFixed(
-                    2
-                )}{' '}
-                %
+                {averageBlock.toFixed(2)} %
             </div>
 
             <div>
                 <strong>
                     Minimum :
                 </strong>{' '}
-                {minimumBlock.toFixed(
-                    2
-                )}{' '}
-                %
+                {minimumBlock.toFixed(2)} %
             </div>
 
             <div>
                 <strong>
                     Maximum :
                 </strong>{' '}
-                {maximumBlock.toFixed(
-                    2
-                )}{' '}
-                %
+                {maximumBlock.toFixed(2)} %
             </div>
 
             <hr />
 
-            {phase ===
-            'done' ? (
+            {phase === 'done' ? (
                 <div>
-                    ✅ Paper test
-                    terminé.
-                    <br />
-                    📌 {stats.wins}{' '}
-                    gains /{' '}
-                    {stats.losses}{' '}
-                    pertes.
+                    ✅ Paper test terminé.
                     <br />
                     📈 Taux final :{' '}
-                    {winRate.toFixed(
-                        2
-                    )}{' '}
-                    %
+                    {winRate.toFixed(2)} %
                     <br />
                     💰 Résultat virtuel :{' '}
-                    {stats.virtualProfit >=
-                    0
+                    {stats.virtualProfit >= 0
                         ? '+'
                         : ''}
-                    {
-                        stats.virtualProfit
-                    }
+                    {stats.virtualProfit}
                 </div>
             ) : (
                 <div>
-                    🔬 Paper
-                    trading
-                    uniquement.
+                    🔬 Paper trading uniquement.
                     <br />
-                    ⚠️ Aucun taux
-                    de réussite
-                    n'est garanti.
+                    ⚠️ Aucun taux de réussite garanti.
                 </div>
             )}
 
@@ -1299,11 +983,8 @@ export default function R75TickMonitor() {
                     marginTop: 8,
                 }}
             >
-                ❌{' '}
-                <strong>
-                    Aucun trade
-                    automatique
-                    réel.
+                ❌ <strong>
+                    Aucun trade automatique réel.
                 </strong>
             </div>
         </div>
