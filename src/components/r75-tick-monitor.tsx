@@ -1,36 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { api_base } from '@/external/bot-skeleton/services/api/api-base';
 
-const LEARNING_SIZE = 200;
-const BLOCK_SIZE = 100;
-const MAX_BLOCKS = 30;
+const HISTORY_SIZE = 1000;
+const RECENT_SIZE = 100;
+const TEST_LIMIT = 3000;
 
 const R75TickMonitor = () => {
     const [status, setStatus] = useState('🟠 Connexion à Deriv…');
     const [price, setPrice] = useState('—');
     const [digit, setDigit] = useState('—');
 
-    const [learningCount, setLearningCount] = useState(0);
-    const [learningCounts, setLearningCounts] = useState<number[]>(
-        Array(10).fill(0)
-    );
+    const [history, setHistory] = useState<number[]>([]);
+    const [tests, setTests] = useState(0);
+    const [successes, setSuccesses] = useState(0);
 
-    const [testCount, setTestCount] = useState(0);
-    const [successCount, setSuccessCount] = useState(0);
-    const [failureCount, setFailureCount] = useState(0);
-
-    const [blockResults, setBlockResults] = useState<number[]>([]);
-    const [currentBlockSuccess, setCurrentBlockSuccess] = useState(0);
-
-    const learningDigitsRef = useRef<number[]>([]);
-    const learningCountsRef = useRef<number[]>(Array(10).fill(0));
-
-    const testCountRef = useRef(0);
-    const successCountRef = useRef(0);
-    const failureCountRef = useRef(0);
-
-    const currentBlockSuccessRef = useRef(0);
-    const blockResultsRef = useRef<number[]>([]);
+    const historyRef = useRef<number[]>([]);
+    const predictionRef = useRef<number | null>(null);
 
     useEffect(() => {
         let subscription: any;
@@ -51,15 +36,11 @@ const R75TickMonitor = () => {
 
                         const tick = data.tick;
 
-                        if (!tick || tick.symbol !== 'R_75') {
-                            return;
-                        }
+                        if (!tick || tick.symbol !== 'R_75') return;
 
                         const quote = Number(tick.quote);
 
-                        if (!Number.isFinite(quote)) {
-                            return;
-                        }
+                        if (!Number.isFinite(quote)) return;
 
                         const pipSize = Number(
                             tick.pip_size ?? 4
@@ -85,107 +66,134 @@ const R75TickMonitor = () => {
                         setPrice(formattedPrice);
                         setDigit(String(lastDigit));
 
-                        // ==========================================
-                        // PHASE 1 : APPRENTISSAGE
-                        // ==========================================
+                        const oldHistory =
+                            historyRef.current;
+
+                        // -----------------------------------------
+                        // TEST DE LA PRÉCÉDENTE ANALYSE
+                        // -----------------------------------------
 
                         if (
-                            learningDigitsRef.current.length <
-                            LEARNING_SIZE
+                            oldHistory.length >=
+                                HISTORY_SIZE &&
+                            tests < TEST_LIMIT &&
+                            predictionRef.current !== null
                         ) {
-                            learningDigitsRef.current.push(
+                            setTests(prev => {
+                                if (prev >= TEST_LIMIT) {
+                                    return prev;
+                                }
+
+                                return prev + 1;
+                            });
+
+                            if (
+                                predictionRef.current ===
                                 lastDigit
-                            );
-
-                            learningCountsRef.current[
-                                lastDigit
-                            ]++;
-
-                            setLearningCount(
-                                learningDigitsRef.current.length
-                            );
-
-                            setLearningCounts([
-                                ...learningCountsRef.current,
-                            ]);
-
-                            return;
-                        }
-
-                        // ==========================================
-                        // PHASE 2 : TEST
-                        // ==========================================
-
-                        if (
-                            blockResultsRef.current.length >=
-                            MAX_BLOCKS
-                        ) {
-                            return;
-                        }
-
-                        const counts =
-                            learningCountsRef.current;
-
-                        // Chiffre dominant de la base
-                        let prediction = 0;
-                        let highestCount = counts[0];
-
-                        for (let i = 1; i < 10; i++) {
-                            if (counts[i] > highestCount) {
-                                highestCount = counts[i];
-                                prediction = i;
+                            ) {
+                                setSuccesses(prev => prev + 1);
                             }
                         }
 
-                        // On compare la prédiction au nouveau tick
-                        const success =
-                            prediction === lastDigit;
+                        // -----------------------------------------
+                        // AJOUT DU NOUVEAU TICK
+                        // -----------------------------------------
 
-                        testCountRef.current += 1;
-
-                        if (success) {
-                            successCountRef.current += 1;
-                            currentBlockSuccessRef.current += 1;
-                        } else {
-                            failureCountRef.current += 1;
-                        }
-
-                        setTestCount(testCountRef.current);
-                        setSuccessCount(
-                            successCountRef.current
-                        );
-                        setFailureCount(
-                            failureCountRef.current
-                        );
-                        setCurrentBlockSuccess(
-                            currentBlockSuccessRef.current
-                        );
-
-                        // ==========================================
-                        // FIN D'UN BLOC DE 100
-                        // ==========================================
+                        const nextHistory = [
+                            ...oldHistory,
+                            lastDigit,
+                        ];
 
                         if (
-                            testCountRef.current %
-                                BLOCK_SIZE ===
-                            0
+                            nextHistory.length >
+                            HISTORY_SIZE
                         ) {
-                            const completedBlock =
-                                currentBlockSuccessRef.current;
-
-                            blockResultsRef.current = [
-                                ...blockResultsRef.current,
-                                completedBlock,
-                            ];
-
-                            setBlockResults([
-                                ...blockResultsRef.current,
-                            ]);
-
-                            currentBlockSuccessRef.current = 0;
-
-                            setCurrentBlockSuccess(0);
+                            nextHistory.shift();
                         }
+
+                        historyRef.current =
+                            nextHistory;
+
+                        setHistory([
+                            ...nextHistory,
+                        ]);
+
+                        // -----------------------------------------
+                        // CALCUL DE LA NOUVELLE ANALYSE
+                        // -----------------------------------------
+
+                        if (
+                            nextHistory.length <
+                            HISTORY_SIZE
+                        ) {
+                            predictionRef.current =
+                                null;
+
+                            return;
+                        }
+
+                        const recent =
+                            nextHistory.slice(
+                                -RECENT_SIZE
+                            );
+
+                        const globalCounts =
+                            Array(10).fill(0);
+
+                        const recentCounts =
+                            Array(10).fill(0);
+
+                        nextHistory.forEach(value => {
+                            globalCounts[value]++;
+                        });
+
+                        recent.forEach(value => {
+                            recentCounts[value]++;
+                        });
+
+                        // -----------------------------------------
+                        // SCORE EXPÉRIMENTAL
+                        // -----------------------------------------
+
+                        const scores = Array(10).fill(0);
+
+                        for (let i = 0; i < 10; i++) {
+                            const globalFrequency =
+                                globalCounts[i] /
+                                HISTORY_SIZE;
+
+                            const recentFrequency =
+                                recentCounts[i] /
+                                RECENT_SIZE;
+
+                            /*
+                             * 50 % historique
+                             * 50 % récent
+                             *
+                             * Ce n'est PAS une probabilité
+                             * garantie. C'est uniquement un
+                             * score expérimental permettant
+                             * de tester une règle.
+                             */
+
+                            scores[i] =
+                                globalFrequency * 50 +
+                                recentFrequency * 50;
+                        }
+
+                        let bestDigit = 0;
+
+                        for (let i = 1; i < 10; i++) {
+                            if (
+                                scores[i] >
+                                scores[bestDigit]
+                            ) {
+                                bestDigit = i;
+                            }
+                        }
+
+                        predictionRef.current =
+                            bestDigit;
                     });
 
                 api_base.api.send({
@@ -209,69 +217,65 @@ const R75TickMonitor = () => {
                 subscription.unsubscribe();
             }
         };
-    }, []);
+    }, [tests]);
 
-    // ==================================================
-    // STATISTIQUES APPRENTISSAGE
-    // ==================================================
+    // ================================================
+    // STATISTIQUES
+    // ================================================
 
-    const dominantDigit =
-        learningCount >= LEARNING_SIZE
-            ? learningCounts.indexOf(
-                  Math.max(...learningCounts)
-              )
-            : null;
+    const globalCounts = Array(10).fill(0);
+    const recentCounts = Array(10).fill(0);
 
-    const dominantCount =
-        dominantDigit !== null
-            ? learningCounts[dominantDigit]
-            : 0;
+    history.forEach(value => {
+        if (value >= 0 && value <= 9) {
+            globalCounts[value]++;
+        }
+    });
 
-    const dominantFrequency =
-        learningCount > 0
-            ? (
-                  (dominantCount / learningCount) *
-                  100
-              ).toFixed(1)
-            : '0.0';
+    const recent =
+        history.slice(-RECENT_SIZE);
 
-    // ==================================================
-    // STATISTIQUES TEST
-    // ==================================================
+    recent.forEach(value => {
+        if (value >= 0 && value <= 9) {
+            recentCounts[value]++;
+        }
+    });
+
+    const scores = Array(10).fill(0);
+
+    for (let i = 0; i < 10; i++) {
+        const globalFrequency =
+            history.length > 0
+                ? globalCounts[i] /
+                  history.length
+                : 0;
+
+        const recentFrequency =
+            recent.length > 0
+                ? recentCounts[i] /
+                  recent.length
+                : 0;
+
+        scores[i] =
+            globalFrequency * 50 +
+            recentFrequency * 50;
+    }
+
+    let bestDigit = 0;
+
+    for (let i = 1; i < 10; i++) {
+        if (
+            scores[i] >
+            scores[bestDigit]
+        ) {
+            bestDigit = i;
+        }
+    }
 
     const testRate =
-        testCount > 0
-            ? (
-                  (successCount / testCount) *
-                  100
-              ).toFixed(1)
+        tests > 0
+            ? ((successes / tests) * 100).toFixed(1)
             : '0.0';
-
-    const completedBlocks = blockResults.length;
-
-    const blockAverage =
-        completedBlocks > 0
-            ? (
-                  blockResults.reduce(
-                      (sum, value) => sum + value,
-                      0
-                  ) / completedBlocks
-              ).toFixed(2)
-            : '—';
-
-    const minBlock =
-        completedBlocks > 0
-            ? Math.min(...blockResults)
-            : '—';
-
-    const maxBlock =
-        completedBlocks > 0
-            ? Math.max(...blockResults)
-            : '—';
-
-    const blocks10or11 = blockResults.filter(
-        value => value === 10 || value === 11
-    ).length;
 
     return (
         <div
@@ -283,85 +287,70 @@ const R75TickMonitor = () => {
                 borderRadius: '10px',
             }}
         >
-            <h2>Moniteur de ticks R75</h2>
+            <h2>
+                Moniteur de ticks R75 — V2
+            </h2>
 
             <p>
-                <strong>Connexion :</strong>{' '}
+                <strong>
+                    Connexion :
+                </strong>{' '}
                 {status}
             </p>
 
             <p>
-                <strong>Marché :</strong>{' '}
+                <strong>
+                    Marché :
+                </strong>{' '}
                 Volatility 75 (R_75)
             </p>
 
             <p>
-                <strong>Prix :</strong>{' '}
+                <strong>
+                    Prix :
+                </strong>{' '}
                 {price}
             </p>
 
             <p>
-                <strong>Dernier chiffre :</strong>{' '}
+                <strong>
+                    Dernier chiffre :
+                </strong>{' '}
                 {digit}
             </p>
 
             <hr />
 
             <h3>
-                Phase 1 — Apprentissage
+                Base d'analyse
             </h3>
 
             <p>
                 <strong>
-                    Ticks d'apprentissage :
+                    Historique :
                 </strong>{' '}
-                {learningCount} / {LEARNING_SIZE}
+                {history.length} /{' '}
+                {HISTORY_SIZE}
             </p>
 
-            {learningCount < LEARNING_SIZE && (
+            {history.length <
+                HISTORY_SIZE ? (
                 <p>
-                    📊 Construction de la base...
+                    📊 Collecte de la base
+                    d'analyse en cours...
                 </p>
-            )}
-
-            {learningCount >= LEARNING_SIZE && (
+            ) : (
                 <>
                     <p>
-                        ✅ Base de {LEARNING_SIZE}{' '}
-                        ticks terminée.
-                    </p>
-
-                    <p>
-                        🔒 Base verrouillée.
-                    </p>
-
-                    <p>
-                        <strong>
-                            Chiffre dominant :
-                        </strong>{' '}
-                        {dominantDigit}
-                    </p>
-
-                    <p>
-                        <strong>
-                            Occurrences :
-                        </strong>{' '}
-                        {dominantCount} /{' '}
-                        {LEARNING_SIZE}
-                    </p>
-
-                    <p>
-                        <strong>
-                            Fréquence :
-                        </strong>{' '}
-                        {dominantFrequency}%
+                        ✅ Base de 1000 ticks
+                        disponible.
                     </p>
 
                     <h3>
-                        Répartition
+                        Fréquence historique
                     </h3>
 
-                    {learningCounts.map(
+                    {globalCounts.map(
                         (count, index) => (
                             <p key={index}>
                                 <strong>
@@ -370,44 +359,86 @@ const R75TickMonitor = () => {
                                 {count} (
                                 {(
                                     (count /
-                                        LEARNING_SIZE) *
+                                        HISTORY_SIZE) *
                                     100
                                 ).toFixed(1)}
                                 %)
                             </p>
                         )
                     )}
-                </>
-            )}
 
-            {learningCount >= LEARNING_SIZE && (
-                <>
                     <hr />
 
                     <h3>
-                        Phase 2 — Test par blocs
+                        100 derniers ticks
+                    </h3>
+
+                    {recentCounts.map(
+                        (count, index) => (
+                            <p key={index}>
+                                <strong>
+                                    {index} :
+                                </strong>{' '}
+                                {count} (
+                                {(
+                                    (count /
+                                        RECENT_SIZE) *
+                                    100
+                                ).toFixed(1)}
+                                %)
+                            </p>
+                        )
+                    )}
+
+                    <hr />
+
+                    <h3>
+                        Score expérimental V2
+                    </h3>
+
+                    {scores.map(
+                        (score, index) => (
+                            <p key={index}>
+                                <strong>
+                                    {index} :
+                                </strong>{' '}
+                                {score.toFixed(2)}
+                            </p>
+                        )
+                    )}
+
+                    <p>
+                        <strong>
+                            Sélection expérimentale :
+                        </strong>{' '}
+                        {bestDigit}
+                    </p>
+
+                    <hr />
+
+                    <h3>
+                        Test hors-échantillon
                     </h3>
 
                     <p>
                         <strong>
-                            Tests réalisés :
+                            Tests :
                         </strong>{' '}
-                        {testCount} /{' '}
-                        {MAX_BLOCKS * BLOCK_SIZE}
+                        {tests} / {TEST_LIMIT}
                     </p>
 
                     <p>
                         <strong>
                             Réussites :
                         </strong>{' '}
-                        {successCount}
+                        {successes}
                     </p>
 
                     <p>
                         <strong>
                             Échecs :
                         </strong>{' '}
-                        {failureCount}
+                        {tests - successes}
                     </p>
 
                     <p>
@@ -418,83 +449,22 @@ const R75TickMonitor = () => {
                     </p>
 
                     <p>
-                        <strong>
-                            Bloc actuel :
-                        </strong>{' '}
-                        {currentBlockSuccess} /{' '}
-                        {BLOCK_SIZE}
+                        📌 Référence théorique :
+                        environ 10 %.
                     </p>
 
-                    <hr />
-
-                    <h3>
-                        📊 Blocs de 100
-                    </h3>
-
-                    <p>
-                        <strong>
-                            Blocs terminés :
-                        </strong>{' '}
-                        {completedBlocks}
-                    </p>
-
-                    {blockResults.map(
-                        (value, index) => (
-                            <p key={index}>
-                                <strong>
-                                    Bloc {index + 1} :
-                                </strong>{' '}
-                                {value} / 100 (
-                                {value.toFixed(1)}
-                                %)
-                            </p>
-                        )
-                    )}
-
-                    {completedBlocks > 0 && (
-                        <>
-                            <hr />
-
-                            <p>
-                                <strong>
-                                    Moyenne :
-                                </strong>{' '}
-                                {blockAverage} / 100
-                            </p>
-
-                            <p>
-                                <strong>
-                                    Minimum :
-                                </strong>{' '}
-                                {minBlock} / 100
-                            </p>
-
-                            <p>
-                                <strong>
-                                    Maximum :
-                                </strong>{' '}
-                                {maxBlock} / 100
-                            </p>
-
-                            <p>
-                                <strong>
-                                    Blocs à 10 ou 11 :
-                                </strong>{' '}
-                                {blocks10or11} /{' '}
-                                {completedBlocks}
-                            </p>
-                        </>
+                    {tests >= TEST_LIMIT && (
+                        <p>
+                            ✅ Test de 3000 ticks
+                            terminé.
+                        </p>
                     )}
 
                     <hr />
 
                     <p>
-                        📌 Référence : environ 10
-                        réussites sur 100.
-                    </p>
-
-                    <p>
-                        ⚠️ Test statistique uniquement.
+                        ⚠️ Analyse statistique
+                        expérimentale uniquement.
                     </p>
 
                     <p>
