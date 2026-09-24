@@ -1,30 +1,84 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { api_base } from '@/external/bot-skeleton/services/api/api-base';
 
+const MARKET_SYMBOL = 'frxEURUSD';
+const MARKET_NAME = 'EUR/USD';
+
 const HISTORY_SIZE = 500;
-const TEST_LIMIT = 3000;
+const TEST_LIMIT = 500;
 const BLOCK_SIZE = 100;
 
-const R75TickMonitor = () => {
-    const [status, setStatus] = useState('🟠 Connexion à Deriv…');
-    const [price, setPrice] = useState('—');
-    const [digit, setDigit] = useState('—');
+type Direction = 'UP' | 'DOWN' | 'FLAT';
 
-    const [history, setHistory] = useState<number[]>([]);
+const getDirection = (
+    previous: number,
+    current: number
+): Direction => {
+    if (current > previous) {
+        return 'UP';
+    }
+
+    if (current < previous) {
+        return 'DOWN';
+    }
+
+    return 'FLAT';
+};
+
+const directionLabel = (
+    direction: Direction | null
+) => {
+    if (direction === 'UP') {
+        return '🟢 HAUSSE';
+    }
+
+    if (direction === 'DOWN') {
+        return '🔴 BAISSE';
+    }
+
+    if (direction === 'FLAT') {
+        return '⚪ STABLE';
+    }
+
+    return '—';
+};
+
+const R75TickMonitor = () => {
+    const [status, setStatus] = useState(
+        '🟠 Connexion à Deriv…'
+    );
+
+    const [price, setPrice] = useState('—');
+
+    const [history, setHistory] = useState<number[]>(
+        []
+    );
+
     const [tests, setTests] = useState(0);
     const [successes, setSuccesses] = useState(0);
 
-    const [blockResults, setBlockResults] = useState<number[]>([]);
-    const [currentBlockSuccess, setCurrentBlockSuccess] =
-        useState(0);
+    const [blockResults, setBlockResults] = useState<
+        number[]
+    >([]);
+
+    const [
+        currentBlockSuccess,
+        setCurrentBlockSuccess,
+    ] = useState(0);
 
     const historyRef = useRef<number[]>([]);
-    const predictionRef = useRef<number | null>(null);
+
+    const predictionRef =
+        useRef<Direction | null>(null);
+
+    const previousPriceRef =
+        useRef<number | null>(null);
 
     const testsRef = useRef(0);
     const successesRef = useRef(0);
 
     const currentBlockSuccessRef = useRef(0);
+
     const blockResultsRef = useRef<number[]>([]);
 
     useEffect(() => {
@@ -39,20 +93,27 @@ const R75TickMonitor = () => {
                     return;
                 }
 
-                setStatus('🟢 Connecté à Deriv');
+                setStatus(
+                    `🟢 Connecté à Deriv — ${MARKET_NAME}`
+                );
 
                 subscription = api_base.api
                     .onMessage()
                     .subscribe(({ data }: any) => {
-                        if (data?.msg_type !== 'tick') {
+                        if (
+                            data?.msg_type !==
+                            'tick'
+                        ) {
                             return;
                         }
 
-                        const tick = data.tick;
+                        const tick =
+                            data.tick;
 
                         if (
                             !tick ||
-                            tick.symbol !== 'R_75'
+                            tick.symbol !==
+                                MARKET_SYMBOL
                         ) {
                             return;
                         }
@@ -61,44 +122,76 @@ const R75TickMonitor = () => {
                             tick.quote
                         );
 
-                        if (!Number.isFinite(quote)) {
-                            return;
-                        }
-
-                        const pipSize = Number(
-                            tick.pip_size ?? 4
-                        );
-
-                        const formattedPrice =
-                            quote.toFixed(pipSize);
-
-                        const lastDigit = Number(
-                            formattedPrice
-                                .replace('.', '')
-                                .slice(-1)
-                        );
-
                         if (
-                            !Number.isInteger(
-                                lastDigit
-                            ) ||
-                            lastDigit < 0 ||
-                            lastDigit > 9
+                            !Number.isFinite(
+                                quote
+                            )
                         ) {
                             return;
                         }
 
-                        setPrice(formattedPrice);
-                        setDigit(
-                            String(lastDigit)
+                        const pipSize = Number(
+                            tick.pip_size ??
+                                5
+                        );
+
+                        const formattedPrice =
+                            quote.toFixed(
+                                pipSize
+                            );
+
+                        setPrice(
+                            formattedPrice
                         );
 
                         const oldHistory =
                             historyRef.current;
 
-                        // =================================================
-                        // PHASE 1 : APPRENTISSAGE
-                        // =================================================
+                        /*
+                         * =============================================
+                         * PREMIER TICK
+                         * =============================================
+                         */
+
+                        if (
+                            previousPriceRef.current ===
+                            null
+                        ) {
+                            previousPriceRef.current =
+                                quote;
+
+                            historyRef.current = [
+                                quote,
+                            ];
+
+                            setHistory([
+                                quote,
+                            ]);
+
+                            return;
+                        }
+
+                        /*
+                         * =============================================
+                         * DIRECTION DU TICK ACTUEL
+                         * =============================================
+                         */
+
+                        const previousPrice =
+                            previousPriceRef.current;
+
+                        const actualDirection =
+                            getDirection(
+                                previousPrice,
+                                quote
+                            );
+
+                        /*
+                         * =============================================
+                         * PHASE 1
+                         * APPRENTISSAGE
+                         * =============================================
+                         */
 
                         if (
                             oldHistory.length <
@@ -106,7 +199,7 @@ const R75TickMonitor = () => {
                         ) {
                             const nextHistory = [
                                 ...oldHistory,
-                                lastDigit,
+                                quote,
                             ];
 
                             historyRef.current =
@@ -116,15 +209,21 @@ const R75TickMonitor = () => {
                                 ...nextHistory,
                             ]);
 
+                            previousPriceRef.current =
+                                quote;
+
                             predictionRef.current =
                                 null;
 
                             return;
                         }
 
-                        // =================================================
-                        // PHASE 2 : TEST
-                        // =================================================
+                        /*
+                         * =============================================
+                         * PHASE 2
+                         * TEST
+                         * =============================================
+                         */
 
                         if (
                             testsRef.current <
@@ -143,7 +242,7 @@ const R75TickMonitor = () => {
 
                             if (
                                 prediction ===
-                                lastDigit
+                                actualDirection
                             ) {
                                 successesRef.current +=
                                     1;
@@ -160,7 +259,10 @@ const R75TickMonitor = () => {
                                 );
                             }
 
-                            // Fin d'un bloc de 100
+                            /*
+                             * FIN DU BLOC
+                             */
+
                             if (
                                 testsRef.current %
                                     BLOCK_SIZE ===
@@ -188,13 +290,15 @@ const R75TickMonitor = () => {
                             }
                         }
 
-                        // =================================================
-                        // AJOUT DU TICK
-                        // =================================================
+                        /*
+                         * =============================================
+                         * AJOUT DU PRIX À L'HISTORIQUE
+                         * =============================================
+                         */
 
                         const nextHistory = [
                             ...oldHistory,
-                            lastDigit,
+                            quote,
                         ];
 
                         if (
@@ -211,9 +315,14 @@ const R75TickMonitor = () => {
                             ...nextHistory,
                         ]);
 
-                        // =================================================
-                        // SI LE TEST EST TERMINÉ
-                        // =================================================
+                        previousPriceRef.current =
+                            quote;
+
+                        /*
+                         * =============================================
+                         * FIN DU TEST
+                         * =============================================
+                         */
 
                         if (
                             testsRef.current >=
@@ -225,89 +334,158 @@ const R75TickMonitor = () => {
                             return;
                         }
 
-                        // =================================================
-                        // CONSTRUCTION DE LA MATRICE
-                        // DES TRANSITIONS
-                        // =================================================
+                        /*
+                         * =============================================
+                         * ANALYSE DES TRANSITIONS
+                         *
+                         * UP -> UP
+                         * UP -> DOWN
+                         * UP -> FLAT
+                         *
+                         * DOWN -> UP
+                         * DOWN -> DOWN
+                         * DOWN -> FLAT
+                         *
+                         * FLAT -> UP
+                         * FLAT -> DOWN
+                         * FLAT -> FLAT
+                         * =============================================
+                         */
 
-                        const transitions =
-                            Array.from(
-                                { length: 10 },
-                                () =>
-                                    Array(10).fill(0)
+                        const transitionMatrix: Record<
+                            Direction,
+                            Record<
+                                Direction,
+                                number
+                            >
+                        > = {
+                            UP: {
+                                UP: 0,
+                                DOWN: 0,
+                                FLAT: 0,
+                            },
+
+                            DOWN: {
+                                UP: 0,
+                                DOWN: 0,
+                                FLAT: 0,
+                            },
+
+                            FLAT: {
+                                UP: 0,
+                                DOWN: 0,
+                                FLAT: 0,
+                            },
+                        };
+
+                        const directions: Direction[] =
+                            [];
+
+                        for (
+                            let i = 1;
+                            i <
+                            nextHistory.length;
+                            i++
+                        ) {
+                            const previous =
+                                nextHistory[
+                                    i - 1
+                                ];
+
+                            const current =
+                                nextHistory[i];
+
+                            directions.push(
+                                getDirection(
+                                    previous,
+                                    current
+                                )
                             );
+                        }
 
                         for (
                             let i = 0;
                             i <
-                            nextHistory.length - 1;
+                            directions.length -
+                                1;
                             i++
                         ) {
                             const from =
-                                nextHistory[i];
+                                directions[i];
 
                             const to =
-                                nextHistory[i + 1];
+                                directions[i + 1];
 
-                            if (
-                                from >= 0 &&
-                                from <= 9 &&
-                                to >= 0 &&
-                                to <= 9
-                            ) {
-                                transitions[
-                                    from
-                                ][to]++;
-                            }
+                            transitionMatrix[
+                                from
+                            ][to]++;
                         }
 
-                        // =================================================
-                        // DERNIER CHIFFRE
-                        // =================================================
+                        /*
+                         * =============================================
+                         * DIRECTION ACTUELLE
+                         * =============================================
+                         */
 
-                        const previousDigit =
-                            lastDigit;
+                        const currentDirection =
+                            actualDirection;
 
                         const row =
-                            transitions[
-                                previousDigit
+                            transitionMatrix[
+                                currentDirection
                             ];
 
-                        // =================================================
-                        // CHOIX DU PROCHAIN CHIFFRE
-                        // =================================================
+                        /*
+                         * =============================================
+                         * CHOIX DE LA PROCHAINE DIRECTION
+                         * =============================================
+                         */
 
-                        let bestNextDigit = 0;
+                        let bestDirection: Direction =
+                            'UP';
+
                         let highestCount =
-                            row[0];
+                            row.UP;
 
-                        for (
-                            let i = 1;
-                            i < 10;
-                            i++
+                        if (
+                            row.DOWN >
+                            highestCount
                         ) {
-                            if (
-                                row[i] >
-                                highestCount
-                            ) {
-                                highestCount =
-                                    row[i];
+                            highestCount =
+                                row.DOWN;
 
-                                bestNextDigit = i;
-                            }
+                            bestDirection =
+                                'DOWN';
+                        }
+
+                        if (
+                            row.FLAT >
+                            highestCount
+                        ) {
+                            highestCount =
+                                row.FLAT;
+
+                            bestDirection =
+                                'FLAT';
                         }
 
                         predictionRef.current =
-                            bestNextDigit;
+                            bestDirection;
                     });
 
+                /*
+                 * =============================================
+                 * SOUSCRIPTION EUR/USD
+                 * =============================================
+                 */
+
                 api_base.api.send({
-                    ticks: 'R_75',
+                    ticks: MARKET_SYMBOL,
                     subscribe: 1,
                 });
             } catch (error) {
                 console.error(
-                    'R75 V3 error:',
+                    'Forex V4 error:',
                     error
                 );
 
@@ -326,69 +504,116 @@ const R75TickMonitor = () => {
         };
     }, []);
 
-    // =====================================================
-    // MATRICE DES TRANSITIONS POUR AFFICHAGE
-    // =====================================================
+    /*
+     * =============================================
+     * MATRICE D'AFFICHAGE
+     * =============================================
+     */
 
-    const transitions =
-        Array.from(
-            { length: 10 },
-            () => Array(10).fill(0)
+    const displayMatrix: Record<
+        Direction,
+        Record<Direction, number>
+    > = {
+        UP: {
+            UP: 0,
+            DOWN: 0,
+            FLAT: 0,
+        },
+
+        DOWN: {
+            UP: 0,
+            DOWN: 0,
+            FLAT: 0,
+        },
+
+        FLAT: {
+            UP: 0,
+            DOWN: 0,
+            FLAT: 0,
+        },
+    };
+
+    const displayDirections: Direction[] =
+        [];
+
+    for (
+        let i = 1;
+        i < history.length;
+        i++
+    ) {
+        displayDirections.push(
+            getDirection(
+                history[i - 1],
+                history[i]
+            )
         );
+    }
 
     for (
         let i = 0;
-        i < history.length - 1;
+        i <
+        displayDirections.length - 1;
         i++
     ) {
-        const from = history[i];
-        const to = history[i + 1];
+        const from =
+            displayDirections[i];
 
-        if (
-            from >= 0 &&
-            from <= 9 &&
-            to >= 0 &&
-            to <= 9
-        ) {
-            transitions[from][to]++;
-        }
+        const to =
+            displayDirections[i + 1];
+
+        displayMatrix[from][to]++;
     }
 
-    // =====================================================
-    // DERNIÈRE LIGNE DE TRANSITION
-    // =====================================================
-
-    const currentDigit =
-        history.length > 0
-            ? history[history.length - 1]
+    const currentDirection =
+        displayDirections.length > 0
+            ? displayDirections[
+                  displayDirections.length - 1
+              ]
             : null;
 
     const currentRow =
-        currentDigit !== null
-            ? transitions[currentDigit]
-            : Array(10).fill(0);
-
-    let displayedPrediction = 0;
-    let displayedHighest =
-        currentRow[0];
-
-    for (let i = 1; i < 10; i++) {
-        if (
-            currentRow[i] >
-            displayedHighest
-        ) {
-            displayedHighest =
-                currentRow[i];
-
-            displayedPrediction = i;
-        }
-    }
+        currentDirection !== null
+            ? displayMatrix[
+                  currentDirection
+              ]
+            : {
+                  UP: 0,
+                  DOWN: 0,
+                  FLAT: 0,
+              };
 
     const transitionTotal =
-        currentRow.reduce(
-            (sum, value) => sum + value,
-            0
-        );
+        currentRow.UP +
+        currentRow.DOWN +
+        currentRow.FLAT;
+
+    let displayedPrediction: Direction =
+        'UP';
+
+    let displayedHighest =
+        currentRow.UP;
+
+    if (
+        currentRow.DOWN >
+        displayedHighest
+    ) {
+        displayedHighest =
+            currentRow.DOWN;
+
+        displayedPrediction =
+            'DOWN';
+    }
+
+    if (
+        currentRow.FLAT >
+        displayedHighest
+    ) {
+        displayedHighest =
+            currentRow.FLAT;
+
+        displayedPrediction =
+            'FLAT';
+    }
 
     const predictionFrequency =
         transitionTotal > 0
@@ -399,9 +624,11 @@ const R75TickMonitor = () => {
               ).toFixed(1)
             : '0.0';
 
-    // =====================================================
-    // STATISTIQUES
-    // =====================================================
+    /*
+     * =============================================
+     * STATISTIQUES
+     * =============================================
+     */
 
     const testRate =
         tests > 0
@@ -418,7 +645,10 @@ const R75TickMonitor = () => {
         completedBlocks > 0
             ? (
                   blockResults.reduce(
-                      (sum, value) =>
+                      (
+                          sum,
+                          value
+                      ) =>
                           sum + value,
                       0
                   ) /
@@ -445,13 +675,15 @@ const R75TickMonitor = () => {
             style={{
                 padding: '15px',
                 margin: '10px 0',
-                background: '#ffffff',
+                background:
+                    '#ffffff',
                 color: '#000000',
-                borderRadius: '10px',
+                borderRadius:
+                    '10px',
             }}
         >
             <h2>
-                Moniteur de ticks R75 — V3
+                Moniteur Forex EUR/USD — V4
             </h2>
 
             <p>
@@ -465,7 +697,14 @@ const R75TickMonitor = () => {
                 <strong>
                     Marché :
                 </strong>{' '}
-                Volatility 75 (R_75)
+                {MARKET_NAME}
+            </p>
+
+            <p>
+                <strong>
+                    Symbole :
+                </strong>{' '}
+                {MARKET_SYMBOL}
             </p>
 
             <p>
@@ -473,13 +712,6 @@ const R75TickMonitor = () => {
                     Prix :
                 </strong>{' '}
                 {price}
-            </p>
-
-            <p>
-                <strong>
-                    Dernier chiffre :
-                </strong>{' '}
-                {digit}
             </p>
 
             <hr />
@@ -499,48 +731,45 @@ const R75TickMonitor = () => {
             {history.length <
             HISTORY_SIZE ? (
                 <p>
-                    📊 Construction de la
-                    matrice des transitions...
+                    📊 Collecte des 500
+                    ticks EUR/USD...
                 </p>
             ) : (
                 <>
                     <p>
-                        ✅ Base de 500 ticks
-                        terminée.
-                    </p>
-
-                    <p>
-                        🔒 Base d'analyse
-                        verrouillée.
+                        ✅ 500 ticks
+                        collectés.
                     </p>
 
                     <hr />
 
                     <h3>
-                        Transition actuelle
+                        Analyse des transitions
                     </h3>
 
                     <p>
                         <strong>
-                            Dernier chiffre :
+                            Direction actuelle :
                         </strong>{' '}
-                        {currentDigit}
+                        {directionLabel(
+                            currentDirection
+                        )}
                     </p>
 
                     <p>
                         <strong>
-                            Observations après
-                            ce chiffre :
+                            Observations :
                         </strong>{' '}
                         {transitionTotal}
                     </p>
 
                     <p>
                         <strong>
-                            Transition la plus
-                            fréquente :
+                            Transition dominante :
                         </strong>{' '}
-                        {displayedPrediction}
+                        {directionLabel(
+                            displayedPrediction
+                        )}
                     </p>
 
                     <p>
@@ -552,7 +781,7 @@ const R75TickMonitor = () => {
 
                     <p>
                         <strong>
-                            Fréquence historique :
+                            Fréquence :
                         </strong>{' '}
                         {predictionFrequency}%
                     </p>
@@ -564,9 +793,9 @@ const R75TickMonitor = () => {
                     </h3>
 
                     <p>
-                        Ligne = chiffre actuel
-                        → colonne = chiffre
-                        suivant.
+                        Ligne = direction
+                        actuelle → colonne =
+                        direction suivante.
                     </p>
 
                     <div
@@ -582,7 +811,7 @@ const R75TickMonitor = () => {
                                 width:
                                     '100%',
                                 minWidth:
-                                    '650px',
+                                    '500px',
                             }}
                         >
                             <thead>
@@ -598,40 +827,50 @@ const R75TickMonitor = () => {
                                         →
                                     </th>
 
-                                    {Array.from(
-                                        {
-                                            length: 10,
-                                        },
-                                        (
-                                            _,
-                                            index
-                                        ) => (
-                                            <th
-                                                key={
-                                                    index
-                                                }
-                                                style={{
-                                                    border:
-                                                        '1px solid #ccc',
-                                                    padding:
-                                                        '6px',
-                                                }}
-                                            >
-                                                {
-                                                    index
-                                                }
-                                            </th>
-                                        )
-                                    )}
+                                    <th
+                                        style={{
+                                            border:
+                                                '1px solid #ccc',
+                                            padding:
+                                                '6px',
+                                        }}
+                                    >
+                                        HAUSSE
+                                    </th>
+
+                                    <th
+                                        style={{
+                                            border:
+                                                '1px solid #ccc',
+                                            padding:
+                                                '6px',
+                                        }}
+                                    >
+                                        BAISSE
+                                    </th>
+
+                                    <th
+                                        style={{
+                                            border:
+                                                '1px solid #ccc',
+                                            padding:
+                                                '6px',
+                                        }}
+                                    >
+                                        STABLE
+                                    </th>
                                 </tr>
                             </thead>
 
                             <tbody>
-                                {transitions.map(
-                                    (
-                                        row,
-                                        from
-                                    ) => (
+                                {(
+                                    [
+                                        'UP',
+                                        'DOWN',
+                                        'FLAT',
+                                    ] as Direction[]
+                                ).map(
+                                    from => (
                                         <tr
                                             key={
                                                 from
@@ -645,35 +884,64 @@ const R75TickMonitor = () => {
                                                         '6px',
                                                 }}
                                             >
-                                                {
+                                                {directionLabel(
                                                     from
-                                                }
+                                                )}
                                             </th>
 
-                                            {row.map(
-                                                (
-                                                    value,
-                                                    to
-                                                ) => (
-                                                    <td
-                                                        key={
-                                                            to
-                                                        }
-                                                        style={{
-                                                            border:
-                                                                '1px solid #ccc',
-                                                            padding:
-                                                                '6px',
-                                                            textAlign:
-                                                                'center',
-                                                        }}
-                                                    >
-                                                        {
-                                                            value
-                                                        }
-                                                    </td>
-                                                )
-                                            )}
+                                            <td
+                                                style={{
+                                                    border:
+                                                        '1px solid #ccc',
+                                                    padding:
+                                                        '6px',
+                                                    textAlign:
+                                                        'center',
+                                                }}
+                                            >
+                                                {
+                                                    displayMatrix[
+                                                        from
+                                                    ]
+                                                        .UP
+                                                }
+                                            </td>
+
+                                            <td
+                                                style={{
+                                                    border:
+                                                        '1px solid #ccc',
+                                                    padding:
+                                                        '6px',
+                                                    textAlign:
+                                                        'center',
+                                                }}
+                                            >
+                                                {
+                                                    displayMatrix[
+                                                        from
+                                                    ]
+                                                        .DOWN
+                                                }
+                                            </td>
+
+                                            <td
+                                                style={{
+                                                    border:
+                                                        '1px solid #ccc',
+                                                    padding:
+                                                        '6px',
+                                                    textAlign:
+                                                        'center',
+                                                }}
+                                            >
+                                                {
+                                                    displayMatrix[
+                                                        from
+                                                    ]
+                                                        .FLAT
+                                                }
+                                            </td>
                                         </tr>
                                     )
                                 )}
@@ -684,7 +952,7 @@ const R75TickMonitor = () => {
                     <hr />
 
                     <h3>
-                        Phase 2 — Test V3
+                        Phase 2 — Validation
                     </h3>
 
                     <p>
@@ -717,8 +985,10 @@ const R75TickMonitor = () => {
                     </p>
 
                     <p>
-                        📌 Référence :
-                        environ 10 %.
+                        📌 Les résultats sont
+                        expérimentaux. Aucun
+                        taux de réussite n'est
+                        garanti.
                     </p>
 
                     <hr />
@@ -758,6 +1028,24 @@ const R75TickMonitor = () => {
                             </p>
                         )
                     )}
+
+                    {tests %
+                        BLOCK_SIZE !==
+                        0 &&
+                        tests > 0 && (
+                            <p>
+                                🔄 Bloc actuel :
+                                {' '}
+                                {
+                                    currentBlockSuccess
+                                }{' '}
+                                réussite(s)
+                                sur{' '}
+                                {tests %
+                                    BLOCK_SIZE}{' '}
+                                test(s).
+                            </p>
+                        )}
 
                     {completedBlocks >
                         0 && (
@@ -802,9 +1090,15 @@ const R75TickMonitor = () => {
                             <hr />
 
                             <p>
-                                ✅ Test V3 de
-                                3000 ticks
-                                terminé.
+                                ✅ Validation de
+                                500 ticks
+                                terminée.
+                            </p>
+
+                            <p>
+                                🧪 Le système
+                                reste en mode
+                                analyse.
                             </p>
                         </>
                     )}
