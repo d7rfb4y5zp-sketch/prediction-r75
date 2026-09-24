@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { api_base } from '@/external/bot-skeleton/services/api/api-base';
 
-const HISTORY_SIZE = 1000;
+const HISTORY_SIZE = 500;
 const RECENT_SIZE = 100;
 const TEST_LIMIT = 3000;
 
@@ -14,8 +14,13 @@ const R75TickMonitor = () => {
     const [tests, setTests] = useState(0);
     const [successes, setSuccesses] = useState(0);
 
+    // Refs : valeurs toujours à jour sans recréer
+    // l'abonnement Deriv.
     const historyRef = useRef<number[]>([]);
     const predictionRef = useRef<number | null>(null);
+
+    const testsRef = useRef(0);
+    const successesRef = useRef(0);
 
     useEffect(() => {
         let subscription: any;
@@ -32,15 +37,24 @@ const R75TickMonitor = () => {
                 subscription = api_base.api
                     .onMessage()
                     .subscribe(({ data }: any) => {
-                        if (data?.msg_type !== 'tick') return;
+                        if (data?.msg_type !== 'tick') {
+                            return;
+                        }
 
                         const tick = data.tick;
 
-                        if (!tick || tick.symbol !== 'R_75') return;
+                        if (
+                            !tick ||
+                            tick.symbol !== 'R_75'
+                        ) {
+                            return;
+                        }
 
                         const quote = Number(tick.quote);
 
-                        if (!Number.isFinite(quote)) return;
+                        if (!Number.isFinite(quote)) {
+                            return;
+                        }
 
                         const pipSize = Number(
                             tick.pip_size ?? 4
@@ -69,35 +83,66 @@ const R75TickMonitor = () => {
                         const oldHistory =
                             historyRef.current;
 
-                        // -----------------------------------------
-                        // TEST DE LA PRÉCÉDENTE ANALYSE
-                        // -----------------------------------------
+                        // =================================================
+                        // PHASE 1 : CONSTITUTION DE LA BASE
+                        // =================================================
 
                         if (
-                            oldHistory.length >=
-                                HISTORY_SIZE &&
-                            tests < TEST_LIMIT &&
+                            oldHistory.length <
+                            HISTORY_SIZE
+                        ) {
+                            const nextHistory = [
+                                ...oldHistory,
+                                lastDigit,
+                            ];
+
+                            historyRef.current =
+                                nextHistory;
+
+                            setHistory([
+                                ...nextHistory,
+                            ]);
+
+                            // Pas encore de test.
+                            predictionRef.current =
+                                null;
+
+                            return;
+                        }
+
+                        // =================================================
+                        // PHASE 2 : TEST
+                        // =================================================
+
+                        if (
+                            testsRef.current <
+                                TEST_LIMIT &&
                             predictionRef.current !== null
                         ) {
-                            setTests(prev => {
-                                if (prev >= TEST_LIMIT) {
-                                    return prev;
-                                }
+                            const currentPrediction =
+                                predictionRef.current;
 
-                                return prev + 1;
-                            });
+                            testsRef.current += 1;
+
+                            setTests(
+                                testsRef.current
+                            );
 
                             if (
-                                predictionRef.current ===
+                                currentPrediction ===
                                 lastDigit
                             ) {
-                                setSuccesses(prev => prev + 1);
+                                successesRef.current += 1;
+
+                                setSuccesses(
+                                    successesRef.current
+                                );
                             }
                         }
 
-                        // -----------------------------------------
+                        // =================================================
                         // AJOUT DU NOUVEAU TICK
-                        // -----------------------------------------
+                        // =================================================
 
                         const nextHistory = [
                             ...oldHistory,
@@ -118,17 +163,14 @@ const R75TickMonitor = () => {
                             ...nextHistory,
                         ]);
 
-                        // -----------------------------------------
+                        // =================================================
                         // CALCUL DE LA NOUVELLE ANALYSE
-                        // -----------------------------------------
+                        // =================================================
 
                         if (
-                            nextHistory.length <
-                            HISTORY_SIZE
+                            testsRef.current >=
+                            TEST_LIMIT
                         ) {
-                            predictionRef.current =
-                                null;
-
                             return;
                         }
 
@@ -144,20 +186,37 @@ const R75TickMonitor = () => {
                             Array(10).fill(0);
 
                         nextHistory.forEach(value => {
-                            globalCounts[value]++;
+                            if (
+                                value >= 0 &&
+                                value <= 9
+                            ) {
+                                globalCounts[value]++;
+                            }
                         });
 
                         recent.forEach(value => {
-                            recentCounts[value]++;
+                            if (
+                                value >= 0 &&
+                                value <= 9
+                            ) {
+                                recentCounts[value]++;
+                            }
                         });
 
-                        // -----------------------------------------
-                        // SCORE EXPÉRIMENTAL
-                        // -----------------------------------------
+                        // =================================================
+                        // SCORE V2
+                        // 50 % historique
+                        // 50 % récent
+                        // =================================================
 
-                        const scores = Array(10).fill(0);
+                        const scores =
+                            Array(10).fill(0);
 
-                        for (let i = 0; i < 10; i++) {
+                        for (
+                            let i = 0;
+                            i < 10;
+                            i++
+                        ) {
                             const globalFrequency =
                                 globalCounts[i] /
                                 HISTORY_SIZE;
@@ -166,16 +225,6 @@ const R75TickMonitor = () => {
                                 recentCounts[i] /
                                 RECENT_SIZE;
 
-                            /*
-                             * 50 % historique
-                             * 50 % récent
-                             *
-                             * Ce n'est PAS une probabilité
-                             * garantie. C'est uniquement un
-                             * score expérimental permettant
-                             * de tester une règle.
-                             */
-
                             scores[i] =
                                 globalFrequency * 50 +
                                 recentFrequency * 50;
@@ -183,7 +232,11 @@ const R75TickMonitor = () => {
 
                         let bestDigit = 0;
 
-                        for (let i = 1; i < 10; i++) {
+                        for (
+                            let i = 1;
+                            i < 10;
+                            i++
+                        ) {
                             if (
                                 scores[i] >
                                 scores[bestDigit]
@@ -196,6 +249,7 @@ const R75TickMonitor = () => {
                             bestDigit;
                     });
 
+                // Une seule souscription R_75.
                 api_base.api.send({
                     ticks: 'R_75',
                     subscribe: 1,
@@ -217,11 +271,11 @@ const R75TickMonitor = () => {
                 subscription.unsubscribe();
             }
         };
-    }, [tests]);
+    }, []);
 
-    // ================================================
-    // STATISTIQUES
-    // ================================================
+    // =====================================================
+    // STATISTIQUES AFFICHÉES
+    // =====================================================
 
     const globalCounts = Array(10).fill(0);
     const recentCounts = Array(10).fill(0);
@@ -274,7 +328,10 @@ const R75TickMonitor = () => {
 
     const testRate =
         tests > 0
-            ? ((successes / tests) * 100).toFixed(1)
+            ? (
+                  (successes / tests) *
+                  100
+              ).toFixed(1)
             : '0.0';
 
     return (
@@ -288,7 +345,7 @@ const R75TickMonitor = () => {
             }}
         >
             <h2>
-                Moniteur de ticks R75 — V2
+                Moniteur de ticks R75 — V2.1
             </h2>
 
             <p>
@@ -322,7 +379,7 @@ const R75TickMonitor = () => {
             <hr />
 
             <h3>
-                Base d'analyse
+                Phase 1 — Base d'analyse
             </h3>
 
             <p>
@@ -337,17 +394,24 @@ const R75TickMonitor = () => {
                 HISTORY_SIZE ? (
                 <p>
                     📊 Collecte de la base
-                    d'analyse en cours...
+                    de 500 ticks en cours...
                 </p>
             ) : (
                 <>
                     <p>
-                        ✅ Base de 1000 ticks
-                        disponible.
+                        ✅ Base de 500 ticks
+                        terminée.
                     </p>
 
+                    <p>
+                        🔒 Base d'analyse
+                        verrouillée.
+                    </p>
+
+                    <hr />
+
                     <h3>
-                        Fréquence historique
+                        Fréquence des 500 ticks
                     </h3>
 
                     {globalCounts.map(
@@ -393,7 +457,7 @@ const R75TickMonitor = () => {
                     <hr />
 
                     <h3>
-                        Score expérimental V2
+                        Score expérimental V2.1
                     </h3>
 
                     {scores.map(
@@ -417,12 +481,12 @@ const R75TickMonitor = () => {
                     <hr />
 
                     <h3>
-                        Test hors-échantillon
+                        Phase 2 — Test
                     </h3>
 
                     <p>
                         <strong>
-                            Tests :
+                            Tests réalisés :
                         </strong>{' '}
                         {tests} / {TEST_LIMIT}
                     </p>
@@ -449,7 +513,7 @@ const R75TickMonitor = () => {
                     </p>
 
                     <p>
-                        📌 Référence théorique :
+                        📌 Référence :
                         environ 10 %.
                     </p>
 
