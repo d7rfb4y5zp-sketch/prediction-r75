@@ -15,8 +15,8 @@ const PAPER_TEST_LIMIT = 1000;
 const BLOCK_SIZE = 100;
 const ANALYSIS_WINDOW = 40;
 
-const TICK_REQUEST_ID = 4130;
-const BALANCE_REQUEST_ID = 4131;
+const TICK_REQUEST_ID = 4124;
+const BALANCE_REQUEST_ID = 4125;
 
 type Direction = 'UP' | 'DOWN' | 'FLAT';
 
