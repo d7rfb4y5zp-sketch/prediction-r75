@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api_base } from '../external/bot-skeleton/services/api/api-base';
 
 const MARKET_SYMBOL = 'frxEURUSD';
@@ -10,1649 +10,1990 @@ const BLOCK_SIZE = 100;
 const ANALYSIS_WINDOW = 20;
 
 type Direction = 'UP' | 'DOWN' | 'FLAT';
+type TestMode = 'idle' | 'running' | 'finished';
 
 type Tick = {
     quote: number;
     epoch: number;
-    direction: Direction;
 };
 
 type Stats = {
+    total: number;
     wins: number;
     losses: number;
-    virtual: number;
+    rate: number;
+    profit: number;
 };
 
 type BalanceInfo = {
-    balance: number | null;
-    currency: string;
-    loginid: string;
+    balance: number;
+    currency?: string;
+    loginid?: string;
 };
-
-type TestMode = 'idle' | 'testing' | 'stopped' | 'done';
 
 type ProposalInfo = {
-    id: string;
-    askPrice: number | null;
-    payout: number | null;
-    spot: number | null;
-    contractType: string;
-    duration: number;
-    durationUnit: string;
-    direction: string;
+    id?: string;
+    ask_price?: number;
+    payout?: number;
+    display_value?: string;
+    contract_type?: string;
+    duration?: number;
+    duration_unit?: string;
 };
 
-const styles = {
-    page: {
-        width: '100%',
-        height: '100dvh',
-        minHeight: '100vh',
-        overflowY: 'auto',
-        overflowX: 'hidden',
-        WebkitOverflowScrolling: 'touch' as any,
-        overscrollBehaviorY: 'auto' as any,
-        touchAction: 'pan-y' as any,
-        background: '#0f172a',
-        color: '#e5e7eb',
-        padding: '16px',
-        paddingBottom: '70px',
-        fontFamily: 'Arial, sans-serif',
-        boxSizing: 'border-box' as any,
-    },
+const getLastDigit = (quote: number): number => {
+    const text = quote.toFixed(5);
+    const digits = text.replace(/\D/g, '');
 
-    container: {
-        width: '100%',
-        maxWidth: '720px',
-        margin: '0 auto',
-    },
+    if (!digits.length) return 0;
 
-    title: {
-        fontSize: '24px',
-        fontWeight: 800,
-        marginBottom: '6px',
-        color: '#f8fafc',
-    },
-
-    subtitle: {
-        fontSize: '13px',
-        color: '#94a3b8',
-        marginBottom: '16px',
-    },
-
-    card: {
-        background: '#111827',
-        border: '1px solid #1f2937',
-        borderRadius: '16px',
-        padding: '16px',
-        marginBottom: '14px',
-        boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
-    },
-
-    sectionTitle: {
-        fontSize: '16px',
-        fontWeight: 800,
-        marginBottom: '12px',
-        color: '#f8fafc',
-    },
-
-    row: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: '12px',
-        padding: '8px 0',
-        borderBottom: '1px solid #1f2937',
-    },
-
-    label: {
-        color: '#94a3b8',
-        fontSize: '13px',
-    },
-
-    value: {
-        color: '#f8fafc',
-        fontWeight: 700,
-        fontSize: '14px',
-        textAlign: 'right' as const,
-        wordBreak: 'break-word' as const,
-    },
-
-    button: {
-        width: '100%',
-        border: 'none',
-        borderRadius: '12px',
-        padding: '14px',
-        fontSize: '15px',
-        fontWeight: 800,
-        cursor: 'pointer',
-        marginTop: '8px',
-    },
-
-    input: {
-        width: '100%',
-        boxSizing: 'border-box' as const,
-        background: '#0f172a',
-        color: '#f8fafc',
-        border: '1px solid #334155',
-        borderRadius: '10px',
-        padding: '12px',
-        fontSize: '15px',
-        outline: 'none',
-    },
-
-    badge: {
-        display: 'inline-block',
-        padding: '5px 9px',
-        borderRadius: '999px',
-        fontSize: '12px',
-        fontWeight: 800,
-    },
-
-    small: {
-        fontSize: '12px',
-        lineHeight: 1.5,
-        color: '#94a3b8',
-    },
+    return Number(digits.slice(-1));
 };
 
-function calculateDirection(previous: number | null, current: number): Direction {
+const calculateDirection = (
+    previous: number | null,
+    current: number
+): Direction => {
     if (previous === null) return 'FLAT';
 
     if (current > previous) return 'UP';
     if (current < previous) return 'DOWN';
 
     return 'FLAT';
-}
+};
 
-function calculatePrediction(directions: Direction[]): {
-    prediction: Direction;
-    strength: number;
-    observations: number;
-} {
-    const usable = directions
-        .filter(direction => direction === 'UP' || direction === 'DOWN')
-        .slice(-ANALYSIS_WINDOW);
-
-    if (usable.length < 5) {
+const calculatePrediction = (
+    ticks: Tick[]
+): { prediction: Direction; strength: number } => {
+    if (ticks.length < 5) {
         return {
             prediction: 'FLAT',
             strength: 0,
-            observations: usable.length,
         };
     }
 
-    const up = usable.filter(direction => direction === 'UP').length;
-    const down = usable.filter(direction => direction === 'DOWN').length;
+    const sample = ticks.slice(-ANALYSIS_WINDOW);
 
-    const prediction = up >= down ? 'UP' : 'DOWN';
+    let up = 0;
+    let down = 0;
+    let flat = 0;
 
-    const strength =
-        Math.round((Math.max(up, down) / usable.length) * 1000) / 10;
+    for (let i = 1; i < sample.length; i += 1) {
+        const direction = calculateDirection(
+            sample[i - 1].quote,
+            sample[i].quote
+        );
+
+        if (direction === 'UP') up += 1;
+        else if (direction === 'DOWN') down += 1;
+        else flat += 1;
+    }
+
+    const total = up + down + flat;
+
+    if (!total) {
+        return {
+            prediction: 'FLAT',
+            strength: 0,
+        };
+    }
+
+    if (up > down && up >= flat) {
+        return {
+            prediction: 'UP',
+            strength: Math.round((up / total) * 100),
+        };
+    }
+
+    if (down > up && down >= flat) {
+        return {
+            prediction: 'DOWN',
+            strength: Math.round((down / total) * 100),
+        };
+    }
 
     return {
-        prediction,
-        strength,
-        observations: usable.length,
+        prediction: 'FLAT',
+        strength: Math.round((flat / total) * 100),
     };
-}
+};
 
-export default function ForexMonitorV412() {
+const getPredictionText = (prediction: Direction) => {
+    if (prediction === 'UP') return '🟢 HAUSSE';
+    if (prediction === 'DOWN') return '🔴 BAISSE';
+    return '⚪ STABLE';
+};
+
+const getProposalContractType = (prediction: Direction) => {
+    if (prediction === 'UP') return 'CALL';
+    if (prediction === 'DOWN') return 'PUT';
+
+    return null;
+};
+
+const emptyStats = (): Stats => ({
+    total: 0,
+    wins: 0,
+    losses: 0,
+    rate: 0,
+    profit: 0,
+});
+
+const R75TickMonitor: React.FC = () => {
     const [connected, setConnected] = useState(false);
-    const [connectionMessage, setConnectionMessage] = useState(
-        'Connexion à Deriv…'
-    );
 
     const [price, setPrice] = useState<number | null>(null);
-    const [lastDigit, setLastDigit] = useState<string>('—');
+    const [lastDigit, setLastDigit] = useState<number | null>(null);
 
     const [ticks, setTicks] = useState<Tick[]>([]);
-    const [historyCount, setHistoryCount] = useState(0);
-
-    const [currentDirection, setCurrentDirection] =
-        useState<Direction>('FLAT');
-
+    const [direction, setDirection] = useState<Direction>('FLAT');
     const [prediction, setPrediction] = useState<Direction>('FLAT');
     const [strength, setStrength] = useState(0);
+
     const [observations, setObservations] = useState(0);
 
-    const [balanceInfo, setBalanceInfo] = useState<BalanceInfo>({
-        balance: null,
-        currency: 'USD',
-        loginid: '',
-    });
-
-    const [balanceStatus, setBalanceStatus] = useState(
-        'En attente du solde…'
-    );
+    const [balance, setBalance] = useState<BalanceInfo | null>(null);
+    const [balanceStatus, setBalanceStatus] = useState('—');
 
     const [testMode, setTestMode] = useState<TestMode>('idle');
+    const [paperStats, setPaperStats] = useState<Stats>(emptyStats());
 
-    const [paperStats, setPaperStats] = useState<Stats>({
-        wins: 0,
-        losses: 0,
-        virtual: 0,
-    });
-
-    const [paperCount, setPaperCount] = useState(0);
-
-    const [blockResults, setBlockResults] = useState<number[]>([]);
-
+    const [blockResults, setBlockResults] = useState<Stats[]>([]);
     const [finalPrediction, setFinalPrediction] =
         useState<Direction>('FLAT');
 
-    const [statusMessage, setStatusMessage] = useState(
-        'Prêt pour le test.'
-    );
+    const [statusMessage, setStatusMessage] =
+        useState('Initialisation…');
 
-    /*
-     * V4.12 — Proposition Demo
-     */
-
-    const [proposalAmount, setProposalAmount] = useState('1');
+    const [amount, setAmount] = useState('1');
 
     const [proposal, setProposal] =
         useState<ProposalInfo | null>(null);
 
-    const [proposalLoading, setProposalLoading] = useState(false);
+    const [proposalLoading, setProposalLoading] =
+        useState(false);
 
-    const [proposalMessage, setProposalMessage] = useState(
-        'Aucune proposition demandée.'
-    );
+    const [proposalMessage, setProposalMessage] =
+        useState('');
 
-    const [proposalError, setProposalError] = useState('');
+    const [proposalError, setProposalError] =
+        useState('');
 
-    const testCountRef = useRef(0);
-    const statsRef = useRef<Stats>({
-        wins: 0,
-        losses: 0,
-        virtual: 0,
-    });
-
-    const currentPredictionRef = useRef<Direction>('FLAT');
+    const [accountIsDemo, setAccountIsDemo] =
+        useState(false);
 
     const previousPriceRef = useRef<number | null>(null);
 
-    const tickRequestIdRef = useRef(4801);
-    const balanceRequestIdRef = useRef(4901);
-    const proposalRequestIdRef = useRef(41201);
+    const currentPredictionRef =
+        useRef<Direction>('FLAT');
 
-    const isMountedRef = useRef(true);
+    const testModeRef =
+        useRef<TestMode>('idle');
 
-    const winRate = useMemo(() => {
-        const total = paperStats.wins + paperStats.losses;
+    const paperStatsRef =
+        useRef<Stats>(emptyStats());
 
-        if (total === 0) return 0;
+    const blockResultsRef =
+        useRef<Stats[]>([]);
 
-        return (paperStats.wins / total) * 100;
-    }, [paperStats]);
+    const blockWinsRef =
+        useRef(0);
 
-    const lossRate = useMemo(() => {
-        const total = paperStats.wins + paperStats.losses;
+    const blockLossesRef =
+        useRef(0);
 
-        if (total === 0) return 0;
+    const blockProfitRef =
+        useRef(0);
 
-        return (paperStats.losses / total) * 100;
-    }, [paperStats]);
+    const balanceRequestIdRef =
+        useRef(4900);
 
-    const averageBlock = useMemo(() => {
-        if (blockResults.length === 0) return 0;
+    const proposalRequestIdRef =
+        useRef(12000);
 
-        return (
-            blockResults.reduce((sum, value) => sum + value, 0) /
-            blockResults.length
-        );
-    }, [blockResults]);
+    const mountedRef =
+        useRef(true);
 
-    const minBlock = useMemo(() => {
-        if (blockResults.length === 0) return 0;
+    const messageSubscriptionRef =
+        useRef<{ unsubscribe?: () => void } | null>(null);
 
-        return Math.min(...blockResults);
-    }, [blockResults]);
+    const resetBlockCounters = useCallback(() => {
+        blockWinsRef.current = 0;
+        blockLossesRef.current = 0;
+        blockProfitRef.current = 0;
+    }, []);
 
-    const maxBlock = useMemo(() => {
-        if (blockResults.length === 0) return 0;
+    const resetPaperStats = useCallback(() => {
+        const stats = emptyStats();
 
-        return Math.max(...blockResults);
-    }, [blockResults]);
+        paperStatsRef.current = stats;
 
-    const predictionLabel =
-        prediction === 'UP'
-            ? '🟢 HAUSSE'
-            : prediction === 'DOWN'
-              ? '🔴 BAISSE'
-              : '⚪ ATTENTE';
-
-    const directionLabel =
-        currentDirection === 'UP'
-            ? '🟢 HAUSSE'
-            : currentDirection === 'DOWN'
-              ? '🔴 BAISSE'
-              : '⚪ STABLE';
-
-    /*
-     * Balance
-     */
-
-    const requestCurrentBalance = () => {
-        try {
-            api_base.api.send({
-                balance: 1,
-                req_id: balanceRequestIdRef.current++,
-            });
-
-            setBalanceStatus('Demande de solde envoyée…');
-        } catch (error) {
-            setBalanceStatus('Erreur demande solde.');
-        }
-    };
-
-    /*
-     * Paper Test
-     */
-
-    const resetPaperTest = () => {
-        const freshStats = {
-            wins: 0,
-            losses: 0,
-            virtual: 0,
-        };
-
-        statsRef.current = freshStats;
-
-        setPaperStats(freshStats);
-        setPaperCount(0);
+        setPaperStats(stats);
         setBlockResults([]);
+        blockResultsRef.current = [];
+
+        resetBlockCounters();
+
         setFinalPrediction('FLAT');
-        setTestMode('idle');
-        setStatusMessage('Test réinitialisé.');
-    };
+    }, [resetBlockCounters]);
 
-    const stopDemoTest = () => {
-        setTestMode('stopped');
-        setStatusMessage(
-            `Test arrêté à ${testCountRef.current}/${PAPER_TEST_LIMIT}.`
-        );
-    };
+    const processPaperObservation = useCallback(
+        (currentDirection: Direction) => {
+            if (testModeRef.current !== 'running') {
+                return;
+            }
 
-    const startDemoTest = () => {
-        if (!connected) {
-            setStatusMessage(
-                '⚠️ Deriv n’est pas encore connecté.'
-            );
-            return;
-        }
+            const previousPrediction =
+                currentPredictionRef.current;
 
-        if (ticks.length < HISTORY_SIZE) {
-            setStatusMessage(
-                `⚠️ Collecte de ${HISTORY_SIZE} ticks…`
-            );
-            return;
-        }
+            if (previousPrediction === 'FLAT') {
+                return;
+            }
 
-        if (testCountRef.current >= PAPER_TEST_LIMIT) {
-            setStatusMessage(
-                'Test déjà terminé. Utilise Recommencer.'
-            );
-            return;
-        }
+            const win =
+                previousPrediction === currentDirection;
 
-        setTestMode('testing');
+            const oldStats =
+                paperStatsRef.current;
 
-        setStatusMessage(
-            '🟢 Test Demo démarré — mode virtuel.'
-        );
-    };
+            const newStats: Stats = {
+                total: oldStats.total + 1,
+                wins: oldStats.wins + (win ? 1 : 0),
+                losses: oldStats.losses + (win ? 0 : 1),
+                rate: 0,
+                profit:
+                    oldStats.profit +
+                    (win ? 1 : -1),
+            };
 
-    /*
-     * Traiter une nouvelle observation du paper test.
-     */
+            newStats.rate =
+                newStats.total > 0
+                    ? (newStats.wins / newStats.total) * 100
+                    : 0;
 
-    const processPaperObservation = (
-        actualDirection: Direction
-    ) => {
-        if (testMode !== 'testing') return;
+            paperStatsRef.current = newStats;
 
-        const previousPrediction =
-            currentPredictionRef.current;
+            if (!mountedRef.current) return;
 
-        if (
-            previousPrediction !== 'UP' &&
-            previousPrediction !== 'DOWN'
-        ) {
-            return;
-        }
+            setPaperStats(newStats);
 
-        if (
-            actualDirection !== 'UP' &&
-            actualDirection !== 'DOWN'
-        ) {
-            return;
-        }
+            if (win) {
+                blockWinsRef.current += 1;
+            } else {
+                blockLossesRef.current += 1;
+            }
 
-        const nextCount = testCountRef.current + 1;
+            blockProfitRef.current +=
+                win ? 1 : -1;
 
-        const won =
-            previousPrediction === actualDirection;
+            if (
+                newStats.total > 0 &&
+                newStats.total % BLOCK_SIZE === 0
+            ) {
+                const block: Stats = {
+                    total: BLOCK_SIZE,
+                    wins: blockWinsRef.current,
+                    losses: blockLossesRef.current,
+                    rate:
+                        (blockWinsRef.current /
+                            BLOCK_SIZE) *
+                        100,
+                    profit: blockProfitRef.current,
+                };
 
-        const nextStats = {
-            wins: statsRef.current.wins + (won ? 1 : 0),
-            losses: statsRef.current.losses + (won ? 0 : 1),
-            virtual:
-                statsRef.current.virtual +
-                (won ? 1 : -1),
-        };
+                const updatedBlocks = [
+                    ...blockResultsRef.current,
+                    block,
+                ];
 
-        statsRef.current = nextStats;
-        testCountRef.current = nextCount;
+                blockResultsRef.current =
+                    updatedBlocks;
 
-        setPaperStats(nextStats);
-        setPaperCount(nextCount);
+                setBlockResults(updatedBlocks);
 
-        if (nextCount % BLOCK_SIZE === 0) {
-            const blockWins = nextStats.wins;
+                resetBlockCounters();
+            }
 
-            const previousBlocks =
-                Math.floor(
-                    (nextCount - BLOCK_SIZE) / BLOCK_SIZE
+            if (
+                newStats.total >=
+                PAPER_TEST_LIMIT
+            ) {
+                testModeRef.current = 'finished';
+
+                setTestMode('finished');
+
+                setFinalPrediction(
+                    currentPredictionRef.current
                 );
 
-            const previousWins =
-                blockResults
-                    .slice(0, previousBlocks)
-                    .reduce(
-                        (sum, block) =>
-                            sum + Math.round(block),
-                        0
-                    );
+                setStatusMessage(
+                    '✅ Paper Test terminé — 1000 observations'
+                );
+            }
+        },
+        [resetBlockCounters]
+    );
 
-            const currentBlockWins =
-                blockWins - previousWins;
+    const processTick = useCallback(
+        (tick: Tick) => {
+            if (!Number.isFinite(tick.quote)) {
+                return;
+            }
 
-            const blockRate =
-                currentBlockWins;
+            const previousPrice =
+                previousPriceRef.current;
 
-            setBlockResults(prev => [
-                ...prev,
-                blockRate,
-            ]);
-        }
+            const currentDirection =
+                calculateDirection(
+                    previousPrice,
+                    tick.quote
+                );
 
-        if (nextCount >= PAPER_TEST_LIMIT) {
-            setTestMode('done');
-
-            setFinalPrediction(
-                currentPredictionRef.current
+            /*
+             * Validation de la prédiction précédente
+             * AVANT de remplacer currentPredictionRef.
+             */
+            processPaperObservation(
+                currentDirection
             );
 
-            setStatusMessage(
-                '✅ Test terminé — prédiction finale conservée.'
-            );
-        }
-    };
+            previousPriceRef.current =
+                tick.quote;
 
-    /*
-     * Proposition Demo
-     *
-     * IMPORTANT:
-     * Cette fonction demande uniquement un prix/proposal.
-     * Elle n'appelle PAS "buy".
-     */
+            setPrice(tick.quote);
 
-    const requestDemoProposal = () => {
-        if (!connected) {
-            setProposalError(
-                'Deriv n’est pas connecté.'
-            );
-            return;
-        }
-
-        if (
-            prediction !== 'UP' &&
-            prediction !== 'DOWN'
-        ) {
-            setProposalError(
-                'Attends une prédiction HAUSSE ou BAISSE.'
-            );
-            return;
-        }
-
-        const amount = Number(proposalAmount);
-
-        if (
-            !Number.isFinite(amount) ||
-            amount <= 0
-        ) {
-            setProposalError(
-                'Montant invalide.'
-            );
-            return;
-        }
-
-        setProposalLoading(true);
-        setProposal(null);
-        setProposalError('');
-
-        setProposalMessage(
-            'Demande de proposition à Deriv…'
-        );
-
-        const contractType =
-            prediction === 'UP'
-                ? 'CALL'
-                : 'PUT';
-
-        const reqId =
-            proposalRequestIdRef.current++;
-
-        try {
-            api_base.api.send({
-                proposal: 1,
-                amount,
-                basis: 'stake',
-                contract_type: contractType,
-                currency: 'USD',
-                duration: 1,
-                duration_unit: 'm',
-                underlying_symbol: MARKET_SYMBOL,
-                req_id: reqId,
-            });
-        } catch (error) {
-            setProposalLoading(false);
-            setProposalError(
-                'Impossible d’envoyer la demande de proposition.'
-            );
-        }
-    };
-
-    /*
-     * Messages Deriv
-     */
-
-    useEffect(() => {
-        isMountedRef.current = true;
-
-        let unsubscribe: (() => void) | undefined;
-
-        const processTick = (message: any) => {
-            const tick = message?.tick;
-
-            if (!tick) return;
-
-            const quote = Number(tick.quote);
-
-            if (!Number.isFinite(quote)) return;
-
-            const direction = calculateDirection(
-                previousPriceRef.current,
-                quote
+            setLastDigit(
+                getLastDigit(tick.quote)
             );
 
-            previousPriceRef.current = quote;
-
-            setPrice(quote);
-
-            const formatted =
-                quote.toFixed(5);
-
-            const digits =
-                formatted.replace('.', '');
-
-            const digit =
-                digits.length > 0
-                    ? digits[digits.length - 1]
-                    : '—';
-
-            setLastDigit(digit);
-
-            setCurrentDirection(direction);
+            setDirection(
+                currentDirection
+            );
 
             setTicks(previousTicks => {
                 const nextTicks = [
                     ...previousTicks,
-                    {
-                        quote,
-                        epoch:
-                            Number(tick.epoch) ||
-                            Date.now(),
-                        direction,
-                    },
+                    tick,
                 ].slice(-HISTORY_SIZE);
 
-                setHistoryCount(
-                    nextTicks.length
-                );
-
-                const directions =
-                    nextTicks.map(
-                        item => item.direction
-                    );
-
-                const result =
+                const analysis =
                     calculatePrediction(
-                        directions
+                        nextTicks
                     );
-
-                setPrediction(
-                    result.prediction
-                );
-
-                setStrength(
-                    result.strength
-                );
-
-                setObservations(
-                    result.observations
-                );
 
                 currentPredictionRef.current =
-                    result.prediction;
+                    analysis.prediction;
+
+                if (mountedRef.current) {
+                    setPrediction(
+                        analysis.prediction
+                    );
+
+                    setStrength(
+                        analysis.strength
+                    );
+                }
 
                 return nextTicks;
             });
 
-            processPaperObservation(direction);
-        };
-
-        const processBalance = (message: any) => {
-            if (!message?.balance) return;
-
-            const balance =
-                Number(
-                    message.balance.balance
-                );
-
-            const currency =
-                message.balance.currency ||
-                'USD';
-
-            const loginid =
-                message.balance.loginid ||
-                '';
-
-            setBalanceInfo({
-                balance: Number.isFinite(balance)
-                    ? balance
-                    : null,
-                currency,
-                loginid,
-            });
-
-            setBalanceStatus(
-                '🟢 Balance reçu de Deriv'
+            setObservations(
+                value => value + 1
             );
-        };
+        },
+        [processPaperObservation]
+    );
 
-        const processProposal = (message: any) => {
-            if (!message?.proposal) return;
-
-            const data =
-                message.proposal;
-
-            const askPrice =
-                Number(data.ask_price);
-
-            const payout =
-                Number(data.payout);
-
-            const spot =
-                Number(data.spot);
-
-            const contractType =
-                data.contract_type ||
-                (prediction === 'UP'
-                    ? 'CALL'
-                    : 'PUT');
-
-            const proposalData: ProposalInfo = {
-                id: String(
-                    data.id || '—'
-                ),
-                askPrice:
-                    Number.isFinite(askPrice)
-                        ? askPrice
-                        : null,
-                payout:
-                    Number.isFinite(payout)
-                        ? payout
-                        : null,
-                spot:
-                    Number.isFinite(spot)
-                        ? spot
-                        : null,
-                contractType,
-                duration: 1,
-                durationUnit: 'm',
-                direction:
-                    contractType === 'CALL'
-                        ? 'HAUSSE'
-                        : 'BAISSE',
-            };
-
-            setProposal(
-                proposalData
-            );
-
-            setProposalLoading(false);
-
-            setProposalMessage(
-                '✅ Proposition reçue — aucun achat effectué.'
-            );
-
-            setProposalError('');
-        };
-
-        const processError = (message: any) => {
-            if (!message?.error) return;
-
-            const errorMessage =
-                message.error.message ||
-                'Erreur Deriv inconnue.';
-
-            const reqId =
-                message?.echo_req?.req_id;
-
-            if (
-                reqId ===
-                balanceRequestIdRef.current
-            ) {
-                setBalanceStatus(
-                    `⚠️ ${errorMessage}`
-                );
-            }
-
-            setProposalLoading(false);
-
-            setProposalError(
-                errorMessage
-            );
-
-            setStatusMessage(
-                `⚠️ Deriv : ${errorMessage}`
-            );
-        };
-
-        const handleMessage = (message: any) => {
+    const handleDerivMessage = useCallback(
+        (message: any) => {
             if (!message) return;
 
+            if (message.error) {
+                const errorMessage =
+                    message.error.message ||
+                    message.error.code ||
+                    'Erreur Deriv';
+
+                if (mountedRef.current) {
+                    setStatusMessage(
+                        `🔴 ${errorMessage}`
+                    );
+                }
+
+                return;
+            }
+
             if (message.msg_type === 'tick') {
-                processTick(message);
+                const tick = message.tick;
+
+                if (!tick) return;
+
+                processTick({
+                    quote: Number(tick.quote),
+                    epoch: Number(
+                        tick.epoch || Date.now() / 1000
+                    ),
+                });
+
+                if (mountedRef.current) {
+                    setConnected(true);
+                    setStatusMessage(
+                        '🟢 Connecté à Deriv — ticks reçus'
+                    );
+                }
+
+                return;
             }
 
             if (message.msg_type === 'balance') {
-                processBalance(message);
+                const balanceValue =
+                    Number(message.balance);
+
+                const loginid =
+                    message.loginid ||
+                    message.authorize?.loginid;
+
+                const currency =
+                    message.currency ||
+                    message.authorize?.currency ||
+                    'USD';
+
+                const info: BalanceInfo = {
+                    balance: balanceValue,
+                    currency,
+                    loginid,
+                };
+
+                if (mountedRef.current) {
+                    setBalance(info);
+                    setBalanceStatus('🟢 Solde reçu');
+                    setConnected(true);
+
+                    /*
+                     * Sécurité :
+                     * le compte doit être clairement Demo.
+                     */
+                    const isDemo =
+                        typeof loginid === 'string' &&
+                        (
+                            loginid.startsWith('VRTC') ||
+                            loginid.startsWith('VR')
+                        );
+
+                    setAccountIsDemo(isDemo);
+                }
+
+                return;
             }
 
-            if (message.msg_type === 'proposal') {
-                processProposal(message);
+            if (message.msg_type === 'authorize') {
+                const loginid =
+                    message.authorize?.loginid ||
+                    message.loginid;
+
+                const currency =
+                    message.authorize?.currency ||
+                    'USD';
+
+                const isDemo =
+                    typeof loginid === 'string' &&
+                    (
+                        loginid.startsWith('VRTC') ||
+                        loginid.startsWith('VR')
+                    );
+
+                if (mountedRef.current) {
+                    setAccountIsDemo(isDemo);
+                    setConnected(true);
+                }
+
+                if (
+                    message.authorize?.balance !==
+                    undefined
+                ) {
+                    const info: BalanceInfo = {
+                        balance: Number(
+                            message.authorize.balance
+                        ),
+                        currency,
+                        loginid,
+                    };
+
+                    if (mountedRef.current) {
+                        setBalance(info);
+                        setBalanceStatus(
+                            '🟢 Solde reçu'
+                        );
+                    }
+                }
+
+                return;
             }
 
-            if (message.error) {
-                processError(message);
+            if (
+                message.msg_type === 'proposal'
+            ) {
+                const proposalData =
+                    message.proposal;
+
+                if (!proposalData) return;
+
+                const proposalInfo: ProposalInfo = {
+                    id: proposalData.id,
+                    ask_price:
+                        Number(
+                            proposalData.ask_price
+                        ),
+                    payout:
+                        Number(
+                            proposalData.payout
+                        ),
+                    display_value:
+                        proposalData.display_value,
+                    contract_type:
+                        proposalData.contract_type,
+                    duration:
+                        Number(
+                            proposalData.duration
+                        ),
+                    duration_unit:
+                        proposalData.duration_unit,
+                };
+
+                if (mountedRef.current) {
+                    setProposal(
+                        proposalInfo
+                    );
+
+                    setProposalLoading(
+                        false
+                    );
+
+                    setProposalError('');
+
+                    setProposalMessage(
+                        '✅ Proposition Demo reçue — aucun achat effectué.'
+                    );
+                }
+
+                return;
             }
 
             /*
-             * Une réponse ping/authorize ou autre message
-             * prouve que le canal répond.
+             * Certaines réponses peuvent être envoyées
+             * avec req_id sans msg_type utile.
              */
             if (
-                message.msg_type === 'tick' ||
-                message.msg_type === 'balance' ||
-                message.msg_type === 'proposal' ||
-                message.msg_type === 'authorize'
+                message.req_id &&
+                message.error
             ) {
-                setConnected(true);
+                if (mountedRef.current) {
+                    setProposalLoading(
+                        false
+                    );
 
-                setConnectionMessage(
-                    '🟢 Connecté à Deriv — EUR/USD'
+                    setProposalError(
+                        message.error.message ||
+                        'Erreur de requête'
+                    );
+                }
+            }
+        },
+        [processTick]
+    );
+
+    const requestCurrentBalance =
+        useCallback(() => {
+            if (!api_base.api) {
+                setBalanceStatus(
+                    '🔴 API Deriv non initialisée'
+                );
+
+                return;
+            }
+
+            const requestId =
+                balanceRequestIdRef.current + 1;
+
+            balanceRequestIdRef.current =
+                requestId;
+
+            setBalanceStatus(
+                '🟠 Chargement du solde…'
+            );
+
+            try {
+                api_base.api.send({
+                    balance: 1,
+                    req_id: requestId,
+                });
+            } catch (error) {
+                setBalanceStatus(
+                    '🔴 Erreur balance'
+                );
+            }
+        }, []);
+
+    const requestDemoProposal =
+        useCallback(() => {
+            setProposalError('');
+            setProposalMessage('');
+            setProposal(null);
+
+            if (!api_base.api) {
+                setProposalError(
+                    'API Deriv non initialisée.'
+                );
+
+                return;
+            }
+
+            if (!accountIsDemo) {
+                setProposalError(
+                    '⚠️ Aucun compte Demo clairement détecté. Aucune proposition envoyée.'
+                );
+
+                return;
+            }
+
+            const numericAmount =
+                Number(amount);
+
+            if (
+                !Number.isFinite(
+                    numericAmount
+                ) ||
+                numericAmount <= 0
+            ) {
+                setProposalError(
+                    'Montant invalide.'
+                );
+
+                return;
+            }
+
+            const contractType =
+                getProposalContractType(
+                    prediction
+                );
+
+            if (!contractType) {
+                setProposalError(
+                    'Pas de signal UP/DOWN suffisamment défini.'
+                );
+
+                return;
+            }
+
+            const requestId =
+                proposalRequestIdRef.current + 1;
+
+            proposalRequestIdRef.current =
+                requestId;
+
+            setProposalLoading(true);
+
+            setProposalMessage(
+                '🟠 Demande de proposition Demo…'
+            );
+
+            try {
+                /*
+                 * IMPORTANT :
+                 * proposal uniquement.
+                 *
+                 * Il n'y a volontairement AUCUN buy ici.
+                 */
+                api_base.api.send({
+                    proposal: 1,
+                    amount: numericAmount,
+                    basis: 'stake',
+                    contract_type:
+                        contractType,
+                    currency:
+                        balance?.currency ||
+                        'USD',
+                    duration: 1,
+                    duration_unit: 'm',
+                    underlying_symbol:
+                        MARKET_SYMBOL,
+                    req_id: requestId,
+                });
+            } catch (error) {
+                setProposalLoading(false);
+
+                setProposalError(
+                    'Impossible d’envoyer la demande de proposition.'
+                );
+            }
+        }, [
+            accountIsDemo,
+            amount,
+            balance?.currency,
+            prediction,
+        ]);
+
+    const startPaperTest = useCallback(() => {
+        resetPaperStats();
+
+        testModeRef.current =
+            'running';
+
+        setTestMode('running');
+
+        setStatusMessage(
+            `🟠 Paper Test démarré — objectif ${PAPER_TEST_LIMIT} observations`
+        );
+    }, [resetPaperStats]);
+
+    const stopPaperTest = useCallback(() => {
+        testModeRef.current =
+            'idle';
+
+        setTestMode('idle');
+
+        setStatusMessage(
+            '⏹️ Paper Test arrêté'
+        );
+    }, []);
+
+    const resetAllPaper = useCallback(() => {
+        testModeRef.current =
+            'idle';
+
+        setTestMode('idle');
+
+        resetPaperStats();
+
+        setStatusMessage(
+            '🔄 Statistiques Paper réinitialisées'
+        );
+    }, [resetPaperStats]);
+
+    /*
+     * Connexion Deriv
+     */
+    useEffect(() => {
+        mountedRef.current = true;
+
+        let cancelled = false;
+
+        const connect = async () => {
+            try {
+                if (mountedRef.current) {
+                    setStatusMessage(
+                        '🟠 Initialisation de Deriv…'
+                    );
+                }
+
+                /*
+                 * IMPORTANT :
+                 * api_base.init() doit être appelé
+                 * avant d'utiliser api_base.api.
+                 */
+                await api_base.init();
+
+                if (
+                    cancelled ||
+                    !mountedRef.current
+                ) {
+                    return;
+                }
+
+                if (!api_base.api) {
+                    setStatusMessage(
+                        '🔴 API Deriv indisponible'
+                    );
+
+                    return;
+                }
+
+                /*
+                 * L'API interne utilise :
+                 * api.onMessage().subscribe(...)
+                 *
+                 * et NON :
+                 * api.onMessage(callback)
+                 */
+                const stream =
+                    api_base.api.onMessage();
+
+                const subscription =
+                    stream.subscribe(
+                        handleDerivMessage
+                    );
+
+                messageSubscriptionRef.current =
+                    subscription;
+
+                setStatusMessage(
+                    '🟠 Connexion à Deriv…'
+                );
+
+                /*
+                 * Souscription aux ticks EUR/USD.
+                 */
+                try {
+                    api_base.api.send({
+                        ticks: MARKET_SYMBOL,
+                        subscribe: 1,
+                    });
+                } catch (error) {
+                    setStatusMessage(
+                        '🔴 Impossible de demander les ticks'
+                    );
+                }
+
+                /*
+                 * Solde ponctuel.
+                 *
+                 * Aucun subscribe balance ici,
+                 * pour éviter les doublons.
+                 */
+                requestCurrentBalance();
+            } catch (error: any) {
+                if (
+                    cancelled ||
+                    !mountedRef.current
+                ) {
+                    return;
+                }
+
+                setConnected(false);
+
+                setStatusMessage(
+                    `🔴 Connexion Deriv impossible${
+                        error?.message
+                            ? ` — ${error.message}`
+                            : ''
+                    }`
                 );
             }
         };
 
-        try {
-            if (
-                api_base?.api &&
-                typeof api_base.api.onMessage ===
-                    'function'
-            ) {
-                unsubscribe =
-                    api_base.api.onMessage(
-                        handleMessage
-                    );
-            }
-
-            setConnectionMessage(
-                'Connexion à Deriv…'
-            );
-
-            /*
-             * Flux EUR/USD
-             */
-            api_base.api.send({
-                ticks: MARKET_SYMBOL,
-                subscribe: 1,
-                req_id:
-                    tickRequestIdRef.current++,
-            });
-
-            /*
-             * Solde — requête ponctuelle.
-             * Pas de subscribe pour éviter les doublons.
-             */
-            api_base.api.send({
-                balance: 1,
-                req_id:
-                    balanceRequestIdRef.current++,
-            });
-        } catch (error) {
-            setConnected(false);
-
-            setConnectionMessage(
-                '🔴 Erreur de connexion Deriv'
-            );
-
-            setStatusMessage(
-                'Erreur lors de l’initialisation Deriv.'
-            );
-        }
+        connect();
 
         return () => {
-            isMountedRef.current = false;
+            cancelled = true;
+            mountedRef.current = false;
 
-            if (typeof unsubscribe === 'function') {
-                unsubscribe();
+            try {
+                messageSubscriptionRef.current?.unsubscribe?.();
+            } catch (error) {
+                // Rien à faire
             }
+
+            messageSubscriptionRef.current =
+                null;
         };
-    }, []);
+    }, [
+        handleDerivMessage,
+        requestCurrentBalance,
+    ]);
 
-    /*
-     * Affichage du test
-     */
-
-    const testButtonText =
-        testMode === 'testing'
-            ? '⏹️ ARRÊTER LE TEST'
-            : testMode === 'stopped'
-              ? '▶️ REPRENDRE LE TEST'
-              : testMode === 'done'
-                ? '🔄 RECOMMENCER'
-                : '▶️ TESTER SUR COMPTE DÉMO';
-
-    const handleTestButton = () => {
-        if (testMode === 'testing') {
-            stopDemoTest();
-            return;
+    const averageBlockRate = useMemo(() => {
+        if (!blockResults.length) {
+            return null;
         }
 
-        if (testMode === 'done') {
-            resetPaperTest();
-            return;
-        }
+        const totalWins =
+            blockResults.reduce(
+                (sum, block) =>
+                    sum + block.wins,
+                0
+            );
 
-        startDemoTest();
-    };
+        const total =
+            blockResults.reduce(
+                (sum, block) =>
+                    sum + block.total,
+                0
+            );
+
+        if (!total) return null;
+
+        return (
+            (totalWins / total) * 100
+        );
+    }, [blockResults]);
+
+    const displayBalance =
+        balance
+            ? `${balance.balance.toFixed(2)} ${
+                  balance.currency || 'USD'
+              }`
+            : '—';
+
+    const displayPrice =
+        price !== null
+            ? price.toFixed(5)
+            : '—';
+
+    const displayRate =
+        paperStats.total > 0
+            ? `${paperStats.rate.toFixed(2)} %`
+            : '—';
 
     return (
-        <div style={styles.page}>
-            <div style={styles.container}>
-                <div style={styles.title}>
-                    Moniteur Forex EUR/USD — V4.12
-                </div>
-
-                <div style={styles.subtitle}>
-                    Demo + Paper Trader + Proposition
-                </div>
-
-                {/* CONNEXION */}
-
-                <div style={styles.card}>
-                    <div style={styles.sectionTitle}>
-                        🔌 Connexion
-                    </div>
-
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            État
-                        </span>
-
-                        <span style={styles.value}>
-                            {connectionMessage}
-                        </span>
-                    </div>
-
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Marché
-                        </span>
-
-                        <span style={styles.value}>
-                            {MARKET_NAME}
-                        </span>
-                    </div>
-
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Symbole
-                        </span>
-
-                        <span style={styles.value}>
-                            {MARKET_SYMBOL}
-                        </span>
-                    </div>
-                </div>
-
-                {/* COMPTE */}
-
-                <div style={styles.card}>
-                    <div style={styles.sectionTitle}>
-                        💰 Compte Demo
-                    </div>
-
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Balance
-                        </span>
-
-                        <span style={styles.value}>
-                            {balanceInfo.balance !== null
-                                ? `${balanceInfo.balance.toFixed(
-                                      2
-                                  )} ${
-                                      balanceInfo.currency
-                                  }`
-                                : '—'}
-                        </span>
-                    </div>
-
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Account
-                        </span>
-
-                        <span style={styles.value}>
-                            {balanceInfo.loginid || '—'}
-                        </span>
-                    </div>
-
-                    <div style={styles.small}>
-                        {balanceStatus}
-                    </div>
-
-                    <button
-                        type="button"
-                        onClick={
-                            requestCurrentBalance
-                        }
+        <div
+            style={{
+                width: '100%',
+                height: '100dvh',
+                minHeight: '100vh',
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                WebkitOverflowScrolling:
+                    'touch',
+                overscrollBehaviorY: 'auto',
+                touchAction: 'pan-y',
+                background: '#0f172a',
+                color: '#e5e7eb',
+                padding: '16px',
+                paddingBottom: '70px',
+                fontFamily:
+                    'Arial, sans-serif',
+                boxSizing: 'border-box',
+            }}
+        >
+            <div
+                style={{
+                    maxWidth: 900,
+                    margin: '0 auto',
+                }}
+            >
+                <div
+                    style={{
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #243244',
+                        borderRadius: 18,
+                        padding: 18,
+                        marginBottom: 14,
+                    }}
+                >
+                    <div
                         style={{
-                            ...styles.button,
-                            background: '#334155',
-                            color: '#f8fafc',
+                            fontSize: 24,
+                            fontWeight: 800,
                         }}
                     >
-                        🔄 ACTUALISER LE SOLDE
-                    </button>
-                </div>
-
-                {/* MARCHÉ */}
-
-                <div style={styles.card}>
-                    <div style={styles.sectionTitle}>
-                        📈 Marché
+                        📈 Moniteur Forex
+                        EUR/USD — V4.12
                     </div>
 
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Prix
-                        </span>
-
-                        <span style={styles.value}>
-                            {price !== null
-                                ? price.toFixed(5)
-                                : '—'}
-                        </span>
+                    <div
+                        style={{
+                            marginTop: 6,
+                            color: '#94a3b8',
+                            fontSize: 14,
+                        }}
+                    >
+                        Demo + Paper Trader +
+                        Proposition
                     </div>
 
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Dernier chiffre
-                        </span>
-
-                        <span style={styles.value}>
-                            {lastDigit}
-                        </span>
+                    <div
+                        style={{
+                            marginTop: 14,
+                            padding: 12,
+                            borderRadius: 12,
+                            background:
+                                connected
+                                    ? '#052e1b'
+                                    : '#3f1d1d',
+                            color:
+                                connected
+                                    ? '#86efac'
+                                    : '#fca5a5',
+                            fontWeight: 700,
+                        }}
+                    >
+                        {connected
+                            ? '🟢 Connexion Deriv active'
+                            : '🔌 Connexion'}
                     </div>
 
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Historique
-                        </span>
-
-                        <span style={styles.value}>
-                            {historyCount}/{HISTORY_SIZE}
-                        </span>
-                    </div>
-
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Direction actuelle
-                        </span>
-
-                        <span style={styles.value}>
-                            {directionLabel}
-                        </span>
+                    <div
+                        style={{
+                            marginTop: 8,
+                            color: '#94a3b8',
+                            fontSize: 13,
+                        }}
+                    >
+                        {statusMessage}
                     </div>
                 </div>
-
-                {/* APPRENTISSAGE */}
-
-                <div style={styles.card}>
-                    <div style={styles.sectionTitle}>
-                        🧠 Analyse
-                    </div>
-
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Prediction
-                        </span>
-
-                        <span style={styles.value}>
-                            {predictionLabel}
-                        </span>
-                    </div>
-
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Force
-                        </span>
-
-                        <span style={styles.value}>
-                            {strength.toFixed(1)}%
-                        </span>
-                    </div>
-
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Observations
-                        </span>
-
-                        <span style={styles.value}>
-                            {observations}
-                        </span>
-                    </div>
-                </div>
-
-                {/* PROPOSITION DEMO */}
 
                 <div
                     style={{
-                        ...styles.card,
-                        border:
-                            '1px solid #334155',
+                        display: 'grid',
+                        gridTemplateColumns:
+                            'repeat(auto-fit,minmax(150px,1fr))',
+                        gap: 10,
+                        marginBottom: 14,
                     }}
                 >
-                    <div style={styles.sectionTitle}>
-                        🔐 Proposition Demo
-                    </div>
-
                     <div
                         style={{
-                            ...styles.small,
-                            marginBottom: '12px',
-                        }}
-                    >
-                        Cette étape demande uniquement
-                        un prix de contrat à Deriv.
-                        <strong>
-                            {' '}
-                            Aucun BUY n’est envoyé.
-                        </strong>
-                    </div>
-
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Direction
-                        </span>
-
-                        <span style={styles.value}>
-                            {prediction === 'UP'
-                                ? '🟢 CALL / HAUSSE'
-                                : prediction ===
-                                    'DOWN'
-                                  ? '🔴 PUT / BAISSE'
-                                  : '⚪ Attente'}
-                        </span>
-                    </div>
-
-                    <div
-                        style={{
-                            marginTop: '12px',
+                            background:
+                                '#111827',
+                            border:
+                                '1px solid #243244',
+                            borderRadius: 16,
+                            padding: 15,
                         }}
                     >
                         <div
                             style={{
-                                ...styles.label,
-                                marginBottom: '7px',
+                                color: '#94a3b8',
+                                fontSize: 13,
                             }}
                         >
-                            Montant Demo
+                            Prix EUR/USD
                         </div>
 
-                        <input
-                            value={proposalAmount}
-                            onChange={event =>
-                                setProposalAmount(
-                                    event.target.value
-                                )
-                            }
-                            inputMode="decimal"
-                            type="number"
-                            min="0.35"
-                            step="0.01"
-                            style={styles.input}
-                        />
+                        <div
+                            style={{
+                                fontSize: 25,
+                                fontWeight: 800,
+                                marginTop: 6,
+                            }}
+                        >
+                            {displayPrice}
+                        </div>
                     </div>
-
-                    <button
-                        type="button"
-                        onClick={
-                            requestDemoProposal
-                        }
-                        disabled={
-                            proposalLoading ||
-                            !connected ||
-                            (prediction !== 'UP' &&
-                                prediction !==
-                                    'DOWN')
-                        }
-                        style={{
-                            ...styles.button,
-                            background:
-                                proposalLoading
-                                    ? '#475569'
-                                    : '#2563eb',
-                            color: '#fff',
-                            opacity:
-                                !connected ||
-                                (prediction !== 'UP' &&
-                                    prediction !==
-                                        'DOWN')
-                                    ? 0.55
-                                    : 1,
-                        }}
-                    >
-                        {proposalLoading
-                            ? '⏳ DEMANDE EN COURS…'
-                            : '💵 OBTENIR PROPOSITION DEMO'}
-                    </button>
 
                     <div
                         style={{
-                            marginTop: '12px',
-                            padding: '10px',
-                            borderRadius: '10px',
-                            background: '#0f172a',
-                            fontSize: '12px',
-                            lineHeight: 1.5,
+                            background:
+                                '#111827',
+                            border:
+                                '1px solid #243244',
+                            borderRadius: 16,
+                            padding: 15,
                         }}
                     >
-                        {proposalMessage}
+                        <div
+                            style={{
+                                color: '#94a3b8',
+                                fontSize: 13,
+                            }}
+                        >
+                            Dernier chiffre
+                        </div>
+
+                        <div
+                            style={{
+                                fontSize: 32,
+                                fontWeight: 900,
+                                marginTop: 3,
+                            }}
+                        >
+                            {lastDigit ??
+                                '—'}
+                        </div>
                     </div>
+
+                    <div
+                        style={{
+                            background:
+                                '#111827',
+                            border:
+                                '1px solid #243244',
+                            borderRadius: 16,
+                            padding: 15,
+                        }}
+                    >
+                        <div
+                            style={{
+                                color: '#94a3b8',
+                                fontSize: 13,
+                            }}
+                        >
+                            Direction actuelle
+                        </div>
+
+                        <div
+                            style={{
+                                fontSize: 20,
+                                fontWeight: 800,
+                                marginTop: 6,
+                            }}
+                        >
+                            {getPredictionText(
+                                direction
+                            )}
+                        </div>
+                    </div>
+
+                    <div
+                        style={{
+                            background:
+                                '#111827',
+                            border:
+                                '1px solid #243244',
+                            borderRadius: 16,
+                            padding: 15,
+                        }}
+                    >
+                        <div
+                            style={{
+                                color: '#94a3b8',
+                                fontSize: 13,
+                            }}
+                        >
+                            Prédiction
+                        </div>
+
+                        <div
+                            style={{
+                                fontSize: 20,
+                                fontWeight: 800,
+                                marginTop: 6,
+                            }}
+                        >
+                            {getPredictionText(
+                                prediction
+                            )}
+                        </div>
+
+                        <div
+                            style={{
+                                color: '#94a3b8',
+                                fontSize: 12,
+                                marginTop: 4,
+                            }}
+                        >
+                            Force : {strength}%
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    style={{
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #243244',
+                        borderRadius: 18,
+                        padding: 18,
+                        marginBottom: 14,
+                    }}
+                >
+                    <div
+                        style={{
+                            fontSize: 18,
+                            fontWeight: 800,
+                            marginBottom: 12,
+                        }}
+                    >
+                        💰 Compte Demo
+                    </div>
+
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns:
+                                'repeat(auto-fit,minmax(150px,1fr))',
+                            gap: 10,
+                        }}
+                    >
+                        <div
+                            style={{
+                                background:
+                                    '#0f172a',
+                                borderRadius: 12,
+                                padding: 12,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    color: '#94a3b8',
+                                    fontSize: 12,
+                                }}
+                            >
+                                Solde
+                            </div>
+
+                            <div
+                                style={{
+                                    fontSize: 20,
+                                    fontWeight: 800,
+                                    marginTop: 5,
+                                }}
+                            >
+                                {displayBalance}
+                            </div>
+                        </div>
+
+                        <div
+                            style={{
+                                background:
+                                    '#0f172a',
+                                borderRadius: 12,
+                                padding: 12,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    color: '#94a3b8',
+                                    fontSize: 12,
+                                }}
+                            >
+                                Compte
+                            </div>
+
+                            <div
+                                style={{
+                                    fontSize: 15,
+                                    fontWeight: 700,
+                                    marginTop: 5,
+                                    wordBreak:
+                                        'break-word',
+                                }}
+                            >
+                                {balance?.loginid ||
+                                    '—'}
+                            </div>
+                        </div>
+
+                        <div
+                            style={{
+                                background:
+                                    '#0f172a',
+                                borderRadius: 12,
+                                padding: 12,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    color: '#94a3b8',
+                                    fontSize: 12,
+                                }}
+                            >
+                                Statut solde
+                            </div>
+
+                            <div
+                                style={{
+                                    marginTop: 5,
+                                    fontWeight: 700,
+                                }}
+                            >
+                                {balanceStatus}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    style={{
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #243244',
+                        borderRadius: 18,
+                        padding: 18,
+                        marginBottom: 14,
+                    }}
+                >
+                    <div
+                        style={{
+                            fontSize: 18,
+                            fontWeight: 800,
+                        }}
+                    >
+                        🧪 Paper Test
+                    </div>
+
+                    <div
+                        style={{
+                            color: '#94a3b8',
+                            fontSize: 13,
+                            marginTop: 5,
+                            marginBottom: 14,
+                        }}
+                    >
+                        Test virtuel uniquement.
+                        Aucun ordre n'est envoyé.
+                    </div>
+
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: 8,
+                            marginBottom: 15,
+                        }}
+                    >
+                        <button
+                            type="button"
+                            onClick={
+                                startPaperTest
+                            }
+                            disabled={
+                                testMode ===
+                                'running'
+                            }
+                            style={{
+                                border: 0,
+                                borderRadius: 10,
+                                padding:
+                                    '11px 14px',
+                                background:
+                                    testMode ===
+                                    'running'
+                                        ? '#374151'
+                                        : '#16a34a',
+                                color: 'white',
+                                fontWeight: 800,
+                            }}
+                        >
+                            ▶️ DÉMARRER
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={
+                                stopPaperTest
+                            }
+                            disabled={
+                                testMode !==
+                                'running'
+                            }
+                            style={{
+                                border: 0,
+                                borderRadius: 10,
+                                padding:
+                                    '11px 14px',
+                                background:
+                                    '#dc2626',
+                                color: 'white',
+                                fontWeight: 800,
+                                opacity:
+                                    testMode !==
+                                    'running'
+                                        ? 0.5
+                                        : 1,
+                            }}
+                        >
+                            ⏹️ ARRÊTER
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={
+                                resetAllPaper
+                            }
+                            style={{
+                                border: 0,
+                                borderRadius: 10,
+                                padding:
+                                    '11px 14px',
+                                background:
+                                    '#475569',
+                                color: 'white',
+                                fontWeight: 800,
+                            }}
+                        >
+                            🔄 RESET
+                        </button>
+                    </div>
+
+                    <div
+                        style={{
+                            background:
+                                '#0f172a',
+                            borderRadius: 12,
+                            padding: 12,
+                            marginBottom: 12,
+                        }}
+                    >
+                        <div
+                            style={{
+                                fontWeight: 800,
+                            }}
+                        >
+                            État :{' '}
+                            {testMode ===
+                            'running'
+                                ? '🟠 EN COURS'
+                                : testMode ===
+                                  'finished'
+                                ? '✅ TERMINÉ'
+                                : '⚪ ARRÊTÉ'}
+                        </div>
+
+                        <div
+                            style={{
+                                color: '#94a3b8',
+                                marginTop: 4,
+                                fontSize: 13,
+                            }}
+                        >
+                            {paperStats.total} /{' '}
+                            {PAPER_TEST_LIMIT}{' '}
+                            observations
+                        </div>
+                    </div>
+
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns:
+                                'repeat(auto-fit,minmax(120px,1fr))',
+                            gap: 8,
+                        }}
+                    >
+                        <div
+                            style={{
+                                background:
+                                    '#0f172a',
+                                padding: 12,
+                                borderRadius: 12,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    color: '#94a3b8',
+                                    fontSize: 12,
+                                }}
+                            >
+                                WIN
+                            </div>
+                            <div
+                                style={{
+                                    fontSize: 23,
+                                    fontWeight: 900,
+                                }}
+                            >
+                                {paperStats.wins}
+                            </div>
+                        </div>
+
+                        <div
+                            style={{
+                                background:
+                                    '#0f172a',
+                                padding: 12,
+                                borderRadius: 12,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    color: '#94a3b8',
+                                    fontSize: 12,
+                                }}
+                            >
+                                LOSS
+                            </div>
+                            <div
+                                style={{
+                                    fontSize: 23,
+                                    fontWeight: 900,
+                                }}
+                            >
+                                {paperStats.losses}
+                            </div>
+                        </div>
+
+                        <div
+                            style={{
+                                background:
+                                    '#0f172a',
+                                padding: 12,
+                                borderRadius: 12,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    color: '#94a3b8',
+                                    fontSize: 12,
+                                }}
+                            >
+                                Taux
+                            </div>
+                            <div
+                                style={{
+                                    fontSize: 23,
+                                    fontWeight: 900,
+                                }}
+                            >
+                                {displayRate}
+                            </div>
+                        </div>
+
+                        <div
+                            style={{
+                                background:
+                                    '#0f172a',
+                                padding: 12,
+                                borderRadius: 12,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    color: '#94a3b8',
+                                    fontSize: 12,
+                                }}
+                            >
+                                P/L virtuel
+                            </div>
+                            <div
+                                style={{
+                                    fontSize: 23,
+                                    fontWeight: 900,
+                                }}
+                            >
+                                {paperStats.profit >=
+                                0
+                                    ? '+'
+                                    : ''}
+                                {
+                                    paperStats.profit
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        style={{
+                            marginTop: 12,
+                            color: '#94a3b8',
+                            fontSize: 13,
+                        }}
+                    >
+                        Blocs terminés :{' '}
+                        {blockResults.length}
+                        {averageBlockRate !==
+                            null &&
+                            ` — moyenne : ${averageBlockRate.toFixed(
+                                2
+                            )}%`}
+                    </div>
+                </div>
+
+                <div
+                    style={{
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #243244',
+                        borderRadius: 18,
+                        padding: 18,
+                        marginBottom: 14,
+                    }}
+                >
+                    <div
+                        style={{
+                            fontSize: 18,
+                            fontWeight: 800,
+                        }}
+                    >
+                        💵 Proposition Demo
+                    </div>
+
+                    <div
+                        style={{
+                            color: '#94a3b8',
+                            fontSize: 13,
+                            marginTop: 5,
+                        }}
+                    >
+                        Cette section demande
+                        uniquement une proposition.
+                        Aucun achat n'est effectué.
+                    </div>
+
+                    <div
+                        style={{
+                            marginTop: 14,
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: 8,
+                            alignItems: 'center',
+                        }}
+                    >
+                        <input
+                            value={amount}
+                            onChange={event =>
+                                setAmount(
+                                    event.target
+                                        .value
+                                )
+                            }
+                            type="number"
+                            min="0.35"
+                            step="0.01"
+                            inputMode="decimal"
+                            style={{
+                                width: 100,
+                                padding: 11,
+                                borderRadius: 10,
+                                border:
+                                    '1px solid #475569',
+                                background:
+                                    '#0f172a',
+                                color: 'white',
+                                fontSize: 16,
+                                boxSizing:
+                                    'border-box',
+                            }}
+                        />
+
+                        <button
+                            type="button"
+                            onClick={
+                                requestDemoProposal
+                            }
+                            disabled={
+                                proposalLoading
+                            }
+                            style={{
+                                border: 0,
+                                borderRadius: 10,
+                                padding:
+                                    '12px 14px',
+                                background:
+                                    '#2563eb',
+                                color: 'white',
+                                fontWeight: 800,
+                                opacity:
+                                    proposalLoading
+                                        ? 0.6
+                                        : 1,
+                            }}
+                        >
+                            {proposalLoading
+                                ? '🟠 DEMANDE…'
+                                : '💵 OBTENIR PROPOSITION DEMO'}
+                        </button>
+                    </div>
+
+                    <div
+                        style={{
+                            marginTop: 12,
+                            padding: 12,
+                            borderRadius: 12,
+                            background:
+                                accountIsDemo
+                                    ? '#052e1b'
+                                    : '#3f1d1d',
+                            color:
+                                accountIsDemo
+                                    ? '#86efac'
+                                    : '#fca5a5',
+                            fontSize: 13,
+                        }}
+                    >
+                        {accountIsDemo
+                            ? '🟢 Compte Demo détecté'
+                            : '🔴 Compte Demo non confirmé — proposition bloquée'}
+                    </div>
+
+                    {proposalMessage && (
+                        <div
+                            style={{
+                                marginTop: 10,
+                                color: '#86efac',
+                                fontSize: 13,
+                            }}
+                        >
+                            {proposalMessage}
+                        </div>
+                    )}
 
                     {proposalError && (
                         <div
                             style={{
-                                marginTop: '10px',
-                                padding: '10px',
-                                borderRadius: '10px',
-                                background: '#450a0a',
-                                color: '#fecaca',
-                                fontSize: '12px',
-                                lineHeight: 1.5,
+                                marginTop: 10,
+                                color: '#fca5a5',
+                                fontSize: 13,
                             }}
                         >
-                            ⚠️ {proposalError}
+                            {proposalError}
                         </div>
                     )}
 
                     {proposal && (
                         <div
                             style={{
-                                marginTop: '12px',
-                                padding: '12px',
-                                borderRadius: '12px',
-                                background: '#052e16',
-                                border:
-                                    '1px solid #166534',
+                                marginTop: 14,
+                                background:
+                                    '#0f172a',
+                                borderRadius: 12,
+                                padding: 14,
                             }}
                         >
                             <div
                                 style={{
                                     fontWeight: 800,
-                                    marginBottom: '8px',
-                                    color: '#bbf7d0',
+                                    marginBottom: 8,
                                 }}
                             >
-                                ✅ PROPOSITION REÇUE
-                            </div>
-
-                            <div style={styles.row}>
-                                <span
-                                    style={
-                                        styles.label
-                                    }
-                                >
-                                    ID
-                                </span>
-
-                                <span
-                                    style={
-                                        styles.value
-                                    }
-                                >
-                                    {proposal.id}
-                                </span>
-                            </div>
-
-                            <div style={styles.row}>
-                                <span
-                                    style={
-                                        styles.label
-                                    }
-                                >
-                                    Contrat
-                                </span>
-
-                                <span
-                                    style={
-                                        styles.value
-                                    }
-                                >
-                                    {proposal.contractType}
-                                </span>
-                            </div>
-
-                            <div style={styles.row}>
-                                <span
-                                    style={
-                                        styles.label
-                                    }
-                                >
-                                    Direction
-                                </span>
-
-                                <span
-                                    style={
-                                        styles.value
-                                    }
-                                >
-                                    {proposal.direction}
-                                </span>
-                            </div>
-
-                            <div style={styles.row}>
-                                <span
-                                    style={
-                                        styles.label
-                                    }
-                                >
-                                    Ask Price
-                                </span>
-
-                                <span
-                                    style={
-                                        styles.value
-                                    }
-                                >
-                                    {proposal.askPrice !==
-                                    null
-                                        ? proposal.askPrice.toFixed(
-                                              2
-                                          )
-                                        : '—'}{' '}
-                                    USD
-                                </span>
-                            </div>
-
-                            <div style={styles.row}>
-                                <span
-                                    style={
-                                        styles.label
-                                    }
-                                >
-                                    Payout
-                                </span>
-
-                                <span
-                                    style={
-                                        styles.value
-                                    }
-                                >
-                                    {proposal.payout !==
-                                    null
-                                        ? proposal.payout.toFixed(
-                                              2
-                                          )
-                                        : '—'}{' '}
-                                    USD
-                                </span>
-                            </div>
-
-                            <div style={styles.row}>
-                                <span
-                                    style={
-                                        styles.label
-                                    }
-                                >
-                                    Spot
-                                </span>
-
-                                <span
-                                    style={
-                                        styles.value
-                                    }
-                                >
-                                    {proposal.spot !==
-                                    null
-                                        ? proposal.spot.toFixed(
-                                              5
-                                          )
-                                        : '—'}
-                                </span>
+                                📋 Proposition reçue
                             </div>
 
                             <div
                                 style={{
-                                    ...styles.small,
-                                    marginTop: '10px',
-                                    color: '#86efac',
+                                    display: 'grid',
+                                    gap: 5,
+                                    color: '#cbd5e1',
+                                    fontSize: 13,
                                 }}
                             >
-                                🔒 Aucun achat effectué.
-                                Cette V4.12 s’arrête à
-                                la proposition.
+                                <div>
+                                    Type :{' '}
+                                    {proposal.contract_type ||
+                                        '—'}
+                                </div>
+
+                                <div>
+                                    Prix demandé :{' '}
+                                    {Number.isFinite(
+                                        proposal.ask_price
+                                    )
+                                        ? proposal.ask_price?.toFixed(
+                                              2
+                                          )
+                                        : '—'}
+                                </div>
+
+                                <div>
+                                    Payout :{' '}
+                                    {Number.isFinite(
+                                        proposal.payout
+                                    )
+                                        ? proposal.payout?.toFixed(
+                                              2
+                                          )
+                                        : '—'}
+                                </div>
+
+                                <div>
+                                    Durée :{' '}
+                                    {proposal.duration ||
+                                        '—'}{' '}
+                                    {proposal.duration_unit ||
+                                        ''}
+                                </div>
+                            </div>
+
+                            <div
+                                style={{
+                                    marginTop: 10,
+                                    color: '#fbbf24',
+                                    fontSize: 12,
+                                    lineHeight: 1.45,
+                                }}
+                            >
+                                ⚠️ Cette proposition
+                                n'a pas été achetée.
+                                Le code V4.12 n'envoie
+                                volontairement aucun
+                                ordre BUY.
                             </div>
                         </div>
                     )}
                 </div>
 
-                {/* TEST DEMO / PAPER */}
-
-                <div style={styles.card}>
-                    <div style={styles.sectionTitle}>
-                        🧪 Test Demo
-                    </div>
-
-                    <div style={styles.small}>
-                        Le bouton démarre le test de la
-                        stratégie avec les ticks EUR/USD
-                        en mode virtuel.
-                    </div>
-
-                    <button
-                        type="button"
-                        onClick={handleTestButton}
-                        style={{
-                            ...styles.button,
-                            background:
-                                testMode === 'testing'
-                                    ? '#dc2626'
-                                    : '#16a34a',
-                            color: '#fff',
-                        }}
-                    >
-                        {testButtonText}
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={resetPaperTest}
-                        style={{
-                            ...styles.button,
-                            background: '#334155',
-                            color: '#f8fafc',
-                        }}
-                    >
-                        ♻️ RÉINITIALISER
-                    </button>
-                </div>
-
-                {/* PAPER TRADING */}
-
-                <div style={styles.card}>
-                    <div style={styles.sectionTitle}>
-                        📊 Paper Trading
-                    </div>
-
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Observations
-                        </span>
-
-                        <span style={styles.value}>
-                            {paperCount}/
-                            {PAPER_TEST_LIMIT}
-                        </span>
-                    </div>
-
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Wins
-                        </span>
-
-                        <span style={styles.value}>
-                            {paperStats.wins}
-                        </span>
-                    </div>
-
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Losses
-                        </span>
-
-                        <span style={styles.value}>
-                            {paperStats.losses}
-                        </span>
-                    </div>
-
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Win rate
-                        </span>
-
-                        <span style={styles.value}>
-                            {winRate.toFixed(2)}%
-                        </span>
-                    </div>
-
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Loss rate
-                        </span>
-
-                        <span style={styles.value}>
-                            {lossRate.toFixed(2)}%
-                        </span>
-                    </div>
-
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Virtual P/L
-                        </span>
-
-                        <span style={styles.value}>
-                            {paperStats.virtual >= 0
-                                ? '+'
-                                : ''}
-                            {paperStats.virtual}
-                        </span>
-                    </div>
-
-                    <div
-                        style={{
-                            marginTop: '12px',
-                            padding: '10px',
-                            borderRadius: '10px',
-                            background: '#0f172a',
-                            fontSize: '12px',
-                        }}
-                    >
-                        {paperCount >=
-                        PAPER_TEST_LIMIT
-                            ? '✅ Test de 1000 observations terminé.'
-                            : testMode ===
-                                'testing'
-                              ? `🟢 Test en cours : ${paperCount}/${PAPER_TEST_LIMIT}`
-                              : testMode ===
-                                  'stopped'
-                                ? `⏸️ Test arrêté : ${paperCount}/${PAPER_TEST_LIMIT}`
-                                : '⚪ Test non démarré.'}
-                    </div>
-                </div>
-
-                {/* BLOCS */}
-
-                <div style={styles.card}>
-                    <div style={styles.sectionTitle}>
-                        📦 Blocs de 100
-                    </div>
-
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Blocs terminés
-                        </span>
-
-                        <span style={styles.value}>
-                            {blockResults.length}
-                        </span>
-                    </div>
-
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Moyenne
-                        </span>
-
-                        <span style={styles.value}>
-                            {averageBlock.toFixed(2)}%
-                        </span>
-                    </div>
-
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Minimum
-                        </span>
-
-                        <span style={styles.value}>
-                            {minBlock.toFixed(2)}%
-                        </span>
-                    </div>
-
-                    <div style={styles.row}>
-                        <span style={styles.label}>
-                            Maximum
-                        </span>
-
-                        <span style={styles.value}>
-                            {maxBlock.toFixed(2)}%
-                        </span>
-                    </div>
-                </div>
-
-                {/* STATUT */}
-
-                <div style={styles.card}>
-                    <div style={styles.sectionTitle}>
-                        📌 Statut
-                    </div>
-
-                    <div
-                        style={{
-                            padding: '12px',
-                            borderRadius: '12px',
-                            background: '#0f172a',
-                            lineHeight: 1.5,
-                            fontSize: '13px',
-                        }}
-                    >
-                        {statusMessage}
-                    </div>
-
-                    <div
-                        style={{
-                            marginTop: '12px',
-                            padding: '12px',
-                            borderRadius: '12px',
-                            background: '#172554',
-                            color: '#bfdbfe',
-                            fontSize: '12px',
-                            lineHeight: 1.5,
-                        }}
-                    >
-                        Prédiction finale :{' '}
-                        <strong>
-                            {finalPrediction ===
-                            'UP'
-                                ? '🟢 HAUSSE'
-                                : finalPrediction ===
-                                    'DOWN'
-                                  ? '🔴 BAISSE'
-                                  : '⚪ —'}
-                        </strong>
-                    </div>
-                </div>
-
-                {/* SÉCURITÉ */}
-
                 <div
                     style={{
-                        ...styles.card,
+                        background:
+                            '#111827',
                         border:
-                            '1px solid #166534',
-                        background: '#052e16',
+                            '1px solid #243244',
+                        borderRadius: 18,
+                        padding: 18,
+                        marginBottom: 14,
                     }}
                 >
                     <div
                         style={{
-                            ...styles.sectionTitle,
-                            color: '#bbf7d0',
+                            fontSize: 18,
+                            fontWeight: 800,
+                            marginBottom: 12,
                         }}
                     >
-                        🔒 Sécurité V4.12
+                        📊 Informations
                     </div>
 
                     <div
                         style={{
-                            color: '#bbf7d0',
-                            fontSize: '12px',
-                            lineHeight: 1.6,
+                            display: 'grid',
+                            gridTemplateColumns:
+                                'repeat(auto-fit,minmax(150px,1fr))',
+                            gap: 8,
                         }}
                     >
-                        ✅ Compte Demo uniquement.
-                        <br />
-                        ✅ Paper Test totalement
-                        virtuel.
-                        <br />
-                        ✅ Proposition Demo
-                        uniquement.
-                        <br />
-                        ❌ Aucun BUY envoyé.
-                        <br />
-                        ❌ Aucun ordre réel.
-                        <br />
-                        ❌ Aucun compte réel utilisé.
+                        <div
+                            style={{
+                                background:
+                                    '#0f172a',
+                                borderRadius: 12,
+                                padding: 12,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    color: '#94a3b8',
+                                    fontSize: 12,
+                                }}
+                            >
+                                Historique
+                            </div>
+
+                            <div
+                                style={{
+                                    fontSize: 20,
+                                    fontWeight: 800,
+                                    marginTop: 5,
+                                }}
+                            >
+                                {ticks.length}/
+                                {HISTORY_SIZE}
+                            </div>
+                        </div>
+
+                        <div
+                            style={{
+                                background:
+                                    '#0f172a',
+                                borderRadius: 12,
+                                padding: 12,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    color: '#94a3b8',
+                                    fontSize: 12,
+                                }}
+                            >
+                                Observations
+                            </div>
+
+                            <div
+                                style={{
+                                    fontSize: 20,
+                                    fontWeight: 800,
+                                    marginTop: 5,
+                                }}
+                            >
+                                {observations}
+                            </div>
+                        </div>
+
+                        <div
+                            style={{
+                                background:
+                                    '#0f172a',
+                                borderRadius: 12,
+                                padding: 12,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    color: '#94a3b8',
+                                    fontSize: 12,
+                                }}
+                            >
+                                Marché
+                            </div>
+
+                            <div
+                                style={{
+                                    fontSize: 18,
+                                    fontWeight: 800,
+                                    marginTop: 5,
+                                }}
+                            >
+                                {MARKET_NAME}
+                            </div>
+                        </div>
+
+                        <div
+                            style={{
+                                background:
+                                    '#0f172a',
+                                borderRadius: 12,
+                                padding: 12,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    color: '#94a3b8',
+                                    fontSize: 12,
+                                }}
+                            >
+                                Dernière prédiction
+                            </div>
+
+                            <div
+                                style={{
+                                    fontSize: 18,
+                                    fontWeight: 800,
+                                    marginTop: 5,
+                                }}
+                            >
+                                {finalPrediction ===
+                                'FLAT'
+                                    ? '—'
+                                    : getPredictionText(
+                                          finalPrediction
+                                      )}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div
                     style={{
-                        textAlign: 'center',
-                        color: '#64748b',
-                        fontSize: '11px',
-                        padding: '10px 0 20px',
+                        background:
+                            '#3f2a08',
+                        border:
+                            '1px solid #6b4f10',
+                        borderRadius: 16,
+                        padding: 15,
+                        color: '#fde68a',
+                        fontSize: 13,
+                        lineHeight: 1.55,
                     }}
                 >
-                    Prediction Forex EUR/USD —
-                    V4.12
+                    <strong>
+                        🔒 Sécurité V4.12
+                    </strong>
+
+                    <br />
+
+                    • Le Paper Test est
+                    entièrement virtuel.
+
+                    <br />
+
+                    • La section Proposition
+                    demande seulement une
+                    proposition.
+
+                    <br />
+
+                    • Aucun `buy` n'est présent
+                    dans ce composant.
+
+                    <br />
+
+                    • Aucun ordre réel n'est
+                    envoyé par ce fichier.
+
+                    <br />
+
+                    • Si le compte Demo n'est pas
+                    clairement détecté, la demande
+                    de proposition est bloquée.
                 </div>
             </div>
         </div>
     );
-}
+};
+
+export default R75TickMonitor;
