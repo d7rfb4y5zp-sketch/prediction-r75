@@ -7,12 +7,9 @@ const MARKET_NAME = 'EUR/USD';
 const HISTORY_SIZE = 500;
 const PAPER_TEST_LIMIT = 1000;
 const BLOCK_SIZE = 100;
+const ANALYSIS_WINDOW = 20;
 
-const VIRTUAL_STAKE = 1.0;
-const VIRTUAL_WIN = 0.80;
-const VIRTUAL_LOSS = 1.0;
-
-type Direction = 'UP' | 'DOWN' | 'FLAT';
+type Direction = 'UP' | 'DOWN';
 
 type Tick = {
     symbol?: string;
@@ -20,51 +17,35 @@ type Tick = {
     epoch?: number;
 };
 
-type Matrix = {
-    UP: {
-        UP: number;
-        DOWN: number;
-        FLAT: number;
-    };
-    DOWN: {
-        UP: number;
-        DOWN: number;
-        FLAT: number;
-    };
-    FLAT: {
-        UP: number;
-        DOWN: number;
-        FLAT: number;
-    };
-};
-
 type Stats = {
     tests: number;
     wins: number;
     losses: number;
-    skipped: number;
     virtualProfit: number;
 };
 
-const createEmptyMatrix = (): Matrix => ({
-    UP: {
-        UP: 0,
-        DOWN: 0,
-        FLAT: 0,
-    },
-    DOWN: {
-        UP: 0,
-        DOWN: 0,
-        FLAT: 0,
-    },
-    FLAT: {
-        UP: 0,
-        DOWN: 0,
-        FLAT: 0,
-    },
-});
+type BalanceInfo = {
+    balance: number;
+    currency: string;
+    loginid?: string;
+};
 
-const directionLabel = (direction: Direction) => {
+type TestMode =
+    | 'idle'
+    | 'testing'
+    | 'stopped'
+    | 'done';
+
+const getDirection = (
+    previous: number,
+    current: number
+): Direction => {
+    return current >= previous ? 'UP' : 'DOWN';
+};
+
+const directionLabel = (
+    direction: Direction | null
+) => {
     if (direction === 'UP') {
         return '🟢 HAUSSE';
     }
@@ -73,81 +54,20 @@ const directionLabel = (direction: Direction) => {
         return '🔴 BAISSE';
     }
 
-    return '⚪ STABLE';
-};
-
-const getDirection = (
-    previous: number,
-    current: number
-): Direction => {
-    if (current > previous) {
-        return 'UP';
-    }
-
-    if (current < previous) {
-        return 'DOWN';
-    }
-
-    return 'FLAT';
-};
-
-const addTransition = (
-    matrix: Matrix,
-    from: Direction,
-    to: Direction
-) => {
-    matrix[from][to] += 1;
-};
-
-const calculatePrediction = (
-    matrix: Matrix,
-    current: Direction
-) => {
-    const row = matrix[current];
-
-    const up = row.UP;
-    const down = row.DOWN;
-
-    /*
-     * IMPORTANT :
-     *
-     * FLAT n'est pas utilisé comme signal.
-     * Nous cherchons uniquement UP ou DOWN.
-     */
-    const directionalTotal = up + down;
-
-    if (directionalTotal === 0) {
-        return {
-            direction: null as Direction | null,
-            strength: 0,
-            observations: 0,
-        };
-    }
-
-    if (up >= down) {
-        return {
-            direction: 'UP' as Direction,
-            strength: (up / directionalTotal) * 100,
-            observations: directionalTotal,
-        };
-    }
-
-    return {
-        direction: 'DOWN' as Direction,
-        strength: (down / directionalTotal) * 100,
-        observations: directionalTotal,
-    };
+    return '—';
 };
 
 export default function R75TickMonitor() {
     const [connected, setConnected] =
         useState(false);
 
-    const [status, setStatus] = useState(
-        '🟠 Connexion à Deriv…'
-    );
+    const [connectionError, setConnectionError] =
+        useState('');
 
     const [price, setPrice] =
+        useState<number | null>(null);
+
+    const [lastDigit, setLastDigit] =
         useState<number | null>(null);
 
     const [historyCount, setHistoryCount] =
@@ -157,8 +77,11 @@ export default function R75TickMonitor() {
         'learning' | 'testing' | 'done'
     >('learning');
 
+    const [testMode, setTestMode] =
+        useState<TestMode>('idle');
+
     const [currentDirection, setCurrentDirection] =
-        useState<Direction>('FLAT');
+        useState<Direction | null>(null);
 
     const [prediction, setPrediction] =
         useState<Direction | null>(null);
@@ -169,16 +92,13 @@ export default function R75TickMonitor() {
     const [observations, setObservations] =
         useState(0);
 
-    const [matrix, setMatrix] =
-        useState<Matrix>(createEmptyMatrix());
-
-    const [stats, setStats] = useState<Stats>({
-        tests: 0,
-        wins: 0,
-        losses: 0,
-        skipped: 0,
-        virtualProfit: 0,
-    });
+    const [stats, setStats] =
+        useState<Stats>({
+            tests: 0,
+            wins: 0,
+            losses: 0,
+            virtualProfit: 0,
+        });
 
     const [blocks, setBlocks] =
         useState<number[]>([]);
@@ -189,32 +109,24 @@ export default function R75TickMonitor() {
     const [currentBlockTests, setCurrentBlockTests] =
         useState(0);
 
-    const [errorMessage, setErrorMessage] =
+    const [balanceInfo, setBalanceInfo] =
+        useState<BalanceInfo | null>(null);
+
+    const [balanceError, setBalanceError] =
         useState('');
 
-    /*
-     * ============================================================
-     * REFS
-     * ============================================================
-     */
+    const [balanceReceived, setBalanceReceived] =
+        useState(false);
 
     const previousPriceRef =
         useRef<number | null>(null);
 
-    const previousEpochRef =
-        useRef<number | null>(null);
+    const priceHistoryRef =
+        useRef<number[]>([]);
 
-    const historyRef =
+    const directionHistoryRef =
         useRef<Direction[]>([]);
 
-    const matrixRef =
-        useRef<Matrix>(createEmptyMatrix());
-
-    /*
-     * La prédiction produite après un tick.
-     *
-     * Elle sera vérifiée au tick suivant.
-     */
     const predictionRef =
         useRef<Direction | null>(null);
 
@@ -227,9 +139,6 @@ export default function R75TickMonitor() {
     const lossesRef =
         useRef(0);
 
-    const skippedRef =
-        useRef(0);
-
     const virtualProfitRef =
         useRef(0);
 
@@ -239,295 +148,160 @@ export default function R75TickMonitor() {
     const blockTestsRef =
         useRef(0);
 
-    const historyReadyRef =
+    const subscribedRef =
         useRef(false);
 
-    const activeRef =
-        useRef(true);
+    const balanceRequestedRef =
+        useRef(false);
+
+    const testModeRef =
+        useRef<TestMode>('idle');
 
     /*
-     * ============================================================
-     * FONCTION : METTRE À JOUR LES STATISTIQUES
-     * ============================================================
+     * =========================================================
+     * ANALYSE
+     * =========================================================
      */
 
-    const refreshStats = () => {
-        setStats({
-            tests: testsRef.current,
-            wins: winsRef.current,
-            losses: lossesRef.current,
-            skipped: skippedRef.current,
-            virtualProfit:
-                virtualProfitRef.current,
-        });
+    const calculatePrediction = () => {
+        const history =
+            directionHistoryRef.current;
 
-        setCurrentBlockWins(
-            blockWinsRef.current
+        const recent =
+            history.slice(
+                -ANALYSIS_WINDOW
+            );
+
+        if (recent.length < 5) {
+            return {
+                direction:
+                    null as Direction | null,
+                strength: 0,
+                observations:
+                    recent.length,
+            };
+        }
+
+        let up = 0;
+        let down = 0;
+
+        recent.forEach(
+            direction => {
+                if (
+                    direction ===
+                    'UP'
+                ) {
+                    up += 1;
+                } else {
+                    down += 1;
+                }
+            }
         );
 
-        setCurrentBlockTests(
-            blockTestsRef.current
-        );
+        const total =
+            up + down;
+
+        if (total === 0) {
+            return {
+                direction:
+                    null as Direction | null,
+                strength: 0,
+                observations: 0,
+            };
+        }
+
+        const upPercent =
+            (up / total) * 100;
+
+        const downPercent =
+            (down / total) * 100;
+
+        if (up >= down) {
+            return {
+                direction:
+                    'UP' as Direction,
+                strength:
+                    upPercent,
+                observations:
+                    total,
+            };
+        }
+
+        return {
+            direction:
+                'DOWN' as Direction,
+            strength:
+                downPercent,
+            observations:
+                total,
+        };
     };
 
     /*
-     * ============================================================
-     * FONCTION : TRAITER UN NOUVEAU TICK
-     * ============================================================
+     * =========================================================
+     * BOUTON : DÉMARRER LE TEST DEMO
+     * =========================================================
      */
 
-    const processLiveTick = (tick: Tick) => {
-        if (!activeRef.current) {
-            return;
-        }
-
-        if (
-            tick.symbol &&
-            tick.symbol !== MARKET_SYMBOL
-        ) {
-            return;
-        }
-
-        const quote = Number(tick.quote);
-
-        if (!Number.isFinite(quote)) {
-            return;
-        }
-
-        const epoch =
-            tick.epoch !== undefined
-                ? Number(tick.epoch)
-                : null;
-
-        /*
-         * Éviter de traiter exactement deux fois
-         * le même tick.
-         */
-        if (
-            epoch !== null &&
-            previousEpochRef.current === epoch
-        ) {
-            return;
-        }
-
-        if (epoch !== null) {
-            previousEpochRef.current =
-                epoch;
-        }
-
-        setConnected(true);
-        setStatus(
-            '🟢 Connecté à Deriv — EUR/USD'
-        );
-        setPrice(quote);
-        setErrorMessage('');
-
-        /*
-         * Premier tick du flux.
-         */
-        if (
-            previousPriceRef.current === null
-        ) {
-            previousPriceRef.current =
-                quote;
-
-            return;
-        }
-
-        const previousPrice =
-            previousPriceRef.current;
-
-        const direction =
-            getDirection(
-                previousPrice,
-                quote
+    const startDemoTest = () => {
+        if (!connected) {
+            setConnectionError(
+                'Le marché EUR/USD n’est pas encore connecté.'
             );
 
-        previousPriceRef.current =
-            quote;
-
-        setCurrentDirection(
-            direction
-        );
-
-        /*
-         * ========================================================
-         * PHASE 2
-         *
-         * Le premier nouveau tick après les 500
-         * permet d'établir une nouvelle transition.
-         *
-         * Avant de créer la nouvelle prédiction,
-         * on vérifie celle du tick précédent.
-         * ========================================================
-         */
+            return;
+        }
 
         if (
-            historyReadyRef.current &&
-            predictionRef.current !== null &&
-            testsRef.current <
-                PAPER_TEST_LIMIT
+            historyCount <
+            HISTORY_SIZE
         ) {
-            const predicted =
-                predictionRef.current;
+            setConnectionError(
+                'Attends que les 500 ticks soient collectés avant de commencer le test.'
+            );
 
-            /*
-             * Une prédiction UP/DOWN est vérifiée
-             * uniquement contre UP/DOWN.
-             *
-             * Si le marché est FLAT :
-             * signal ignoré.
-             */
-            if (
-                direction === 'FLAT'
-            ) {
-                skippedRef.current +=
-                    1;
+            return;
+        }
 
-                refreshStats();
-            } else {
-                testsRef.current +=
-                    1;
-
-                blockTestsRef.current +=
-                    1;
-
-                /*
-                 * GAIN
-                 */
-                if (
-                    predicted ===
-                    direction
-                ) {
-                    winsRef.current +=
-                        1;
-
-                    blockWinsRef.current +=
-                        1;
-
-                    virtualProfitRef.current +=
-                        VIRTUAL_WIN;
-                } else {
-                    /*
-                     * PERTE
-                     */
-                    lossesRef.current +=
-                        1;
-
-                    virtualProfitRef.current -=
-                        VIRTUAL_LOSS;
-                }
-
-                /*
-                 * Bloc de 100 trades.
-                 */
-                if (
-                    blockTestsRef.current >=
-                    BLOCK_SIZE
-                ) {
-                    const blockRate =
-                        blockTestsRef.current >
-                        0
-                            ? (
-                                  (blockWinsRef.current /
-                                      blockTestsRef.current) *
-                                  100
-                              )
-                            : 0;
-
-                    setBlocks(
-                        previous => [
-                            ...previous,
-                            blockRate,
-                        ]
-                    );
-
-                    blockTestsRef.current =
-                        0;
-
-                    blockWinsRef.current =
-                        0;
-                }
-
-                refreshStats();
-            }
-
-            /*
-             * TEST TERMINÉ
-             */
-            if (
-                testsRef.current >=
-                PAPER_TEST_LIMIT
-            ) {
-                setPhase('done');
-
-                predictionRef.current =
-                    null;
-
-                setPrediction(null);
-
-                return;
-            }
+        if (
+            testModeRef.current ===
+            'testing'
+        ) {
+            return;
         }
 
         /*
-         * ========================================================
-         * CONSTRUCTION DE LA MATRICE EN TEMPS RÉEL
-         * ========================================================
+         * IMPORTANT :
+         *
+         * Cette version ne fait PAS de requête buy.
+         *
+         * Elle démarre uniquement
+         * le paper trading.
+         */
+
+        testModeRef.current =
+            'testing';
+
+        setTestMode(
+            'testing'
+        );
+
+        setPhase('testing');
+
+        setConnectionError('');
+
+        /*
+         * Si aucun test n'a encore
+         * commencé, on prépare
+         * la première prédiction.
          */
 
         if (
-            historyReadyRef.current
+            predictionRef.current ===
+            null
         ) {
-            const history =
-                historyRef.current;
-
-            const previousDirection =
-                history.length > 0
-                    ? history[
-                          history.length - 1
-                      ]
-                    : null;
-
-            if (
-                previousDirection !== null
-            ) {
-                addTransition(
-                    matrixRef.current,
-                    previousDirection,
-                    direction
-                );
-            }
-
-            /*
-             * Historique roulant.
-             */
-            historyRef.current.push(
-                direction
-            );
-
-            if (
-                historyRef.current.length >
-                HISTORY_SIZE
-            ) {
-                historyRef.current.shift();
-            }
-
-            setMatrix({
-                ...matrixRef.current,
-            });
-
-            /*
-             * ====================================================
-             * NOUVELLE PRÉDICTION
-             * ====================================================
-             */
-
             const result =
-                calculatePrediction(
-                    matrixRef.current,
-                    direction
-                );
+                calculatePrediction();
 
             predictionRef.current =
                 result.direction;
@@ -543,467 +317,763 @@ export default function R75TickMonitor() {
             setObservations(
                 result.observations
             );
+        }
+    };
+
+    /*
+     * =========================================================
+     * BOUTON : ARRÊTER LE TEST
+     * =========================================================
+     */
+
+    const stopDemoTest = () => {
+        testModeRef.current =
+            'stopped';
+
+        setTestMode(
+            'stopped'
+        );
+
+        /*
+         * On conserve les statistiques.
+         */
+
+        setPrediction(
+            predictionRef.current
+        );
+    };
+
+    /*
+     * =========================================================
+     * RESET TEST
+     * =========================================================
+     */
+
+    const resetPaperTest = () => {
+        testsRef.current = 0;
+        winsRef.current = 0;
+        lossesRef.current = 0;
+        virtualProfitRef.current = 0;
+
+        blockWinsRef.current = 0;
+        blockTestsRef.current = 0;
+
+        predictionRef.current =
+            null;
+
+        setStats({
+            tests: 0,
+            wins: 0,
+            losses: 0,
+            virtualProfit: 0,
+        });
+
+        setBlocks([]);
+
+        setCurrentBlockWins(0);
+        setCurrentBlockTests(0);
+
+        const result =
+            calculatePrediction();
+
+        predictionRef.current =
+            result.direction;
+
+        setPrediction(
+            result.direction
+        );
+
+        setPredictionStrength(
+            result.strength
+        );
+
+        setObservations(
+            result.observations
+        );
+
+        testModeRef.current =
+            'idle';
+
+        setTestMode('idle');
+
+        setPhase('testing');
+    };
+
+    /*
+     * =========================================================
+     * DEMANDE DU SOLDE
+     * =========================================================
+     */
+
+    const requestCurrentBalance = () => {
+        if (!api_base?.api) {
+            return;
+        }
+
+        if (
+            balanceRequestedRef.current
+        ) {
+            return;
+        }
+
+        balanceRequestedRef.current =
+            true;
+
+        try {
+            api_base.api.send({
+                balance: 1,
+                req_id: 4901,
+            });
+        } catch (error: any) {
+            balanceRequestedRef.current =
+                false;
+
+            setBalanceError(
+                error?.message ||
+                    'Impossible de demander le solde Demo.'
+            );
+        }
+    };
+
+    /*
+     * =========================================================
+     * TRAITEMENT SOLDE
+     * =========================================================
+     */
+
+    const processBalance = (
+        data: any
+    ) => {
+        if (!data?.balance) {
+            return;
+        }
+
+        const rawBalance =
+            data.balance.balance;
+
+        const currency =
+            data.balance.currency ||
+            'USD';
+
+        const loginid =
+            data.balance.loginid;
+
+        if (
+            typeof rawBalance !==
+                'number' ||
+            !Number.isFinite(
+                rawBalance
+            )
+        ) {
+            return;
+        }
+
+        setBalanceInfo({
+            balance:
+                rawBalance,
+            currency,
+            loginid,
+        });
+
+        setBalanceReceived(
+            true
+        );
+
+        setBalanceError('');
+    };
+
+    /*
+     * =========================================================
+     * TRAITEMENT TICK
+     * =========================================================
+     */
+
+    const processTick = (
+        tick: Tick
+    ) => {
+        if (
+            tick.symbol !==
+            MARKET_SYMBOL
+        ) {
+            return;
+        }
+
+        if (
+            typeof tick.quote !==
+                'number' ||
+            !Number.isFinite(
+                tick.quote
+            )
+        ) {
+            return;
+        }
+
+        const currentPrice =
+            tick.quote;
+
+        setConnected(true);
+        setConnectionError('');
+
+        setPrice(
+            currentPrice
+        );
+
+        /*
+         * Dernier chiffre
+         */
+
+        const priceString =
+            currentPrice.toFixed(
+                5
+            );
+
+        const digit =
+            Number(
+                priceString[
+                    priceString.length -
+                        1
+                ]
+            );
+
+        setLastDigit(
+            digit
+        );
+
+        /*
+         * Premier tick
+         */
+
+        if (
+            previousPriceRef.current ===
+            null
+        ) {
+            previousPriceRef.current =
+                currentPrice;
+
+            priceHistoryRef.current.push(
+                currentPrice
+            );
+
+            setHistoryCount(
+                priceHistoryRef.current.length
+            );
 
             return;
         }
-    };
 
-    /*
-     * ============================================================
-     * CHARGEMENT DES 500 TICKS HISTORIQUES
-     * ============================================================
-     */
+        const previousPrice =
+            previousPriceRef.current;
 
-    const loadHistory = async () => {
-        try {
-            if (!api_base?.api) {
-                throw new Error(
-                    'API Deriv non disponible'
-                );
-            }
-
-            setStatus(
-                '🟠 Chargement des 500 ticks historiques…'
+        const direction =
+            getDirection(
+                previousPrice,
+                currentPrice
             );
 
-            /*
-             * Demande historique.
-             *
-             * subscribe: 0
-             *
-             * Important :
-             * l'historique est récupéré une seule fois.
-             */
-            const response =
-                await api_base.api.send({
-                    ticks_history:
-                        MARKET_SYMBOL,
+        previousPriceRef.current =
+            currentPrice;
 
-                    end: 'latest',
+        /*
+         * Historique prix
+         */
 
-                    count:
-                        HISTORY_SIZE,
+        priceHistoryRef.current.push(
+            currentPrice
+        );
 
-                    style: 'ticks',
+        if (
+            priceHistoryRef.current
+                .length >
+            HISTORY_SIZE
+        ) {
+            priceHistoryRef.current.shift();
+        }
 
-                    subscribe: 0,
-                });
+        /*
+         * Historique directions
+         */
 
-            if (
-                response?.error
-            ) {
-                throw new Error(
-                    response.error.message ||
-                        'Erreur ticks_history'
-                );
-            }
+        directionHistoryRef.current.push(
+            direction
+        );
 
-            const prices =
-                response?.history?.prices;
+        if (
+            directionHistoryRef.current
+                .length >
+            HISTORY_SIZE
+        ) {
+            directionHistoryRef.current.shift();
+        }
 
-            const times =
-                response?.history?.times;
+        const historyLength =
+            directionHistoryRef.current
+                .length;
 
-            if (
-                !Array.isArray(prices) ||
-                prices.length < 2
-            ) {
-                throw new Error(
-                    'Historique EUR/USD insuffisant'
-                );
-            }
+        setHistoryCount(
+            Math.min(
+                historyLength,
+                HISTORY_SIZE
+            )
+        );
 
-            /*
-             * Utiliser au maximum les 500 derniers prix.
-             */
-            const usablePrices =
-                prices.slice(
-                    -HISTORY_SIZE
-                );
+        setCurrentDirection(
+            direction
+        );
 
-            /*
-             * Construire les directions.
-             */
-            const directions: Direction[] =
-                [];
+        /*
+         * =====================================================
+         * APPRENTISSAGE
+         * =====================================================
+         */
 
-            const historicalMatrix =
-                createEmptyMatrix();
-
-            for (
-                let i = 1;
-                i < usablePrices.length;
-                i++
-            ) {
-                const previous =
-                    Number(
-                        usablePrices[
-                            i - 1
-                        ]
-                    );
-
-                const current =
-                    Number(
-                        usablePrices[i]
-                    );
-
-                if (
-                    !Number.isFinite(
-                        previous
-                    ) ||
-                    !Number.isFinite(
-                        current
-                    )
-                ) {
-                    continue;
-                }
-
-                const direction =
-                    getDirection(
-                        previous,
-                        current
-                    );
-
-                directions.push(
-                    direction
-                );
-
-                if (
-                    directions.length >=
-                    2
-                ) {
-                    const from =
-                        directions[
-                            directions.length -
-                                2
-                        ];
-
-                    const to =
-                        directions[
-                            directions.length -
-                                1
-                        ];
-
-                    addTransition(
-                        historicalMatrix,
-                        from,
-                        to
-                    );
-                }
-            }
-
-            if (
-                directions.length <
-                2
-            ) {
-                throw new Error(
-                    'Impossible de construire les transitions'
-                );
-            }
-
-            /*
-             * Garder les 500 directions maximum.
-             */
-            historyRef.current =
-                directions.slice(
-                    -HISTORY_SIZE
-                );
-
-            matrixRef.current =
-                historicalMatrix;
-
-            setHistoryCount(
-                historyRef.current.length
+        if (
+            historyLength <
+            HISTORY_SIZE
+        ) {
+            setPhase(
+                'learning'
             );
 
-            setMatrix({
-                ...historicalMatrix,
-            });
+            const result =
+                calculatePrediction();
+
+            setPrediction(
+                result.direction
+            );
+
+            setPredictionStrength(
+                result.strength
+            );
+
+            setObservations(
+                result.observations
+            );
+
+            return;
+        }
+
+        /*
+         * Une fois les 500 ticks
+         * collectés, on prépare
+         * la prédiction.
+         */
+
+        if (
+            predictionRef.current ===
+            null
+        ) {
+            const result =
+                calculatePrediction();
+
+            predictionRef.current =
+                result.direction;
+
+            setPrediction(
+                result.direction
+            );
+
+            setPredictionStrength(
+                result.strength
+            );
+
+            setObservations(
+                result.observations
+            );
+        }
+
+        /*
+         * =====================================================
+         * LE TEST NE TOURNE QUE SI
+         * L'UTILISATEUR A APPUYÉ
+         * SUR LE BOUTON.
+         * =====================================================
+         */
+
+        if (
+            testModeRef.current !==
+            'testing'
+        ) {
+            return;
+        }
+
+        /*
+         * =====================================================
+         * VALIDATION
+         * =====================================================
+         */
+
+        const previousPrediction =
+            predictionRef.current;
+
+        if (
+            previousPrediction !==
+                null &&
+            testsRef.current <
+                PAPER_TEST_LIMIT
+        ) {
+            testsRef.current += 1;
+
+            blockTestsRef.current +=
+                1;
+
+            if (
+                previousPrediction ===
+                direction
+            ) {
+                winsRef.current +=
+                    1;
+
+                blockWinsRef.current +=
+                    1;
+
+                virtualProfitRef.current +=
+                    1;
+            } else {
+                lossesRef.current +=
+                    1;
+
+                virtualProfitRef.current -=
+                    1;
+            }
 
             /*
-             * Dernier prix historique.
+             * Bloc de 100
              */
-            const lastPrice =
-                Number(
-                    usablePrices[
-                        usablePrices.length -
-                            1
+
+            if (
+                blockTestsRef.current ===
+                BLOCK_SIZE
+            ) {
+                const rate =
+                    (
+                        blockWinsRef.current /
+                        BLOCK_SIZE
+                    ) *
+                    100;
+
+                setBlocks(
+                    previous => [
+                        ...previous,
+                        rate,
                     ]
                 );
 
-            if (
-                Number.isFinite(lastPrice)
-            ) {
-                previousPriceRef.current =
-                    lastPrice;
+                blockTestsRef.current =
+                    0;
 
-                setPrice(lastPrice);
+                blockWinsRef.current =
+                    0;
             }
 
-            /*
-             * Dernier epoch historique.
-             */
-            if (
-                Array.isArray(times) &&
-                times.length > 0
-            ) {
-                const lastEpoch =
-                    Number(
-                        times[
-                            times.length -
-                                1
-                        ]
-                    );
+            setStats({
+                tests:
+                    testsRef.current,
 
-                if (
-                    Number.isFinite(
-                        lastEpoch
-                    )
-                ) {
-                    previousEpochRef.current =
-                        lastEpoch;
-                }
-            }
+                wins:
+                    winsRef.current,
 
-            /*
-             * Dernière direction.
-             */
-            const lastDirection =
-                historyRef.current[
-                    historyRef.current.length -
-                        1
-                ];
+                losses:
+                    lossesRef.current,
 
-            if (lastDirection) {
-                setCurrentDirection(
-                    lastDirection
-                );
+                virtualProfit:
+                    virtualProfitRef.current,
+            });
 
-                const result =
-                    calculatePrediction(
-                        historicalMatrix,
-                        lastDirection
-                    );
-
-                predictionRef.current =
-                    result.direction;
-
-                setPrediction(
-                    result.direction
-                );
-
-                setPredictionStrength(
-                    result.strength
-                );
-
-                setObservations(
-                    result.observations
-                );
-            }
-
-            historyReadyRef.current =
-                true;
-
-            setPhase('testing');
-
-            setStatus(
-                '🟢 Connecté à Deriv — EUR/USD'
+            setCurrentBlockWins(
+                blockWinsRef.current
             );
 
-            setConnected(true);
-        } catch (error: any) {
-            console.error(
-                'V4.5 history error:',
-                error
-            );
-
-            setConnected(false);
-
-            setStatus(
-                '🔴 Erreur chargement EUR/USD'
-            );
-
-            setErrorMessage(
-                error?.message ||
-                    'Erreur inconnue'
+            setCurrentBlockTests(
+                blockTestsRef.current
             );
         }
+
+        /*
+         * =====================================================
+         * FIN DES 1000 TESTS
+         * =====================================================
+         */
+
+        if (
+            testsRef.current >=
+            PAPER_TEST_LIMIT
+        ) {
+            testModeRef.current =
+                'done';
+
+            setTestMode(
+                'done'
+            );
+
+            setPhase('done');
+
+            const finalResult =
+                calculatePrediction();
+
+            predictionRef.current =
+                finalResult.direction;
+
+            setPrediction(
+                finalResult.direction
+            );
+
+            setPredictionStrength(
+                finalResult.strength
+            );
+
+            setObservations(
+                finalResult.observations
+            );
+
+            return;
+        }
+
+        /*
+         * =====================================================
+         * NOUVELLE PRÉDICTION
+         * =====================================================
+         */
+
+        const result =
+            calculatePrediction();
+
+        predictionRef.current =
+            result.direction;
+
+        setPrediction(
+            result.direction
+        );
+
+        setPredictionStrength(
+            result.strength
+        );
+
+        setObservations(
+            result.observations
+        );
     };
 
     /*
-     * ============================================================
-     * CONNEXION + ABONNEMENT TEMPS RÉEL
-     * ============================================================
+     * =========================================================
+     * CONNEXION DERIV
+     * =========================================================
      */
 
     useEffect(() => {
-        activeRef.current = true;
+        let mounted = true;
 
-        let subscription:
-            | any
-            | null = null;
+        if (!api_base?.api) {
+            setConnectionError(
+                'api_base.api est indisponible.'
+            );
 
-        const start = async () => {
-            try {
-                if (!api_base?.api) {
-                    setStatus(
-                        '🔴 API Deriv non disponible'
-                    );
+            return () => {
+                mounted = false;
+            };
+        }
 
-                    return;
-                }
+        if (
+            subscribedRef.current
+        ) {
+            return () => {
+                mounted = false;
+            };
+        }
 
-                /*
-                 * Écouter les messages Deriv.
-                 *
-                 * Cette forme correspond à l'api_base
-                 * utilisée dans ton projet.
-                 */
-                subscription =
-                    api_base.api
-                        .onMessage()
-                        .subscribe(
-                            ({
-                                data,
-                            }: any) => {
-                                if (
-                                    !activeRef.current
-                                ) {
-                                    return;
-                                }
+        subscribedRef.current =
+            true;
 
-                                /*
-                                 * Erreur API.
-                                 */
-                                if (
-                                    data?.error
-                                ) {
-                                    console.error(
-                                        'Deriv API error:',
-                                        data.error
+        let messageSubscription:
+            | {
+                  unsubscribe?: () => void;
+              }
+            | undefined;
+
+        try {
+            messageSubscription =
+                api_base.api
+                    .onMessage()
+                    .subscribe(
+                        ({
+                            data,
+                        }: {
+                            data: any;
+                        }) => {
+                            if (
+                                !mounted
+                            ) {
+                                return;
+                            }
+
+                            if (
+                                !data
+                            ) {
+                                return;
+                            }
+
+                            /*
+                             * TICK
+                             */
+
+                            if (
+                                data.msg_type ===
+                                'tick'
+                            ) {
+                                processTick(
+                                    data.tick
+                                );
+                            }
+
+                            /*
+                             * BALANCE
+                             */
+
+                            if (
+                                data.msg_type ===
+                                'balance'
+                            ) {
+                                processBalance(
+                                    data
+                                );
+                            }
+
+                            /*
+                             * ERREUR
+                             */
+
+                            if (
+                                data.msg_type ===
+                                    'error' ||
+                                data.error
+                            ) {
+                                const message =
+                                    data.error
+                                        ?.message ||
+                                    data.error ||
+                                    'Erreur Deriv inconnue';
+
+                                const text =
+                                    String(
+                                        message
                                     );
 
-                                    setErrorMessage(
-                                        data.error
-                                            ?.message ||
-                                            'Erreur Deriv'
+                                if (
+                                    text
+                                        .toLowerCase()
+                                        .includes(
+                                            'balance'
+                                        ) ||
+                                    text
+                                        .toLowerCase()
+                                        .includes(
+                                            'authoriz'
+                                        ) ||
+                                    text
+                                        .toLowerCase()
+                                        .includes(
+                                            'subscribed'
+                                        )
+                                ) {
+                                    setBalanceError(
+                                        text
+                                    );
+                                } else {
+                                    setConnectionError(
+                                        text
                                     );
 
-                                    return;
-                                }
-
-                                /*
-                                 * Tick temps réel.
-                                 */
-                                if (
-                                    data?.msg_type ===
-                                    'tick'
-                                ) {
-                                    processLiveTick(
-                                        data.tick
+                                    setConnected(
+                                        false
                                     );
                                 }
                             }
-                        );
-
-                /*
-                 * Charger d'abord
-                 * les 500 ticks historiques.
-                 */
-                await loadHistory();
-
-                if (
-                    !activeRef.current
-                ) {
-                    return;
-                }
-
-                /*
-                 * Puis abonnement temps réel.
-                 */
-                api_base.api.send({
-                    ticks:
-                        MARKET_SYMBOL,
-
-                    subscribe: 1,
-                });
-
-                setStatus(
-                    '🟢 Connecté à Deriv — EUR/USD'
-                );
-
-                setConnected(true);
-            } catch (error: any) {
-                console.error(
-                    'V4.5 connection error:',
-                    error
-                );
-
-                setConnected(false);
-
-                setStatus(
-                    '🔴 Erreur connexion Deriv'
-                );
-
-                setErrorMessage(
-                    error?.message ||
-                        'Impossible de démarrer le flux EUR/USD'
-                );
-            }
-        };
-
-        start();
-
-        return () => {
-            activeRef.current =
-                false;
-
-            if (
-                subscription &&
-                typeof subscription.unsubscribe ===
-                    'function'
-            ) {
-                subscription.unsubscribe();
-            }
+                        }
+                    );
 
             /*
-             * On ne ferme pas l'API globale :
-             * elle appartient à l'application Deriv.
+             * Flux EUR/USD
              */
+
+            api_base.api.send({
+                ticks:
+                    MARKET_SYMBOL,
+                subscribe: 1,
+            });
+
+            /*
+             * Solde
+             */
+
+            requestCurrentBalance();
+
+            setConnectionError('');
+        } catch (error: any) {
+            setConnectionError(
+                error?.message ||
+                    'Impossible de démarrer le flux Deriv.'
+            );
+
+            setConnected(false);
+        }
+
+        return () => {
+            mounted = false;
+
+            try {
+                if (
+                    messageSubscription &&
+                    typeof messageSubscription.unsubscribe ===
+                        'function'
+                ) {
+                    messageSubscription.unsubscribe();
+                }
+            } catch (error) {
+                console.log(
+                    'Erreur nettoyage abonnement EUR/USD',
+                    error
+                );
+            }
+
+            subscribedRef.current =
+                false;
+
+            balanceRequestedRef.current =
+                false;
         };
     }, []);
 
     /*
-     * ============================================================
-     * STATISTIQUES AFFICHÉES
-     * ============================================================
+     * =========================================================
+     * STATISTIQUES
+     * =========================================================
      */
 
-    const tests =
+    const totalTests =
         stats.tests;
 
     const winRate =
-        tests > 0
-            ? (stats.wins /
-                  tests) *
-              100
+        totalTests > 0
+            ? (
+                  stats.wins /
+                  totalTests
+              ) * 100
             : 0;
 
     const lossRate =
-        tests > 0
-            ? (stats.losses /
-                  tests) *
-              100
+        totalTests > 0
+            ? (
+                  stats.losses /
+                  totalTests
+              ) * 100
             : 0;
-
-    const totalStaked =
-        tests *
-        VIRTUAL_STAKE;
 
     const averageBlock =
         blocks.length > 0
             ? blocks.reduce(
-                  (sum, value) =>
+                  (
+                      sum,
+                      value
+                  ) =>
                       sum + value,
                   0
               ) /
@@ -1012,30 +1082,17 @@ export default function R75TickMonitor() {
 
     const minimumBlock =
         blocks.length > 0
-            ? Math.min(...blocks)
+            ? Math.min(
+                  ...blocks
+              )
             : 0;
 
     const maximumBlock =
         blocks.length > 0
-            ? Math.max(...blocks)
+            ? Math.max(
+                  ...blocks
+              )
             : 0;
-
-    const rendement =
-        totalStaked > 0
-            ? (stats.virtualProfit /
-                  totalStaked) *
-              100
-            : 0;
-
-    const currentRow =
-        matrix[
-            currentDirection
-        ];
-
-    const rowTotal =
-        currentRow.UP +
-        currentRow.DOWN +
-        currentRow.FLAT;
 
     const displayPrice =
         price !== null
@@ -1043,751 +1100,1315 @@ export default function R75TickMonitor() {
             : '—';
 
     /*
-     * ============================================================
-     * AFFICHAGE
-     * ============================================================
+     * =========================================================
+     * TEXTE DU BOUTON
+     * =========================================================
+     */
+
+    const testButtonDisabled =
+        !connected ||
+        historyCount <
+            HISTORY_SIZE ||
+        testMode === 'testing';
+
+    /*
+     * =========================================================
+     * INTERFACE
+     * =========================================================
      */
 
     return (
         <div
             style={{
+                width: '100%',
+                height: '100dvh',
+                minHeight: '100vh',
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                WebkitOverflowScrolling:
+                    'touch',
+                overscrollBehaviorY:
+                    'auto',
+                touchAction: 'pan-y',
                 background:
-                    '#111111',
+                    '#0f172a',
                 color:
-                    '#ffffff',
+                    '#e5e7eb',
                 padding:
-                    '20px',
-                margin:
                     '16px',
-                borderRadius:
-                    '12px',
+                paddingBottom:
+                    '80px',
                 fontFamily:
                     'Arial, sans-serif',
-                lineHeight:
-                    1.5,
+                boxSizing:
+                    'border-box',
             }}
         >
-            <h2
-                style={{
-                    marginTop: 0,
-                }}
-            >
-                Moniteur Forex EUR/USD —
-                V4.5 Paper Trader
-            </h2>
-
             <div
                 style={{
-                    padding:
-                        '12px',
-                    borderRadius:
-                        '10px',
-                    background:
-                        connected
-                            ? '#064d27'
-                            : '#4d3300',
-                    marginBottom:
-                        '14px',
+                    width: '100%',
+                    maxWidth:
+                        '1000px',
+                    margin:
+                        '0 auto',
+                    paddingBottom:
+                        '50px',
+                    boxSizing:
+                        'border-box',
                 }}
             >
-                <strong>
-                    Connexion :
-                </strong>{' '}
-                {status}
-            </div>
+                {/* TITRE */}
 
-            {errorMessage && (
+                <h1
+                    style={{
+                        textAlign:
+                            'center',
+                        fontSize:
+                            'clamp(21px, 5vw, 28px)',
+                        lineHeight:
+                            '1.3',
+                        marginTop:
+                            '8px',
+                        marginBottom:
+                            '20px',
+                    }}
+                >
+                    Moniteur Forex EUR/USD —
+                    V4.11 Demo + Paper Trader
+                </h1>
+
+                {/* CONNEXION */}
+
                 <div
                     style={{
-                        padding:
-                            '10px',
-                        marginBottom:
-                            '12px',
                         background:
-                            '#5a1010',
+                            connected
+                                ? '#064e3b'
+                                : '#451a03',
+                        border:
+                            `1px solid ${
+                                connected
+                                    ? '#10b981'
+                                    : '#f59e0b'
+                            }`,
                         borderRadius:
-                            '8px',
+                            '12px',
+                        padding:
+                            '14px',
+                        marginBottom:
+                            '16px',
+                        textAlign:
+                            'center',
+                        fontWeight:
+                            'bold',
                     }}
                 >
-                    ⚠️ {errorMessage}
+                    {connected
+                        ? '🟢 Connecté à Deriv — EUR/USD'
+                        : '🟠 Connexion à Deriv…'}
                 </div>
-            )}
 
-            <div>
-                <strong>
-                    Marché :
-                </strong>{' '}
-                {MARKET_NAME}
-            </div>
-
-            <div>
-                <strong>
-                    Symbole :
-                </strong>{' '}
-                {MARKET_SYMBOL}
-            </div>
-
-            <div>
-                <strong>
-                    Prix :
-                </strong>{' '}
-                {displayPrice}
-            </div>
-
-            <hr />
-
-            <h3>
-                Phase 1 — Apprentissage
-            </h3>
-
-            <div>
-                <strong>
-                    Historique :
-                </strong>{' '}
-                {historyCount} /{' '}
-                {HISTORY_SIZE}
-            </div>
-
-            {historyCount >=
-            HISTORY_SIZE ? (
-                <div>
-                    ✅ Base de 500 ticks
-                    chargée.
-                </div>
-            ) : (
-                <div>
-                    ⏳ Chargement de
-                    l'historique…
-                </div>
-            )}
-
-            <hr />
-
-            <h3>
-                Analyse des transitions
-            </h3>
-
-            <div>
-                <strong>
-                    Direction actuelle :
-                </strong>{' '}
-                {directionLabel(
-                    currentDirection
-                )}
-            </div>
-
-            <div>
-                <strong>
-                    Prédiction :
-                </strong>{' '}
-                {prediction
-                    ? directionLabel(
-                          prediction
-                      )
-                    : '⏳ —'}
-            </div>
-
-            <div>
-                <strong>
-                    Force du signal :
-                </strong>{' '}
-                {prediction
-                    ? `${predictionStrength.toFixed(
-                          1
-                      )} %`
-                    : '—'}
-            </div>
-
-            <div>
-                <strong>
-                    Observations UP/DOWN :
-                </strong>{' '}
-                {observations}
-            </div>
-
-            <div>
-                <strong>
-                    Observations totales :
-                </strong>{' '}
-                {rowTotal}
-            </div>
-
-            <h3>
-                Matrice de transitions
-            </h3>
-
-            <div
-                style={{
-                    fontSize:
-                        '13px',
-                    marginBottom:
-                        '8px',
-                }}
-            >
-                Ligne = direction actuelle
-                → colonne = direction suivante.
-            </div>
-
-            <div
-                style={{
-                    overflowX:
-                        'auto',
-                }}
-            >
-                <table
-                    style={{
-                        width:
-                            '100%',
-                        minWidth:
-                            '520px',
-                        borderCollapse:
-                            'collapse',
-                    }}
-                >
-                    <thead>
-                        <tr>
-                            <th
-                                style={{
-                                    border:
-                                        '1px solid #555',
-                                    padding:
-                                        '8px',
-                                }}
-                            >
-                                →
-                            </th>
-
-                            <th
-                                style={{
-                                    border:
-                                        '1px solid #555',
-                                    padding:
-                                        '8px',
-                                }}
-                            >
-                                🟢 HAUSSE
-                            </th>
-
-                            <th
-                                style={{
-                                    border:
-                                        '1px solid #555',
-                                    padding:
-                                        '8px',
-                                }}
-                            >
-                                🔴 BAISSE
-                            </th>
-
-                            <th
-                                style={{
-                                    border:
-                                        '1px solid #555',
-                                    padding:
-                                        '8px',
-                                }}
-                            >
-                                ⚪ STABLE
-                            </th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        <tr>
-                            <td
-                                style={{
-                                    border:
-                                        '1px solid #555',
-                                    padding:
-                                        '8px',
-                                }}
-                            >
-                                🟢 HAUSSE
-                            </td>
-
-                            <td
-                                style={{
-                                    border:
-                                        '1px solid #555',
-                                    padding:
-                                        '8px',
-                                    textAlign:
-                                        'center',
-                                }}
-                            >
-                                {matrix.UP.UP}
-                            </td>
-
-                            <td
-                                style={{
-                                    border:
-                                        '1px solid #555',
-                                    padding:
-                                        '8px',
-                                    textAlign:
-                                        'center',
-                                }}
-                            >
-                                {matrix.UP.DOWN}
-                            </td>
-
-                            <td
-                                style={{
-                                    border:
-                                        '1px solid #555',
-                                    padding:
-                                        '8px',
-                                    textAlign:
-                                        'center',
-                                }}
-                            >
-                                {matrix.UP.FLAT}
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td
-                                style={{
-                                    border:
-                                        '1px solid #555',
-                                    padding:
-                                        '8px',
-                                }}
-                            >
-                                🔴 BAISSE
-                            </td>
-
-                            <td
-                                style={{
-                                    border:
-                                        '1px solid #555',
-                                    padding:
-                                        '8px',
-                                    textAlign:
-                                        'center',
-                                }}
-                            >
-                                {matrix.DOWN.UP}
-                            </td>
-
-                            <td
-                                style={{
-                                    border:
-                                        '1px solid #555',
-                                    padding:
-                                        '8px',
-                                    textAlign:
-                                        'center',
-                                }}
-                            >
-                                {matrix.DOWN.DOWN}
-                            </td>
-
-                            <td
-                                style={{
-                                    border:
-                                        '1px solid #555',
-                                    padding:
-                                        '8px',
-                                    textAlign:
-                                        'center',
-                                }}
-                            >
-                                {matrix.DOWN.FLAT}
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td
-                                style={{
-                                    border:
-                                        '1px solid #555',
-                                    padding:
-                                        '8px',
-                                }}
-                            >
-                                ⚪ STABLE
-                            </td>
-
-                            <td
-                                style={{
-                                    border:
-                                        '1px solid #555',
-                                    padding:
-                                        '8px',
-                                    textAlign:
-                                        'center',
-                                }}
-                            >
-                                {matrix.FLAT.UP}
-                            </td>
-
-                            <td
-                                style={{
-                                    border:
-                                        '1px solid #555',
-                                    padding:
-                                        '8px',
-                                    textAlign:
-                                        'center',
-                                }}
-                            >
-                                {matrix.FLAT.DOWN}
-                            </td>
-
-                            <td
-                                style={{
-                                    border:
-                                        '1px solid #555',
-                                    padding:
-                                        '8px',
-                                    textAlign:
-                                        'center',
-                                }}
-                            >
-                                {matrix.FLAT.FLAT}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <hr />
-
-            <h3>
-                Phase 2 — Paper Trading
-            </h3>
-
-            <div>
-                <strong>
-                    Tests :
-                </strong>{' '}
-                {stats.tests} /{' '}
-                {PAPER_TEST_LIMIT}
-            </div>
-
-            <div>
-                🟢{' '}
-                <strong>
-                    Succès :
-                </strong>{' '}
-                {stats.wins}
-            </div>
-
-            <div>
-                🔴{' '}
-                <strong>
-                    Échecs :
-                </strong>{' '}
-                {stats.losses}
-            </div>
-
-            <div>
-                ⚪{' '}
-                <strong>
-                    Signaux ignorés :
-                </strong>{' '}
-                {stats.skipped}
-            </div>
-
-            <div>
-                📊{' '}
-                <strong>
-                    Taux :
-                </strong>{' '}
-                {winRate.toFixed(
-                    2
-                )}
-                %
-            </div>
-
-            <div>
-                📉{' '}
-                <strong>
-                    Taux d'échec :
-                </strong>{' '}
-                {lossRate.toFixed(
-                    2
-                )}
-                %
-            </div>
-
-            <hr />
-
-            <h3>
-                💰 Résultat Paper Trader
-            </h3>
-
-            <div>
-                <strong>
-                    Mise virtuelle :
-                </strong>{' '}
-                $
-                {VIRTUAL_STAKE.toFixed(
-                    2
-                )}
-            </div>
-
-            <div>
-                <strong>
-                    Gain par succès :
-                </strong>{' '}
-                +$
-                {VIRTUAL_WIN.toFixed(
-                    2
-                )}
-            </div>
-
-            <div>
-                <strong>
-                    Perte par échec :
-                </strong>{' '}
-                -$
-                {VIRTUAL_LOSS.toFixed(
-                    2
-                )}
-            </div>
-
-            <div
-                style={{
-                    marginTop:
-                        '14px',
-                    fontSize:
-                        '25px',
-                    fontWeight:
-                        'bold',
-                }}
-            >
-                {stats.virtualProfit >=
-                0
-                    ? '🟢'
-                    : '🔴'}{' '}
-                Gain virtuel :{' '}
-                {stats.virtualProfit >=
-                0
-                    ? '+'
-                    : ''}
-                $
-                {stats.virtualProfit.toFixed(
-                    2
-                )}
-            </div>
-
-            <div
-                style={{
-                    marginTop:
-                        '8px',
-                }}
-            >
-                💵{' '}
-                <strong>
-                    Mise totale :
-                </strong>{' '}
-                $
-                {totalStaked.toFixed(
-                    2
-                )}
-            </div>
-
-            <div>
-                📈{' '}
-                <strong>
-                    Rendement :
-                </strong>{' '}
-                {rendement >=
-                0
-                    ? '+'
-                    : ''}
-                {rendement.toFixed(
-                    2
-                )}
-                %
-            </div>
-
-            <hr />
-
-            <h3>
-                📊 Blocs de 100
-            </h3>
-
-            <div>
-                <strong>
-                    Blocs terminés :
-                </strong>{' '}
-                {blocks.length}
-            </div>
-
-            {blocks.map(
-                (
-                    rate,
-                    index
-                ) => (
-                    <div
-                        key={
-                            index
-                        }
-                    >
-                        Bloc{' '}
-                        {index +
-                            1}
-                        :{' '}
-                        {rate.toFixed(
-                            1
-                        )}
-                        %
-                    </div>
-                )
-            )}
-
-            {stats.tests <
-                PAPER_TEST_LIMIT &&
-                currentBlockTests >
-                    0 && (
+                {connectionError && (
                     <div
                         style={{
-                            marginTop:
-                                '8px',
-                        }}
-                    >
-                        Bloc actuel :{' '}
-                        {
-                            currentBlockWins
-                        }{' '}
-                        /{' '}
-                        {
-                            currentBlockTests
-                        }
-                    </div>
-                )}
-
-            <div
-                style={{
-                    marginTop:
-                        '10px',
-                }}
-            >
-                <strong>
-                    Moyenne :
-                </strong>{' '}
-                {averageBlock.toFixed(
-                    2
-                )}
-                %
-            </div>
-
-            <div>
-                <strong>
-                    Minimum :
-                </strong>{' '}
-                {minimumBlock.toFixed(
-                    2
-                )}
-                %
-            </div>
-
-            <div>
-                <strong>
-                    Maximum :
-                </strong>{' '}
-                {maximumBlock.toFixed(
-                    2
-                )}
-                %
-            </div>
-
-            <hr />
-
-            {phase ===
-            'done' ? (
-                <>
-                    <div
-                        style={{
+                            background:
+                                '#450a0a',
+                            border:
+                                '1px solid #ef4444',
+                            borderRadius:
+                                '10px',
                             padding:
                                 '12px',
-                            background:
-                                '#064d27',
-                            borderRadius:
-                                '8px',
+                            marginBottom:
+                                '16px',
+                            color:
+                                '#fecaca',
+                            overflowWrap:
+                                'anywhere',
                         }}
                     >
-                        ✅{' '}
+                        ⚠️{' '}
+                        {connectionError}
+                    </div>
+                )}
+
+                {/* COMPTE */}
+
+                <div
+                    style={{
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #374151',
+                        borderRadius:
+                            '14px',
+                        padding:
+                            '18px',
+                        marginBottom:
+                            '16px',
+                    }}
+                >
+                    <h2
+                        style={{
+                            marginTop:
+                                0,
+                        }}
+                    >
+                        💰 Compte Deriv
+                    </h2>
+
+                    {balanceInfo ? (
+                        <>
+                            <div
+                                style={{
+                                    fontSize:
+                                        '28px',
+                                    fontWeight:
+                                        'bold',
+                                }}
+                            >
+                                {balanceInfo.balance.toFixed(
+                                    2
+                                )}{' '}
+                                {
+                                    balanceInfo.currency
+                                }
+                            </div>
+
+                            {balanceInfo.loginid && (
+                                <div
+                                    style={{
+                                        color:
+                                            '#9ca3af',
+                                        marginTop:
+                                            '6px',
+                                        overflowWrap:
+                                            'anywhere',
+                                    }}
+                                >
+                                    Compte :
+                                    {' '}
+                                    {
+                                        balanceInfo.loginid
+                                    }
+                                </div>
+                            )}
+
+                            <div
+                                style={{
+                                    marginTop:
+                                        '8px',
+                                    color:
+                                        '#86efac',
+                                }}
+                            >
+                                🟢 Solde reçu
+                                depuis Deriv
+                            </div>
+                        </>
+                    ) : (
+                        <div
+                            style={{
+                                color:
+                                    '#fbbf24',
+                            }}
+                        >
+                            🟠 Solde Demo
+                            indisponible
+                        </div>
+                    )}
+
+                    {balanceError && (
+                        <div
+                            style={{
+                                marginTop:
+                                    '12px',
+                                padding:
+                                    '10px',
+                                background:
+                                    '#450a0a',
+                                border:
+                                    '1px solid #ef4444',
+                                borderRadius:
+                                    '8px',
+                                color:
+                                    '#fecaca',
+                                fontSize:
+                                    '14px',
+                                overflowWrap:
+                                    'anywhere',
+                            }}
+                        >
+                            ⚠️ Compte :
+                            {' '}
+                            {balanceError}
+                        </div>
+                    )}
+                </div>
+
+                {/* MARCHÉ */}
+
+                <div
+                    style={{
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #374151',
+                        borderRadius:
+                            '14px',
+                        padding:
+                            '18px',
+                        marginBottom:
+                            '16px',
+                    }}
+                >
+                    <h2
+                        style={{
+                            marginTop:
+                                0,
+                        }}
+                    >
+                        📊 Marché
+                    </h2>
+
+                    <div
+                        style={{
+                            display:
+                                'grid',
+                            gridTemplateColumns:
+                                'repeat(auto-fit, minmax(150px, 1fr))',
+                            gap:
+                                '14px',
+                        }}
+                    >
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Marché
+                            </div>
+
+                            <strong>
+                                {
+                                    MARKET_NAME
+                                }
+                            </strong>
+                        </div>
+
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Symbole
+                            </div>
+
+                            <strong>
+                                {
+                                    MARKET_SYMBOL
+                                }
+                            </strong>
+                        </div>
+
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Prix
+                            </div>
+
+                            <strong
+                                style={{
+                                    fontSize:
+                                        '22px',
+                                }}
+                            >
+                                {
+                                    displayPrice
+                                }
+                            </strong>
+                        </div>
+
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Dernier chiffre
+                            </div>
+
+                            <strong
+                                style={{
+                                    fontSize:
+                                        '22px',
+                                }}
+                            >
+                                {lastDigit ??
+                                    '—'}
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+
+                {/* APPRENTISSAGE */}
+
+                <div
+                    style={{
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #374151',
+                        borderRadius:
+                            '14px',
+                        padding:
+                            '18px',
+                        marginBottom:
+                            '16px',
+                    }}
+                >
+                    <h2
+                        style={{
+                            marginTop:
+                                0,
+                        }}
+                    >
+                        🧠 Phase 1 —
+                        Apprentissage
+                    </h2>
+
+                    <div
+                        style={{
+                            marginBottom:
+                                '12px',
+                        }}
+                    >
+                        Historique :
+                        {' '}
                         <strong>
-                            Paper test de
-                            1000 trades
-                            terminé.
+                            {
+                                historyCount
+                            }
+                            /
+                            {
+                                HISTORY_SIZE
+                            }
                         </strong>
                     </div>
 
                     <div
                         style={{
-                            marginTop:
+                            height:
                                 '10px',
+                            background:
+                                '#1f2937',
+                            borderRadius:
+                                '10px',
+                            overflow:
+                                'hidden',
                         }}
                     >
-                        📌 Résultat :{' '}
-                        {stats.wins}{' '}
-                        gains /{' '}
-                        {stats.losses}{' '}
-                        pertes
+                        <div
+                            style={{
+                                width:
+                                    `${
+                                        Math.min(
+                                            (
+                                                historyCount /
+                                                HISTORY_SIZE
+                                            ) *
+                                                100,
+                                            100
+                                        )
+                                    }%`,
+                                height:
+                                    '100%',
+                                background:
+                                    '#22c55e',
+                                transition:
+                                    'width 0.2s ease',
+                            }}
+                        />
+                    </div>
+                </div>
+
+                {/* ANALYSE */}
+
+                <div
+                    style={{
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #374151',
+                        borderRadius:
+                            '14px',
+                        padding:
+                            '18px',
+                        marginBottom:
+                            '16px',
+                    }}
+                >
+                    <h2
+                        style={{
+                            marginTop:
+                                0,
+                        }}
+                    >
+                        🔎 Analyse en
+                        temps réel
+                    </h2>
+
+                    <div
+                        style={{
+                            display:
+                                'grid',
+                            gridTemplateColumns:
+                                'repeat(auto-fit, minmax(150px, 1fr))',
+                            gap:
+                                '14px',
+                        }}
+                    >
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Direction actuelle
+                            </div>
+
+                            <strong>
+                                {directionLabel(
+                                    currentDirection
+                                )}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Prochaine prédiction
+                            </div>
+
+                            <strong>
+                                {directionLabel(
+                                    prediction
+                                )}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Force
+                            </div>
+
+                            <strong>
+                                {
+                                    predictionStrength.toFixed(
+                                        1
+                                    )
+                                }
+                                %
+                            </strong>
+                        </div>
+
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Observations
+                            </div>
+
+                            <strong>
+                                {
+                                    observations
+                                }
+                            </strong>
+                        </div>
                     </div>
 
-                    <div>
-                        📈 Taux final :{' '}
-                        {winRate.toFixed(
-                            2
+                    <div
+                        style={{
+                            marginTop:
+                                '16px',
+                            padding:
+                                '12px',
+                            background:
+                                '#172033',
+                            borderRadius:
+                                '10px',
+                            color:
+                                '#cbd5e1',
+                        }}
+                    >
+                        ℹ️ L'analyse utilise
+                        les dernières
+                        directions du
+                        marché pour
+                        produire une
+                        indication
+                        UP/DOWN.
+                    </div>
+                </div>
+
+                {/* =================================================
+                    NOUVEAU : CONTRÔLE DEMO
+                ================================================= */}
+
+                <div
+                    style={{
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #475569',
+                        borderRadius:
+                            '16px',
+                        padding:
+                            '20px',
+                        marginBottom:
+                            '16px',
+                        textAlign:
+                            'center',
+                    }}
+                >
+                    <h2
+                        style={{
+                            marginTop:
+                                0,
+                        }}
+                    >
+                        🎮 Test Demo
+                    </h2>
+
+                    <div
+                        style={{
+                            color:
+                                '#94a3b8',
+                            marginBottom:
+                                '16px',
+                            lineHeight:
+                                '1.5',
+                        }}
+                    >
+                        Le bouton démarre le
+                        test de la stratégie
+                        avec les ticks EUR/USD
+                        en mode virtuel.
+                    </div>
+
+                    {testMode ===
+                        'idle' && (
+                        <button
+                            onClick={
+                                startDemoTest
+                            }
+                            disabled={
+                                testButtonDisabled
+                            }
+                            style={{
+                                width:
+                                    '100%',
+                                minHeight:
+                                    '58px',
+                                border:
+                                    'none',
+                                borderRadius:
+                                    '14px',
+                                background:
+                                    testButtonDisabled
+                                        ? '#374151'
+                                        : '#16a34a',
+                                color:
+                                    '#ffffff',
+                                fontSize:
+                                    '18px',
+                                fontWeight:
+                                    'bold',
+                                cursor:
+                                    testButtonDisabled
+                                        ? 'not-allowed'
+                                        : 'pointer',
+                                touchAction:
+                                    'manipulation',
+                            }}
+                        >
+                            ▶️ TESTER SUR
+                            COMPTE DÉMO
+                        </button>
+                    )}
+
+                    {testMode ===
+                        'testing' && (
+                        <button
+                            onClick={
+                                stopDemoTest
+                            }
+                            style={{
+                                width:
+                                    '100%',
+                                minHeight:
+                                    '58px',
+                                border:
+                                    'none',
+                                borderRadius:
+                                    '14px',
+                                background:
+                                    '#dc2626',
+                                color:
+                                    '#ffffff',
+                                fontSize:
+                                    '18px',
+                                fontWeight:
+                                    'bold',
+                                cursor:
+                                    'pointer',
+                                touchAction:
+                                    'manipulation',
+                            }}
+                        >
+                            ⏹️ ARRÊTER LE TEST
+                        </button>
+                    )}
+
+                    {testMode ===
+                        'stopped' && (
+                        <>
+                            <div
+                                style={{
+                                    padding:
+                                        '12px',
+                                    marginBottom:
+                                        '12px',
+                                    background:
+                                        '#422006',
+                                    borderRadius:
+                                        '10px',
+                                    color:
+                                        '#fde68a',
+                                }}
+                            >
+                                ⏸️ Test arrêté.
+                            </div>
+
+                            <button
+                                onClick={
+                                    startDemoTest
+                                }
+                                style={{
+                                    width:
+                                        '100%',
+                                    minHeight:
+                                        '54px',
+                                    border:
+                                        'none',
+                                    borderRadius:
+                                        '12px',
+                                    background:
+                                        '#16a34a',
+                                    color:
+                                        '#ffffff',
+                                    fontSize:
+                                        '17px',
+                                    fontWeight:
+                                        'bold',
+                                    cursor:
+                                        'pointer',
+                                }}
+                            >
+                                ▶️ REPRENDRE LE TEST
+                            </button>
+                        </>
+                    )}
+
+                    {testMode ===
+                        'done' && (
+                        <>
+                            <div
+                                style={{
+                                    padding:
+                                        '12px',
+                                    marginBottom:
+                                        '12px',
+                                    background:
+                                        '#052e16',
+                                    border:
+                                        '1px solid #22c55e',
+                                    borderRadius:
+                                        '10px',
+                                    color:
+                                        '#bbf7d0',
+                                }}
+                            >
+                                ✅ Test de 1000
+                                observations
+                                terminé.
+                            </div>
+
+                            <button
+                                onClick={
+                                    resetPaperTest
+                                }
+                                style={{
+                                    width:
+                                        '100%',
+                                    minHeight:
+                                        '54px',
+                                    border:
+                                        'none',
+                                    borderRadius:
+                                        '12px',
+                                    background:
+                                        '#2563eb',
+                                    color:
+                                        '#ffffff',
+                                    fontSize:
+                                        '17px',
+                                    fontWeight:
+                                        'bold',
+                                    cursor:
+                                        'pointer',
+                                }}
+                            >
+                                🔄 RECOMMENCER
+                            </button>
+                        </>
+                    )}
+
+                    {!connected && (
+                        <div
+                            style={{
+                                marginTop:
+                                    '12px',
+                                color:
+                                    '#fbbf24',
+                                fontSize:
+                                    '14px',
+                            }}
+                        >
+                            ⏳ Attente de la
+                            connexion au
+                            marché…
+                        </div>
+                    )}
+
+                    {connected &&
+                        historyCount <
+                            HISTORY_SIZE && (
+                            <div
+                                style={{
+                                    marginTop:
+                                        '12px',
+                                    color:
+                                        '#fbbf24',
+                                    fontSize:
+                                        '14px',
+                                }}
+                            >
+                                ⏳ Collecte des
+                                500 ticks :
+                                {' '}
+                                {
+                                    historyCount
+                                }
+                                /
+                                {
+                                    HISTORY_SIZE
+                                }
+                            </div>
                         )}
-                        %
+
+                    <div
+                        style={{
+                            marginTop:
+                                '16px',
+                            padding:
+                                '12px',
+                            background:
+                                '#1f2937',
+                            borderRadius:
+                                '10px',
+                            color:
+                                '#fca5a5',
+                            fontSize:
+                                '13px',
+                            lineHeight:
+                                '1.5',
+                        }}
+                    >
+                        🛡️ SÉCURITÉ
+                        <br />
+                        Cette V4.11 n'envoie
+                        aucun ordre BUY/SELL
+                        à Deriv.
+                        <br />
+                        Les résultats restent
+                        virtuels.
+                    </div>
+                </div>
+
+                {/* PAPER TRADING */}
+
+                <div
+                    style={{
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #374151',
+                        borderRadius:
+                            '14px',
+                        padding:
+                            '18px',
+                        marginBottom:
+                            '16px',
+                    }}
+                >
+                    <h2
+                        style={{
+                            marginTop:
+                                0,
+                        }}
+                    >
+                        🧪 Phase 2 —
+                        Paper Trading
+                    </h2>
+
+                    <div
+                        style={{
+                            display:
+                                'grid',
+                            gridTemplateColumns:
+                                'repeat(auto-fit, minmax(140px, 1fr))',
+                            gap:
+                                '12px',
+                        }}
+                    >
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Tests
+                            </div>
+
+                            <strong>
+                                {
+                                    stats.tests
+                                }
+                                /
+                                {
+                                    PAPER_TEST_LIMIT
+                                }
+                            </strong>
+                        </div>
+
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Gains
+                            </div>
+
+                            <strong>
+                                {
+                                    stats.wins
+                                }
+                            </strong>
+                        </div>
+
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Pertes
+                            </div>
+
+                            <strong>
+                                {
+                                    stats.losses
+                                }
+                            </strong>
+                        </div>
+
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Taux gain
+                            </div>
+
+                            <strong>
+                                {
+                                    winRate.toFixed(
+                                        2
+                                    )
+                                }
+                                %
+                            </strong>
+                        </div>
+
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Taux perte
+                            </div>
+
+                            <strong>
+                                {
+                                    lossRate.toFixed(
+                                        2
+                                    )
+                                }
+                                %
+                            </strong>
+                        </div>
                     </div>
 
-                    <div>
-                        💰 Résultat virtuel :{' '}
-                        {stats.virtualProfit >=
-                        0
-                            ? '+'
-                            : ''}
-                        $
-                        {stats.virtualProfit.toFixed(
-                            2
-                        )}
+                    <div
+                        style={{
+                            marginTop:
+                                '18px',
+                            padding:
+                                '16px',
+                            background:
+                                '#172033',
+                            borderRadius:
+                                '12px',
+                            textAlign:
+                                'center',
+                        }}
+                    >
+                        <div
+                            style={{
+                                color:
+                                    '#9ca3af',
+                            }}
+                        >
+                            Résultat virtuel
+                        </div>
+
+                        <div
+                            style={{
+                                fontSize:
+                                    '32px',
+                                fontWeight:
+                                    'bold',
+                                marginTop:
+                                    '5px',
+                            }}
+                        >
+                            {stats.virtualProfit >=
+                            0
+                                ? '+'
+                                : ''}
+                            {
+                                stats.virtualProfit
+                            }
+                        </div>
+
+                        <div
+                            style={{
+                                marginTop:
+                                    '6px',
+                                color:
+                                    '#9ca3af',
+                            }}
+                        >
+                            +1 prédiction
+                            correcte /
+                            -1 prédiction
+                            incorrecte
+                        </div>
                     </div>
-                </>
-            ) : (
-                <>
-                    <div>
-                        🔬 Paper Trading en
-                        cours.
-                    </div>
+                </div>
+
+                {/* BLOCS */}
+
+                <div
+                    style={{
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #374151',
+                        borderRadius:
+                            '14px',
+                        padding:
+                            '18px',
+                        marginBottom:
+                            '16px',
+                    }}
+                >
+                    <h2
+                        style={{
+                            marginTop:
+                                0,
+                        }}
+                    >
+                        📦 Blocs de{' '}
+                        {BLOCK_SIZE}
+                    </h2>
 
                     <div>
-                        ⚠️ Résultat
-                        expérimental. Aucun
-                        taux de réussite
-                        n'est garanti.
+                        Blocs terminés :
+                        {' '}
+                        <strong>
+                            {
+                                blocks.length
+                            }
+                        </strong>
                     </div>
-                </>
-            )}
 
-            <div
-                style={{
-                    marginTop:
-                        '12px',
-                    padding:
-                        '10px',
-                    background:
-                        '#222222',
-                    borderRadius:
-                        '8px',
-                }}
-            >
-                🛡️ <strong>
-                    MODE PAPIER UNIQUEMENT
-                </strong>
-                <br />
-                ❌ Aucun contrat réel n'est
-                envoyé.
-                <br />
-                💵 Le gain/perte affiché est
-                virtuel.
+                    {blocks.length >
+                        0 && (
+                        <>
+                            <div
+                                style={{
+                                    marginTop:
+                                        '10px',
+                                }}
+                            >
+                                Moyenne :
+                                {' '}
+                                <strong>
+                                    {
+                                        averageBlock.toFixed(
+                                            2
+                                        )
+                                    }
+                                    %
+                                </strong>
+                            </div>
+
+                            <div
+                                style={{
+                                    marginTop:
+                                        '6px',
+                                }}
+                            >
+                                Minimum :
+                                {' '}
+                                <strong>
+                                    {
+                                        minimumBlock.toFixed(
+                                            2
+                                        )
+                                    }
+                                    %
+                                </strong>
+                            </div>
+
+                            <div
+                                style={{
+                                    marginTop:
+                                        '6px',
+                                }}
+                            >
+                                Maximum :
+                                {' '}
+                                <strong>
+                                    {
+                                        maximumBlock.toFixed(
+                                            2
+                                        )
+                                    }
+                                    %
+                                </strong>
+                            </div>
+                        </>
+                    )}
+
+                    <div
+                        style={{
+                            marginTop:
+                                '14px',
+                            color:
+                                '#9ca3af',
+                        }}
+                    >
+                        Bloc actuel :
+                        {' '}
+                        <strong>
+                            {
+                                currentBlockWins
+                            }
+                            /
+                            {
+                                currentBlockTests
+                            }
+                        </strong>
+                    </div>
+                </div>
+
+                {/* ÉTAT */}
+
+                <div
+                    style={{
+                        background:
+                            phase ===
+                            'done'
+                                ? '#052e16'
+                                : '#172033',
+                        border:
+                            `1px solid ${
+                                phase ===
+                                'done'
+                                    ? '#22c55e'
+                                    : '#374151'
+                            }`,
+                        borderRadius:
+                            '14px',
+                        padding:
+                            '18px',
+                        marginBottom:
+                            '16px',
+                        textAlign:
+                            'center',
+                        lineHeight:
+                            '1.5',
+                    }}
+                >
+                    {phase ===
+                        'learning' && (
+                        <>
+                            🧠 Collecte de
+                            données…
+                        </>
+                    )}
+
+                    {phase ===
+                        'testing' && (
+                        <>
+                            🧪 Test Demo
+                            virtuel en
+                            cours…
+                        </>
+                    )}
+
+                    {phase ===
+                        'done' && (
+                        <>
+                            ✅ Test terminé —
+                            prédiction finale
+                            conservée
+                        </>
+                    )}
+                </div>
+
+                {/* SÉCURITÉ */}
+
+                <div
+                    style={{
+                        background:
+                            '#1f2937',
+                        border:
+                            '1px solid #4b5563',
+                        borderRadius:
+                            '12px',
+                        padding:
+                            '18px',
+                        marginBottom:
+                            '20px',
+                        textAlign:
+                            'center',
+                        lineHeight:
+                            '1.6',
+                    }}
+                >
+                    <strong>
+                        🛡️ MODE TEST UNIQUEMENT
+                    </strong>
+
+                    <div
+                        style={{
+                            marginTop:
+                                '8px',
+                            color:
+                                '#fca5a5',
+                        }}
+                    >
+                        ❌ Aucun trade
+                        automatique réel
+                        ou Demo n'est
+                        envoyé.
+                    </div>
+
+                    <div
+                        style={{
+                            marginTop:
+                                '5px',
+                            fontSize:
+                                '13px',
+                            color:
+                                '#9ca3af',
+                        }}
+                    >
+                        Le bouton
+                        « Tester sur
+                        compte Demo »
+                        démarre le
+                        paper test avec
+                        les données
+                        réelles du marché,
+                        mais sans ordre
+                        financier.
+                    </div>
+                </div>
+
+                {/* SCROLL */}
+
+                <div
+                    style={{
+                        textAlign:
+                            'center',
+                        padding:
+                            '10px',
+                        color:
+                            '#64748b',
+                        fontSize:
+                            '12px',
+                    }}
+                >
+                    ↕️ Fais glisser
+                    l'écran pour voir
+                    toutes les
+                    informations
+                </div>
             </div>
         </div>
     );
