@@ -131,9 +131,9 @@ export default function R75TickMonitor() {
         useRef(false);
 
     /*
-     * ---------------------------------------------------------
+     * =========================================================
      * ANALYSE
-     * ---------------------------------------------------------
+     * =========================================================
      */
 
     const calculatePrediction = () => {
@@ -194,25 +194,21 @@ export default function R75TickMonitor() {
     };
 
     /*
-     * ---------------------------------------------------------
-     * BALANCE
-     * ---------------------------------------------------------
+     * =========================================================
+     * DEMANDE DU SOLDE
+     * =========================================================
      *
-     * IMPORTANT V4.9:
+     * IMPORTANT :
      *
-     * We DO NOT send:
+     * V4.10 ne crée PAS une nouvelle souscription balance.
      *
-     * { balance: 1, subscribe: 1 }
-     *
-     * because the Deriv application may already have a
-     * balance subscription.
-     *
-     * We only send:
+     * On utilise seulement :
      *
      * { balance: 1 }
      *
-     * This asks for the current balance without creating
-     * another balance subscription.
+     * afin d'éviter :
+     *
+     * "You are already subscribed to balance..."
      */
 
     const requestCurrentBalance = () => {
@@ -242,9 +238,9 @@ export default function R75TickMonitor() {
     };
 
     /*
-     * ---------------------------------------------------------
+     * =========================================================
      * TRAITEMENT DU SOLDE
-     * ---------------------------------------------------------
+     * =========================================================
      */
 
     const processBalance = (
@@ -281,9 +277,9 @@ export default function R75TickMonitor() {
     };
 
     /*
-     * ---------------------------------------------------------
+     * =========================================================
      * TRAITEMENT DES TICKS
-     * ---------------------------------------------------------
+     * =========================================================
      */
 
     const processTick = (
@@ -348,7 +344,7 @@ export default function R75TickMonitor() {
         }
 
         /*
-         * Direction
+         * Direction actuelle
          */
 
         const previousPrice =
@@ -364,7 +360,7 @@ export default function R75TickMonitor() {
             currentPrice;
 
         /*
-         * Historique prix
+         * Historique des prix
          */
 
         priceHistoryRef.current.push(
@@ -379,7 +375,7 @@ export default function R75TickMonitor() {
         }
 
         /*
-         * Historique directions
+         * Historique des directions
          */
 
         directionHistoryRef.current.push(
@@ -408,9 +404,9 @@ export default function R75TickMonitor() {
         );
 
         /*
-         * -----------------------------------------------------
-         * PHASE 1 : APPRENTISSAGE
-         * -----------------------------------------------------
+         * =====================================================
+         * PHASE 1
+         * =====================================================
          */
 
         if (
@@ -438,9 +434,9 @@ export default function R75TickMonitor() {
         }
 
         /*
-         * -----------------------------------------------------
+         * =====================================================
          * PREMIÈRE PRÉDICTION
-         * -----------------------------------------------------
+         * =====================================================
          */
 
         if (
@@ -471,9 +467,9 @@ export default function R75TickMonitor() {
         }
 
         /*
-         * -----------------------------------------------------
+         * =====================================================
          * VALIDATION DE LA PRÉDICTION PRÉCÉDENTE
-         * -----------------------------------------------------
+         * =====================================================
          */
 
         const previousPrediction =
@@ -525,7 +521,6 @@ export default function R75TickMonitor() {
                 );
 
                 blockTestsRef.current = 0;
-
                 blockWinsRef.current = 0;
             }
 
@@ -553,9 +548,9 @@ export default function R75TickMonitor() {
         }
 
         /*
-         * -----------------------------------------------------
+         * =====================================================
          * FIN DES 1000 TESTS
-         * -----------------------------------------------------
+         * =====================================================
          */
 
         if (
@@ -565,8 +560,7 @@ export default function R75TickMonitor() {
             setPhase('done');
 
             /*
-             * V4.9 conserve la dernière prédiction
-             * au lieu de l'effacer.
+             * On conserve la dernière prédiction.
              */
 
             const finalResult =
@@ -591,9 +585,9 @@ export default function R75TickMonitor() {
         }
 
         /*
-         * -----------------------------------------------------
+         * =====================================================
          * NOUVELLE PRÉDICTION
-         * -----------------------------------------------------
+         * =====================================================
          */
 
         const result =
@@ -616,9 +610,9 @@ export default function R75TickMonitor() {
     };
 
     /*
-     * ---------------------------------------------------------
+     * =========================================================
      * CONNEXION DERIV
-     * ---------------------------------------------------------
+     * =========================================================
      */
 
     useEffect(() => {
@@ -683,10 +677,6 @@ export default function R75TickMonitor() {
 
                             /*
                              * BALANCE
-                             *
-                             * This can come from:
-                             * - our one-shot request
-                             * - an existing app subscription
                              */
 
                             if (
@@ -719,9 +709,9 @@ export default function R75TickMonitor() {
                                     );
 
                                 /*
-                                 * Ne pas transformer une
-                                 * erreur balance en erreur
-                                 * marché.
+                                 * Les erreurs de compte
+                                 * ne doivent pas couper
+                                 * le marché EUR/USD.
                                  */
 
                                 if (
@@ -758,7 +748,7 @@ export default function R75TickMonitor() {
                     );
 
             /*
-             * Flux prix EUR/USD
+             * Flux EUR/USD
              */
 
             api_base.api.send({
@@ -768,10 +758,8 @@ export default function R75TickMonitor() {
             });
 
             /*
-             * V4.9 :
-             * UNE SEULE demande de solde.
-             *
-             * Pas de subscribe:1 ici.
+             * Solde :
+             * une seule demande, sans subscribe.
              */
 
             requestCurrentBalance();
@@ -806,13 +794,16 @@ export default function R75TickMonitor() {
 
             subscribedRef.current =
                 false;
+
+            balanceRequestedRef.current =
+                false;
         };
     }, []);
 
     /*
-     * ---------------------------------------------------------
+     * =========================================================
      * STATISTIQUES
-     * ---------------------------------------------------------
+     * =========================================================
      */
 
     const totalTests =
@@ -867,49 +858,97 @@ export default function R75TickMonitor() {
             : '—';
 
     /*
-     * ---------------------------------------------------------
-     * AFFICHAGE
-     * ---------------------------------------------------------
+     * =========================================================
+     * INTERFACE V4.10
+     *
+     * IMPORTANT POUR IPHONE :
+     *
+     * height: 100dvh
+     * overflowY: auto
+     * overflowX: hidden
+     * WebkitOverflowScrolling: touch
+     * touchAction: pan-y
+     *
+     * Cela permet de faire glisser la page avec le doigt.
+     * =========================================================
      */
 
     return (
         <div
             style={{
+                width: '100%',
+                height: '100dvh',
                 minHeight: '100vh',
+
+                overflowY: 'auto',
+                overflowX: 'hidden',
+
+                WebkitOverflowScrolling:
+                    'touch',
+
+                overscrollBehaviorY:
+                    'auto',
+
+                touchAction:
+                    'pan-y',
+
                 background:
                     '#0f172a',
-                color: '#e5e7eb',
+
+                color:
+                    '#e5e7eb',
+
                 padding:
-                    '20px',
+                    '16px',
+
+                paddingBottom:
+                    '70px',
+
                 fontFamily:
                     'Arial, sans-serif',
+
                 boxSizing:
                     'border-box',
             }}
         >
             <div
                 style={{
+                    width: '100%',
                     maxWidth:
                         '1000px',
                     margin:
                         '0 auto',
+                    paddingBottom:
+                        '40px',
+                    boxSizing:
+                        'border-box',
                 }}
             >
+                {/* =================================================
+                    TITRE
+                ================================================= */}
+
                 <h1
                     style={{
                         textAlign:
                             'center',
                         fontSize:
-                            '26px',
+                            'clamp(21px, 5vw, 28px)',
+                        lineHeight:
+                            '1.3',
+                        marginTop:
+                            '8px',
                         marginBottom:
                             '20px',
                     }}
                 >
                     Moniteur Forex EUR/USD —
-                    V4.9 Demo + Paper Trader
+                    V4.10 Demo + Paper Trader
                 </h1>
 
-                {/* CONNEXION */}
+                {/* =================================================
+                    CONNEXION
+                ================================================= */}
 
                 <div
                     style={{
@@ -917,20 +956,28 @@ export default function R75TickMonitor() {
                             connected
                                 ? '#064e3b'
                                 : '#451a03',
+
                         border:
                             `1px solid ${
                                 connected
                                     ? '#10b981'
                                     : '#f59e0b'
                             }`,
+
                         borderRadius:
                             '12px',
+
                         padding:
                             '14px',
+
                         marginBottom:
                             '16px',
+
                         textAlign:
                             'center',
+
+                        fontWeight:
+                            'bold',
                     }}
                 >
                     {connected
@@ -943,16 +990,24 @@ export default function R75TickMonitor() {
                         style={{
                             background:
                                 '#450a0a',
+
                             border:
                                 '1px solid #ef4444',
+
                             borderRadius:
                                 '10px',
+
                             padding:
                                 '12px',
+
                             marginBottom:
                                 '16px',
+
                             color:
                                 '#fecaca',
+
+                            overflowWrap:
+                                'anywhere',
                         }}
                     >
                         ⚠️ Marché :
@@ -961,26 +1016,37 @@ export default function R75TickMonitor() {
                     </div>
                 )}
 
-                {/* COMPTE */}
+                {/* =================================================
+                    COMPTE
+                ================================================= */}
 
                 <div
                     style={{
                         background:
                             '#111827',
+
                         border:
                             '1px solid #374151',
+
                         borderRadius:
                             '14px',
+
                         padding:
                             '18px',
+
                         marginBottom:
                             '16px',
+
+                        boxSizing:
+                            'border-box',
                     }}
                 >
                     <h2
                         style={{
                             marginTop:
                                 0,
+                            fontSize:
+                                '21px',
                         }}
                     >
                         💰 Compte Deriv
@@ -991,16 +1057,23 @@ export default function R75TickMonitor() {
                             <div
                                 style={{
                                     fontSize:
-                                        '25px',
+                                        '28px',
+
                                     fontWeight:
                                         'bold',
+
                                     marginBottom:
                                         '8px',
+
+                                    wordBreak:
+                                        'break-word',
                                 }}
                             >
-                                {balanceInfo.balance.toFixed(
-                                    2
-                                )}{' '}
+                                {
+                                    balanceInfo.balance.toFixed(
+                                        2
+                                    )
+                                }{' '}
                                 {
                                     balanceInfo.currency
                                 }
@@ -1011,6 +1084,9 @@ export default function R75TickMonitor() {
                                     style={{
                                         color:
                                             '#9ca3af',
+
+                                        overflowWrap:
+                                            'anywhere',
                                     }}
                                 >
                                     Compte :
@@ -1025,6 +1101,7 @@ export default function R75TickMonitor() {
                                 style={{
                                     marginTop:
                                         '8px',
+
                                     color:
                                         '#86efac',
                                 }}
@@ -1039,6 +1116,7 @@ export default function R75TickMonitor() {
                                 style={{
                                     color:
                                         '#fbbf24',
+
                                     marginBottom:
                                         '8px',
                                 }}
@@ -1051,12 +1129,13 @@ export default function R75TickMonitor() {
                                 style={{
                                     color:
                                         '#9ca3af',
+
                                     fontSize:
                                         '14px',
                                 }}
                             >
-                                Le flux EUR/USD
-                                fonctionne
+                                Le flux des prix
+                                peut fonctionner
                                 indépendamment
                                 du solde.
                             </div>
@@ -1068,18 +1147,27 @@ export default function R75TickMonitor() {
                             style={{
                                 marginTop:
                                     '12px',
+
                                 padding:
                                     '10px',
+
                                 background:
                                     '#450a0a',
+
                                 border:
                                     '1px solid #ef4444',
+
                                 borderRadius:
                                     '8px',
+
                                 color:
                                     '#fecaca',
+
                                 fontSize:
                                     '14px',
+
+                                overflowWrap:
+                                    'anywhere',
                             }}
                         >
                             ⚠️ Compte :
@@ -1089,18 +1177,24 @@ export default function R75TickMonitor() {
                     )}
                 </div>
 
-                {/* MARCHE */}
+                {/* =================================================
+                    MARCHÉ
+                ================================================= */}
 
                 <div
                     style={{
                         background:
                             '#111827',
+
                         border:
                             '1px solid #374151',
+
                         borderRadius:
                             '14px',
+
                         padding:
                             '18px',
+
                         marginBottom:
                             '16px',
                     }}
@@ -1109,6 +1203,8 @@ export default function R75TickMonitor() {
                         style={{
                             marginTop:
                                 0,
+                            fontSize:
+                                '21px',
                         }}
                     >
                         📊 Marché
@@ -1118,10 +1214,12 @@ export default function R75TickMonitor() {
                         style={{
                             display:
                                 'grid',
+
                             gridTemplateColumns:
-                                'repeat(auto-fit,minmax(180px,1fr))',
+                                'repeat(auto-fit, minmax(150px, 1fr))',
+
                             gap:
-                                '12px',
+                                '14px',
                         }}
                     >
                         <div>
@@ -1203,18 +1301,24 @@ export default function R75TickMonitor() {
                     </div>
                 </div>
 
-                {/* PHASE 1 */}
+                {/* =================================================
+                    APPRENTISSAGE
+                ================================================= */}
 
                 <div
                     style={{
                         background:
                             '#111827',
+
                         border:
                             '1px solid #374151',
+
                         borderRadius:
                             '14px',
+
                         padding:
                             '18px',
+
                         marginBottom:
                             '16px',
                     }}
@@ -1223,6 +1327,8 @@ export default function R75TickMonitor() {
                         style={{
                             marginTop:
                                 0,
+                            fontSize:
+                                '21px',
                         }}
                     >
                         🧠 Phase 1 —
@@ -1249,10 +1355,13 @@ export default function R75TickMonitor() {
                         style={{
                             height:
                                 '10px',
+
                             background:
                                 '#1f2937',
+
                             borderRadius:
                                 '10px',
+
                             overflow:
                                 'hidden',
                         }}
@@ -1270,27 +1379,38 @@ export default function R75TickMonitor() {
                                             100
                                         )
                                     }%`,
+
                                 height:
                                     '100%',
+
                                 background:
                                     '#22c55e',
+
+                                transition:
+                                    'width 0.2s ease',
                             }}
                         />
                     </div>
                 </div>
 
-                {/* ANALYSE */}
+                {/* =================================================
+                    ANALYSE
+                ================================================= */}
 
                 <div
                     style={{
                         background:
                             '#111827',
+
                         border:
                             '1px solid #374151',
+
                         borderRadius:
                             '14px',
+
                         padding:
                             '18px',
+
                         marginBottom:
                             '16px',
                     }}
@@ -1299,6 +1419,8 @@ export default function R75TickMonitor() {
                         style={{
                             marginTop:
                                 0,
+                            fontSize:
+                                '21px',
                         }}
                     >
                         🔎 Analyse en temps réel
@@ -1308,8 +1430,10 @@ export default function R75TickMonitor() {
                         style={{
                             display:
                                 'grid',
+
                             gridTemplateColumns:
-                                'repeat(auto-fit,minmax(180px,1fr))',
+                                'repeat(auto-fit, minmax(150px, 1fr))',
+
                             gap:
                                 '14px',
                         }}
@@ -1327,7 +1451,7 @@ export default function R75TickMonitor() {
                             <strong
                                 style={{
                                     fontSize:
-                                        '20px',
+                                        '19px',
                                 }}
                             >
                                 {directionLabel(
@@ -1349,7 +1473,7 @@ export default function R75TickMonitor() {
                             <strong
                                 style={{
                                     fontSize:
-                                        '20px',
+                                        '19px',
                                 }}
                             >
                                 {directionLabel(
@@ -1400,14 +1524,21 @@ export default function R75TickMonitor() {
                         style={{
                             marginTop:
                                 '16px',
+
                             padding:
                                 '12px',
+
                             background:
                                 '#172033',
+
                             borderRadius:
                                 '10px',
+
                             color:
                                 '#cbd5e1',
+
+                            lineHeight:
+                                '1.5',
                         }}
                     >
                         ℹ️ L'analyse utilise
@@ -1417,18 +1548,24 @@ export default function R75TickMonitor() {
                     </div>
                 </div>
 
-                {/* PAPER TRADING */}
+                {/* =================================================
+                    PAPER TRADING
+                ================================================= */}
 
                 <div
                     style={{
                         background:
                             '#111827',
+
                         border:
                             '1px solid #374151',
+
                         borderRadius:
                             '14px',
+
                         padding:
                             '18px',
+
                         marginBottom:
                             '16px',
                     }}
@@ -1437,6 +1574,8 @@ export default function R75TickMonitor() {
                         style={{
                             marginTop:
                                 0,
+                            fontSize:
+                                '21px',
                         }}
                     >
                         🧪 Phase 2 —
@@ -1447,8 +1586,10 @@ export default function R75TickMonitor() {
                         style={{
                             display:
                                 'grid',
+
                             gridTemplateColumns:
-                                'repeat(auto-fit,minmax(150px,1fr))',
+                                'repeat(auto-fit, minmax(140px, 1fr))',
+
                             gap:
                                 '12px',
                         }}
@@ -1546,16 +1687,24 @@ export default function R75TickMonitor() {
                         </div>
                     </div>
 
+                    {/* RESULTAT VIRTUEL */}
+
                     <div
                         style={{
                             marginTop:
                                 '18px',
+
                             padding:
                                 '16px',
+
                             background:
                                 '#172033',
+
                             borderRadius:
                                 '12px',
+
+                            textAlign:
+                                'center',
                         }}
                     >
                         <div
@@ -1570,9 +1719,11 @@ export default function R75TickMonitor() {
                         <div
                             style={{
                                 fontSize:
-                                    '30px',
+                                    '32px',
+
                                 fontWeight:
                                     'bold',
+
                                 marginTop:
                                     '5px',
                             }}
@@ -1590,8 +1741,12 @@ export default function R75TickMonitor() {
                             style={{
                                 marginTop:
                                     '6px',
+
                                 color:
                                     '#9ca3af',
+
+                                lineHeight:
+                                    '1.5',
                             }}
                         >
                             Mise virtuelle :
@@ -1602,18 +1757,24 @@ export default function R75TickMonitor() {
                     </div>
                 </div>
 
-                {/* BLOCS */}
+                {/* =================================================
+                    BLOCS DE 100
+                ================================================= */}
 
                 <div
                     style={{
                         background:
                             '#111827',
+
                         border:
                             '1px solid #374151',
+
                         borderRadius:
                             '14px',
+
                         padding:
                             '18px',
+
                         marginBottom:
                             '16px',
                     }}
@@ -1622,6 +1783,8 @@ export default function R75TickMonitor() {
                         style={{
                             marginTop:
                                 0,
+                            fontSize:
+                                '21px',
                         }}
                     >
                         📦 Blocs de {BLOCK_SIZE}
@@ -1709,6 +1872,7 @@ export default function R75TickMonitor() {
                         style={{
                             marginTop:
                                 '14px',
+
                             color:
                                 '#9ca3af',
                         }}
@@ -1727,7 +1891,9 @@ export default function R75TickMonitor() {
                     </div>
                 </div>
 
-                {/* ÉTAT */}
+                {/* =================================================
+                    ÉTAT
+                ================================================= */}
 
                 <div
                     style={{
@@ -1735,6 +1901,7 @@ export default function R75TickMonitor() {
                             phase === 'done'
                                 ? '#052e16'
                                 : '#172033',
+
                         border:
                             `1px solid ${
                                 phase ===
@@ -1742,14 +1909,21 @@ export default function R75TickMonitor() {
                                     ? '#22c55e'
                                     : '#374151'
                             }`,
+
                         borderRadius:
                             '14px',
+
                         padding:
                             '18px',
+
                         marginBottom:
                             '16px',
+
                         textAlign:
                             'center',
+
+                        lineHeight:
+                            '1.5',
                     }}
                 >
                     {phase ===
@@ -1777,22 +1951,35 @@ export default function R75TickMonitor() {
                     )}
                 </div>
 
-                {/* SÉCURITÉ */}
+                {/* =================================================
+                    SÉCURITÉ
+                ================================================= */}
 
                 <div
                     style={{
                         background:
                             '#1f2937',
+
                         border:
                             '1px solid #4b5563',
+
                         borderRadius:
                             '12px',
+
                         padding:
-                            '16px',
+                            '18px',
+
+                        marginBottom:
+                            '20px',
+
                         textAlign:
                             'center',
+
                         color:
                             '#d1d5db',
+
+                        lineHeight:
+                            '1.6',
                     }}
                 >
                     <strong>
@@ -1813,8 +2000,10 @@ export default function R75TickMonitor() {
                         style={{
                             marginTop:
                                 '5px',
+
                             fontSize:
                                 '13px',
+
                             color:
                                 '#9ca3af',
                         }}
@@ -1823,6 +2012,33 @@ export default function R75TickMonitor() {
                         affichés sont
                         entièrement virtuels.
                     </div>
+                </div>
+
+                {/* =================================================
+                    INDICATEUR DE DÉFILEMENT MOBILE
+                ================================================= */}
+
+                <div
+                    style={{
+                        textAlign:
+                            'center',
+
+                        padding:
+                            '10px',
+
+                        marginBottom:
+                            '20px',
+
+                        color:
+                            '#64748b',
+
+                        fontSize:
+                            '12px',
+                    }}
+                >
+                    ↕️ Fais glisser l'écran
+                    pour voir toutes les
+                    informations
                 </div>
             </div>
         </div>
