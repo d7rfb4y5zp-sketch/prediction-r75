@@ -24,10 +24,10 @@ type Stats = {
     virtualProfit: number;
 };
 
-type AccountBalance = {
-    balance: number | null;
+type BalanceInfo = {
+    balance: number;
     currency: string;
-    loginid: string;
+    loginid?: string;
 };
 
 const getDirection = (
@@ -46,25 +46,17 @@ const directionLabel = (
 };
 
 export default function R75TickMonitor() {
-    const [connected, setConnected] =
-        useState(false);
+    const [connected, setConnected] = useState(false);
+    const [connectionError, setConnectionError] = useState('');
 
-    const [connectionError, setConnectionError] =
-        useState('');
+    const [price, setPrice] = useState<number | null>(null);
+    const [lastDigit, setLastDigit] = useState<number | null>(null);
 
-    const [price, setPrice] =
-        useState<number | null>(null);
+    const [historyCount, setHistoryCount] = useState(0);
 
-    const [lastDigit, setLastDigit] =
-        useState<number | null>(null);
-
-    const [historyCount, setHistoryCount] =
-        useState(0);
-
-    const [phase, setPhase] =
-        useState<'learning' | 'testing' | 'done'>(
-            'learning'
-        );
+    const [phase, setPhase] = useState<
+        'learning' | 'testing' | 'done'
+    >('learning');
 
     const [currentDirection, setCurrentDirection] =
         useState<Direction | null>(null);
@@ -85,8 +77,7 @@ export default function R75TickMonitor() {
         virtualProfit: 0,
     });
 
-    const [blocks, setBlocks] =
-        useState<number[]>([]);
+    const [blocks, setBlocks] = useState<number[]>([]);
 
     const [currentBlockWins, setCurrentBlockWins] =
         useState(0);
@@ -94,24 +85,14 @@ export default function R75TickMonitor() {
     const [currentBlockTests, setCurrentBlockTests] =
         useState(0);
 
-    /*
-     * =====================================================
-     * COMPTE DERIV
-     * =====================================================
-     */
+    const [balanceInfo, setBalanceInfo] =
+        useState<BalanceInfo | null>(null);
 
-    const [accountBalance, setAccountBalance] =
-        useState<AccountBalance>({
-            balance: null,
-            currency: '',
-            loginid: '',
-        });
-
-    const [accountConnected, setAccountConnected] =
-        useState(false);
-
-    const [accountError, setAccountError] =
+    const [balanceError, setBalanceError] =
         useState('');
+
+    const [balanceReceived, setBalanceReceived] =
+        useState(false);
 
     const previousPriceRef =
         useRef<number | null>(null);
@@ -125,21 +106,34 @@ export default function R75TickMonitor() {
     const predictionRef =
         useRef<Direction | null>(null);
 
-    const testsRef = useRef(0);
-    const winsRef = useRef(0);
-    const lossesRef = useRef(0);
-    const virtualProfitRef = useRef(0);
+    const testsRef =
+        useRef(0);
 
-    const blockWinsRef = useRef(0);
-    const blockTestsRef = useRef(0);
+    const winsRef =
+        useRef(0);
+
+    const lossesRef =
+        useRef(0);
+
+    const virtualProfitRef =
+        useRef(0);
+
+    const blockWinsRef =
+        useRef(0);
+
+    const blockTestsRef =
+        useRef(0);
 
     const subscribedRef =
         useRef(false);
 
+    const balanceRequestedRef =
+        useRef(false);
+
     /*
-     * =====================================================
-     * ANALYSE DES DERNIERS MOUVEMENTS
-     * =====================================================
+     * ---------------------------------------------------------
+     * ANALYSE
+     * ---------------------------------------------------------
      */
 
     const calculatePrediction = () => {
@@ -147,17 +141,13 @@ export default function R75TickMonitor() {
             directionHistoryRef.current;
 
         const recent =
-            history.slice(
-                -ANALYSIS_WINDOW
-            );
+            history.slice(-ANALYSIS_WINDOW);
 
         if (recent.length < 5) {
             return {
-                direction:
-                    null as Direction | null,
+                direction: null as Direction | null,
                 strength: 0,
-                observations:
-                    recent.length,
+                observations: recent.length,
             };
         }
 
@@ -172,16 +162,13 @@ export default function R75TickMonitor() {
             }
         });
 
-        const total =
-            up + down;
+        const total = up + down;
 
         if (total === 0) {
             return {
-                direction:
-                    null as Direction | null,
+                direction: null as Direction | null,
                 strength: 0,
-                observations:
-                    total,
+                observations: 0,
             };
         }
 
@@ -193,45 +180,124 @@ export default function R75TickMonitor() {
 
         if (up >= down) {
             return {
-                direction:
-                    'UP' as Direction,
-                strength:
-                    upPercent,
-                observations:
-                    total,
+                direction: 'UP' as Direction,
+                strength: upPercent,
+                observations: total,
             };
         }
 
         return {
-            direction:
-                'DOWN' as Direction,
-            strength:
-                downPercent,
-            observations:
-                total,
+            direction: 'DOWN' as Direction,
+            strength: downPercent,
+            observations: total,
         };
     };
 
     /*
-     * =====================================================
-     * TRAITEMENT TICK
-     * =====================================================
+     * ---------------------------------------------------------
+     * BALANCE
+     * ---------------------------------------------------------
+     *
+     * IMPORTANT V4.9:
+     *
+     * We DO NOT send:
+     *
+     * { balance: 1, subscribe: 1 }
+     *
+     * because the Deriv application may already have a
+     * balance subscription.
+     *
+     * We only send:
+     *
+     * { balance: 1 }
+     *
+     * This asks for the current balance without creating
+     * another balance subscription.
      */
 
-    const processTick = (tick: Tick) => {
+    const requestCurrentBalance = () => {
+        if (!api_base?.api) {
+            return;
+        }
+
+        if (balanceRequestedRef.current) {
+            return;
+        }
+
+        balanceRequestedRef.current = true;
+
+        try {
+            api_base.api.send({
+                balance: 1,
+                req_id: 4901,
+            });
+        } catch (error: any) {
+            balanceRequestedRef.current = false;
+
+            setBalanceError(
+                error?.message ||
+                    'Impossible de demander le solde Demo.'
+            );
+        }
+    };
+
+    /*
+     * ---------------------------------------------------------
+     * TRAITEMENT DU SOLDE
+     * ---------------------------------------------------------
+     */
+
+    const processBalance = (
+        data: any
+    ) => {
+        if (!data?.balance) {
+            return;
+        }
+
+        const rawBalance =
+            data.balance.balance;
+
+        const currency =
+            data.balance.currency || 'USD';
+
+        const loginid =
+            data.balance.loginid;
+
         if (
-            tick.symbol !==
-            MARKET_SYMBOL
+            typeof rawBalance !== 'number' ||
+            !Number.isFinite(rawBalance)
+        ) {
+            return;
+        }
+
+        setBalanceInfo({
+            balance: rawBalance,
+            currency,
+            loginid,
+        });
+
+        setBalanceReceived(true);
+        setBalanceError('');
+    };
+
+    /*
+     * ---------------------------------------------------------
+     * TRAITEMENT DES TICKS
+     * ---------------------------------------------------------
+     */
+
+    const processTick = (
+        tick: Tick
+    ) => {
+        if (
+            tick.symbol !== MARKET_SYMBOL
         ) {
             return;
         }
 
         if (
-            typeof tick.quote !==
-                'number' ||
-            !Number.isFinite(
-                tick.quote
-            )
+            typeof tick.quote !== 'number' ||
+            !Number.isFinite(tick.quote)
         ) {
             return;
         }
@@ -265,8 +331,7 @@ export default function R75TickMonitor() {
          */
 
         if (
-            previousPriceRef.current ===
-            null
+            previousPriceRef.current === null
         ) {
             previousPriceRef.current =
                 currentPrice;
@@ -275,8 +340,16 @@ export default function R75TickMonitor() {
                 currentPrice
             );
 
+            setHistoryCount(
+                priceHistoryRef.current.length
+            );
+
             return;
         }
+
+        /*
+         * Direction
+         */
 
         const previousPrice =
             previousPriceRef.current;
@@ -291,7 +364,7 @@ export default function R75TickMonitor() {
             currentPrice;
 
         /*
-         * Sauvegarde du prix
+         * Historique prix
          */
 
         priceHistoryRef.current.push(
@@ -306,7 +379,7 @@ export default function R75TickMonitor() {
         }
 
         /*
-         * Sauvegarde du mouvement
+         * Historique directions
          */
 
         directionHistoryRef.current.push(
@@ -335,9 +408,9 @@ export default function R75TickMonitor() {
         );
 
         /*
-         * =================================================
-         * APPRENTISSAGE
-         * =================================================
+         * -----------------------------------------------------
+         * PHASE 1 : APPRENTISSAGE
+         * -----------------------------------------------------
          */
 
         if (
@@ -365,9 +438,9 @@ export default function R75TickMonitor() {
         }
 
         /*
-         * =================================================
-         * PREMIÈRE ENTRÉE EN PAPER TRADING
-         * =================================================
+         * -----------------------------------------------------
+         * PREMIÈRE PRÉDICTION
+         * -----------------------------------------------------
          */
 
         if (
@@ -398,9 +471,9 @@ export default function R75TickMonitor() {
         }
 
         /*
-         * =================================================
+         * -----------------------------------------------------
          * VALIDATION DE LA PRÉDICTION PRÉCÉDENTE
-         * =================================================
+         * -----------------------------------------------------
          */
 
         const previousPrediction =
@@ -423,13 +496,11 @@ export default function R75TickMonitor() {
 
                 blockWinsRef.current += 1;
 
-                virtualProfitRef.current +=
-                    1;
+                virtualProfitRef.current += 1;
             } else {
                 lossesRef.current += 1;
 
-                virtualProfitRef.current -=
-                    1;
+                virtualProfitRef.current -= 1;
             }
 
             /*
@@ -441,26 +512,33 @@ export default function R75TickMonitor() {
                 BLOCK_SIZE
             ) {
                 const rate =
-                    (blockWinsRef.current /
-                        BLOCK_SIZE) *
-                    100;
+                    (
+                        blockWinsRef.current /
+                        BLOCK_SIZE
+                    ) * 100;
 
-                setBlocks(previous => [
-                    ...previous,
-                    rate,
-                ]);
+                setBlocks(
+                    previous => [
+                        ...previous,
+                        rate,
+                    ]
+                );
 
                 blockTestsRef.current = 0;
+
                 blockWinsRef.current = 0;
             }
 
             setStats({
                 tests:
                     testsRef.current,
+
                 wins:
                     winsRef.current,
+
                 losses:
                     lossesRef.current,
+
                 virtualProfit:
                     virtualProfitRef.current,
             });
@@ -475,9 +553,9 @@ export default function R75TickMonitor() {
         }
 
         /*
-         * =================================================
-         * FIN DU TEST
-         * =================================================
+         * -----------------------------------------------------
+         * FIN DES 1000 TESTS
+         * -----------------------------------------------------
          */
 
         if (
@@ -487,12 +565,15 @@ export default function R75TickMonitor() {
             setPhase('done');
 
             /*
-             * On conserve la dernière
-             * prédiction visible.
+             * V4.9 conserve la dernière prédiction
+             * au lieu de l'effacer.
              */
 
             const finalResult =
                 calculatePrediction();
+
+            predictionRef.current =
+                finalResult.direction;
 
             setPrediction(
                 finalResult.direction
@@ -506,16 +587,13 @@ export default function R75TickMonitor() {
                 finalResult.observations
             );
 
-            predictionRef.current =
-                finalResult.direction;
-
             return;
         }
 
         /*
-         * =================================================
+         * -----------------------------------------------------
          * NOUVELLE PRÉDICTION
-         * =================================================
+         * -----------------------------------------------------
          */
 
         const result =
@@ -538,9 +616,9 @@ export default function R75TickMonitor() {
     };
 
     /*
-     * =====================================================
+     * ---------------------------------------------------------
      * CONNEXION DERIV
-     * =====================================================
+     * ---------------------------------------------------------
      */
 
     useEffect(() => {
@@ -591,9 +669,7 @@ export default function R75TickMonitor() {
                             }
 
                             /*
-                             * =================================================
-                             * TICKS EUR/USD
-                             * =================================================
+                             * TICK
                              */
 
                             if (
@@ -606,64 +682,24 @@ export default function R75TickMonitor() {
                             }
 
                             /*
-                             * =================================================
-                             * SOLDE DU COMPTE
-                             * =================================================
+                             * BALANCE
                              *
-                             * Cette réponse nécessite
-                             * une session Deriv authentifiée.
+                             * This can come from:
+                             * - our one-shot request
+                             * - an existing app subscription
                              */
 
                             if (
                                 data.msg_type ===
                                 'balance'
                             ) {
-                                const balanceData =
-                                    data.balance;
-
-                                if (
-                                    balanceData
-                                ) {
-                                    const numericBalance =
-                                        Number(
-                                            balanceData.balance
-                                        );
-
-                                    setAccountBalance({
-                                        balance:
-                                            Number.isFinite(
-                                                numericBalance
-                                            )
-                                                ? numericBalance
-                                                : null,
-
-                                        currency:
-                                            String(
-                                                balanceData.currency ||
-                                                    ''
-                                            ),
-
-                                        loginid:
-                                            String(
-                                                balanceData.loginid ||
-                                                    ''
-                                            ),
-                                    });
-
-                                    setAccountConnected(
-                                        true
-                                    );
-
-                                    setAccountError(
-                                        ''
-                                    );
-                                }
+                                processBalance(
+                                    data
+                                );
                             }
 
                             /*
-                             * =================================================
-                             * ERREUR COMPTE
-                             * =================================================
+                             * ERREUR
                              */
 
                             if (
@@ -677,49 +713,40 @@ export default function R75TickMonitor() {
                                     data.error ||
                                     'Erreur Deriv inconnue';
 
-                                const messageString =
+                                const text =
                                     String(
                                         message
                                     );
 
                                 /*
-                                 * Si l'erreur concerne
-                                 * le compte/balance,
-                                 * on l'affiche séparément.
+                                 * Ne pas transformer une
+                                 * erreur balance en erreur
+                                 * marché.
                                  */
 
                                 if (
-                                    messageString
-                                        .toLowerCase()
-                                        .includes(
-                                            'author'
-                                        ) ||
-                                    messageString
+                                    text
                                         .toLowerCase()
                                         .includes(
                                             'balance'
                                         ) ||
-                                    messageString
+                                    text
                                         .toLowerCase()
                                         .includes(
-                                            'token'
+                                            'authoriz'
                                         ) ||
-                                    messageString
+                                    text
                                         .toLowerCase()
                                         .includes(
-                                            'permission'
+                                            'subscribed'
                                         )
                                 ) {
-                                    setAccountConnected(
-                                        false
-                                    );
-
-                                    setAccountError(
-                                        messageString
+                                    setBalanceError(
+                                        text
                                     );
                                 } else {
                                     setConnectionError(
-                                        messageString
+                                        text
                                     );
 
                                     setConnected(
@@ -731,9 +758,7 @@ export default function R75TickMonitor() {
                     );
 
             /*
-             * =================================================
-             * FLUX EUR/USD
-             * =================================================
+             * Flux prix EUR/USD
              */
 
             api_base.api.send({
@@ -743,19 +768,13 @@ export default function R75TickMonitor() {
             });
 
             /*
-             * =================================================
-             * DEMANDE DU SOLDE
-             * =================================================
+             * V4.9 :
+             * UNE SEULE demande de solde.
              *
-             * Aucun trade.
-             * Aucun buy.
-             * Aucun sell.
+             * Pas de subscribe:1 ici.
              */
 
-            api_base.api.send({
-                balance: 1,
-                subscribe: 1,
-            });
+            requestCurrentBalance();
 
             setConnectionError('');
         } catch (error: any) {
@@ -791,9 +810,9 @@ export default function R75TickMonitor() {
     }, []);
 
     /*
-     * =====================================================
-     * CALCULS AFFICHAGE
-     * =====================================================
+     * ---------------------------------------------------------
+     * STATISTIQUES
+     * ---------------------------------------------------------
      */
 
     const totalTests =
@@ -801,35 +820,45 @@ export default function R75TickMonitor() {
 
     const winRate =
         totalTests > 0
-            ? (stats.wins /
-                  totalTests) *
-              100
+            ? (
+                  stats.wins /
+                  totalTests
+              ) * 100
             : 0;
 
     const lossRate =
         totalTests > 0
-            ? (stats.losses /
-                  totalTests) *
-              100
+            ? (
+                  stats.losses /
+                  totalTests
+              ) * 100
             : 0;
 
     const averageBlock =
         blocks.length > 0
             ? blocks.reduce(
-                  (sum, value) =>
+                  (
+                      sum,
+                      value
+                  ) =>
                       sum + value,
                   0
-              ) / blocks.length
+              ) /
+              blocks.length
             : 0;
 
     const minimumBlock =
         blocks.length > 0
-            ? Math.min(...blocks)
+            ? Math.min(
+                  ...blocks
+              )
             : 0;
 
     const maximumBlock =
         blocks.length > 0
-            ? Math.max(...blocks)
+            ? Math.max(
+                  ...blocks
+              )
             : 0;
 
     const displayPrice =
@@ -837,696 +866,964 @@ export default function R75TickMonitor() {
             ? price.toFixed(5)
             : '—';
 
-    const displayBalance =
-        accountBalance.balance !==
-        null
-            ? accountBalance.balance.toFixed(
-                  2
-              )
-            : '—';
-
     /*
-     * =====================================================
-     * INTERFACE
-     * =====================================================
+     * ---------------------------------------------------------
+     * AFFICHAGE
+     * ---------------------------------------------------------
      */
 
     return (
         <div
             style={{
+                minHeight: '100vh',
                 background:
-                    '#111111',
-                color:
-                    '#ffffff',
+                    '#0f172a',
+                color: '#e5e7eb',
                 padding:
                     '20px',
-                margin:
-                    '16px',
-                borderRadius:
-                    '14px',
                 fontFamily:
                     'Arial, sans-serif',
-                lineHeight:
-                    1.5,
+                boxSizing:
+                    'border-box',
             }}
         >
-            <h2
-                style={{
-                    marginTop: 0,
-                }}
-            >
-                Moniteur Forex EUR/USD —
-                V4.8 Demo + Paper Trader
-            </h2>
-
-            {/* =====================================================
-                CONNEXION MARCHE
-               ===================================================== */}
-
             <div
                 style={{
-                    padding:
-                        '14px',
-                    borderRadius:
-                        '12px',
-                    background:
-                        connected
-                            ? '#064d29'
-                            : '#3d3000',
-                    marginBottom:
-                        '16px',
+                    maxWidth:
+                        '1000px',
+                    margin:
+                        '0 auto',
                 }}
             >
-                <strong>
-                    Connexion marché :
-                </strong>{' '}
-
-                {connected ? (
-                    <>
-                        🟢 Connecté à
-                        Deriv —
-                        EUR/USD
-                    </>
-                ) : (
-                    <>
-                        🟠 Connexion à
-                        Deriv…
-                    </>
-                )}
-            </div>
-
-            {/* =====================================================
-                COMPTE
-               ===================================================== */}
-
-            <div
-                style={{
-                    padding:
-                        '16px',
-                    borderRadius:
-                        '12px',
-                    background:
-                        accountConnected
-                            ? '#073d25'
-                            : '#292929',
-                    marginBottom:
-                        '16px',
-                    border:
-                        accountConnected
-                            ? '1px solid #0a7a48'
-                            : '1px solid #444444',
-                }}
-            >
-                <div
+                <h1
                     style={{
+                        textAlign:
+                            'center',
                         fontSize:
-                            '18px',
-                        fontWeight:
-                            'bold',
+                            '26px',
                         marginBottom:
-                            '8px',
+                            '20px',
                     }}
                 >
-                    💰 Compte Deriv
+                    Moniteur Forex EUR/USD —
+                    V4.9 Demo + Paper Trader
+                </h1>
+
+                {/* CONNEXION */}
+
+                <div
+                    style={{
+                        background:
+                            connected
+                                ? '#064e3b'
+                                : '#451a03',
+                        border:
+                            `1px solid ${
+                                connected
+                                    ? '#10b981'
+                                    : '#f59e0b'
+                            }`,
+                        borderRadius:
+                            '12px',
+                        padding:
+                            '14px',
+                        marginBottom:
+                            '16px',
+                        textAlign:
+                            'center',
+                    }}
+                >
+                    {connected
+                        ? '🟢 Connecté à Deriv — EUR/USD'
+                        : '🟠 Connexion à Deriv…'}
                 </div>
 
-                {accountConnected ? (
-                    <>
+                {connectionError && (
+                    <div
+                        style={{
+                            background:
+                                '#450a0a',
+                            border:
+                                '1px solid #ef4444',
+                            borderRadius:
+                                '10px',
+                            padding:
+                                '12px',
+                            marginBottom:
+                                '16px',
+                            color:
+                                '#fecaca',
+                        }}
+                    >
+                        ⚠️ Marché :
+                        {' '}
+                        {connectionError}
+                    </div>
+                )}
+
+                {/* COMPTE */}
+
+                <div
+                    style={{
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #374151',
+                        borderRadius:
+                            '14px',
+                        padding:
+                            '18px',
+                        marginBottom:
+                            '16px',
+                    }}
+                >
+                    <h2
+                        style={{
+                            marginTop:
+                                0,
+                        }}
+                    >
+                        💰 Compte Deriv
+                    </h2>
+
+                    {balanceInfo ? (
+                        <>
+                            <div
+                                style={{
+                                    fontSize:
+                                        '25px',
+                                    fontWeight:
+                                        'bold',
+                                    marginBottom:
+                                        '8px',
+                                }}
+                            >
+                                {balanceInfo.balance.toFixed(
+                                    2
+                                )}{' '}
+                                {
+                                    balanceInfo.currency
+                                }
+                            </div>
+
+                            {balanceInfo.loginid && (
+                                <div
+                                    style={{
+                                        color:
+                                            '#9ca3af',
+                                    }}
+                                >
+                                    Compte :
+                                    {' '}
+                                    {
+                                        balanceInfo.loginid
+                                    }
+                                </div>
+                            )}
+
+                            <div
+                                style={{
+                                    marginTop:
+                                        '8px',
+                                    color:
+                                        '#86efac',
+                                }}
+                            >
+                                🟢 Solde reçu depuis
+                                Deriv
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div
+                                style={{
+                                    color:
+                                        '#fbbf24',
+                                    marginBottom:
+                                        '8px',
+                                }}
+                            >
+                                🟠 Solde Demo
+                                indisponible
+                            </div>
+
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                    fontSize:
+                                        '14px',
+                                }}
+                            >
+                                Le flux EUR/USD
+                                fonctionne
+                                indépendamment
+                                du solde.
+                            </div>
+                        </>
+                    )}
+
+                    {balanceError && (
+                        <div
+                            style={{
+                                marginTop:
+                                    '12px',
+                                padding:
+                                    '10px',
+                                background:
+                                    '#450a0a',
+                                border:
+                                    '1px solid #ef4444',
+                                borderRadius:
+                                    '8px',
+                                color:
+                                    '#fecaca',
+                                fontSize:
+                                    '14px',
+                            }}
+                        >
+                            ⚠️ Compte :
+                            {' '}
+                            {balanceError}
+                        </div>
+                    )}
+                </div>
+
+                {/* MARCHE */}
+
+                <div
+                    style={{
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #374151',
+                        borderRadius:
+                            '14px',
+                        padding:
+                            '18px',
+                        marginBottom:
+                            '16px',
+                    }}
+                >
+                    <h2
+                        style={{
+                            marginTop:
+                                0,
+                        }}
+                    >
+                        📊 Marché
+                    </h2>
+
+                    <div
+                        style={{
+                            display:
+                                'grid',
+                            gridTemplateColumns:
+                                'repeat(auto-fit,minmax(180px,1fr))',
+                            gap:
+                                '12px',
+                        }}
+                    >
                         <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Marché
+                            </div>
+
                             <strong>
-                                État :
-                            </strong>{' '}
-                            🟢 Compte
-                            authentifié
+                                {
+                                    MARKET_NAME
+                                }
+                            </strong>
+                        </div>
+
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Symbole
+                            </div>
+
+                            <strong>
+                                {
+                                    MARKET_SYMBOL
+                                }
+                            </strong>
+                        </div>
+
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Prix
+                            </div>
+
+                            <strong
+                                style={{
+                                    fontSize:
+                                        '22px',
+                                }}
+                            >
+                                {
+                                    displayPrice
+                                }
+                            </strong>
+                        </div>
+
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Dernier chiffre
+                            </div>
+
+                            <strong
+                                style={{
+                                    fontSize:
+                                        '22px',
+                                }}
+                            >
+                                {lastDigit ??
+                                    '—'}
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+
+                {/* PHASE 1 */}
+
+                <div
+                    style={{
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #374151',
+                        borderRadius:
+                            '14px',
+                        padding:
+                            '18px',
+                        marginBottom:
+                            '16px',
+                    }}
+                >
+                    <h2
+                        style={{
+                            marginTop:
+                                0,
+                        }}
+                    >
+                        🧠 Phase 1 —
+                        Apprentissage
+                    </h2>
+
+                    <div
+                        style={{
+                            marginBottom:
+                                '12px',
+                        }}
+                    >
+                        Historique :
+                        {' '}
+                        <strong>
+                            {
+                                historyCount
+                            }
+                            /{HISTORY_SIZE}
+                        </strong>
+                    </div>
+
+                    <div
+                        style={{
+                            height:
+                                '10px',
+                            background:
+                                '#1f2937',
+                            borderRadius:
+                                '10px',
+                            overflow:
+                                'hidden',
+                        }}
+                    >
+                        <div
+                            style={{
+                                width:
+                                    `${
+                                        Math.min(
+                                            (
+                                                historyCount /
+                                                HISTORY_SIZE
+                                            ) *
+                                                100,
+                                            100
+                                        )
+                                    }%`,
+                                height:
+                                    '100%',
+                                background:
+                                    '#22c55e',
+                            }}
+                        />
+                    </div>
+                </div>
+
+                {/* ANALYSE */}
+
+                <div
+                    style={{
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #374151',
+                        borderRadius:
+                            '14px',
+                        padding:
+                            '18px',
+                        marginBottom:
+                            '16px',
+                    }}
+                >
+                    <h2
+                        style={{
+                            marginTop:
+                                0,
+                        }}
+                    >
+                        🔎 Analyse en temps réel
+                    </h2>
+
+                    <div
+                        style={{
+                            display:
+                                'grid',
+                            gridTemplateColumns:
+                                'repeat(auto-fit,minmax(180px,1fr))',
+                            gap:
+                                '14px',
+                        }}
+                    >
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Direction actuelle
+                            </div>
+
+                            <strong
+                                style={{
+                                    fontSize:
+                                        '20px',
+                                }}
+                            >
+                                {directionLabel(
+                                    currentDirection
+                                )}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Prochaine prédiction
+                            </div>
+
+                            <strong
+                                style={{
+                                    fontSize:
+                                        '20px',
+                                }}
+                            >
+                                {directionLabel(
+                                    prediction
+                                )}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Force
+                            </div>
+
+                            <strong>
+                                {
+                                    predictionStrength.toFixed(
+                                        1
+                                    )
+                                }
+                                %
+                            </strong>
+                        </div>
+
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Observations
+                            </div>
+
+                            <strong>
+                                {
+                                    observations
+                                }
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div
+                        style={{
+                            marginTop:
+                                '16px',
+                            padding:
+                                '12px',
+                            background:
+                                '#172033',
+                            borderRadius:
+                                '10px',
+                            color:
+                                '#cbd5e1',
+                        }}
+                    >
+                        ℹ️ L'analyse utilise
+                        les dernières directions
+                        du marché pour produire
+                        une indication UP/DOWN.
+                    </div>
+                </div>
+
+                {/* PAPER TRADING */}
+
+                <div
+                    style={{
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #374151',
+                        borderRadius:
+                            '14px',
+                        padding:
+                            '18px',
+                        marginBottom:
+                            '16px',
+                    }}
+                >
+                    <h2
+                        style={{
+                            marginTop:
+                                0,
+                        }}
+                    >
+                        🧪 Phase 2 —
+                        Paper Trading
+                    </h2>
+
+                    <div
+                        style={{
+                            display:
+                                'grid',
+                            gridTemplateColumns:
+                                'repeat(auto-fit,minmax(150px,1fr))',
+                            gap:
+                                '12px',
+                        }}
+                    >
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Tests
+                            </div>
+
+                            <strong>
+                                {
+                                    stats.tests
+                                }
+                                /{PAPER_TEST_LIMIT}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Gains
+                            </div>
+
+                            <strong>
+                                {
+                                    stats.wins
+                                }
+                            </strong>
+                        </div>
+
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Pertes
+                            </div>
+
+                            <strong>
+                                {
+                                    stats.losses
+                                }
+                            </strong>
+                        </div>
+
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Taux gain
+                            </div>
+
+                            <strong>
+                                {
+                                    winRate.toFixed(
+                                        2
+                                    )
+                                }
+                                %
+                            </strong>
+                        </div>
+
+                        <div>
+                            <div
+                                style={{
+                                    color:
+                                        '#9ca3af',
+                                }}
+                            >
+                                Taux perte
+                            </div>
+
+                            <strong>
+                                {
+                                    lossRate.toFixed(
+                                        2
+                                    )
+                                }
+                                %
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div
+                        style={{
+                            marginTop:
+                                '18px',
+                            padding:
+                                '16px',
+                            background:
+                                '#172033',
+                            borderRadius:
+                                '12px',
+                        }}
+                    >
+                        <div
+                            style={{
+                                color:
+                                    '#9ca3af',
+                            }}
+                        >
+                            Résultat virtuel
+                        </div>
+
+                        <div
+                            style={{
+                                fontSize:
+                                    '30px',
+                                fontWeight:
+                                    'bold',
+                                marginTop:
+                                    '5px',
+                            }}
+                        >
+                            {stats.virtualProfit >=
+                            0
+                                ? '+'
+                                : ''}
+                            {
+                                stats.virtualProfit
+                            }
                         </div>
 
                         <div
                             style={{
                                 marginTop:
                                     '6px',
+                                color:
+                                    '#9ca3af',
                             }}
                         >
-                            <strong>
-                                Solde :
-                            </strong>{' '}
-                            {displayBalance}{' '}
-                            {accountBalance.currency}
+                            Mise virtuelle :
+                            +1 si prédiction
+                            correcte /
+                            -1 sinon
                         </div>
+                    </div>
+                </div>
 
-                        {accountBalance.loginid && (
+                {/* BLOCS */}
+
+                <div
+                    style={{
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #374151',
+                        borderRadius:
+                            '14px',
+                        padding:
+                            '18px',
+                        marginBottom:
+                            '16px',
+                    }}
+                >
+                    <h2
+                        style={{
+                            marginTop:
+                                0,
+                        }}
+                    >
+                        📦 Blocs de {BLOCK_SIZE}
+                    </h2>
+
+                    {blocks.length === 0 ? (
+                        <div
+                            style={{
+                                color:
+                                    '#9ca3af',
+                            }}
+                        >
+                            Aucun bloc complet
+                            pour le moment.
+                        </div>
+                    ) : (
+                        <>
+                            <div>
+                                Blocs terminés :
+                                {' '}
+                                <strong>
+                                    {
+                                        blocks.length
+                                    }
+                                </strong>
+                            </div>
+
+                            <div
+                                style={{
+                                    marginTop:
+                                        '10px',
+                                }}
+                            >
+                                Moyenne :
+                                {' '}
+                                <strong>
+                                    {
+                                        averageBlock.toFixed(
+                                            2
+                                        )
+                                    }
+                                    %
+                                </strong>
+                            </div>
+
                             <div
                                 style={{
                                     marginTop:
                                         '6px',
-                                    fontSize:
-                                        '13px',
-                                    opacity:
-                                        0.8,
                                 }}
                             >
-                                ID compte :{' '}
-                                {
-                                    accountBalance.loginid
-                                }
+                                Minimum :
+                                {' '}
+                                <strong>
+                                    {
+                                        minimumBlock.toFixed(
+                                            2
+                                        )
+                                    }
+                                    %
+                                </strong>
                             </div>
-                        )}
 
-                        <div
-                            style={{
-                                marginTop:
-                                    '8px',
-                                color:
-                                    '#8ff0bb',
-                                fontSize:
-                                    '13px',
-                            }}
-                        >
-                            ℹ️ Aucun trade
-                            n'est envoyé.
-                        </div>
-                    </>
-                ) : (
-                    <>
-                        <div>
-                            🟠 Compte non
-                            authentifié
-                            ou solde
-                            indisponible.
-                        </div>
+                            <div
+                                style={{
+                                    marginTop:
+                                        '6px',
+                                }}
+                            >
+                                Maximum :
+                                {' '}
+                                <strong>
+                                    {
+                                        maximumBlock.toFixed(
+                                            2
+                                        )
+                                    }
+                                    %
+                                </strong>
+                            </div>
+                        </>
+                    )}
 
-                        <div
-                            style={{
-                                marginTop:
-                                    '8px',
-                                fontSize:
-                                    '13px',
-                                color:
-                                    '#ffcc66',
-                            }}
-                        >
-                            Le flux des
-                            prix peut
-                            fonctionner
-                            sans que le
-                            compte soit
-                            authentifié.
-                        </div>
-                    </>
-                )}
-            </div>
-
-            {accountError && (
-                <div
-                    style={{
-                        background:
-                            '#4b1111',
-                        color:
-                            '#ffb3b3',
-                        padding:
-                            '10px',
-                        borderRadius:
-                            '8px',
-                        marginBottom:
-                            '14px',
-                    }}
-                >
-                    ⚠️{' '}
-                    <strong>
-                        Compte :
-                    </strong>{' '}
-                    {accountError}
-                </div>
-            )}
-
-            {/* =====================================================
-                ERREUR MARCHE
-               ===================================================== */}
-
-            {connectionError && (
-                <div
-                    style={{
-                        background:
-                            '#4b1111',
-                        color:
-                            '#ffb3b3',
-                        padding:
-                            '10px',
-                        borderRadius:
-                            '8px',
-                        marginBottom:
-                            '14px',
-                    }}
-                >
-                    ⚠️{' '}
-                    <strong>
-                        Erreur :
-                    </strong>{' '}
-                    {connectionError}
-                </div>
-            )}
-
-            {/* =====================================================
-                MARCHE
-               ===================================================== */}
-
-            <div>
-                <strong>
-                    Marché :
-                </strong>{' '}
-                {MARKET_NAME}
-            </div>
-
-            <div>
-                <strong>
-                    Symbole :
-                </strong>{' '}
-                {MARKET_SYMBOL}
-            </div>
-
-            <div>
-                <strong>
-                    Prix :
-                </strong>{' '}
-                {displayPrice}
-            </div>
-
-            <div>
-                <strong>
-                    Dernier chiffre :
-                </strong>{' '}
-                {lastDigit !== null
-                    ? lastDigit
-                    : '—'}
-            </div>
-
-            <hr />
-
-            {/* =====================================================
-                PHASE 1
-               ===================================================== */}
-
-            <h3>
-                Phase 1 —
-                Apprentissage
-            </h3>
-
-            <div>
-                <strong>
-                    Historique :
-                </strong>{' '}
-                {historyCount} /{' '}
-                {HISTORY_SIZE}
-            </div>
-
-            {historyCount <
-            HISTORY_SIZE ? (
-                <div>
-                    ⏳ Collecte des
-                    ticks en direct…
-                </div>
-            ) : (
-                <div>
-                    ✅ 500 ticks
-                    collectés.
-                </div>
-            )}
-
-            <h3>
-                Analyse en temps réel
-            </h3>
-
-            <div>
-                <strong>
-                    Direction actuelle :
-                </strong>{' '}
-                {directionLabel(
-                    currentDirection
-                )}
-            </div>
-
-            <div>
-                <strong>
-                    Prédiction suivante :
-                </strong>{' '}
-                {prediction
-                    ? directionLabel(
-                          prediction
-                      )
-                    : '⏳ —'}
-            </div>
-
-            <div>
-                <strong>
-                    Force du signal :
-                </strong>{' '}
-                {prediction
-                    ? `${predictionStrength.toFixed(
-                          1
-                      )} %`
-                    : '—'}
-            </div>
-
-            <div>
-                <strong>
-                    Observations :
-                </strong>{' '}
-                {observations}
-            </div>
-
-            <div
-                style={{
-                    marginTop:
-                        '10px',
-                    padding:
-                        '12px',
-                    background:
-                        '#222222',
-                    borderRadius:
-                        '10px',
-                }}
-            >
-                🧠 Analyse basée sur
-                les {ANALYSIS_WINDOW}{' '}
-                derniers mouvements.
-                <br />
-                🔄 L'apprentissage
-                continue avec les
-                nouveaux ticks.
-            </div>
-
-            <hr />
-
-            {/* =====================================================
-                PHASE 2
-               ===================================================== */}
-
-            <h3>
-                Phase 2 —
-                Paper Trading
-            </h3>
-
-            <div>
-                <strong>
-                    Tests :
-                </strong>{' '}
-                {stats.tests} /{' '}
-                {PAPER_TEST_LIMIT}
-            </div>
-
-            <div>
-                🟢{' '}
-                <strong>
-                    Succès :
-                </strong>{' '}
-                {stats.wins}
-            </div>
-
-            <div>
-                🔴{' '}
-                <strong>
-                    Échecs :
-                </strong>{' '}
-                {stats.losses}
-            </div>
-
-            <div>
-                📊{' '}
-                <strong>
-                    Taux :
-                </strong>{' '}
-                {winRate.toFixed(2)}
-                %
-            </div>
-
-            <div>
-                📉{' '}
-                <strong>
-                    Taux d'échec :
-                </strong>{' '}
-                {lossRate.toFixed(2)}
-                %
-            </div>
-
-            <div
-                style={{
-                    marginTop:
-                        '14px',
-                    padding:
-                        '14px',
-                    background:
-                        '#222222',
-                    borderRadius:
-                        '10px',
-                }}
-            >
-                💰{' '}
-                <strong>
-                    Mise virtuelle :
-                </strong>{' '}
-                $1.00
-                <br />
-
-                🟢{' '}
-                <strong>
-                    Gain virtuel :
-                </strong>{' '}
-                +1
-                <br />
-
-                🔴{' '}
-                <strong>
-                    Perte virtuelle :
-                </strong>{' '}
-                -1
-                <br />
-
-                🚫 Aucun argent
-                réel ou démo
-                n'est engagé.
-            </div>
-
-            <div
-                style={{
-                    marginTop:
-                        '16px',
-                    padding:
-                        '18px',
-                    borderRadius:
-                        '12px',
-                    background:
-                        stats.virtualProfit >=
-                        0
-                            ? '#063f22'
-                            : '#4a1010',
-                }}
-            >
-                <div
-                    style={{
-                        fontSize:
-                            '24px',
-                        fontWeight:
-                            'bold',
-                    }}
-                >
-                    {stats.virtualProfit >=
-                    0
-                        ? '🟢'
-                        : '🔴'}{' '}
-                    Résultat virtuel :{' '}
-                    {stats.virtualProfit >=
-                    0
-                        ? '+'
-                        : ''}
-                    {stats.virtualProfit}
-                </div>
-
-                <div>
-                    Solde virtuel :{' '}
-                    {stats.virtualProfit >=
-                    0
-                        ? '+'
-                        : ''}
-                    {stats.virtualProfit}{' '}
-                    $
-                </div>
-            </div>
-
-            <hr />
-
-            {/* =====================================================
-                BLOCS
-               ===================================================== */}
-
-            <h3>
-                📊 Blocs de{' '}
-                {BLOCK_SIZE}
-            </h3>
-
-            <div>
-                <strong>
-                    Blocs terminés :
-                </strong>{' '}
-                {blocks.length}
-            </div>
-
-            {blocks.map(
-                (rate, index) => (
                     <div
-                        key={index}
+                        style={{
+                            marginTop:
+                                '14px',
+                            color:
+                                '#9ca3af',
+                        }}
                     >
-                        Bloc{' '}
-                        {index + 1}:{' '}
+                        Bloc actuel :
+                        {' '}
                         <strong>
-                            {rate.toFixed(
-                                1
-                            )}
-                            %
+                            {
+                                currentBlockWins
+                            }
+                            /
+                            {
+                                currentBlockTests
+                            }
                         </strong>
                     </div>
-                )
-            )}
+                </div>
 
-            {stats.tests <
-                PAPER_TEST_LIMIT &&
-                currentBlockTests >
-                    0 && (
+                {/* ÉTAT */}
+
+                <div
+                    style={{
+                        background:
+                            phase === 'done'
+                                ? '#052e16'
+                                : '#172033',
+                        border:
+                            `1px solid ${
+                                phase ===
+                                'done'
+                                    ? '#22c55e'
+                                    : '#374151'
+                            }`,
+                        borderRadius:
+                            '14px',
+                        padding:
+                            '18px',
+                        marginBottom:
+                            '16px',
+                        textAlign:
+                            'center',
+                    }}
+                >
+                    {phase ===
+                        'learning' && (
+                        <>
+                            🧠 Collecte de
+                            données…
+                        </>
+                    )}
+
+                    {phase ===
+                        'testing' && (
+                        <>
+                            🧪 Paper Trading
+                            en cours…
+                        </>
+                    )}
+
+                    {phase === 'done' && (
+                        <>
+                            ✅ Test terminé —
+                            prédiction finale
+                            conservée
+                        </>
+                    )}
+                </div>
+
+                {/* SÉCURITÉ */}
+
+                <div
+                    style={{
+                        background:
+                            '#1f2937',
+                        border:
+                            '1px solid #4b5563',
+                        borderRadius:
+                            '12px',
+                        padding:
+                            '16px',
+                        textAlign:
+                            'center',
+                        color:
+                            '#d1d5db',
+                    }}
+                >
+                    <strong>
+                        🛡️ MODE TEST UNIQUEMENT
+                    </strong>
+
                     <div
                         style={{
                             marginTop:
                                 '8px',
                         }}
                     >
-                        Bloc actuel :{' '}
-                        {
-                            currentBlockWins
-                        }{' '}
-                        /{' '}
-                        {
-                            currentBlockTests
-                        }
+                        ❌ Aucun trade automatique
+                        réel.
                     </div>
-                )}
 
-            <div
-                style={{
-                    marginTop:
-                        '10px',
-                }}
-            >
-                <strong>
-                    Moyenne :
-                </strong>{' '}
-                {averageBlock.toFixed(
-                    2
-                )}
-                %
-            </div>
-
-            <div>
-                <strong>
-                    Minimum :
-                </strong>{' '}
-                {minimumBlock.toFixed(
-                    2
-                )}
-                %
-            </div>
-
-            <div>
-                <strong>
-                    Maximum :
-                </strong>{' '}
-                {maximumBlock.toFixed(
-                    2
-                )}
-                %
-            </div>
-
-            <hr />
-
-            {/* =====================================================
-                FIN
-               ===================================================== */}
-
-            {phase === 'done' ? (
-                <div
-                    style={{
-                        padding:
-                            '14px',
-                        background:
-                            '#123d24',
-                        borderRadius:
-                            '10px',
-                    }}
-                >
-                    ✅{' '}
-                    <strong>
-                        Paper test
-                        terminé.
-                    </strong>
-
-                    <br />
-
-                    Résultat :
-                    {stats.wins}{' '}
-                    gains /
-                    {stats.losses}{' '}
-                    pertes.
-
-                    <br />
-
-                    Taux final :{' '}
-                    {winRate.toFixed(
-                        2
-                    )}
-                    %
-
-                    <br />
-
-                    Résultat virtuel :{' '}
-                    {stats.virtualProfit >=
-                    0
-                        ? '+'
-                        : ''}
-                    {
-                        stats.virtualProfit
-                    }
+                    <div
+                        style={{
+                            marginTop:
+                                '5px',
+                            fontSize:
+                                '13px',
+                            color:
+                                '#9ca3af',
+                        }}
+                    >
+                        Les gains et pertes
+                        affichés sont
+                        entièrement virtuels.
+                    </div>
                 </div>
-            ) : (
-                <div>
-                    🔬 Le système
-                    fonctionne en
-                    mode apprentissage
-                    / paper trading.
-                </div>
-            )}
-
-            <div
-                style={{
-                    marginTop:
-                        '12px',
-                    color:
-                        '#ffcc66',
-                }}
-            >
-                ⚠️ Résultat
-                expérimental :
-                aucun taux de
-                réussite n'est
-                garanti.
-            </div>
-
-            <div
-                style={{
-                    marginTop:
-                        '8px',
-                    color:
-                        '#ff7777',
-                }}
-            >
-                ❌ Aucun trade
-                automatique
-                réel ou démo.
             </div>
         </div>
     );
