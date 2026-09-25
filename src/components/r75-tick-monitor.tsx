@@ -1,10 +1,4 @@
-import React, {
-    useCallback,
-    useEffect,
-    useRef,
-    useState,
-} from 'react';
-
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api_base } from '../external/bot-skeleton/services/api/api-base';
 
 const MARKET_SYMBOL = 'frxEURUSD';
@@ -15,238 +9,148 @@ const PAPER_TEST_LIMIT = 1000;
 const BLOCK_SIZE = 100;
 const ANALYSIS_WINDOW = 20;
 
+const TICK_REQUEST_ID = 4123;
+const BALANCE_REQUEST_ID = 4124;
+
 type Direction = 'UP' | 'DOWN' | 'FLAT';
+type ConnectionState = 'connecting' | 'connected' | 'waiting' | 'error';
 
 type Tick = {
     quote: number;
-    epoch: number;
+    epoch?: number;
+    symbol?: string;
+    pip_size?: number;
 };
 
-type Stats = {
-    total: number;
+type PaperResult = {
     wins: number;
     losses: number;
-    rate: number;
-    virtualPnL: number;
+    total: number;
+    pnl: number;
 };
 
-type BalanceInfo = {
-    balance: number | null;
-    currency: string;
-    loginid: string;
-};
-
-type TestMode = 'idle' | 'running' | 'finished';
-
-type ProposalInfo = {
-    status: 'idle' | 'loading' | 'success' | 'error';
-    id?: string;
-    contractType?: string;
-    payout?: number;
-    askPrice?: number;
-    message?: string;
-};
-
-type DiagnosticInfo = {
-    apiExists: boolean;
-    initStarted: boolean;
-    initFinished: boolean;
-    streamCreated: boolean;
-    subscriptionCreated: boolean;
-    tickRequestSent: boolean;
-    balanceRequestSent: boolean;
-    messagesReceived: number;
-    ticksReceived: number;
-    balanceMessages: number;
-    proposalMessages: number;
-    authorizeMessages: number;
-    errorMessages: number;
-    lastMessageType: string;
-    lastTickEpoch: number | null;
-    lastTickQuote: number | null;
-    lastError: string;
-    lastRawPreview: string;
-    apiKeys: string;
-};
-
-const EMPTY_STATS: Stats = {
-    total: 0,
-    wins: 0,
-    losses: 0,
-    rate: 0,
-    virtualPnL: 0,
-};
-
-const EMPTY_DIAGNOSTIC: DiagnosticInfo = {
-    apiExists: false,
-    initStarted: false,
-    initFinished: false,
-    streamCreated: false,
-    subscriptionCreated: false,
-    tickRequestSent: false,
-    balanceRequestSent: false,
-    messagesReceived: 0,
-    ticksReceived: 0,
-    balanceMessages: 0,
-    proposalMessages: 0,
-    authorizeMessages: 0,
-    errorMessages: 0,
-    lastMessageType: '—',
-    lastTickEpoch: null,
-    lastTickQuote: null,
-    lastError: '',
-    lastRawPreview: '—',
-    apiKeys: '—',
+type Message = {
+    msg_type?: string;
+    tick?: Tick;
+    balance?: number;
+    error?: {
+        code?: string;
+        message?: string;
+    };
+    echo_req?: {
+        ticks?: string;
+        subscribe?: number;
+        req_id?: number;
+    };
+    subscription?: {
+        id?: string;
+    };
 };
 
 /* =========================================================
    OUTILS
 ========================================================= */
 
-function calculateDirection(
-    previous: number,
-    current: number
+function tryParseJson(value: unknown): unknown {
+    if (typeof value !== 'string') return value;
+
+    try {
+        return JSON.parse(value);
+    } catch {
+        return value;
+    }
+}
+
+function normalizeDerivMessage(input: unknown): Message | null {
+    let value: any = tryParseJson(input);
+
+    /*
+     * Le flux global de api_base peut recevoir :
+     *
+     * {
+     *   name: "message",
+     *   data: {
+     *      msg_type: "tick",
+     *      tick: {...}
+     *   }
+     * }
+     *
+     * On déballe donc data.
+     */
+    if (value && typeof value === 'object' && 'data' in value) {
+        value = tryParseJson(value.data);
+    }
+
+    if (!value || typeof value !== 'object') {
+        return null;
+    }
+
+    return value as Message;
+}
+
+function getDirection(
+    current: number,
+    previous: number | null
 ): Direction {
-    if (
-        !Number.isFinite(previous) ||
-        !Number.isFinite(current)
-    ) {
+    if (previous === null || !Number.isFinite(current)) {
         return 'FLAT';
     }
 
-    if (current > previous) {
-        return 'UP';
-    }
-
-    if (current < previous) {
-        return 'DOWN';
-    }
+    if (current > previous) return 'UP';
+    if (current < previous) return 'DOWN';
 
     return 'FLAT';
+}
+
+/*
+ * Deriv fournit pip_size = nombre de décimales.
+ *
+ * Exemple :
+ * quote = 1037.79
+ * pip_size = 2
+ *
+ * => 103779
+ * => dernier chiffre = 9
+ */
+function getLastDigit(
+    quote: number,
+    pipSize?: number
+): number {
+    if (!Number.isFinite(quote)) return 0;
+
+    const decimals =
+        Number.isFinite(pipSize) && Number(pipSize) >= 0
+            ? Number(pipSize)
+            : 5;
+
+    const factor = 10 ** decimals;
+    const scaled = Math.round(quote * factor);
+
+    return Math.abs(scaled) % 10;
 }
 
 function calculatePrediction(
-    history: Tick[]
-): Direction {
-    if (history.length < 2) {
-        return 'FLAT';
+    history: number[]
+): {
+    prediction: Direction;
+    strength: number;
+} {
+    if (history.length < 3) {
+        return {
+            prediction: 'FLAT',
+            strength: 0,
+        };
     }
 
-    const start = Math.max(
-        0,
-        history.length - ANALYSIS_WINDOW
-    );
-
-    const recent = history.slice(start);
+    const sample = history.slice(-ANALYSIS_WINDOW);
 
     let up = 0;
     let down = 0;
 
-    for (
-        let i = 1;
-        i < recent.length;
-        i += 1
-    ) {
-        const dir = calculateDirection(
-            recent[i - 1].quote,
-            recent[i].quote
-        );
-
-        if (dir === 'UP') {
+    for (let i = 1; i < sample.length; i += 1) {
+        if (sample[i] > sample[i - 1]) {
             up += 1;
-        } else if (dir === 'DOWN') {
-            down += 1;
-        }
-    }
-
-    if (up > down) {
-        return 'UP';
-    }
-
-    if (down > up) {
-        return 'DOWN';
-    }
-
-    return 'FLAT';
-}
-
-function getLastDigit(
-    quote: number
-): number {
-    if (!Number.isFinite(quote)) {
-        return 0;
-    }
-
-    const text = quote.toFixed(5);
-    const digits = text.replace(/\D/g, '');
-
-    if (!digits) {
-        return 0;
-    }
-
-    return Number(
-        digits.slice(-1)
-    );
-}
-
-function getPredictionText(
-    prediction: Direction
-): string {
-    if (prediction === 'UP') {
-        return '🟢 HAUSSE';
-    }
-
-    if (prediction === 'DOWN') {
-        return '🔴 BAISSE';
-    }
-
-    return '⚪ STABLE';
-}
-
-function getDirectionText(
-    direction: Direction
-): string {
-    if (direction === 'UP') {
-        return '🟢 HAUSSE';
-    }
-
-    if (direction === 'DOWN') {
-        return '🔴 BAISSE';
-    }
-
-    return '⚪ STABLE';
-}
-
-function getStrength(
-    history: Tick[]
-): number {
-    if (history.length < 2) {
-        return 0;
-    }
-
-    const start = Math.max(
-        0,
-        history.length - ANALYSIS_WINDOW
-    );
-
-    const recent = history.slice(start);
-
-    let up = 0;
-    let down = 0;
-
-    for (
-        let i = 1;
-        i < recent.length;
-        i += 1
-    ) {
-        const dir = calculateDirection(
-            recent[i - 1].quote,
-            recent[i].quote
-        );
-
-        if (dir === 'UP') {
-            up += 1;
-        } else if (dir === 'DOWN') {
+        } else if (sample[i] < sample[i - 1]) {
             down += 1;
         }
     }
@@ -254,1647 +158,791 @@ function getStrength(
     const total = up + down;
 
     if (total === 0) {
-        return 0;
+        return {
+            prediction: 'FLAT',
+            strength: 0,
+        };
     }
 
-    return Math.round(
-        (Math.abs(up - down) / total) *
-            100
-    );
-}
-
-function getProposalContractType(
-    prediction: Direction
-): string {
-    if (prediction === 'UP') {
-        return 'CALL';
+    if (up > down) {
+        return {
+            prediction: 'UP',
+            strength: Math.round((up / total) * 100),
+        };
     }
 
-    if (prediction === 'DOWN') {
-        return 'PUT';
+    if (down > up) {
+        return {
+            prediction: 'DOWN',
+            strength: Math.round((down / total) * 100),
+        };
     }
 
-    return '';
-}
-
-/* =========================================================
-   NOUVEAU V4.12.2
-   NORMALISATION DES MESSAGES DERIV
-========================================================= */
-
-function tryParseJson(
-    value: unknown
-): any | null {
-    if (
-        typeof value !== 'string'
-    ) {
-        return null;
-    }
-
-    const trimmed =
-        value.trim();
-
-    if (!trimmed) {
-        return null;
-    }
-
-    try {
-        return JSON.parse(trimmed);
-    } catch {
-        return null;
-    }
-}
-
-function normalizeDerivMessage(
-    incoming: unknown
-): any | null {
-    if (
-        incoming === null ||
-        incoming === undefined
-    ) {
-        return null;
-    }
-
-    /*
-     * 1. Message déjà sous forme d'objet
-     */
-    if (
-        typeof incoming === 'object'
-    ) {
-        const objectMessage =
-            incoming as any;
-
-        /*
-         * Objet Deriv direct
-         */
-        if (
-            objectMessage.msg_type ||
-            objectMessage.tick ||
-            objectMessage.balance ||
-            objectMessage.proposal ||
-            objectMessage.authorize ||
-            objectMessage.error
-        ) {
-            return objectMessage;
-        }
-
-        /*
-         * data peut être une chaîne JSON
-         */
-        if (
-            objectMessage.data !==
-            undefined
-        ) {
-            const parsedData =
-                tryParseJson(
-                    objectMessage.data
-                );
-
-            if (parsedData) {
-                return normalizeDerivMessage(
-                    parsedData
-                );
-            }
-
-            /*
-             * data peut déjà être un objet
-             */
-            if (
-                typeof objectMessage.data ===
-                'object'
-            ) {
-                const nested =
-                    normalizeDerivMessage(
-                        objectMessage.data
-                    );
-
-                if (nested) {
-                    return nested;
-                }
-            }
-        }
-
-        /*
-         * data.data
-         */
-        if (
-            objectMessage.data?.data !==
-            undefined
-        ) {
-            const nested =
-                normalizeDerivMessage(
-                    objectMessage.data.data
-                );
-
-            if (nested) {
-                return nested;
-            }
-        }
-
-        /*
-         * message peut être imbriqué
-         */
-        if (
-            objectMessage.message !==
-            undefined
-        ) {
-            const nested =
-                normalizeDerivMessage(
-                    objectMessage.message
-                );
-
-            if (nested) {
-                return nested;
-            }
-        }
-
-        return objectMessage;
-    }
-
-    /*
-     * 2. Message sous forme de JSON string
-     */
-    const parsed =
-        tryParseJson(incoming);
-
-    if (parsed) {
-        return normalizeDerivMessage(
-            parsed
-        );
-    }
-
-    return null;
-}
-
-function getMessageType(
-    message: any
-): string {
-    if (!message) {
-        return 'unknown';
-    }
-
-    if (message.msg_type) {
-        return String(
-            message.msg_type
-        );
-    }
-
-    if (
-        message.echo_req?.msg_type
-    ) {
-        return String(
-            message.echo_req.msg_type
-        );
-    }
-
-    if (message.tick) {
-        return 'tick';
-    }
-
-    if (message.balance) {
-        return 'balance';
-    }
-
-    if (message.proposal) {
-        return 'proposal';
-    }
-
-    if (message.authorize) {
-        return 'authorize';
-    }
-
-    if (message.error) {
-        return 'error';
-    }
-
-    return 'unknown';
-}
-
-function makeRawPreview(
-    value: unknown
-): string {
-    try {
-        const text =
-            typeof value ===
-            'string'
-                ? value
-                : JSON.stringify(value);
-
-        if (!text) {
-            return '—';
-        }
-
-        return text.length > 500
-            ? `${text.slice(
-                  0,
-                  500
-              )}…`
-            : text;
-    } catch {
-        return String(value);
-    }
+    return {
+        prediction: 'FLAT',
+        strength: 0,
+    };
 }
 
 /* =========================================================
-   COMPONENT
+   COMPOSANT
 ========================================================= */
 
-export default function R75TickMonitor() {
-    const [connected, setConnected] =
-        useState(false);
+const R75TickMonitor: React.FC = () => {
+    const [connection, setConnection] =
+        useState<ConnectionState>('connecting');
 
-    const [
-        statusMessage,
-        setStatusMessage,
-    ] = useState(
-        '🟠 Initialisation V4.12.2…'
-    );
+    const [price, setPrice] = useState<number | null>(null);
+    const [lastDigit, setLastDigit] = useState<number | null>(null);
 
-    const [price, setPrice] =
-        useState<number | null>(null);
-
-    const [lastDigit, setLastDigit] =
-        useState<number | null>(null);
-
-    const [direction, setDirection] =
+    const [currentDirection, setCurrentDirection] =
         useState<Direction>('FLAT');
 
     const [prediction, setPrediction] =
         useState<Direction>('FLAT');
 
-    const [strength, setStrength] =
-        useState(0);
+    const [strength, setStrength] = useState(0);
 
-    const [historyCount, setHistoryCount] =
-        useState(0);
+    const [tickCount, setTickCount] = useState(0);
 
-    const [paperStats, setPaperStats] =
-        useState<Stats>(
-            EMPTY_STATS
-        );
+    const [balance, setBalance] = useState<number | null>(null);
 
-    const [testMode, setTestMode] =
-        useState<TestMode>('idle');
+    const [loginId, setLoginId] = useState<string>('—');
 
-    const [
-        balanceInfo,
-        setBalanceInfo,
-    ] = useState<BalanceInfo>({
-        balance: null,
-        currency: 'USD',
-        loginid: '',
-    });
+    const [history, setHistory] = useState<number[]>([]);
 
-    const [proposal, setProposal] =
-        useState<ProposalInfo>({
-            status: 'idle',
+    const [paperRunning, setPaperRunning] =
+        useState(false);
+
+    const [paperResult, setPaperResult] =
+        useState<PaperResult>({
+            wins: 0,
+            losses: 0,
+            total: 0,
+            pnl: 0,
         });
 
-    const [
-        diagnostic,
-        setDiagnostic,
-    ] = useState<DiagnosticInfo>(
-        EMPTY_DIAGNOSTIC
-    );
+    const [paperBlock, setPaperBlock] =
+        useState(1);
 
-    /* =====================================================
-       REFS
-    ===================================================== */
+    const [lastPaperOutcome, setLastPaperOutcome] =
+        useState<'WIN' | 'LOSS' | null>(null);
 
-    const historyRef =
-        useRef<Tick[]>([]);
+    const [proposalStatus, setProposalStatus] =
+        useState('Aucune proposition demandée');
 
-    const mountedRef =
-        useRef(false);
-
-    const previousQuoteRef =
+    /*
+     * Références pour éviter les problèmes de closure.
+     */
+    const previousPriceRef =
         useRef<number | null>(null);
 
-    const currentPredictionRef =
+    const predictionRef =
         useRef<Direction>('FLAT');
 
-    const testModeRef =
-        useRef<TestMode>('idle');
-
-    const paperStatsRef =
-        useRef<Stats>(
-            EMPTY_STATS
-        );
-
-    const messageSubscriptionRef =
-        useRef<{
-            unsubscribe?: () => void;
-        } | null>(null);
-
-    const tickRequestSentRef =
+    const paperRunningRef =
         useRef(false);
 
-    const balanceRequestSentRef =
-        useRef(false);
+    const paperResultRef =
+        useRef<PaperResult>({
+            wins: 0,
+            losses: 0,
+            total: 0,
+            pnl: 0,
+        });
 
-    const initStartedRef =
-        useRef(false);
+    const historyRef =
+        useRef<number[]>([]);
+
+    const unsubscribeRef =
+        useRef<(() => void) | null>(null);
 
     /* =====================================================
-       DIAGNOSTIC
+       INITIALISATION API
     ===================================================== */
 
-    const updateDiagnostic =
-        useCallback(
-            (
-                changes: Partial<DiagnosticInfo>
-            ) => {
-                setDiagnostic(
-                    previous => ({
-                        ...previous,
-                        ...changes,
-                    })
-                );
-            },
-            []
-        );
+    const initialiseApi = useCallback(async () => {
+        try {
+            if (!api_base.api) {
+                await api_base.init();
+            }
 
-    /* =====================================================
-       PAPER STATS
-    ===================================================== */
+            if (!api_base.api) {
+                setConnection('error');
+                return false;
+            }
 
-    const resetPaperStats =
-        useCallback(() => {
-            const empty = {
-                ...EMPTY_STATS,
-            };
-
-            paperStatsRef.current =
-                empty;
-
-            setPaperStats(
-                empty
+            return true;
+        } catch (error) {
+            console.error(
+                'Erreur initialisation API:',
+                error
             );
-        }, []);
 
-    const validatePreviousPrediction =
-        useCallback(
-            (
-                newDirection: Direction
-            ) => {
-                if (
-                    testModeRef.current !==
-                    'running'
-                ) {
-                    return;
-                }
-
-                const stats =
-                    paperStatsRef.current;
-
-                const previousPrediction =
-                    currentPredictionRef.current;
-
-                if (
-                    stats.total >=
-                        PAPER_TEST_LIMIT ||
-                    previousPrediction ===
-                        'FLAT' ||
-                    newDirection ===
-                        'FLAT'
-                ) {
-                    return;
-                }
-
-                const win =
-                    previousPrediction ===
-                    newDirection;
-
-                const nextStats: Stats =
-                    {
-                        total:
-                            stats.total + 1,
-
-                        wins:
-                            stats.wins +
-                            (win ? 1 : 0),
-
-                        losses:
-                            stats.losses +
-                            (win ? 0 : 1),
-
-                        rate: 0,
-
-                        virtualPnL:
-                            stats.virtualPnL +
-                            (win ? 1 : -1),
-                    };
-
-                nextStats.rate =
-                    nextStats.total >
-                    0
-                        ? (nextStats.wins /
-                              nextStats.total) *
-                          100
-                        : 0;
-
-                paperStatsRef.current =
-                    nextStats;
-
-                setPaperStats(
-                    nextStats
-                );
-
-                if (
-                    nextStats.total >=
-                    PAPER_TEST_LIMIT
-                ) {
-                    testModeRef.current =
-                        'finished';
-
-                    setTestMode(
-                        'finished'
-                    );
-                }
-            },
-            []
-        );
-
-    /* =====================================================
-       TICK
-    ===================================================== */
-
-    const handleTick =
-        useCallback(
-            (tickData: any) => {
-                const quote =
-                    Number(
-                        tickData?.quote
-                    );
-
-                if (
-                    !Number.isFinite(
-                        quote
-                    )
-                ) {
-                    return;
-                }
-
-                const epoch =
-                    Number(
-                        tickData?.epoch ??
-                            Date.now() /
-                                1000
-                    );
-
-                const previousQuote =
-                    previousQuoteRef.current;
-
-                const newDirection =
-                    previousQuote ===
-                    null
-                        ? 'FLAT'
-                        : calculateDirection(
-                              previousQuote,
-                              quote
-                          );
-
-                validatePreviousPrediction(
-                    newDirection
-                );
-
-                previousQuoteRef.current =
-                    quote;
-
-                const newTick: Tick =
-                    {
-                        quote,
-                        epoch,
-                    };
-
-                historyRef.current = [
-                    ...historyRef.current,
-                    newTick,
-                ].slice(
-                    -HISTORY_SIZE
-                );
-
-                const history =
-                    historyRef.current;
-
-                const nextPrediction =
-                    calculatePrediction(
-                        history
-                    );
-
-                const nextStrength =
-                    getStrength(
-                        history
-                    );
-
-                currentPredictionRef.current =
-                    nextPrediction;
-
-                setPrice(
-                    quote
-                );
-
-                setLastDigit(
-                    getLastDigit(
-                        quote
-                    )
-                );
-
-                setDirection(
-                    newDirection
-                );
-
-                setPrediction(
-                    nextPrediction
-                );
-
-                setStrength(
-                    nextStrength
-                );
-
-                setHistoryCount(
-                    history.length
-                );
-
-                setDiagnostic(
-                    previous => ({
-                        ...previous,
-
-                        ticksReceived:
-                            previous.ticksReceived +
-                            1,
-
-                        lastTickEpoch:
-                            epoch,
-
-                        lastTickQuote:
-                            quote,
-
-                        lastMessageType:
-                            'tick',
-                    })
-                );
-
-                setConnected(
-                    true
-                );
-
-                setStatusMessage(
-                    '🟢 Connecté — ticks EUR/USD reçus'
-                );
-
-                if (
-                    testModeRef.current ===
-                        'idle' &&
-                    history.length >=
-                        20
-                ) {
-                    resetPaperStats();
-
-                    testModeRef.current =
-                        'running';
-
-                    setTestMode(
-                        'running'
-                    );
-                }
-            },
-            [
-                resetPaperStats,
-                validatePreviousPrediction,
-            ]
-        );
+            setConnection('error');
+            return false;
+        }
+    }, []);
 
     /* =====================================================
        BALANCE
     ===================================================== */
 
-    const requestCurrentBalance =
-        useCallback(() => {
+    const requestBalance = useCallback(() => {
+        if (!api_base.api) return;
+
+        try {
+            api_base.api.send({
+                balance: 1,
+                req_id: BALANCE_REQUEST_ID,
+            });
+        } catch (error) {
+            console.error(
+                'Erreur balance:',
+                error
+            );
+        }
+    }, []);
+
+    /* =====================================================
+       TRAITEMENT D'UN TICK EUR/USD
+    ===================================================== */
+
+    const handleTick = useCallback((tick: Tick) => {
+        if (!tick) return;
+
+        /*
+         * SÉCURITÉ IMPORTANTE :
+         * On ne traite QUE EUR/USD.
+         *
+         * Les ticks d'autres abonnements comme
+         * 1HZ100V sont complètement ignorés.
+         */
+        if (String(tick.symbol || '') !== MARKET_SYMBOL) {
+            return;
+        }
+
+        const quote = Number(tick.quote);
+
+        if (!Number.isFinite(quote)) {
+            return;
+        }
+
+        const previousPrice =
+            previousPriceRef.current;
+
+        const direction =
+            getDirection(
+                quote,
+                previousPrice
+            );
+
+        const newHistory = [
+            ...historyRef.current,
+            quote,
+        ].slice(-HISTORY_SIZE);
+
+        historyRef.current = newHistory;
+
+        const analysis =
+            calculatePrediction(newHistory);
+
+        const digit =
+            getLastDigit(
+                quote,
+                tick.pip_size
+            );
+
+        previousPriceRef.current = quote;
+
+        setPrice(quote);
+        setLastDigit(digit);
+        setCurrentDirection(direction);
+
+        setHistory(newHistory);
+
+        setPrediction(
+            analysis.prediction
+        );
+
+        setStrength(
+            analysis.strength
+        );
+
+        predictionRef.current =
+            analysis.prediction;
+
+        setTickCount((value) => value + 1);
+
+        /*
+         * Dès qu'un vrai tick EUR/USD arrive,
+         * la connexion est considérée comme OK.
+         */
+        setConnection('connected');
+
+        /* =================================================
+           PAPER TEST
+        ================================================= */
+
+        if (
+            paperRunningRef.current &&
+            previousPrice !== null
+        ) {
+            const previousPrediction =
+                predictionRef.current;
+
+            /*
+             * Important :
+             * la prédiction utilisée pour le test
+             * doit être celle du tick précédent.
+             *
+             * Pour cela on garde une référence séparée.
+             */
+        }
+    }, []);
+
+    /*
+     * Référence séparée pour la prédiction précédente.
+     *
+     * Elle est volontairement séparée de predictionRef,
+     * qui contient la prédiction actuelle affichée.
+     */
+    const previousPredictionForPaperRef =
+        useRef<Direction>('FLAT');
+
+    /*
+     * Remplace handleTick par une version complète
+     * avec validation du paper test.
+     */
+    const processTick = useCallback((tick: Tick) => {
+        if (!tick) return;
+
+        /*
+         * FILTRE STRICT DU SYMBOLE
+         */
+        if (String(tick.symbol || '') !== MARKET_SYMBOL) {
+            return;
+        }
+
+        const quote = Number(tick.quote);
+
+        if (!Number.isFinite(quote)) {
+            return;
+        }
+
+        const previousPrice =
+            previousPriceRef.current;
+
+        const direction =
+            getDirection(
+                quote,
+                previousPrice
+            );
+
+        const newHistory = [
+            ...historyRef.current,
+            quote,
+        ].slice(-HISTORY_SIZE);
+
+        historyRef.current = newHistory;
+
+        const analysis =
+            calculatePrediction(newHistory);
+
+        const newPrediction =
+            analysis.prediction;
+
+        const digit =
+            getLastDigit(
+                quote,
+                tick.pip_size
+            );
+
+        /*
+         * ---------------------------------------------
+         * VALIDATION DE LA PRÉDICTION PRÉCÉDENTE
+         * ---------------------------------------------
+         */
+        if (
+            paperRunningRef.current &&
+            previousPrice !== null &&
+            previousPredictionForPaperRef.current !== 'FLAT'
+        ) {
+            const previousPrediction =
+                previousPredictionForPaperRef.current;
+
+            let outcome:
+                | 'WIN'
+                | 'LOSS'
+                | null = null;
+
             if (
-                balanceRequestSentRef.current
+                previousPrediction === 'UP' &&
+                quote > previousPrice
             ) {
-                return;
-            }
-
-            if (!api_base.api) {
-                updateDiagnostic({
-                    lastError:
-                        'Balance : api_base.api absent',
-                });
-
-                return;
-            }
-
-            try {
-                api_base.api.send({
-                    balance: 1,
-                    req_id: 4901,
-                });
-
-                balanceRequestSentRef.current =
-                    true;
-
-                updateDiagnostic({
-                    balanceRequestSent:
-                        true,
-                });
-            } catch (
-                error: any
+                outcome = 'WIN';
+            } else if (
+                previousPrediction === 'DOWN' &&
+                quote < previousPrice
             ) {
-                updateDiagnostic({
-                    lastError:
-                        `Balance request : ${
-                            error?.message ||
-                            String(error)
-                        }`,
-                });
+                outcome = 'WIN';
+            } else if (
+                previousPrediction === 'UP' ||
+                previousPrediction === 'DOWN'
+            ) {
+                outcome = 'LOSS';
             }
-        }, [
-            updateDiagnostic,
-        ]);
+
+            if (outcome) {
+                const oldResult =
+                    paperResultRef.current;
+
+                const newResult: PaperResult = {
+                    wins:
+                        oldResult.wins +
+                        (outcome === 'WIN' ? 1 : 0),
+
+                    losses:
+                        oldResult.losses +
+                        (outcome === 'LOSS' ? 1 : 0),
+
+                    total:
+                        oldResult.total + 1,
+
+                    pnl:
+                        oldResult.pnl +
+                        (outcome === 'WIN' ? 1 : -1),
+                };
+
+                paperResultRef.current =
+                    newResult;
+
+                setPaperResult(newResult);
+
+                setLastPaperOutcome(
+                    outcome
+                );
+
+                const newTotal =
+                    newResult.total;
+
+                /*
+                 * Bloc de 100.
+                 */
+                setPaperBlock(
+                    Math.min(
+                        10,
+                        Math.floor(
+                            newTotal / BLOCK_SIZE
+                        ) + 1
+                    )
+                );
+
+                /*
+                 * Fin du test à 1000.
+                 */
+                if (
+                    newTotal >= PAPER_TEST_LIMIT
+                ) {
+                    paperRunningRef.current =
+                        false;
+
+                    setPaperRunning(false);
+                }
+            }
+        }
+
+        previousPriceRef.current =
+            quote;
+
+        setPrice(quote);
+        setLastDigit(digit);
+
+        setCurrentDirection(
+            direction
+        );
+
+        setHistory(newHistory);
+
+        setPrediction(
+            newPrediction
+        );
+
+        setStrength(
+            analysis.strength
+        );
+
+        setTickCount(
+            (value) => value + 1
+        );
+
+        setConnection('connected');
+
+        /*
+         * Cette prédiction servira à valider
+         * le prochain tick.
+         */
+        previousPredictionForPaperRef.current =
+            newPrediction;
+    }, []);
 
     /* =====================================================
        MESSAGE DERIV
     ===================================================== */
 
-    const handleDerivMessage =
-        useCallback(
-            (incoming: any) => {
-                /*
-                 * Compteur BRUT :
-                 * le flux reçoit bien quelque chose.
-                 */
-                setDiagnostic(
-                    previous => ({
-                        ...previous,
+    const handleDerivMessage = useCallback(
+        (input: unknown) => {
+            const message =
+                normalizeDerivMessage(input);
 
-                        messagesReceived:
-                            previous.messagesReceived +
-                            1,
+            if (!message) return;
 
-                        lastRawPreview:
-                            makeRawPreview(
-                                incoming
-                            ),
-                    })
-                );
-
-                /*
-                 * NOUVEAU :
-                 * normalisation de toutes les formes
-                 * possibles du message.
-                 */
-                const message =
-                    normalizeDerivMessage(
-                        incoming
-                    );
-
-                if (!message) {
-                    updateDiagnostic({
-                        lastMessageType:
-                            'unparseable',
-                    });
-
-                    return;
-                }
-
-                const messageType =
-                    getMessageType(
-                        message
-                    );
-
-                /*
-                 * Toujours mémoriser le type.
-                 */
-                setDiagnostic(
-                    previous => ({
-                        ...previous,
-                        lastMessageType:
-                            messageType,
-                    })
-                );
-
-                /* ==============================
-                   ERREUR DERIV
-                ============================== */
-
-                if (
+            /*
+             * ERREUR API
+             */
+            if (message.error) {
+                console.error(
+                    'Erreur Deriv:',
                     message.error
-                ) {
-                    const errorText =
-                        message.error
-                            .message ||
-                        message.error
-                            .code ||
-                        'Erreur Deriv inconnue';
-
-                    setDiagnostic(
-                        previous => ({
-                            ...previous,
-
-                            errorMessages:
-                                previous.errorMessages +
-                                1,
-
-                            lastError:
-                                `${messageType}: ${errorText}`,
-                        })
-                    );
-
-                    setStatusMessage(
-                        `🔴 Deriv : ${errorText}`
-                    );
-
-                    return;
-                }
-
-                /* ==============================
-                   TICK
-                ============================== */
-
-                if (
-                    messageType ===
-                        'tick' &&
-                    message.tick
-                ) {
-                    handleTick(
-                        message.tick
-                    );
-
-                    return;
-                }
-
-                /* ==============================
-                   BALANCE
-                ============================== */
-
-                if (
-                    messageType ===
-                        'balance' &&
-                    message.balance
-                ) {
-                    setDiagnostic(
-                        previous => ({
-                            ...previous,
-
-                            balanceMessages:
-                                previous.balanceMessages +
-                                1,
-                        })
-                    );
-
-                    const amount =
-                        Number(
-                            message.balance
-                                .balance
-                        );
-
-                    const currency =
-                        String(
-                            message.balance
-                                .currency ||
-                                'USD'
-                        );
-
-                    const loginid =
-                        String(
-                            message.balance
-                                .loginid ||
-                                ''
-                        );
-
-                    setBalanceInfo({
-                        balance:
-                            Number.isFinite(
-                                amount
-                            )
-                                ? amount
-                                : null,
-
-                        currency,
-
-                        loginid,
-                    });
-
-                    setConnected(
-                        true
-                    );
-
-                    return;
-                }
-
-                /* ==============================
-                   AUTHORIZE
-                ============================== */
-
-                if (
-                    messageType ===
-                    'authorize'
-                ) {
-                    setDiagnostic(
-                        previous => ({
-                            ...previous,
-
-                            authorizeMessages:
-                                previous.authorizeMessages +
-                                1,
-                        })
-                    );
-
-                    const loginid =
-                        String(
-                            message.authorize
-                                ?.loginid ||
-                                ''
-                        );
-
-                    if (
-                        loginid
-                    ) {
-                        setBalanceInfo(
-                            previous => ({
-                                ...previous,
-                                loginid,
-                            })
-                        );
-                    }
-
-                    return;
-                }
-
-                /* ==============================
-                   PROPOSAL
-                ============================== */
-
-                if (
-                    messageType ===
-                        'proposal' &&
-                    message.proposal
-                ) {
-                    setDiagnostic(
-                        previous => ({
-                            ...previous,
-
-                            proposalMessages:
-                                previous.proposalMessages +
-                                1,
-                        })
-                    );
-
-                    const p =
-                        message.proposal;
-
-                    setProposal({
-                        status:
-                            'success',
-
-                        id: String(
-                            p.id ??
-                                ''
-                        ),
-
-                        contractType:
-                            String(
-                                p.contract_type ??
-                                    ''
-                            ),
-
-                        payout:
-                            Number(
-                                p.payout
-                            ),
-
-                        askPrice:
-                            Number(
-                                p.ask_price
-                            ),
-
-                        message:
-                            'Proposition reçue. Aucun achat effectué.',
-                    });
-
-                    return;
-                }
-
-                /*
-                 * Autres messages :
-                 * heartbeat, ping, etc.
-                 *
-                 * On ne les considère pas comme
-                 * une erreur.
-                 */
-            },
-            [
-                handleTick,
-                updateDiagnostic,
-            ]
-        );
-
-    /* =====================================================
-       ATTENTE API
-    ===================================================== */
-
-    const waitForApi =
-        useCallback(
-            async (
-                timeoutMs = 12000
-            ) => {
-                const start =
-                    Date.now();
-
-                while (
-                    mountedRef.current &&
-                    Date.now() -
-                        start <
-                        timeoutMs
-                ) {
-                    if (
-                        api_base.api
-                    ) {
-                        return true;
-                    }
-
-                    await new Promise<void>(
-                        resolve =>
-                            window.setTimeout(
-                                resolve,
-                                250
-                            )
-                    );
-                }
-
-                return Boolean(
-                    api_base.api
                 );
-            },
-            []
-        );
-
-    /* =====================================================
-       INITIALISATION
-    ===================================================== */
-
-    const initialiseApi =
-        useCallback(
-            async () => {
-                /*
-                 * Si l'application hôte a déjà créé
-                 * l'API, on la réutilise.
-                 */
-                if (
-                    api_base.api
-                ) {
-                    updateDiagnostic({
-                        apiExists:
-                            true,
-
-                        initFinished:
-                            true,
-                    });
-
-                    return true;
-                }
 
                 /*
-                 * Evite plusieurs init()
+                 * Une erreur d'un autre abonnement
+                 * ne doit pas casser notre écran.
+                 *
+                 * On affiche l'erreur seulement si
+                 * elle concerne notre demande EUR/USD.
                  */
-                if (
-                    !initStartedRef.current
-                ) {
-                    initStartedRef.current =
-                        true;
-
-                    updateDiagnostic({
-                        initStarted:
-                            true,
-                    });
-
-                    try {
-                        /*
-                         * On lance init sans bloquer
-                         * tout le diagnostic.
-                         */
-                        const initResult =
-                            api_base.init();
-
-                        /*
-                         * On attend seulement
-                         * sa résolution pour marquer
-                         * initFinished, mais on ne dépend
-                         * pas de cette promesse pour
-                         * rechercher api_base.api.
-                         */
-                        Promise.resolve(
-                            initResult
-                        )
-                            .then(() => {
-                                updateDiagnostic({
-                                    initFinished:
-                                        true,
-                                });
-                            })
-                            .catch(
-                                (
-                                    error: any
-                                ) => {
-                                    updateDiagnostic({
-                                        lastError:
-                                            `api_base.init() : ${
-                                                error?.message ||
-                                                String(
-                                                    error
-                                                )
-                                            }`,
-                                    });
-                                }
-                            );
-                    } catch (
-                        error: any
-                    ) {
-                        updateDiagnostic({
-                            lastError:
-                                `api_base.init() : ${
-                                    error?.message ||
-                                    String(
-                                        error
-                                    )
-                                }`,
-                        });
-                    }
-                }
-
-                /*
-                 * Recherche api_base.api pendant 12 s.
-                 */
-                const ready =
-                    await waitForApi(
-                        12000
+                const requestedSymbol =
+                    String(
+                        message.echo_req?.ticks || ''
                     );
 
                 if (
-                    ready
+                    requestedSymbol ===
+                    MARKET_SYMBOL
                 ) {
-                    updateDiagnostic({
-                        apiExists:
-                            true,
-                    });
-
-                    return true;
+                    setConnection('error');
                 }
 
-                updateDiagnostic({
-                    apiExists:
-                        false,
+                return;
+            }
 
-                    lastError:
-                        'api_base.api reste null après 12 secondes.',
-                });
-
-                return false;
-            },
-            [
-                updateDiagnostic,
-                waitForApi,
-            ]
-        );
-
-    /* =====================================================
-       ATTACH STREAM
-    ===================================================== */
-
-    const attachDerivStream =
-        useCallback(
-            async () => {
-                const ready =
-                    await initialiseApi();
-
-                if (
-                    !ready ||
-                    !api_base.api
-                ) {
-                    setConnected(
-                        false
-                    );
-
-                    setStatusMessage(
-                        '🔴 API Deriv non disponible'
-                    );
-
-                    return;
-                }
-
-                updateDiagnostic({
-                    apiExists:
-                        true,
-
-                    apiKeys:
-                        Object.keys(
-                            api_base.api as any
-                        ).join(
-                            ', '
-                        ) ||
-                        'prototype',
-                });
+            /*
+             * BALANCE
+             */
+            if (
+                message.msg_type === 'balance' &&
+                typeof message.balance === 'number'
+            ) {
+                setBalance(
+                    Number(message.balance)
+                );
 
                 /*
-                 * Ne pas créer deux subscriptions
+                 * Selon la réponse API,
+                 * loginid peut être dans echo_req
+                 * ou dans d'autres champs.
+                 *
+                 * On évite toute supposition dangereuse.
+                 */
+                const account =
+                    (message as any).balance?.loginid;
+
+                if (typeof account === 'string') {
+                    setLoginId(account);
+                }
+
+                return;
+            }
+
+            /*
+             * TICK
+             */
+            if (
+                message.msg_type === 'tick' &&
+                message.tick
+            ) {
+                /*
+                 * LE POINT LE PLUS IMPORTANT DE V4.12.3 :
+                 *
+                 * 1HZ100V -> IGNORÉ
+                 * R75 -> IGNORÉ
+                 * tout autre symbole -> IGNORÉ
+                 *
+                 * seul frxEURUSD est accepté.
                  */
                 if (
-                    messageSubscriptionRef.current
+                    String(
+                        message.tick.symbol || ''
+                    ) !== MARKET_SYMBOL
                 ) {
                     return;
                 }
 
-                try {
-                    const stream =
-                        api_base.api.onMessage();
+                processTick(
+                    message.tick
+                );
 
-                    updateDiagnostic({
-                        streamCreated:
-                            true,
-                    });
-
-                    const subscription =
-                        stream.subscribe(
-                            handleDerivMessage
-                        );
-
-                    messageSubscriptionRef.current =
-                        subscription;
-
-                    updateDiagnostic({
-                        subscriptionCreated:
-                            true,
-                    });
-
-                    setStatusMessage(
-                        '🟠 Flux Deriv installé — demande des ticks…'
-                    );
-                } catch (
-                    error: any
-                ) {
-                    updateDiagnostic({
-                        lastError:
-                            `onMessage() : ${
-                                error?.message ||
-                                String(
-                                    error
-                                )
-                            }`,
-                    });
-
-                    setStatusMessage(
-                        '🔴 Impossible d’installer le flux Deriv'
-                    );
-
-                    return;
-                }
-
-                /*
-                 * Demande ticks
-                 */
-                if (
-                    !tickRequestSentRef.current
-                ) {
-                    try {
-                        api_base.api.send({
-                            ticks:
-                                MARKET_SYMBOL,
-                            subscribe:
-                                1,
-                        });
-
-                        tickRequestSentRef.current =
-                            true;
-
-                        updateDiagnostic({
-                            tickRequestSent:
-                                true,
-                        });
-
-                        setStatusMessage(
-                            '🟠 Abonnement EUR/USD envoyé — attente du premier tick…'
-                        );
-                    } catch (
-                        error: any
-                    ) {
-                        updateDiagnostic({
-                            lastError:
-                                `Ticks : ${
-                                    error?.message ||
-                                    String(
-                                        error
-                                    )
-                                }`,
-                        });
-
-                        setStatusMessage(
-                            '🔴 Impossible de demander les ticks'
-                        );
-                    }
-                }
-
-                /*
-                 * Balance
-                 */
-                requestCurrentBalance();
-            },
-            [
-                handleDerivMessage,
-                initialiseApi,
-                requestCurrentBalance,
-                updateDiagnostic,
-            ]
-        );
+                return;
+            }
+        },
+        [processTick]
+    );
 
     /* =====================================================
-       EFFECT CONNEXION
+       CONNEXION + STREAM
     ===================================================== */
 
     useEffect(() => {
-        mountedRef.current =
-            true;
+        let cancelled = false;
 
-        setStatusMessage(
-            '🟠 Diagnostic V4.12.2 démarré…'
-        );
+        const start = async () => {
+            setConnection('connecting');
 
-        attachDerivStream();
+            const ready =
+                await initialiseApi();
 
-        return () => {
-            mountedRef.current =
-                false;
-
-            try {
-                messageSubscriptionRef.current?.unsubscribe?.();
-            } catch {}
-
-            messageSubscriptionRef.current =
-                null;
-        };
-    }, [
-        attachDerivStream,
-    ]);
-
-    /* =====================================================
-       TEST PAPIER
-    ===================================================== */
-
-    const startPaperTest =
-        useCallback(() => {
-            resetPaperStats();
-
-            testModeRef.current =
-                'running';
-
-            setTestMode(
-                'running'
-            );
-
-            currentPredictionRef.current =
-                prediction;
-
-            setStatusMessage(
-                '🟢 Test papier démarré — aucun trade réel'
-            );
-        }, [
-            prediction,
-            resetPaperStats,
-        ]);
-
-    const stopPaperTest =
-        useCallback(() => {
-            testModeRef.current =
-                'idle';
-
-            setTestMode(
-                'idle'
-            );
-
-            setStatusMessage(
-                connected
-                    ? '🟢 Connecté — test papier arrêté'
-                    : '🟠 Test papier arrêté'
-            );
-        }, [
-            connected,
-        ]);
-
-    /* =====================================================
-       PROPOSITION
-       IMPORTANT : AUCUN BUY
-    ===================================================== */
-
-    const requestProposal =
-        useCallback(() => {
             if (
+                cancelled ||
+                !ready ||
                 !api_base.api
             ) {
-                setProposal({
-                    status:
-                        'error',
-
-                    message:
-                        'API Deriv indisponible.',
-                });
-
                 return;
             }
-
-            const contractType =
-                getProposalContractType(
-                    prediction
-                );
-
-            if (
-                !contractType
-            ) {
-                setProposal({
-                    status:
-                        'error',
-
-                    message:
-                        'Pas de direction suffisamment claire.',
-                });
-
-                return;
-            }
-
-            const loginid =
-                balanceInfo.loginid;
-
-            if (
-                loginid &&
-                !loginid.startsWith(
-                    'VRTC'
-                ) &&
-                !loginid.startsWith(
-                    'VR'
-                )
-            ) {
-                setProposal({
-                    status:
-                        'error',
-
-                    message:
-                        'Compte non reconnu comme compte virtuel.',
-                });
-
-                return;
-            }
-
-            setProposal({
-                status:
-                    'loading',
-
-                contractType,
-
-                message:
-                    'Demande de proposition uniquement…',
-            });
 
             try {
+                /*
+                 * On s'abonne au flux global de l'API.
+                 */
+                const messageStream =
+                    api_base.api.onMessage();
+
+                const subscription =
+                    messageStream.subscribe(
+                        handleDerivMessage
+                    );
+
+                unsubscribeRef.current =
+                    subscription?.unsubscribe ||
+                    null;
+
+                /*
+                 * Demande EXPLICITE de EUR/USD.
+                 *
+                 * req_id permet de distinguer
+                 * notre demande des autres.
+                 */
                 api_base.api.send({
-                    proposal:
-                        1,
-
-                    amount:
-                        1,
-
-                    basis:
-                        'stake',
-
-                    contract_type:
-                        contractType,
-
-                    currency:
-                        balanceInfo.currency ||
-                        'USD',
-
-                    duration:
-                        1,
-
-                    duration_unit:
-                        't',
-
-                    symbol:
-                        MARKET_SYMBOL,
+                    ticks: MARKET_SYMBOL,
+                    subscribe: 1,
+                    req_id: TICK_REQUEST_ID,
                 });
 
                 /*
-                 * Aucun buy ici.
-                 * AUCUN TRADE.
+                 * Balance une seule fois.
                  */
-            } catch (
-                error: any
-            ) {
-                setProposal({
-                    status:
-                        'error',
+                requestBalance();
 
-                    message:
-                        error?.message ||
-                        String(
-                            error
-                        ),
-                });
+                /*
+                 * Tant qu'aucun vrai tick EUR/USD
+                 * n'est reçu, on ne prétend pas que
+                 * EUR/USD est connecté.
+                 */
+                setConnection('waiting');
+            } catch (error) {
+                console.error(
+                    'Erreur abonnement:',
+                    error
+                );
+
+                setConnection('error');
             }
-        }, [
-            balanceInfo.currency,
-            balanceInfo.loginid,
-            prediction,
-        ]);
+        };
+
+        start();
+
+        return () => {
+            cancelled = true;
+
+            if (unsubscribeRef.current) {
+                unsubscribeRef.current();
+                unsubscribeRef.current = null;
+            }
+        };
+    }, [
+        initialiseApi,
+        handleDerivMessage,
+        requestBalance,
+    ]);
 
     /* =====================================================
-       RESET DIAGNOSTIC
+       DÉMARRER LE PAPER TEST
     ===================================================== */
 
-    const resetDiagnostic =
-        useCallback(() => {
-            setDiagnostic(
-                EMPTY_DIAGNOSTIC
-            );
+    const startPaperTest = useCallback(() => {
+        const reset: PaperResult = {
+            wins: 0,
+            losses: 0,
+            total: 0,
+            pnl: 0,
+        };
 
-            setStatusMessage(
-                '🟠 Diagnostic réinitialisé…'
-            );
-        }, []);
+        paperResultRef.current = reset;
+
+        previousPredictionForPaperRef.current =
+            prediction;
+
+        paperRunningRef.current = true;
+
+        setPaperResult(reset);
+        setPaperRunning(true);
+        setPaperBlock(1);
+        setLastPaperOutcome(null);
+    }, [prediction]);
 
     /* =====================================================
-       STYLES
+       ARRÊTER LE PAPER TEST
     ===================================================== */
 
-    const stats =
-        paperStats;
+    const stopPaperTest = useCallback(() => {
+        paperRunningRef.current = false;
 
-    const progress =
-        Math.min(
-            100,
-            Math.round(
-                (stats.total /
-                    PAPER_TEST_LIMIT) *
-                    100
-            )
-        );
-
-    const currentBlock =
-        Math.floor(
-            stats.total /
-                BLOCK_SIZE
-        );
-
-    const cardStyle:
-        React.CSSProperties = {
-        background:
-            '#111827',
-
-        border:
-            '1px solid rgba(255,255,255,0.08)',
-
-        borderRadius:
-            14,
-
-        padding:
-            14,
-
-        marginBottom:
-            12,
-
-        boxSizing:
-            'border-box',
-    };
-
-    const valueStyle:
-        React.CSSProperties = {
-        fontSize:
-            22,
-
-        fontWeight:
-            700,
-
-        marginTop:
-            5,
-    };
-
-    const smallStyle:
-        React.CSSProperties = {
-        fontSize:
-            12,
-
-        opacity:
-            0.72,
-
-        marginTop:
-            4,
-
-        wordBreak:
-            'break-word',
-    };
-
-    const diagnosticValue =
-        (ok: boolean) =>
-            ok
-                ? '🟢 OUI'
-                : '🔴 NON';
+        setPaperRunning(false);
+    }, []);
 
     /* =====================================================
-       RENDER
+       PROPOSITION — SANS BUY
+    ===================================================== */
+
+    const requestDemoProposal = useCallback(() => {
+        /*
+         * Aucun BUY ici.
+         * Aucun SELL ici.
+         * Aucun ordre réel.
+         *
+         * Cette fonction ne fait qu'indiquer
+         * la direction proposée.
+         */
+
+        if (
+            prediction !== 'UP' &&
+            prediction !== 'DOWN'
+        ) {
+            setProposalStatus(
+                '⚪ Pas de signal exploitable'
+            );
+
+            return;
+        }
+
+        const directionText =
+            prediction === 'UP'
+                ? 'HAUSSE'
+                : 'BAISSE';
+
+        setProposalStatus(
+            `🟡 Proposition ${directionText} — aucune transaction envoyée`
+        );
+    }, [prediction]);
+
+    /* =====================================================
+       STATS
+    ===================================================== */
+
+    const winRate = useMemo(() => {
+        if (paperResult.total === 0) {
+            return 0;
+        }
+
+        return (
+            (paperResult.wins /
+                paperResult.total) *
+            100
+        );
+    }, [paperResult]);
+
+    const directionLabel =
+        currentDirection === 'UP'
+            ? 'HAUSSE'
+            : currentDirection === 'DOWN'
+              ? 'BAISSE'
+              : 'STABLE';
+
+    const predictionLabel =
+        prediction === 'UP'
+            ? 'HAUSSE'
+            : prediction === 'DOWN'
+              ? 'BAISSE'
+              : 'STABLE';
+
+    const connectionLabel =
+        connection === 'connected'
+            ? '🟢 Connecté — EUR/USD'
+            : connection === 'waiting'
+              ? '🟠 Connexion — attente EUR/USD…'
+              : connection === 'error'
+                ? '🔴 Erreur EUR/USD'
+                : '🟠 Connexion à Deriv…';
+
+    /* =====================================================
+       UI
     ===================================================== */
 
     return (
         <div
             style={{
-                width:
-                    '100%',
-
-                height:
-                    '100dvh',
-
-                minHeight:
-                    '100vh',
-
-                overflowY:
-                    'auto',
-
-                overflowX:
-                    'hidden',
-
+                width: '100%',
+                height: '100dvh',
+                minHeight: '100vh',
+                overflowY: 'auto',
+                overflowX: 'hidden',
                 WebkitOverflowScrolling:
                     'touch',
-
-                overscrollBehaviorY:
-                    'auto',
-
-                touchAction:
-                    'pan-y',
-
-                background:
-                    '#0f172a',
-
-                color:
-                    '#e5e7eb',
-
-                padding:
-                    16,
-
-                paddingBottom:
-                    80,
-
+                overscrollBehaviorY: 'auto',
+                touchAction: 'pan-y',
+                background: '#0f172a',
+                color: '#e5e7eb',
+                padding: '16px',
+                paddingBottom: '80px',
                 fontFamily:
                     'Arial, sans-serif',
-
-                boxSizing:
-                    'border-box',
+                boxSizing: 'border-box',
             }}
         >
+            {/* HEADER */}
+
             <div
                 style={{
-                    maxWidth:
-                        700,
-
-                    margin:
-                        '0 auto',
+                    maxWidth: '900px',
+                    margin: '0 auto',
                 }}
             >
-                {/* HEADER */}
-
                 <div
                     style={{
-                        textAlign:
-                            'center',
-
-                        marginBottom:
-                            16,
+                        marginBottom: '14px',
                     }}
                 >
-                    <h2
+                    <h1
                         style={{
-                            margin:
-                                0,
-
-                            fontSize:
-                                21,
+                            margin: 0,
+                            fontSize: '22px',
+                            fontWeight: 800,
                         }}
                     >
-                        📈 Moniteur Forex
-                        EUR/USD — V4.12.2
-                    </h2>
+                        📈 Moniteur Forex EUR/USD —
+                        V4.12.3
+                    </h1>
 
                     <div
                         style={{
-                            fontSize:
-                                13,
-
-                            opacity:
-                                0.7,
-
-                            marginTop:
-                                7,
+                            marginTop: '6px',
+                            color: '#94a3b8',
+                            fontSize: '13px',
                         }}
                     >
-                        Diagnostic + Demo +
-                        Paper Trader
+                        Demo + Paper Trader +
+                        Proposition
                     </div>
                 </div>
 
@@ -1902,54 +950,34 @@ export default function R75TickMonitor() {
 
                 <div
                     style={{
-                        ...cardStyle,
-
+                        background:
+                            '#111827',
                         border:
-                            connected
-                                ? '1px solid rgba(34,197,94,0.45)'
-                                : '1px solid rgba(239,68,68,0.45)',
+                            '1px solid #1f2937',
+                        borderRadius: '14px',
+                        padding: '12px 14px',
+                        marginBottom: '12px',
                     }}
                 >
                     <div
                         style={{
-                            fontWeight:
-                                700,
-
-                            marginBottom:
-                                6,
+                            fontSize: '14px',
+                            fontWeight: 700,
                         }}
                     >
-                        🔌 Connexion
+                        {connectionLabel}
                     </div>
 
                     <div
                         style={{
-                            fontSize:
-                                14,
+                            marginTop: '5px',
+                            color: '#64748b',
+                            fontSize: '12px',
                         }}
                     >
-                        {statusMessage}
-                    </div>
-
-                    <div
-                        style={
-                            smallStyle
-                        }
-                    >
-                        API :{' '}
-                        {diagnosticValue(
-                            diagnostic.apiExists
-                        )}
-                        {' | '}
-                        Stream :{' '}
-                        {diagnosticValue(
-                            diagnostic.streamCreated
-                        )}
-                        {' | '}
-                        Subscription :{' '}
-                        {diagnosticValue(
-                            diagnostic.subscriptionCreated
-                        )}
+                        Flux strict : {MARKET_SYMBOL}
+                        {' • '}
+                        {tickCount} tick(s)
                     </div>
                 </div>
 
@@ -1957,949 +985,727 @@ export default function R75TickMonitor() {
 
                 <div
                     style={{
-                        display:
-                            'grid',
-
-                        gridTemplateColumns:
-                            '1fr 1fr',
-
-                        gap:
-                            10,
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #1f2937',
+                        borderRadius: '14px',
+                        padding: '18px',
+                        marginBottom: '12px',
                     }}
                 >
                     <div
-                        style={
-                            cardStyle
-                        }
+                        style={{
+                            color: '#94a3b8',
+                            fontSize: '12px',
+                            marginBottom: '6px',
+                        }}
                     >
-                        <div
-                            style={
-                                smallStyle
-                            }
-                        >
-                            Prix {MARKET_NAME}
-                        </div>
-
-                        <div
-                            style={
-                                valueStyle
-                            }
-                        >
-                            {price !==
-                            null
-                                ? price.toFixed(
-                                      5
-                                  )
-                                : '—'}
-                        </div>
+                        PRIX EUR/USD
                     </div>
 
                     <div
-                        style={
-                            cardStyle
-                        }
+                        style={{
+                            fontSize: '32px',
+                            fontWeight: 800,
+                            letterSpacing: '1px',
+                        }}
+                    >
+                        {price !== null
+                            ? price.toFixed(5)
+                            : '—'}
+                    </div>
+
+                    <div
+                        style={{
+                            display: 'flex',
+                            gap: '10px',
+                            marginTop: '12px',
+                            flexWrap: 'wrap',
+                        }}
                     >
                         <div
-                            style={
-                                smallStyle
-                            }
+                            style={{
+                                background:
+                                    '#1e293b',
+                                padding:
+                                    '8px 12px',
+                                borderRadius:
+                                    '10px',
+                            }}
                         >
-                            Dernier chiffre
+                            Dernier chiffre :
+                            <strong>
+                                {' '}
+                                {lastDigit !== null
+                                    ? lastDigit
+                                    : '—'}
+                            </strong>
                         </div>
 
                         <div
-                            style={
-                                valueStyle
-                            }
+                            style={{
+                                background:
+                                    '#1e293b',
+                                padding:
+                                    '8px 12px',
+                                borderRadius:
+                                    '10px',
+                            }}
                         >
-                            {lastDigit !==
-                            null
-                                ? lastDigit
-                                : '—'}
+                            Direction :
+                            <strong>
+                                {' '}
+                                {directionLabel}
+                            </strong>
                         </div>
                     </div>
                 </div>
 
-                {/* DIRECTION */}
+                {/* ANALYSE */}
 
                 <div
-                    style={
-                        cardStyle
-                    }
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns:
+                            'repeat(auto-fit, minmax(150px, 1fr))',
+                        gap: '10px',
+                        marginBottom: '12px',
+                    }}
                 >
                     <div
-                        style={
-                            smallStyle
-                        }
+                        style={{
+                            background:
+                                '#111827',
+                            border:
+                                '1px solid #1f2937',
+                            borderRadius:
+                                '14px',
+                            padding:
+                                '15px',
+                        }}
                     >
-                        Direction actuelle
+                        <div
+                            style={{
+                                color:
+                                    '#94a3b8',
+                                fontSize:
+                                    '12px',
+                            }}
+                        >
+                            PRÉDICTION
+                        </div>
+
+                        <div
+                            style={{
+                                marginTop:
+                                    '7px',
+                                fontSize:
+                                    '20px',
+                                fontWeight:
+                                    800,
+                            }}
+                        >
+                            {prediction ===
+                            'UP'
+                                ? '🟢 HAUSSE'
+                                : prediction ===
+                                    'DOWN'
+                                  ? '🔴 BAISSE'
+                                  : '⚪ STABLE'}
+                        </div>
                     </div>
 
                     <div
-                        style={
-                            valueStyle
-                        }
+                        style={{
+                            background:
+                                '#111827',
+                            border:
+                                '1px solid #1f2937',
+                            borderRadius:
+                                '14px',
+                            padding:
+                                '15px',
+                        }}
                     >
-                        {getDirectionText(
-                            direction
-                        )}
-                    </div>
-                </div>
+                        <div
+                            style={{
+                                color:
+                                    '#94a3b8',
+                                fontSize:
+                                    '12px',
+                            }}
+                        >
+                            FORCE
+                        </div>
 
-                {/* PREDICTION */}
-
-                <div
-                    style={
-                        cardStyle
-                    }
-                >
-                    <div
-                        style={
-                            smallStyle
-                        }
-                    >
-                        Prédiction
-                    </div>
-
-                    <div
-                        style={
-                            valueStyle
-                        }
-                    >
-                        {getPredictionText(
-                            prediction
-                        )}
-                    </div>
-
-                    <div
-                        style={
-                            smallStyle
-                        }
-                    >
-                        Force :{' '}
-                        {strength}%
+                        <div
+                            style={{
+                                marginTop:
+                                    '7px',
+                                fontSize:
+                                    '20px',
+                                fontWeight:
+                                    800,
+                            }}
+                        >
+                            {strength}%
+                        </div>
                     </div>
                 </div>
 
                 {/* PAPER TEST */}
 
                 <div
-                    style={
-                        cardStyle
-                    }
+                    style={{
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #1f2937',
+                        borderRadius: '14px',
+                        padding: '16px',
+                        marginBottom: '12px',
+                    }}
                 >
                     <div
                         style={{
-                            fontWeight:
-                                700,
-
-                            marginBottom:
-                                8,
+                            display: 'flex',
+                            justifyContent:
+                                'space-between',
+                            alignItems:
+                                'center',
+                            gap: '10px',
+                            flexWrap: 'wrap',
                         }}
                     >
-                        🧪 Test papier
+                        <div>
+                            <div
+                                style={{
+                                    fontSize:
+                                        '16px',
+                                    fontWeight:
+                                        800,
+                                }}
+                            >
+                                🧪 PAPER TEST
+                            </div>
+
+                            <div
+                                style={{
+                                    color:
+                                        '#94a3b8',
+                                    fontSize:
+                                        '12px',
+                                    marginTop:
+                                        '4px',
+                                }}
+                            >
+                                1000 tests •
+                                blocs de 100 •
+                                +1 / -1 virtuel
+                            </div>
+                        </div>
+
+                        <div
+                            style={{
+                                background:
+                                    paperRunning
+                                        ? '#422006'
+                                        : '#1e293b',
+                                padding:
+                                    '7px 10px',
+                                borderRadius:
+                                    '9px',
+                                fontSize:
+                                    '12px',
+                            }}
+                        >
+                            {paperRunning
+                                ? '🟡 EN COURS'
+                                : paperResult.total >=
+                                    PAPER_TEST_LIMIT
+                                  ? '✅ TERMINÉ'
+                                  : '⚪ PRÊT'}
+                        </div>
                     </div>
 
                     <div
                         style={{
-                            display:
-                                'grid',
-
+                            marginTop: '16px',
+                            display: 'grid',
                             gridTemplateColumns:
-                                '1fr 1fr',
-
-                            gap:
-                                8,
+                                'repeat(2, 1fr)',
+                            gap: '10px',
                         }}
                     >
-                        <div>
+                        <div
+                            style={{
+                                background:
+                                    '#0f172a',
+                                borderRadius:
+                                    '10px',
+                                padding:
+                                    '12px',
+                            }}
+                        >
                             <div
-                                style={
-                                    smallStyle
-                                }
+                                style={{
+                                    color:
+                                        '#64748b',
+                                    fontSize:
+                                        '11px',
+                                }}
                             >
-                                Tests
+                                TESTS
                             </div>
 
                             <div
                                 style={{
                                     fontSize:
-                                        20,
-
+                                        '20px',
                                     fontWeight:
-                                        700,
+                                        800,
                                 }}
                             >
                                 {
-                                    stats.total
+                                    paperResult.total
                                 }
-                                /
-                                {
-                                    PAPER_TEST_LIMIT
-                                }
+                                /{PAPER_TEST_LIMIT}
                             </div>
                         </div>
 
-                        <div>
+                        <div
+                            style={{
+                                background:
+                                    '#0f172a',
+                                borderRadius:
+                                    '10px',
+                                padding:
+                                    '12px',
+                            }}
+                        >
                             <div
-                                style={
-                                    smallStyle
-                                }
+                                style={{
+                                    color:
+                                        '#64748b',
+                                    fontSize:
+                                        '11px',
+                                }}
                             >
-                                Taux
+                                TAUX
                             </div>
 
                             <div
                                 style={{
                                     fontSize:
-                                        20,
-
+                                        '20px',
                                     fontWeight:
-                                        700,
+                                        800,
                                 }}
                             >
-                                {stats.rate.toFixed(
+                                {winRate.toFixed(
                                     2
                                 )}
                                 %
                             </div>
                         </div>
 
-                        <div>
+                        <div
+                            style={{
+                                background:
+                                    '#0f172a',
+                                borderRadius:
+                                    '10px',
+                                padding:
+                                    '12px',
+                            }}
+                        >
                             <div
-                                style={
-                                    smallStyle
-                                }
+                                style={{
+                                    color:
+                                        '#64748b',
+                                    fontSize:
+                                        '11px',
+                                }}
                             >
-                                🟢 Gains
+                                GAINS
                             </div>
 
                             <div
                                 style={{
                                     fontSize:
-                                        20,
-
+                                        '20px',
                                     fontWeight:
-                                        700,
+                                        800,
                                 }}
                             >
                                 {
-                                    stats.wins
+                                    paperResult.wins
                                 }
                             </div>
                         </div>
 
-                        <div>
+                        <div
+                            style={{
+                                background:
+                                    '#0f172a',
+                                borderRadius:
+                                    '10px',
+                                padding:
+                                    '12px',
+                            }}
+                        >
                             <div
-                                style={
-                                    smallStyle
-                                }
+                                style={{
+                                    color:
+                                        '#64748b',
+                                    fontSize:
+                                        '11px',
+                                }}
                             >
-                                🔴 Pertes
+                                PERTES
                             </div>
 
                             <div
                                 style={{
                                     fontSize:
-                                        20,
-
+                                        '20px',
                                     fontWeight:
-                                        700,
+                                        800,
                                 }}
                             >
                                 {
-                                    stats.losses
+                                    paperResult.losses
                                 }
                             </div>
                         </div>
                     </div>
 
+                    {/* PNL */}
+
                     <div
                         style={{
-                            marginTop:
-                                12,
-
-                            padding:
-                                10,
-
+                            marginTop: '10px',
                             background:
                                 '#0f172a',
-
                             borderRadius:
-                                10,
+                                '10px',
+                            padding: '13px',
+                            textAlign:
+                                'center',
                         }}
                     >
                         <div
-                            style={
-                                smallStyle
-                            }
+                            style={{
+                                color:
+                                    '#64748b',
+                                fontSize:
+                                    '11px',
+                            }}
                         >
-                            P/L virtuel
+                            P/L VIRTUEL
                         </div>
 
                         <div
                             style={{
+                                marginTop:
+                                    '4px',
                                 fontSize:
-                                    21,
-
+                                    '24px',
                                 fontWeight:
-                                    700,
+                                    900,
                             }}
                         >
-                            {stats.virtualPnL >=
+                            {paperResult.pnl >=
                             0
                                 ? '+'
                                 : ''}
-                            {stats.virtualPnL.toFixed(
-                                0
-                            )}
+                            {
+                                paperResult.pnl
+                            }
                         </div>
                     </div>
+
+                    {/* BLOC */}
 
                     <div
                         style={{
                             marginTop:
-                                10,
-
-                            height:
-                                8,
-
-                            background:
-                                '#020617',
-
-                            borderRadius:
-                                99,
-
-                            overflow:
-                                'hidden',
+                                '10px',
+                            color:
+                                '#94a3b8',
+                            fontSize:
+                                '12px',
+                            textAlign:
+                                'center',
                         }}
                     >
+                        Bloc actuel :
+                        {' '}
+                        {Math.min(
+                            paperBlock,
+                            10
+                        )}
+                        /10
+                        {' • '}
+                        {paperResult.total %
+                            BLOCK_SIZE}
+                        /100
+                    </div>
+
+                    {lastPaperOutcome && (
                         <div
                             style={{
-                                width: `${progress}%`,
-
-                                height:
-                                    '100%',
-
-                                background:
-                                    '#22c55e',
-
-                                transition:
-                                    'width 0.2s',
+                                marginTop:
+                                    '8px',
+                                textAlign:
+                                    'center',
+                                fontWeight:
+                                    700,
+                                fontSize:
+                                    '13px',
                             }}
-                        />
-                    </div>
+                        >
+                            Dernier résultat :
+                            {' '}
+                            {lastPaperOutcome ===
+                            'WIN'
+                                ? '🟢 GAIN +1'
+                                : '🔴 PERTE -1'}
+                        </div>
+                    )}
 
-                    <div
-                        style={
-                            smallStyle
-                        }
-                    >
-                        Bloc actuel :{' '}
-                        {currentBlock}
-                        {' • '}
-                        Ticks reçus :{' '}
-                        {historyCount}
-                    </div>
+                    {/* BOUTONS */}
 
                     <div
                         style={{
                             display:
                                 'flex',
-
-                            gap:
-                                8,
-
+                            gap: '8px',
                             marginTop:
-                                12,
-
-                            flexWrap:
-                                'wrap',
+                                '14px',
                         }}
                     >
                         <button
+                            type="button"
                             onClick={
                                 startPaperTest
                             }
+                            disabled={
+                                paperRunning
+                            }
                             style={{
-                                flex:
-                                    1,
-
-                                minWidth:
-                                    130,
-
-                                padding:
-                                    12,
-
-                                border:
-                                    0,
-
+                                flex: 1,
+                                border: 'none',
                                 borderRadius:
-                                    10,
-
+                                    '10px',
+                                padding:
+                                    '12px',
                                 background:
-                                    '#16a34a',
-
+                                    paperRunning
+                                        ? '#334155'
+                                        : '#2563eb',
                                 color:
-                                    'white',
-
+                                    '#fff',
                                 fontWeight:
-                                    700,
+                                    800,
+                                cursor:
+                                    paperRunning
+                                        ? 'not-allowed'
+                                        : 'pointer',
                             }}
                         >
                             ▶️ Démarrer
                         </button>
 
                         <button
+                            type="button"
                             onClick={
                                 stopPaperTest
                             }
+                            disabled={
+                                !paperRunning
+                            }
                             style={{
-                                flex:
-                                    1,
-
-                                minWidth:
-                                    130,
-
-                                padding:
-                                    12,
-
-                                border:
-                                    0,
-
+                                flex: 1,
+                                border: 'none',
                                 borderRadius:
-                                    10,
-
+                                    '10px',
+                                padding:
+                                    '12px',
                                 background:
-                                    '#475569',
-
+                                    !paperRunning
+                                        ? '#334155'
+                                        : '#dc2626',
                                 color:
-                                    'white',
-
+                                    '#fff',
                                 fontWeight:
-                                    700,
+                                    800,
+                                cursor:
+                                    !paperRunning
+                                        ? 'not-allowed'
+                                        : 'pointer',
                             }}
                         >
                             ⏹️ Arrêter
                         </button>
-                    </div>
-
-                    <div
-                        style={
-                            smallStyle
-                        }
-                    >
-                        Mode :{' '}
-                        {testMode ===
-                        'running'
-                            ? '🟢 EN COURS'
-                            : testMode ===
-                              'finished'
-                            ? '🏁 TERMINÉ'
-                            : '⚪ ARRÊTÉ'}
                     </div>
                 </div>
 
                 {/* BALANCE */}
 
                 <div
-                    style={
-                        cardStyle
-                    }
+                    style={{
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #1f2937',
+                        borderRadius: '14px',
+                        padding: '16px',
+                        marginBottom: '12px',
+                    }}
                 >
                     <div
                         style={{
+                            fontSize:
+                                '16px',
                             fontWeight:
-                                700,
-
+                                800,
                             marginBottom:
-                                8,
+                                '10px',
                         }}
                     >
-                        💰 Compte démo
+                        💰 COMPTE DÉMO
                     </div>
 
                     <div
                         style={{
                             fontSize:
-                                24,
-
+                                '28px',
                             fontWeight:
-                                700,
+                                900,
                         }}
                     >
-                        {balanceInfo.balance !==
-                        null
-                            ? `${balanceInfo.balance.toFixed(
-                                  2
-                              )} ${
-                                  balanceInfo.currency
-                              }`
+                        {balance !== null
+                            ? `${balance.toFixed(2)} USD`
                             : '—'}
                     </div>
 
                     <div
-                        style={
-                            smallStyle
-                        }
-                    >
-                        Login ID :{' '}
-                        {balanceInfo.loginid ||
-                            '—'}
-                    </div>
-                </div>
-
-                {/* DIAGNOSTIC */}
-
-                <div
-                    style={
-                        cardStyle
-                    }
-                >
-                    <div
-                        style={{
-                            fontWeight:
-                                700,
-
-                            marginBottom:
-                                10,
-                        }}
-                    >
-                        🧪 DIAGNOSTIC
-                        V4.12.2
-                    </div>
-
-                    <div
-                        style={{
-                            display:
-                                'grid',
-
-                            gap:
-                                7,
-
-                            fontSize:
-                                13,
-                        }}
-                    >
-                        <div>
-                            API présente :{' '}
-                            {diagnosticValue(
-                                diagnostic.apiExists
-                            )}
-                        </div>
-
-                        <div>
-                            Init démarrée :{' '}
-                            {diagnosticValue(
-                                diagnostic.initStarted
-                            )}
-                        </div>
-
-                        <div>
-                            Init terminée :{' '}
-                            {diagnosticValue(
-                                diagnostic.initFinished
-                            )}
-                        </div>
-
-                        <div>
-                            onMessage créé :{' '}
-                            {diagnosticValue(
-                                diagnostic.streamCreated
-                            )}
-                        </div>
-
-                        <div>
-                            Subscription créée :{' '}
-                            {diagnosticValue(
-                                diagnostic.subscriptionCreated
-                            )}
-                        </div>
-
-                        <div>
-                            Demande ticks envoyée :{' '}
-                            {diagnosticValue(
-                                diagnostic.tickRequestSent
-                            )}
-                        </div>
-
-                        <div>
-                            Demande balance envoyée :{' '}
-                            {diagnosticValue(
-                                diagnostic.balanceRequestSent
-                            )}
-                        </div>
-
-                        <div>
-                            Messages reçus :{' '}
-                            <strong>
-                                {
-                                    diagnostic.messagesReceived
-                                }
-                            </strong>
-                        </div>
-
-                        <div>
-                            Ticks reçus :{' '}
-                            <strong>
-                                {
-                                    diagnostic.ticksReceived
-                                }
-                            </strong>
-                        </div>
-
-                        <div>
-                            Messages balance :{' '}
-                            <strong>
-                                {
-                                    diagnostic.balanceMessages
-                                }
-                            </strong>
-                        </div>
-
-                        <div>
-                            Messages authorize :{' '}
-                            <strong>
-                                {
-                                    diagnostic.authorizeMessages
-                                }
-                            </strong>
-                        </div>
-
-                        <div>
-                            Messages proposal :{' '}
-                            <strong>
-                                {
-                                    diagnostic.proposalMessages
-                                }
-                            </strong>
-                        </div>
-
-                        <div>
-                            Erreurs :{' '}
-                            <strong>
-                                {
-                                    diagnostic.errorMessages
-                                }
-                            </strong>
-                        </div>
-
-                        <div>
-                            Dernier type :{' '}
-                            <strong>
-                                {
-                                    diagnostic.lastMessageType
-                                }
-                            </strong>
-                        </div>
-
-                        <div>
-                            Dernier prix tick :{' '}
-                            <strong>
-                                {diagnostic.lastTickQuote !==
-                                null
-                                    ? diagnostic.lastTickQuote.toFixed(
-                                          5
-                                      )
-                                    : '—'}
-                            </strong>
-                        </div>
-
-                        <div>
-                            Dernier epoch :{' '}
-                            <strong>
-                                {diagnostic.lastTickEpoch ??
-                                    '—'}
-                            </strong>
-                        </div>
-                    </div>
-
-                    <div
                         style={{
                             marginTop:
-                                12,
-
-                            padding:
-                                10,
-
-                            borderRadius:
-                                9,
-
-                            background:
-                                diagnostic.lastError
-                                    ? 'rgba(239,68,68,0.12)'
-                                    : 'rgba(34,197,94,0.08)',
-
-                            border:
-                                diagnostic.lastError
-                                    ? '1px solid rgba(239,68,68,0.3)'
-                                    : '1px solid rgba(34,197,94,0.2)',
-
-                            fontSize:
-                                12,
-
-                            wordBreak:
-                                'break-word',
-                        }}
-                    >
-                        <strong>
-                            Dernière erreur :
-                        </strong>{' '}
-                        {diagnostic.lastError ||
-                            'Aucune'}
-                    </div>
-
-                    <div
-                        style={{
-                            marginTop:
-                                12,
-
-                            fontSize:
-                                12,
-
-                            opacity:
-                                0.75,
-                        }}
-                    >
-                        <strong>
-                            Dernier message brut :
-                        </strong>
-                    </div>
-
-                    <div
-                        style={{
-                            marginTop:
-                                6,
-
-                            padding:
-                                10,
-
-                            background:
-                                '#020617',
-
-                            borderRadius:
-                                8,
-
-                            fontSize:
-                                11,
-
-                            lineHeight:
-                                1.5,
-
-                            wordBreak:
-                                'break-all',
-
-                            maxHeight:
-                                180,
-
-                            overflowY:
-                                'auto',
-                        }}
-                    >
-                        {
-                            diagnostic.lastRawPreview
-                        }
-                    </div>
-
-                    <div
-                        style={
-                            smallStyle
-                        }
-                    >
-                        API keys :{' '}
-                        {diagnostic.apiKeys}
-                    </div>
-
-                    <button
-                        onClick={
-                            resetDiagnostic
-                        }
-                        style={{
-                            width:
-                                '100%',
-
-                            marginTop:
-                                12,
-
-                            padding:
-                                11,
-
-                            border:
-                                0,
-
-                            borderRadius:
-                                10,
-
-                            background:
-                                '#334155',
-
+                                '7px',
                             color:
-                                'white',
-
-                            fontWeight:
-                                700,
+                                '#64748b',
+                            fontSize:
+                                '12px',
                         }}
                     >
-                        🔄 Réinitialiser diagnostic
-                    </button>
+                        Compte : {loginId}
+                    </div>
                 </div>
 
                 {/* PROPOSITION */}
 
                 <div
-                    style={
-                        cardStyle
-                    }
+                    style={{
+                        background:
+                            '#111827',
+                        border:
+                            '1px solid #1f2937',
+                        borderRadius: '14px',
+                        padding: '16px',
+                        marginBottom: '12px',
+                    }}
                 >
                     <div
                         style={{
+                            fontSize:
+                                '16px',
                             fontWeight:
-                                700,
-
-                            marginBottom:
-                                8,
+                                800,
                         }}
                     >
-                        🧾 Proposition Demo
+                        🧾 PROPOSITION DÉMO
                     </div>
 
                     <div
-                        style={
-                            smallStyle
-                        }
+                        style={{
+                            color:
+                                '#94a3b8',
+                            fontSize:
+                                '12px',
+                            marginTop:
+                                '5px',
+                        }}
                     >
-                        Direction actuelle :{' '}
-                        {getPredictionText(
-                            prediction
-                        )}
+                        Proposition uniquement.
+                        Aucun BUY/SELL n'est
+                        envoyé.
+                    </div>
+
+                    <div
+                        style={{
+                            marginTop:
+                                '12px',
+                            background:
+                                '#0f172a',
+                            borderRadius:
+                                '10px',
+                            padding:
+                                '12px',
+                            fontSize:
+                                '13px',
+                        }}
+                    >
+                        Signal actuel :
+                        {' '}
+                        <strong>
+                            {predictionLabel}
+                        </strong>
                     </div>
 
                     <button
+                        type="button"
                         onClick={
-                            requestProposal
-                        }
-                        disabled={
-                            proposal.status ===
-                            'loading'
+                            requestDemoProposal
                         }
                         style={{
-                            width:
-                                '100%',
-
+                            width: '100%',
                             marginTop:
-                                10,
-
-                            padding:
-                                12,
-
-                            border:
-                                0,
-
+                                '10px',
+                            border: 'none',
                             borderRadius:
-                                10,
-
+                                '10px',
+                            padding:
+                                '12px',
                             background:
-                                '#2563eb',
-
+                                '#475569',
                             color:
-                                'white',
-
+                                '#fff',
                             fontWeight:
-                                700,
-
-                            opacity:
-                                proposal.status ===
-                                'loading'
-                                    ? 0.6
-                                    : 1,
+                                800,
+                            cursor:
+                                'pointer',
                         }}
                     >
-                        {proposal.status ===
-                        'loading'
-                            ? '⏳ Demande…'
-                            : '🔎 Demander une proposition'}
+                        📋 Voir la proposition
                     </button>
 
-                    {proposal.message && (
-                        <div
-                            style={{
-                                marginTop:
-                                    10,
-
-                                padding:
-                                    10,
-
-                                borderRadius:
-                                    9,
-
-                                background:
-                                    '#0f172a',
-
-                                fontSize:
-                                    13,
-
-                                wordBreak:
-                                    'break-word',
-                            }}
-                        >
-                            {
-                                proposal.message
-                            }
-                        </div>
-                    )}
-
-                    {proposal.status ===
-                        'success' && (
-                        <div
-                            style={{
-                                marginTop:
-                                    10,
-
-                                fontSize:
-                                    13,
-
-                                lineHeight:
-                                    1.6,
-                            }}
-                        >
-                            <div>
-                                Contrat :{' '}
-                                {proposal.contractType ||
-                                    '—'}
-                            </div>
-
-                            <div>
-                                Prix demandé :{' '}
-                                {Number.isFinite(
-                                    proposal.askPrice
-                                )
-                                    ? proposal.askPrice
-                                    : '—'}
-                            </div>
-
-                            <div>
-                                Payout :{' '}
-                                {Number.isFinite(
-                                    proposal.payout
-                                )
-                                    ? proposal.payout
-                                    : '—'}
-                            </div>
-
-                            <div
-                                style={{
-                                    marginTop:
-                                        6,
-
-                                    fontWeight:
-                                        700,
-                                }}
-                            >
-                                🚫 Aucun achat
-                                effectué.
-                            </div>
-                        </div>
-                    )}
+                    <div
+                        style={{
+                            marginTop:
+                                '10px',
+                            color:
+                                '#cbd5e1',
+                            fontSize:
+                                '12px',
+                            textAlign:
+                                'center',
+                        }}
+                    >
+                        {proposalStatus}
+                    </div>
                 </div>
 
                 {/* FOOTER */}
@@ -2908,24 +1714,21 @@ export default function R75TickMonitor() {
                     style={{
                         textAlign:
                             'center',
-
-                        opacity:
-                            0.55,
-
+                        color:
+                            '#475569',
                         fontSize:
-                            11,
-
-                        marginTop:
-                            20,
+                            '11px',
+                        padding:
+                            '10px 0 20px',
                     }}
                 >
-                    V4.12.2 Diagnostic •{' '}
-                    {MARKET_SYMBOL}
-                    <br />
-                    Paper test uniquement •
-                    Aucun BUY/SELL
+                    V4.12.3 • Analyse
+                    EUR/USD • Paper uniquement
+                    • Aucun trade réel
                 </div>
             </div>
         </div>
     );
-}
+};
+
+export default R75TickMonitor;
