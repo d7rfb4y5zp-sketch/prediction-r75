@@ -30,6 +30,12 @@ type BalanceInfo = {
     loginid?: string;
 };
 
+type TestMode =
+    | 'idle'
+    | 'testing'
+    | 'stopped'
+    | 'done';
+
 const getDirection = (
     previous: number,
     current: number
@@ -40,23 +46,39 @@ const getDirection = (
 const directionLabel = (
     direction: Direction | null
 ) => {
-    if (direction === 'UP') return '🟢 HAUSSE';
-    if (direction === 'DOWN') return '🔴 BAISSE';
+    if (direction === 'UP') {
+        return '🟢 HAUSSE';
+    }
+
+    if (direction === 'DOWN') {
+        return '🔴 BAISSE';
+    }
+
     return '—';
 };
 
 export default function R75TickMonitor() {
-    const [connected, setConnected] = useState(false);
-    const [connectionError, setConnectionError] = useState('');
+    const [connected, setConnected] =
+        useState(false);
 
-    const [price, setPrice] = useState<number | null>(null);
-    const [lastDigit, setLastDigit] = useState<number | null>(null);
+    const [connectionError, setConnectionError] =
+        useState('');
 
-    const [historyCount, setHistoryCount] = useState(0);
+    const [price, setPrice] =
+        useState<number | null>(null);
+
+    const [lastDigit, setLastDigit] =
+        useState<number | null>(null);
+
+    const [historyCount, setHistoryCount] =
+        useState(0);
 
     const [phase, setPhase] = useState<
         'learning' | 'testing' | 'done'
     >('learning');
+
+    const [testMode, setTestMode] =
+        useState<TestMode>('idle');
 
     const [currentDirection, setCurrentDirection] =
         useState<Direction | null>(null);
@@ -70,14 +92,16 @@ export default function R75TickMonitor() {
     const [observations, setObservations] =
         useState(0);
 
-    const [stats, setStats] = useState<Stats>({
-        tests: 0,
-        wins: 0,
-        losses: 0,
-        virtualProfit: 0,
-    });
+    const [stats, setStats] =
+        useState<Stats>({
+            tests: 0,
+            wins: 0,
+            losses: 0,
+            virtualProfit: 0,
+        });
 
-    const [blocks, setBlocks] = useState<number[]>([]);
+    const [blocks, setBlocks] =
+        useState<number[]>([]);
 
     const [currentBlockWins, setCurrentBlockWins] =
         useState(0);
@@ -130,6 +154,9 @@ export default function R75TickMonitor() {
     const balanceRequestedRef =
         useRef(false);
 
+    const testModeRef =
+        useRef<TestMode>('idle');
+
     /*
      * =========================================================
      * ANALYSE
@@ -141,32 +168,43 @@ export default function R75TickMonitor() {
             directionHistoryRef.current;
 
         const recent =
-            history.slice(-ANALYSIS_WINDOW);
+            history.slice(
+                -ANALYSIS_WINDOW
+            );
 
         if (recent.length < 5) {
             return {
-                direction: null as Direction | null,
+                direction:
+                    null as Direction | null,
                 strength: 0,
-                observations: recent.length,
+                observations:
+                    recent.length,
             };
         }
 
         let up = 0;
         let down = 0;
 
-        recent.forEach(direction => {
-            if (direction === 'UP') {
-                up += 1;
-            } else {
-                down += 1;
+        recent.forEach(
+            direction => {
+                if (
+                    direction ===
+                    'UP'
+                ) {
+                    up += 1;
+                } else {
+                    down += 1;
+                }
             }
-        });
+        );
 
-        const total = up + down;
+        const total =
+            up + down;
 
         if (total === 0) {
             return {
-                direction: null as Direction | null,
+                direction:
+                    null as Direction | null,
                 strength: 0,
                 observations: 0,
             };
@@ -180,271 +218,88 @@ export default function R75TickMonitor() {
 
         if (up >= down) {
             return {
-                direction: 'UP' as Direction,
-                strength: upPercent,
-                observations: total,
+                direction:
+                    'UP' as Direction,
+                strength:
+                    upPercent,
+                observations:
+                    total,
             };
         }
 
         return {
-            direction: 'DOWN' as Direction,
-            strength: downPercent,
-            observations: total,
+            direction:
+                'DOWN' as Direction,
+            strength:
+                downPercent,
+            observations:
+                total,
         };
     };
 
     /*
      * =========================================================
-     * DEMANDE DU SOLDE
+     * BOUTON : DÉMARRER LE TEST DEMO
      * =========================================================
-     *
-     * IMPORTANT :
-     *
-     * V4.10 ne crée PAS une nouvelle souscription balance.
-     *
-     * On utilise seulement :
-     *
-     * { balance: 1 }
-     *
-     * afin d'éviter :
-     *
-     * "You are already subscribed to balance..."
      */
 
-    const requestCurrentBalance = () => {
-        if (!api_base?.api) {
-            return;
-        }
-
-        if (balanceRequestedRef.current) {
-            return;
-        }
-
-        balanceRequestedRef.current = true;
-
-        try {
-            api_base.api.send({
-                balance: 1,
-                req_id: 4901,
-            });
-        } catch (error: any) {
-            balanceRequestedRef.current = false;
-
-            setBalanceError(
-                error?.message ||
-                    'Impossible de demander le solde Demo.'
+    const startDemoTest = () => {
+        if (!connected) {
+            setConnectionError(
+                'Le marché EUR/USD n’est pas encore connecté.'
             );
-        }
-    };
 
-    /*
-     * =========================================================
-     * TRAITEMENT DU SOLDE
-     * =========================================================
-     */
-
-    const processBalance = (
-        data: any
-    ) => {
-        if (!data?.balance) {
-            return;
-        }
-
-        const rawBalance =
-            data.balance.balance;
-
-        const currency =
-            data.balance.currency || 'USD';
-
-        const loginid =
-            data.balance.loginid;
-
-        if (
-            typeof rawBalance !== 'number' ||
-            !Number.isFinite(rawBalance)
-        ) {
-            return;
-        }
-
-        setBalanceInfo({
-            balance: rawBalance,
-            currency,
-            loginid,
-        });
-
-        setBalanceReceived(true);
-        setBalanceError('');
-    };
-
-    /*
-     * =========================================================
-     * TRAITEMENT DES TICKS
-     * =========================================================
-     */
-
-    const processTick = (
-        tick: Tick
-    ) => {
-        if (
-            tick.symbol !== MARKET_SYMBOL
-        ) {
             return;
         }
 
         if (
-            typeof tick.quote !== 'number' ||
-            !Number.isFinite(tick.quote)
+            historyCount <
+            HISTORY_SIZE
+        ) {
+            setConnectionError(
+                'Attends que les 500 ticks soient collectés avant de commencer le test.'
+            );
+
+            return;
+        }
+
+        if (
+            testModeRef.current ===
+            'testing'
         ) {
             return;
         }
 
-        const currentPrice =
-            tick.quote;
+        /*
+         * IMPORTANT :
+         *
+         * Cette version ne fait PAS de requête buy.
+         *
+         * Elle démarre uniquement
+         * le paper trading.
+         */
 
-        setConnected(true);
+        testModeRef.current =
+            'testing';
+
+        setTestMode(
+            'testing'
+        );
+
+        setPhase('testing');
+
         setConnectionError('');
 
-        setPrice(currentPrice);
-
         /*
-         * Dernier chiffre
-         */
-
-        const priceString =
-            currentPrice.toFixed(5);
-
-        const digit =
-            Number(
-                priceString[
-                    priceString.length - 1
-                ]
-            );
-
-        setLastDigit(digit);
-
-        /*
-         * Premier tick
+         * Si aucun test n'a encore
+         * commencé, on prépare
+         * la première prédiction.
          */
 
         if (
-            previousPriceRef.current === null
+            predictionRef.current ===
+            null
         ) {
-            previousPriceRef.current =
-                currentPrice;
-
-            priceHistoryRef.current.push(
-                currentPrice
-            );
-
-            setHistoryCount(
-                priceHistoryRef.current.length
-            );
-
-            return;
-        }
-
-        /*
-         * Direction actuelle
-         */
-
-        const previousPrice =
-            previousPriceRef.current;
-
-        const direction =
-            getDirection(
-                previousPrice,
-                currentPrice
-            );
-
-        previousPriceRef.current =
-            currentPrice;
-
-        /*
-         * Historique des prix
-         */
-
-        priceHistoryRef.current.push(
-            currentPrice
-        );
-
-        if (
-            priceHistoryRef.current.length >
-            HISTORY_SIZE
-        ) {
-            priceHistoryRef.current.shift();
-        }
-
-        /*
-         * Historique des directions
-         */
-
-        directionHistoryRef.current.push(
-            direction
-        );
-
-        if (
-            directionHistoryRef.current.length >
-            HISTORY_SIZE
-        ) {
-            directionHistoryRef.current.shift();
-        }
-
-        const historyLength =
-            directionHistoryRef.current.length;
-
-        setHistoryCount(
-            Math.min(
-                historyLength,
-                HISTORY_SIZE
-            )
-        );
-
-        setCurrentDirection(
-            direction
-        );
-
-        /*
-         * =====================================================
-         * PHASE 1
-         * =====================================================
-         */
-
-        if (
-            historyLength <
-            HISTORY_SIZE
-        ) {
-            setPhase('learning');
-
-            const result =
-                calculatePrediction();
-
-            setPrediction(
-                result.direction
-            );
-
-            setPredictionStrength(
-                result.strength
-            );
-
-            setObservations(
-                result.observations
-            );
-
-            return;
-        }
-
-        /*
-         * =====================================================
-         * PREMIÈRE PRÉDICTION
-         * =====================================================
-         */
-
-        if (
-            testsRef.current === 0 &&
-            predictionRef.current === null
-        ) {
-            setPhase('testing');
-
             const result =
                 calculatePrediction();
 
@@ -462,13 +317,388 @@ export default function R75TickMonitor() {
             setObservations(
                 result.observations
             );
+        }
+    };
+
+    /*
+     * =========================================================
+     * BOUTON : ARRÊTER LE TEST
+     * =========================================================
+     */
+
+    const stopDemoTest = () => {
+        testModeRef.current =
+            'stopped';
+
+        setTestMode(
+            'stopped'
+        );
+
+        /*
+         * On conserve les statistiques.
+         */
+
+        setPrediction(
+            predictionRef.current
+        );
+    };
+
+    /*
+     * =========================================================
+     * RESET TEST
+     * =========================================================
+     */
+
+    const resetPaperTest = () => {
+        testsRef.current = 0;
+        winsRef.current = 0;
+        lossesRef.current = 0;
+        virtualProfitRef.current = 0;
+
+        blockWinsRef.current = 0;
+        blockTestsRef.current = 0;
+
+        predictionRef.current =
+            null;
+
+        setStats({
+            tests: 0,
+            wins: 0,
+            losses: 0,
+            virtualProfit: 0,
+        });
+
+        setBlocks([]);
+
+        setCurrentBlockWins(0);
+        setCurrentBlockTests(0);
+
+        const result =
+            calculatePrediction();
+
+        predictionRef.current =
+            result.direction;
+
+        setPrediction(
+            result.direction
+        );
+
+        setPredictionStrength(
+            result.strength
+        );
+
+        setObservations(
+            result.observations
+        );
+
+        testModeRef.current =
+            'idle';
+
+        setTestMode('idle');
+
+        setPhase('testing');
+    };
+
+    /*
+     * =========================================================
+     * DEMANDE DU SOLDE
+     * =========================================================
+     */
+
+    const requestCurrentBalance = () => {
+        if (!api_base?.api) {
+            return;
+        }
+
+        if (
+            balanceRequestedRef.current
+        ) {
+            return;
+        }
+
+        balanceRequestedRef.current =
+            true;
+
+        try {
+            api_base.api.send({
+                balance: 1,
+                req_id: 4901,
+            });
+        } catch (error: any) {
+            balanceRequestedRef.current =
+                false;
+
+            setBalanceError(
+                error?.message ||
+                    'Impossible de demander le solde Demo.'
+            );
+        }
+    };
+
+    /*
+     * =========================================================
+     * TRAITEMENT SOLDE
+     * =========================================================
+     */
+
+    const processBalance = (
+        data: any
+    ) => {
+        if (!data?.balance) {
+            return;
+        }
+
+        const rawBalance =
+            data.balance.balance;
+
+        const currency =
+            data.balance.currency ||
+            'USD';
+
+        const loginid =
+            data.balance.loginid;
+
+        if (
+            typeof rawBalance !==
+                'number' ||
+            !Number.isFinite(
+                rawBalance
+            )
+        ) {
+            return;
+        }
+
+        setBalanceInfo({
+            balance:
+                rawBalance,
+            currency,
+            loginid,
+        });
+
+        setBalanceReceived(
+            true
+        );
+
+        setBalanceError('');
+    };
+
+    /*
+     * =========================================================
+     * TRAITEMENT TICK
+     * =========================================================
+     */
+
+    const processTick = (
+        tick: Tick
+    ) => {
+        if (
+            tick.symbol !==
+            MARKET_SYMBOL
+        ) {
+            return;
+        }
+
+        if (
+            typeof tick.quote !==
+                'number' ||
+            !Number.isFinite(
+                tick.quote
+            )
+        ) {
+            return;
+        }
+
+        const currentPrice =
+            tick.quote;
+
+        setConnected(true);
+        setConnectionError('');
+
+        setPrice(
+            currentPrice
+        );
+
+        /*
+         * Dernier chiffre
+         */
+
+        const priceString =
+            currentPrice.toFixed(
+                5
+            );
+
+        const digit =
+            Number(
+                priceString[
+                    priceString.length -
+                        1
+                ]
+            );
+
+        setLastDigit(
+            digit
+        );
+
+        /*
+         * Premier tick
+         */
+
+        if (
+            previousPriceRef.current ===
+            null
+        ) {
+            previousPriceRef.current =
+                currentPrice;
+
+            priceHistoryRef.current.push(
+                currentPrice
+            );
+
+            setHistoryCount(
+                priceHistoryRef.current.length
+            );
+
+            return;
+        }
+
+        const previousPrice =
+            previousPriceRef.current;
+
+        const direction =
+            getDirection(
+                previousPrice,
+                currentPrice
+            );
+
+        previousPriceRef.current =
+            currentPrice;
+
+        /*
+         * Historique prix
+         */
+
+        priceHistoryRef.current.push(
+            currentPrice
+        );
+
+        if (
+            priceHistoryRef.current
+                .length >
+            HISTORY_SIZE
+        ) {
+            priceHistoryRef.current.shift();
+        }
+
+        /*
+         * Historique directions
+         */
+
+        directionHistoryRef.current.push(
+            direction
+        );
+
+        if (
+            directionHistoryRef.current
+                .length >
+            HISTORY_SIZE
+        ) {
+            directionHistoryRef.current.shift();
+        }
+
+        const historyLength =
+            directionHistoryRef.current
+                .length;
+
+        setHistoryCount(
+            Math.min(
+                historyLength,
+                HISTORY_SIZE
+            )
+        );
+
+        setCurrentDirection(
+            direction
+        );
+
+        /*
+         * =====================================================
+         * APPRENTISSAGE
+         * =====================================================
+         */
+
+        if (
+            historyLength <
+            HISTORY_SIZE
+        ) {
+            setPhase(
+                'learning'
+            );
+
+            const result =
+                calculatePrediction();
+
+            setPrediction(
+                result.direction
+            );
+
+            setPredictionStrength(
+                result.strength
+            );
+
+            setObservations(
+                result.observations
+            );
 
             return;
         }
 
         /*
+         * Une fois les 500 ticks
+         * collectés, on prépare
+         * la prédiction.
+         */
+
+        if (
+            predictionRef.current ===
+            null
+        ) {
+            const result =
+                calculatePrediction();
+
+            predictionRef.current =
+                result.direction;
+
+            setPrediction(
+                result.direction
+            );
+
+            setPredictionStrength(
+                result.strength
+            );
+
+            setObservations(
+                result.observations
+            );
+        }
+
+        /*
          * =====================================================
-         * VALIDATION DE LA PRÉDICTION PRÉCÉDENTE
+         * LE TEST NE TOURNE QUE SI
+         * L'UTILISATEUR A APPUYÉ
+         * SUR LE BOUTON.
+         * =====================================================
+         */
+
+        if (
+            testModeRef.current !==
+            'testing'
+        ) {
+            return;
+        }
+
+        /*
+         * =====================================================
+         * VALIDATION
          * =====================================================
          */
 
@@ -476,27 +706,34 @@ export default function R75TickMonitor() {
             predictionRef.current;
 
         if (
-            previousPrediction !== null &&
+            previousPrediction !==
+                null &&
             testsRef.current <
                 PAPER_TEST_LIMIT
         ) {
             testsRef.current += 1;
 
-            blockTestsRef.current += 1;
+            blockTestsRef.current +=
+                1;
 
             if (
                 previousPrediction ===
                 direction
             ) {
-                winsRef.current += 1;
+                winsRef.current +=
+                    1;
 
-                blockWinsRef.current += 1;
+                blockWinsRef.current +=
+                    1;
 
-                virtualProfitRef.current += 1;
+                virtualProfitRef.current +=
+                    1;
             } else {
-                lossesRef.current += 1;
+                lossesRef.current +=
+                    1;
 
-                virtualProfitRef.current -= 1;
+                virtualProfitRef.current -=
+                    1;
             }
 
             /*
@@ -511,7 +748,8 @@ export default function R75TickMonitor() {
                     (
                         blockWinsRef.current /
                         BLOCK_SIZE
-                    ) * 100;
+                    ) *
+                    100;
 
                 setBlocks(
                     previous => [
@@ -520,8 +758,11 @@ export default function R75TickMonitor() {
                     ]
                 );
 
-                blockTestsRef.current = 0;
-                blockWinsRef.current = 0;
+                blockTestsRef.current =
+                    0;
+
+                blockWinsRef.current =
+                    0;
             }
 
             setStats({
@@ -557,11 +798,14 @@ export default function R75TickMonitor() {
             testsRef.current >=
             PAPER_TEST_LIMIT
         ) {
-            setPhase('done');
+            testModeRef.current =
+                'done';
 
-            /*
-             * On conserve la dernière prédiction.
-             */
+            setTestMode(
+                'done'
+            );
+
+            setPhase('done');
 
             const finalResult =
                 calculatePrediction();
@@ -636,7 +880,8 @@ export default function R75TickMonitor() {
             };
         }
 
-        subscribedRef.current = true;
+        subscribedRef.current =
+            true;
 
         let messageSubscription:
             | {
@@ -654,11 +899,15 @@ export default function R75TickMonitor() {
                         }: {
                             data: any;
                         }) => {
-                            if (!mounted) {
+                            if (
+                                !mounted
+                            ) {
                                 return;
                             }
 
-                            if (!data) {
+                            if (
+                                !data
+                            ) {
                                 return;
                             }
 
@@ -708,12 +957,6 @@ export default function R75TickMonitor() {
                                         message
                                     );
 
-                                /*
-                                 * Les erreurs de compte
-                                 * ne doivent pas couper
-                                 * le marché EUR/USD.
-                                 */
-
                                 if (
                                     text
                                         .toLowerCase()
@@ -758,8 +1001,7 @@ export default function R75TickMonitor() {
             });
 
             /*
-             * Solde :
-             * une seule demande, sans subscribe.
+             * Solde
              */
 
             requestCurrentBalance();
@@ -859,17 +1101,19 @@ export default function R75TickMonitor() {
 
     /*
      * =========================================================
-     * INTERFACE V4.10
-     *
-     * IMPORTANT POUR IPHONE :
-     *
-     * height: 100dvh
-     * overflowY: auto
-     * overflowX: hidden
-     * WebkitOverflowScrolling: touch
-     * touchAction: pan-y
-     *
-     * Cela permet de faire glisser la page avec le doigt.
+     * TEXTE DU BOUTON
+     * =========================================================
+     */
+
+    const testButtonDisabled =
+        !connected ||
+        historyCount <
+            HISTORY_SIZE ||
+        testMode === 'testing';
+
+    /*
+     * =========================================================
+     * INTERFACE
      * =========================================================
      */
 
@@ -879,34 +1123,23 @@ export default function R75TickMonitor() {
                 width: '100%',
                 height: '100dvh',
                 minHeight: '100vh',
-
                 overflowY: 'auto',
                 overflowX: 'hidden',
-
                 WebkitOverflowScrolling:
                     'touch',
-
                 overscrollBehaviorY:
                     'auto',
-
-                touchAction:
-                    'pan-y',
-
+                touchAction: 'pan-y',
                 background:
                     '#0f172a',
-
                 color:
                     '#e5e7eb',
-
                 padding:
                     '16px',
-
                 paddingBottom:
-                    '70px',
-
+                    '80px',
                 fontFamily:
                     'Arial, sans-serif',
-
                 boxSizing:
                     'border-box',
             }}
@@ -919,14 +1152,12 @@ export default function R75TickMonitor() {
                     margin:
                         '0 auto',
                     paddingBottom:
-                        '40px',
+                        '50px',
                     boxSizing:
                         'border-box',
                 }}
             >
-                {/* =================================================
-                    TITRE
-                ================================================= */}
+                {/* TITRE */}
 
                 <h1
                     style={{
@@ -943,12 +1174,10 @@ export default function R75TickMonitor() {
                     }}
                 >
                     Moniteur Forex EUR/USD —
-                    V4.10 Demo + Paper Trader
+                    V4.11 Demo + Paper Trader
                 </h1>
 
-                {/* =================================================
-                    CONNEXION
-                ================================================= */}
+                {/* CONNEXION */}
 
                 <div
                     style={{
@@ -956,26 +1185,20 @@ export default function R75TickMonitor() {
                             connected
                                 ? '#064e3b'
                                 : '#451a03',
-
                         border:
                             `1px solid ${
                                 connected
                                     ? '#10b981'
                                     : '#f59e0b'
                             }`,
-
                         borderRadius:
                             '12px',
-
                         padding:
                             '14px',
-
                         marginBottom:
                             '16px',
-
                         textAlign:
                             'center',
-
                         fontWeight:
                             'bold',
                     }}
@@ -990,63 +1213,45 @@ export default function R75TickMonitor() {
                         style={{
                             background:
                                 '#450a0a',
-
                             border:
                                 '1px solid #ef4444',
-
                             borderRadius:
                                 '10px',
-
                             padding:
                                 '12px',
-
                             marginBottom:
                                 '16px',
-
                             color:
                                 '#fecaca',
-
                             overflowWrap:
                                 'anywhere',
                         }}
                     >
-                        ⚠️ Marché :
-                        {' '}
+                        ⚠️{' '}
                         {connectionError}
                     </div>
                 )}
 
-                {/* =================================================
-                    COMPTE
-                ================================================= */}
+                {/* COMPTE */}
 
                 <div
                     style={{
                         background:
                             '#111827',
-
                         border:
                             '1px solid #374151',
-
                         borderRadius:
                             '14px',
-
                         padding:
                             '18px',
-
                         marginBottom:
                             '16px',
-
-                        boxSizing:
-                            'border-box',
                     }}
                 >
                     <h2
                         style={{
                             marginTop:
                                 0,
-                            fontSize:
-                                '21px',
                         }}
                     >
                         💰 Compte Deriv
@@ -1058,22 +1263,13 @@ export default function R75TickMonitor() {
                                 style={{
                                     fontSize:
                                         '28px',
-
                                     fontWeight:
                                         'bold',
-
-                                    marginBottom:
-                                        '8px',
-
-                                    wordBreak:
-                                        'break-word',
                                 }}
                             >
-                                {
-                                    balanceInfo.balance.toFixed(
-                                        2
-                                    )
-                                }{' '}
+                                {balanceInfo.balance.toFixed(
+                                    2
+                                )}{' '}
                                 {
                                     balanceInfo.currency
                                 }
@@ -1084,7 +1280,8 @@ export default function R75TickMonitor() {
                                     style={{
                                         color:
                                             '#9ca3af',
-
+                                        marginTop:
+                                            '6px',
                                         overflowWrap:
                                             'anywhere',
                                     }}
@@ -1101,45 +1298,24 @@ export default function R75TickMonitor() {
                                 style={{
                                     marginTop:
                                         '8px',
-
                                     color:
                                         '#86efac',
                                 }}
                             >
-                                🟢 Solde reçu depuis
-                                Deriv
+                                🟢 Solde reçu
+                                depuis Deriv
                             </div>
                         </>
                     ) : (
-                        <>
-                            <div
-                                style={{
-                                    color:
-                                        '#fbbf24',
-
-                                    marginBottom:
-                                        '8px',
-                                }}
-                            >
-                                🟠 Solde Demo
-                                indisponible
-                            </div>
-
-                            <div
-                                style={{
-                                    color:
-                                        '#9ca3af',
-
-                                    fontSize:
-                                        '14px',
-                                }}
-                            >
-                                Le flux des prix
-                                peut fonctionner
-                                indépendamment
-                                du solde.
-                            </div>
-                        </>
+                        <div
+                            style={{
+                                color:
+                                    '#fbbf24',
+                            }}
+                        >
+                            🟠 Solde Demo
+                            indisponible
+                        </div>
                     )}
 
                     {balanceError && (
@@ -1147,25 +1323,18 @@ export default function R75TickMonitor() {
                             style={{
                                 marginTop:
                                     '12px',
-
                                 padding:
                                     '10px',
-
                                 background:
                                     '#450a0a',
-
                                 border:
                                     '1px solid #ef4444',
-
                                 borderRadius:
                                     '8px',
-
                                 color:
                                     '#fecaca',
-
                                 fontSize:
                                     '14px',
-
                                 overflowWrap:
                                     'anywhere',
                             }}
@@ -1177,24 +1346,18 @@ export default function R75TickMonitor() {
                     )}
                 </div>
 
-                {/* =================================================
-                    MARCHÉ
-                ================================================= */}
+                {/* MARCHÉ */}
 
                 <div
                     style={{
                         background:
                             '#111827',
-
                         border:
                             '1px solid #374151',
-
                         borderRadius:
                             '14px',
-
                         padding:
                             '18px',
-
                         marginBottom:
                             '16px',
                     }}
@@ -1203,8 +1366,6 @@ export default function R75TickMonitor() {
                         style={{
                             marginTop:
                                 0,
-                            fontSize:
-                                '21px',
                         }}
                     >
                         📊 Marché
@@ -1214,10 +1375,8 @@ export default function R75TickMonitor() {
                         style={{
                             display:
                                 'grid',
-
                             gridTemplateColumns:
                                 'repeat(auto-fit, minmax(150px, 1fr))',
-
                             gap:
                                 '14px',
                         }}
@@ -1301,24 +1460,18 @@ export default function R75TickMonitor() {
                     </div>
                 </div>
 
-                {/* =================================================
-                    APPRENTISSAGE
-                ================================================= */}
+                {/* APPRENTISSAGE */}
 
                 <div
                     style={{
                         background:
                             '#111827',
-
                         border:
                             '1px solid #374151',
-
                         borderRadius:
                             '14px',
-
                         padding:
                             '18px',
-
                         marginBottom:
                             '16px',
                     }}
@@ -1327,8 +1480,6 @@ export default function R75TickMonitor() {
                         style={{
                             marginTop:
                                 0,
-                            fontSize:
-                                '21px',
                         }}
                     >
                         🧠 Phase 1 —
@@ -1347,7 +1498,10 @@ export default function R75TickMonitor() {
                             {
                                 historyCount
                             }
-                            /{HISTORY_SIZE}
+                            /
+                            {
+                                HISTORY_SIZE
+                            }
                         </strong>
                     </div>
 
@@ -1355,13 +1509,10 @@ export default function R75TickMonitor() {
                         style={{
                             height:
                                 '10px',
-
                             background:
                                 '#1f2937',
-
                             borderRadius:
                                 '10px',
-
                             overflow:
                                 'hidden',
                         }}
@@ -1379,13 +1530,10 @@ export default function R75TickMonitor() {
                                             100
                                         )
                                     }%`,
-
                                 height:
                                     '100%',
-
                                 background:
                                     '#22c55e',
-
                                 transition:
                                     'width 0.2s ease',
                             }}
@@ -1393,24 +1541,18 @@ export default function R75TickMonitor() {
                     </div>
                 </div>
 
-                {/* =================================================
-                    ANALYSE
-                ================================================= */}
+                {/* ANALYSE */}
 
                 <div
                     style={{
                         background:
                             '#111827',
-
                         border:
                             '1px solid #374151',
-
                         borderRadius:
                             '14px',
-
                         padding:
                             '18px',
-
                         marginBottom:
                             '16px',
                     }}
@@ -1419,21 +1561,18 @@ export default function R75TickMonitor() {
                         style={{
                             marginTop:
                                 0,
-                            fontSize:
-                                '21px',
                         }}
                     >
-                        🔎 Analyse en temps réel
+                        🔎 Analyse en
+                        temps réel
                     </h2>
 
                     <div
                         style={{
                             display:
                                 'grid',
-
                             gridTemplateColumns:
                                 'repeat(auto-fit, minmax(150px, 1fr))',
-
                             gap:
                                 '14px',
                         }}
@@ -1448,12 +1587,7 @@ export default function R75TickMonitor() {
                                 Direction actuelle
                             </div>
 
-                            <strong
-                                style={{
-                                    fontSize:
-                                        '19px',
-                                }}
-                            >
+                            <strong>
                                 {directionLabel(
                                     currentDirection
                                 )}
@@ -1470,12 +1604,7 @@ export default function R75TickMonitor() {
                                 Prochaine prédiction
                             </div>
 
-                            <strong
-                                style={{
-                                    fontSize:
-                                        '19px',
-                                }}
-                            >
+                            <strong>
                                 {directionLabel(
                                     prediction
                                 )}
@@ -1524,48 +1653,333 @@ export default function R75TickMonitor() {
                         style={{
                             marginTop:
                                 '16px',
-
                             padding:
                                 '12px',
-
                             background:
                                 '#172033',
-
                             borderRadius:
                                 '10px',
-
                             color:
                                 '#cbd5e1',
-
-                            lineHeight:
-                                '1.5',
                         }}
                     >
                         ℹ️ L'analyse utilise
-                        les dernières directions
-                        du marché pour produire
-                        une indication UP/DOWN.
+                        les dernières
+                        directions du
+                        marché pour
+                        produire une
+                        indication
+                        UP/DOWN.
                     </div>
                 </div>
 
                 {/* =================================================
-                    PAPER TRADING
+                    NOUVEAU : CONTRÔLE DEMO
                 ================================================= */}
 
                 <div
                     style={{
                         background:
                             '#111827',
+                        border:
+                            '1px solid #475569',
+                        borderRadius:
+                            '16px',
+                        padding:
+                            '20px',
+                        marginBottom:
+                            '16px',
+                        textAlign:
+                            'center',
+                    }}
+                >
+                    <h2
+                        style={{
+                            marginTop:
+                                0,
+                        }}
+                    >
+                        🎮 Test Demo
+                    </h2>
 
+                    <div
+                        style={{
+                            color:
+                                '#94a3b8',
+                            marginBottom:
+                                '16px',
+                            lineHeight:
+                                '1.5',
+                        }}
+                    >
+                        Le bouton démarre le
+                        test de la stratégie
+                        avec les ticks EUR/USD
+                        en mode virtuel.
+                    </div>
+
+                    {testMode ===
+                        'idle' && (
+                        <button
+                            onClick={
+                                startDemoTest
+                            }
+                            disabled={
+                                testButtonDisabled
+                            }
+                            style={{
+                                width:
+                                    '100%',
+                                minHeight:
+                                    '58px',
+                                border:
+                                    'none',
+                                borderRadius:
+                                    '14px',
+                                background:
+                                    testButtonDisabled
+                                        ? '#374151'
+                                        : '#16a34a',
+                                color:
+                                    '#ffffff',
+                                fontSize:
+                                    '18px',
+                                fontWeight:
+                                    'bold',
+                                cursor:
+                                    testButtonDisabled
+                                        ? 'not-allowed'
+                                        : 'pointer',
+                                touchAction:
+                                    'manipulation',
+                            }}
+                        >
+                            ▶️ TESTER SUR
+                            COMPTE DÉMO
+                        </button>
+                    )}
+
+                    {testMode ===
+                        'testing' && (
+                        <button
+                            onClick={
+                                stopDemoTest
+                            }
+                            style={{
+                                width:
+                                    '100%',
+                                minHeight:
+                                    '58px',
+                                border:
+                                    'none',
+                                borderRadius:
+                                    '14px',
+                                background:
+                                    '#dc2626',
+                                color:
+                                    '#ffffff',
+                                fontSize:
+                                    '18px',
+                                fontWeight:
+                                    'bold',
+                                cursor:
+                                    'pointer',
+                                touchAction:
+                                    'manipulation',
+                            }}
+                        >
+                            ⏹️ ARRÊTER LE TEST
+                        </button>
+                    )}
+
+                    {testMode ===
+                        'stopped' && (
+                        <>
+                            <div
+                                style={{
+                                    padding:
+                                        '12px',
+                                    marginBottom:
+                                        '12px',
+                                    background:
+                                        '#422006',
+                                    borderRadius:
+                                        '10px',
+                                    color:
+                                        '#fde68a',
+                                }}
+                            >
+                                ⏸️ Test arrêté.
+                            </div>
+
+                            <button
+                                onClick={
+                                    startDemoTest
+                                }
+                                style={{
+                                    width:
+                                        '100%',
+                                    minHeight:
+                                        '54px',
+                                    border:
+                                        'none',
+                                    borderRadius:
+                                        '12px',
+                                    background:
+                                        '#16a34a',
+                                    color:
+                                        '#ffffff',
+                                    fontSize:
+                                        '17px',
+                                    fontWeight:
+                                        'bold',
+                                    cursor:
+                                        'pointer',
+                                }}
+                            >
+                                ▶️ REPRENDRE LE TEST
+                            </button>
+                        </>
+                    )}
+
+                    {testMode ===
+                        'done' && (
+                        <>
+                            <div
+                                style={{
+                                    padding:
+                                        '12px',
+                                    marginBottom:
+                                        '12px',
+                                    background:
+                                        '#052e16',
+                                    border:
+                                        '1px solid #22c55e',
+                                    borderRadius:
+                                        '10px',
+                                    color:
+                                        '#bbf7d0',
+                                }}
+                            >
+                                ✅ Test de 1000
+                                observations
+                                terminé.
+                            </div>
+
+                            <button
+                                onClick={
+                                    resetPaperTest
+                                }
+                                style={{
+                                    width:
+                                        '100%',
+                                    minHeight:
+                                        '54px',
+                                    border:
+                                        'none',
+                                    borderRadius:
+                                        '12px',
+                                    background:
+                                        '#2563eb',
+                                    color:
+                                        '#ffffff',
+                                    fontSize:
+                                        '17px',
+                                    fontWeight:
+                                        'bold',
+                                    cursor:
+                                        'pointer',
+                                }}
+                            >
+                                🔄 RECOMMENCER
+                            </button>
+                        </>
+                    )}
+
+                    {!connected && (
+                        <div
+                            style={{
+                                marginTop:
+                                    '12px',
+                                color:
+                                    '#fbbf24',
+                                fontSize:
+                                    '14px',
+                            }}
+                        >
+                            ⏳ Attente de la
+                            connexion au
+                            marché…
+                        </div>
+                    )}
+
+                    {connected &&
+                        historyCount <
+                            HISTORY_SIZE && (
+                            <div
+                                style={{
+                                    marginTop:
+                                        '12px',
+                                    color:
+                                        '#fbbf24',
+                                    fontSize:
+                                        '14px',
+                                }}
+                            >
+                                ⏳ Collecte des
+                                500 ticks :
+                                {' '}
+                                {
+                                    historyCount
+                                }
+                                /
+                                {
+                                    HISTORY_SIZE
+                                }
+                            </div>
+                        )}
+
+                    <div
+                        style={{
+                            marginTop:
+                                '16px',
+                            padding:
+                                '12px',
+                            background:
+                                '#1f2937',
+                            borderRadius:
+                                '10px',
+                            color:
+                                '#fca5a5',
+                            fontSize:
+                                '13px',
+                            lineHeight:
+                                '1.5',
+                        }}
+                    >
+                        🛡️ SÉCURITÉ
+                        <br />
+                        Cette V4.11 n'envoie
+                        aucun ordre BUY/SELL
+                        à Deriv.
+                        <br />
+                        Les résultats restent
+                        virtuels.
+                    </div>
+                </div>
+
+                {/* PAPER TRADING */}
+
+                <div
+                    style={{
+                        background:
+                            '#111827',
                         border:
                             '1px solid #374151',
-
                         borderRadius:
                             '14px',
-
                         padding:
                             '18px',
-
                         marginBottom:
                             '16px',
                     }}
@@ -1574,8 +1988,6 @@ export default function R75TickMonitor() {
                         style={{
                             marginTop:
                                 0,
-                            fontSize:
-                                '21px',
                         }}
                     >
                         🧪 Phase 2 —
@@ -1586,10 +1998,8 @@ export default function R75TickMonitor() {
                         style={{
                             display:
                                 'grid',
-
                             gridTemplateColumns:
                                 'repeat(auto-fit, minmax(140px, 1fr))',
-
                             gap:
                                 '12px',
                         }}
@@ -1608,7 +2018,10 @@ export default function R75TickMonitor() {
                                 {
                                     stats.tests
                                 }
-                                /{PAPER_TEST_LIMIT}
+                                /
+                                {
+                                    PAPER_TEST_LIMIT
+                                }
                             </strong>
                         </div>
 
@@ -1687,22 +2100,16 @@ export default function R75TickMonitor() {
                         </div>
                     </div>
 
-                    {/* RESULTAT VIRTUEL */}
-
                     <div
                         style={{
                             marginTop:
                                 '18px',
-
                             padding:
                                 '16px',
-
                             background:
                                 '#172033',
-
                             borderRadius:
                                 '12px',
-
                             textAlign:
                                 'center',
                         }}
@@ -1720,10 +2127,8 @@ export default function R75TickMonitor() {
                             style={{
                                 fontSize:
                                     '32px',
-
                                 fontWeight:
                                     'bold',
-
                                 marginTop:
                                     '5px',
                             }}
@@ -1741,40 +2146,30 @@ export default function R75TickMonitor() {
                             style={{
                                 marginTop:
                                     '6px',
-
                                 color:
                                     '#9ca3af',
-
-                                lineHeight:
-                                    '1.5',
                             }}
                         >
-                            Mise virtuelle :
-                            +1 si prédiction
+                            +1 prédiction
                             correcte /
-                            -1 sinon
+                            -1 prédiction
+                            incorrecte
                         </div>
                     </div>
                 </div>
 
-                {/* =================================================
-                    BLOCS DE 100
-                ================================================= */}
+                {/* BLOCS */}
 
                 <div
                     style={{
                         background:
                             '#111827',
-
                         border:
                             '1px solid #374151',
-
                         borderRadius:
                             '14px',
-
                         padding:
                             '18px',
-
                         marginBottom:
                             '16px',
                     }}
@@ -1783,35 +2178,25 @@ export default function R75TickMonitor() {
                         style={{
                             marginTop:
                                 0,
-                            fontSize:
-                                '21px',
                         }}
                     >
-                        📦 Blocs de {BLOCK_SIZE}
+                        📦 Blocs de{' '}
+                        {BLOCK_SIZE}
                     </h2>
 
-                    {blocks.length === 0 ? (
-                        <div
-                            style={{
-                                color:
-                                    '#9ca3af',
-                            }}
-                        >
-                            Aucun bloc complet
-                            pour le moment.
-                        </div>
-                    ) : (
-                        <>
-                            <div>
-                                Blocs terminés :
-                                {' '}
-                                <strong>
-                                    {
-                                        blocks.length
-                                    }
-                                </strong>
-                            </div>
+                    <div>
+                        Blocs terminés :
+                        {' '}
+                        <strong>
+                            {
+                                blocks.length
+                            }
+                        </strong>
+                    </div>
 
+                    {blocks.length >
+                        0 && (
+                        <>
                             <div
                                 style={{
                                     marginTop:
@@ -1872,7 +2257,6 @@ export default function R75TickMonitor() {
                         style={{
                             marginTop:
                                 '14px',
-
                             color:
                                 '#9ca3af',
                         }}
@@ -1891,17 +2275,15 @@ export default function R75TickMonitor() {
                     </div>
                 </div>
 
-                {/* =================================================
-                    ÉTAT
-                ================================================= */}
+                {/* ÉTAT */}
 
                 <div
                     style={{
                         background:
-                            phase === 'done'
+                            phase ===
+                            'done'
                                 ? '#052e16'
                                 : '#172033',
-
                         border:
                             `1px solid ${
                                 phase ===
@@ -1909,19 +2291,14 @@ export default function R75TickMonitor() {
                                     ? '#22c55e'
                                     : '#374151'
                             }`,
-
                         borderRadius:
                             '14px',
-
                         padding:
                             '18px',
-
                         marginBottom:
                             '16px',
-
                         textAlign:
                             'center',
-
                         lineHeight:
                             '1.5',
                     }}
@@ -1937,12 +2314,14 @@ export default function R75TickMonitor() {
                     {phase ===
                         'testing' && (
                         <>
-                            🧪 Paper Trading
-                            en cours…
+                            🧪 Test Demo
+                            virtuel en
+                            cours…
                         </>
                     )}
 
-                    {phase === 'done' && (
+                    {phase ===
+                        'done' && (
                         <>
                             ✅ Test terminé —
                             prédiction finale
@@ -1951,33 +2330,22 @@ export default function R75TickMonitor() {
                     )}
                 </div>
 
-                {/* =================================================
-                    SÉCURITÉ
-                ================================================= */}
+                {/* SÉCURITÉ */}
 
                 <div
                     style={{
                         background:
                             '#1f2937',
-
                         border:
                             '1px solid #4b5563',
-
                         borderRadius:
                             '12px',
-
                         padding:
                             '18px',
-
                         marginBottom:
                             '20px',
-
                         textAlign:
                             'center',
-
-                        color:
-                            '#d1d5db',
-
                         lineHeight:
                             '1.6',
                     }}
@@ -1990,54 +2358,55 @@ export default function R75TickMonitor() {
                         style={{
                             marginTop:
                                 '8px',
+                            color:
+                                '#fca5a5',
                         }}
                     >
-                        ❌ Aucun trade automatique
-                        réel.
+                        ❌ Aucun trade
+                        automatique réel
+                        ou Demo n'est
+                        envoyé.
                     </div>
 
                     <div
                         style={{
                             marginTop:
                                 '5px',
-
                             fontSize:
                                 '13px',
-
                             color:
                                 '#9ca3af',
                         }}
                     >
-                        Les gains et pertes
-                        affichés sont
-                        entièrement virtuels.
+                        Le bouton
+                        « Tester sur
+                        compte Demo »
+                        démarre le
+                        paper test avec
+                        les données
+                        réelles du marché,
+                        mais sans ordre
+                        financier.
                     </div>
                 </div>
 
-                {/* =================================================
-                    INDICATEUR DE DÉFILEMENT MOBILE
-                ================================================= */}
+                {/* SCROLL */}
 
                 <div
                     style={{
                         textAlign:
                             'center',
-
                         padding:
                             '10px',
-
-                        marginBottom:
-                            '20px',
-
                         color:
                             '#64748b',
-
                         fontSize:
                             '12px',
                     }}
                 >
-                    ↕️ Fais glisser l'écran
-                    pour voir toutes les
+                    ↕️ Fais glisser
+                    l'écran pour voir
+                    toutes les
                     informations
                 </div>
             </div>
