@@ -873,32 +873,47 @@ const R75TickMonitor: React.FC = () => {
                    ERREUR
                 ================================================= */
 
-                if (
-                    message.error
-                ) {
-                    console.error(
-                        'Erreur Deriv:',
-                        message.error
-                    );
+                if (message.error) {
+    const errorCode =
+        String(
+            message.error.code ||
+            'UNKNOWN'
+        );
 
-                    const requestedSymbol =
-                        String(
-                            message
-                                .echo_req
-                                ?.ticks || ''
-                        );
+    const errorMessage =
+        String(
+            message.error.message ||
+            'Erreur inconnue'
+        );
 
-                    if (
-                        requestedSymbol ===
-                        MARKET_SYMBOL
-                    ) {
-                        setConnection(
-                            'error'
-                        );
-                    }
+    const requestedSymbol =
+        String(
+            message.echo_req?.ticks ||
+            ''
+        );
 
-                    return;
-                }
+    console.error(
+        '🚨 ERREUR DERIV COMPLETE:',
+        {
+            code: errorCode,
+            message: errorMessage,
+            requestedSymbol,
+            echo_req: message.echo_req,
+        }
+    );
+
+    if (
+        requestedSymbol === MARKET_SYMBOL
+    ) {
+        setConnection('error');
+
+        setProposalStatus(
+            `🔴 Deriv ${errorCode}: ${errorMessage}`
+        );
+    }
+
+    return;
+}
 
                 /* =================================================
                    BALANCE
