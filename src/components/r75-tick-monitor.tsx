@@ -24,6 +24,12 @@ type Stats = {
     virtualProfit: number;
 };
 
+type AccountBalance = {
+    balance: number | null;
+    currency: string;
+    loginid: string;
+};
+
 const getDirection = (
     previous: number,
     current: number
@@ -88,6 +94,25 @@ export default function R75TickMonitor() {
     const [currentBlockTests, setCurrentBlockTests] =
         useState(0);
 
+    /*
+     * =====================================================
+     * COMPTE DERIV
+     * =====================================================
+     */
+
+    const [accountBalance, setAccountBalance] =
+        useState<AccountBalance>({
+            balance: null,
+            currency: '',
+            loginid: '',
+        });
+
+    const [accountConnected, setAccountConnected] =
+        useState(false);
+
+    const [accountError, setAccountError] =
+        useState('');
+
     const previousPriceRef =
         useRef<number | null>(null);
 
@@ -115,19 +140,6 @@ export default function R75TickMonitor() {
      * =====================================================
      * ANALYSE DES DERNIERS MOUVEMENTS
      * =====================================================
-     *
-     * On ne prédit plus avec une matrice.
-     *
-     * Le système observe les derniers mouvements
-     * et mesure le rapport HAUSSE / BAISSE.
-     *
-     * Exemple :
-     *
-     * 14 HAUSSES
-     * 6 BAISSES
-     *
-     * => HAUSSE
-     * => force = 70 %
      */
 
     const calculatePrediction = () => {
@@ -141,9 +153,11 @@ export default function R75TickMonitor() {
 
         if (recent.length < 5) {
             return {
-                direction: null as Direction | null,
+                direction:
+                    null as Direction | null,
                 strength: 0,
-                observations: recent.length,
+                observations:
+                    recent.length,
             };
         }
 
@@ -163,9 +177,11 @@ export default function R75TickMonitor() {
 
         if (total === 0) {
             return {
-                direction: null as Direction | null,
+                direction:
+                    null as Direction | null,
                 strength: 0,
-                observations: total,
+                observations:
+                    total,
             };
         }
 
@@ -177,16 +193,22 @@ export default function R75TickMonitor() {
 
         if (up >= down) {
             return {
-                direction: 'UP' as Direction,
-                strength: upPercent,
-                observations: total,
+                direction:
+                    'UP' as Direction,
+                strength:
+                    upPercent,
+                observations:
+                    total,
             };
         }
 
         return {
-            direction: 'DOWN' as Direction,
-            strength: downPercent,
-            observations: total,
+            direction:
+                'DOWN' as Direction,
+            strength:
+                downPercent,
+            observations:
+                total,
         };
     };
 
@@ -223,10 +245,7 @@ export default function R75TickMonitor() {
         setPrice(currentPrice);
 
         /*
-         * Dernier chiffre du prix.
-         *
-         * EUR/USD possède généralement
-         * 5 décimales dans ce flux.
+         * Dernier chiffre
          */
 
         const priceString =
@@ -242,7 +261,7 @@ export default function R75TickMonitor() {
         setLastDigit(digit);
 
         /*
-         * Premier tick.
+         * Premier tick
          */
 
         if (
@@ -272,7 +291,7 @@ export default function R75TickMonitor() {
             currentPrice;
 
         /*
-         * Sauvegarde du prix.
+         * Sauvegarde du prix
          */
 
         priceHistoryRef.current.push(
@@ -287,7 +306,7 @@ export default function R75TickMonitor() {
         }
 
         /*
-         * Sauvegarde du mouvement.
+         * Sauvegarde du mouvement
          */
 
         directionHistoryRef.current.push(
@@ -352,7 +371,6 @@ export default function R75TickMonitor() {
          */
 
         if (
-            phase === 'learning' &&
             testsRef.current === 0 &&
             predictionRef.current === null
         ) {
@@ -415,7 +433,7 @@ export default function R75TickMonitor() {
             }
 
             /*
-             * Bloc de 100.
+             * Bloc de 100
              */
 
             if (
@@ -468,11 +486,28 @@ export default function R75TickMonitor() {
         ) {
             setPhase('done');
 
-            predictionRef.current =
-                null;
+            /*
+             * On conserve la dernière
+             * prédiction visible.
+             */
 
-            setPrediction(null);
-            setPredictionStrength(0);
+            const finalResult =
+                calculatePrediction();
+
+            setPrediction(
+                finalResult.direction
+            );
+
+            setPredictionStrength(
+                finalResult.strength
+            );
+
+            setObservations(
+                finalResult.observations
+            );
+
+            predictionRef.current =
+                finalResult.direction;
 
             return;
         }
@@ -555,6 +590,12 @@ export default function R75TickMonitor() {
                                 return;
                             }
 
+                            /*
+                             * =================================================
+                             * TICKS EUR/USD
+                             * =================================================
+                             */
+
                             if (
                                 data.msg_type ===
                                 'tick'
@@ -563,6 +604,67 @@ export default function R75TickMonitor() {
                                     data.tick
                                 );
                             }
+
+                            /*
+                             * =================================================
+                             * SOLDE DU COMPTE
+                             * =================================================
+                             *
+                             * Cette réponse nécessite
+                             * une session Deriv authentifiée.
+                             */
+
+                            if (
+                                data.msg_type ===
+                                'balance'
+                            ) {
+                                const balanceData =
+                                    data.balance;
+
+                                if (
+                                    balanceData
+                                ) {
+                                    const numericBalance =
+                                        Number(
+                                            balanceData.balance
+                                        );
+
+                                    setAccountBalance({
+                                        balance:
+                                            Number.isFinite(
+                                                numericBalance
+                                            )
+                                                ? numericBalance
+                                                : null,
+
+                                        currency:
+                                            String(
+                                                balanceData.currency ||
+                                                    ''
+                                            ),
+
+                                        loginid:
+                                            String(
+                                                balanceData.loginid ||
+                                                    ''
+                                            ),
+                                    });
+
+                                    setAccountConnected(
+                                        true
+                                    );
+
+                                    setAccountError(
+                                        ''
+                                    );
+                                }
+                            }
+
+                            /*
+                             * =================================================
+                             * ERREUR COMPTE
+                             * =================================================
+                             */
 
                             if (
                                 data.msg_type ===
@@ -575,26 +677,83 @@ export default function R75TickMonitor() {
                                     data.error ||
                                     'Erreur Deriv inconnue';
 
-                                setConnectionError(
+                                const messageString =
                                     String(
                                         message
-                                    )
-                                );
+                                    );
 
-                                setConnected(
-                                    false
-                                );
+                                /*
+                                 * Si l'erreur concerne
+                                 * le compte/balance,
+                                 * on l'affiche séparément.
+                                 */
+
+                                if (
+                                    messageString
+                                        .toLowerCase()
+                                        .includes(
+                                            'author'
+                                        ) ||
+                                    messageString
+                                        .toLowerCase()
+                                        .includes(
+                                            'balance'
+                                        ) ||
+                                    messageString
+                                        .toLowerCase()
+                                        .includes(
+                                            'token'
+                                        ) ||
+                                    messageString
+                                        .toLowerCase()
+                                        .includes(
+                                            'permission'
+                                        )
+                                ) {
+                                    setAccountConnected(
+                                        false
+                                    );
+
+                                    setAccountError(
+                                        messageString
+                                    );
+                                } else {
+                                    setConnectionError(
+                                        messageString
+                                    );
+
+                                    setConnected(
+                                        false
+                                    );
+                                }
                             }
                         }
                     );
 
             /*
-             * Flux EUR/USD.
+             * =================================================
+             * FLUX EUR/USD
+             * =================================================
              */
 
             api_base.api.send({
                 ticks:
                     MARKET_SYMBOL,
+                subscribe: 1,
+            });
+
+            /*
+             * =================================================
+             * DEMANDE DU SOLDE
+             * =================================================
+             *
+             * Aucun trade.
+             * Aucun buy.
+             * Aucun sell.
+             */
+
+            api_base.api.send({
+                balance: 1,
                 subscribe: 1,
             });
 
@@ -678,6 +837,14 @@ export default function R75TickMonitor() {
             ? price.toFixed(5)
             : '—';
 
+    const displayBalance =
+        accountBalance.balance !==
+        null
+            ? accountBalance.balance.toFixed(
+                  2
+              )
+            : '—';
+
     /*
      * =====================================================
      * INTERFACE
@@ -709,8 +876,12 @@ export default function R75TickMonitor() {
                 }}
             >
                 Moniteur Forex EUR/USD —
-                V4.7 Paper Trader
+                V4.8 Demo + Paper Trader
             </h2>
+
+            {/* =====================================================
+                CONNEXION MARCHE
+               ===================================================== */}
 
             <div
                 style={{
@@ -727,7 +898,7 @@ export default function R75TickMonitor() {
                 }}
             >
                 <strong>
-                    Connexion :
+                    Connexion marché :
                 </strong>{' '}
 
                 {connected ? (
@@ -743,6 +914,153 @@ export default function R75TickMonitor() {
                     </>
                 )}
             </div>
+
+            {/* =====================================================
+                COMPTE
+               ===================================================== */}
+
+            <div
+                style={{
+                    padding:
+                        '16px',
+                    borderRadius:
+                        '12px',
+                    background:
+                        accountConnected
+                            ? '#073d25'
+                            : '#292929',
+                    marginBottom:
+                        '16px',
+                    border:
+                        accountConnected
+                            ? '1px solid #0a7a48'
+                            : '1px solid #444444',
+                }}
+            >
+                <div
+                    style={{
+                        fontSize:
+                            '18px',
+                        fontWeight:
+                            'bold',
+                        marginBottom:
+                            '8px',
+                    }}
+                >
+                    💰 Compte Deriv
+                </div>
+
+                {accountConnected ? (
+                    <>
+                        <div>
+                            <strong>
+                                État :
+                            </strong>{' '}
+                            🟢 Compte
+                            authentifié
+                        </div>
+
+                        <div
+                            style={{
+                                marginTop:
+                                    '6px',
+                            }}
+                        >
+                            <strong>
+                                Solde :
+                            </strong>{' '}
+                            {displayBalance}{' '}
+                            {accountBalance.currency}
+                        </div>
+
+                        {accountBalance.loginid && (
+                            <div
+                                style={{
+                                    marginTop:
+                                        '6px',
+                                    fontSize:
+                                        '13px',
+                                    opacity:
+                                        0.8,
+                                }}
+                            >
+                                ID compte :{' '}
+                                {
+                                    accountBalance.loginid
+                                }
+                            </div>
+                        )}
+
+                        <div
+                            style={{
+                                marginTop:
+                                    '8px',
+                                color:
+                                    '#8ff0bb',
+                                fontSize:
+                                    '13px',
+                            }}
+                        >
+                            ℹ️ Aucun trade
+                            n'est envoyé.
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <div>
+                            🟠 Compte non
+                            authentifié
+                            ou solde
+                            indisponible.
+                        </div>
+
+                        <div
+                            style={{
+                                marginTop:
+                                    '8px',
+                                fontSize:
+                                    '13px',
+                                color:
+                                    '#ffcc66',
+                            }}
+                        >
+                            Le flux des
+                            prix peut
+                            fonctionner
+                            sans que le
+                            compte soit
+                            authentifié.
+                        </div>
+                    </>
+                )}
+            </div>
+
+            {accountError && (
+                <div
+                    style={{
+                        background:
+                            '#4b1111',
+                        color:
+                            '#ffb3b3',
+                        padding:
+                            '10px',
+                        borderRadius:
+                            '8px',
+                        marginBottom:
+                            '14px',
+                    }}
+                >
+                    ⚠️{' '}
+                    <strong>
+                        Compte :
+                    </strong>{' '}
+                    {accountError}
+                </div>
+            )}
+
+            {/* =====================================================
+                ERREUR MARCHE
+               ===================================================== */}
 
             {connectionError && (
                 <div
@@ -766,6 +1084,10 @@ export default function R75TickMonitor() {
                     {connectionError}
                 </div>
             )}
+
+            {/* =====================================================
+                MARCHE
+               ===================================================== */}
 
             <div>
                 <strong>
@@ -798,6 +1120,10 @@ export default function R75TickMonitor() {
             </div>
 
             <hr />
+
+            {/* =====================================================
+                PHASE 1
+               ===================================================== */}
 
             <h3>
                 Phase 1 —
@@ -890,6 +1216,10 @@ export default function R75TickMonitor() {
 
             <hr />
 
+            {/* =====================================================
+                PHASE 2
+               ===================================================== */}
+
             <h3>
                 Phase 2 —
                 Paper Trading
@@ -971,7 +1301,8 @@ export default function R75TickMonitor() {
                 <br />
 
                 🚫 Aucun argent
-                réel n'est engagé.
+                réel ou démo
+                n'est engagé.
             </div>
 
             <div
@@ -1021,6 +1352,10 @@ export default function R75TickMonitor() {
             </div>
 
             <hr />
+
+            {/* =====================================================
+                BLOCS
+               ===================================================== */}
 
             <h3>
                 📊 Blocs de{' '}
@@ -1109,6 +1444,10 @@ export default function R75TickMonitor() {
 
             <hr />
 
+            {/* =====================================================
+                FIN
+               ===================================================== */}
+
             {phase === 'done' ? (
                 <div
                     style={{
@@ -1186,7 +1525,8 @@ export default function R75TickMonitor() {
                 }}
             >
                 ❌ Aucun trade
-                automatique réel.
+                automatique
+                réel ou démo.
             </div>
         </div>
     );
