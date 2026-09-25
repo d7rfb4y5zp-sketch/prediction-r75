@@ -6,7 +6,7 @@ import React, {
     useState,
 } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useStore } from '@/hooks/useStore';
+import { api_base } from '@/external/bot-skeleton/services/api/api-base';
 
 const MARKET_SYMBOL = 'frxEURUSD';
 const MARKET_NAME = 'EUR/USD';
@@ -53,7 +53,6 @@ const getLastDigit = (
             : 5;
 
     const fixed = quote.toFixed(digits);
-
     const clean = fixed.replace('.', '');
 
     return clean.length > 0
@@ -149,8 +148,6 @@ const calculatePrediction = (
 };
 
 const R75TickMonitor = observer(() => {
-    const { api_base } = useStore();
-
     const [connection, setConnection] =
         useState<
             'connecting' | 'connected' | 'waiting' | 'error'
@@ -288,12 +285,15 @@ const R75TickMonitor = observer(() => {
                 const next: PaperResult = {
                     total:
                         previous.total + 1,
+
                     wins:
                         previous.wins +
                         (isWin ? 1 : 0),
+
                     losses:
                         previous.losses +
                         (isWin ? 0 : 1),
+
                     pnl:
                         previous.pnl +
                         (isWin ? 1 : -1),
@@ -328,7 +328,9 @@ const R75TickMonitor = observer(() => {
             const symbol =
                 String(tick.symbol || '');
 
-            if (symbol !== MARKET_SYMBOL) {
+            if (
+                symbol !== MARKET_SYMBOL
+            ) {
                 return;
             }
 
@@ -369,11 +371,8 @@ const R75TickMonitor = observer(() => {
                 direction,
             ].slice(-HISTORY_SIZE);
 
-            const nextHistoryCount =
-                pricesRef.current.length;
-
             setHistoryCount(
-                nextHistoryCount
+                pricesRef.current.length
             );
 
             setPrice(quote);
@@ -441,6 +440,9 @@ const R75TickMonitor = observer(() => {
                     return;
                 }
 
+                /*
+                 * Gestion des erreurs Deriv
+                 */
                 if (message.error) {
                     const errorCode =
                         String(
@@ -491,6 +493,9 @@ const R75TickMonitor = observer(() => {
                     return;
                 }
 
+                /*
+                 * Balance
+                 */
                 if (
                     message.msg_type ===
                     'balance'
@@ -502,6 +507,9 @@ const R75TickMonitor = observer(() => {
                     return;
                 }
 
+                /*
+                 * Tick EUR/USD uniquement
+                 */
                 if (
                     message.msg_type ===
                         'tick' &&
@@ -540,6 +548,9 @@ const R75TickMonitor = observer(() => {
             ]
         );
 
+    /*
+     * Demande du solde
+     */
     const requestBalance =
         useCallback(() => {
             if (!api_base?.api) {
@@ -558,8 +569,11 @@ const R75TickMonitor = observer(() => {
                     error
                 );
             }
-        }, [api_base]);
+        }, []);
 
+    /*
+     * Initialisation de l'API Deriv
+     */
     const initialiseApi =
         useCallback(
             async () => {
@@ -601,9 +615,12 @@ const R75TickMonitor = observer(() => {
                     return false;
                 }
             },
-            [api_base]
+            []
         );
 
+    /*
+     * Connexion Deriv
+     */
     useEffect(() => {
         mountedRef.current = true;
 
@@ -632,9 +649,7 @@ const R75TickMonitor = observer(() => {
 
                 try {
                     /*
-                     * IMPORTANT :
-                     * onMessage() retourne un flux.
-                     * On s'abonne ensuite avec subscribe().
+                     * onMessage() retourne le flux.
                      */
                     const messageStream =
                         api_base.api.onMessage();
@@ -649,11 +664,7 @@ const R75TickMonitor = observer(() => {
                         null;
 
                     /*
-                     * 1 — Historique EUR/USD
-                     *
-                     * Cela permet de remplir immédiatement
-                     * les 500 ticks d'apprentissage quand
-                     * le marché est ouvert.
+                     * HISTORIQUE EUR/USD
                      */
                     try {
                         setProposalStatus(
@@ -665,11 +676,16 @@ const R75TickMonitor = observer(() => {
                                 {
                                     ticks_history:
                                         MARKET_SYMBOL,
+
                                     end: 'latest',
+
                                     count:
                                         HISTORY_SIZE,
+
                                     style: 'ticks',
+
                                     subscribe: 0,
+
                                     req_id:
                                         HISTORY_REQUEST_ID,
                                 }
@@ -801,14 +817,6 @@ const R75TickMonitor = observer(() => {
                             '❌ Erreur historique EUR/USD:',
                             historyError
                         );
-
-                        /*
-                         * On ne bloque pas le flux live.
-                         * Si l'historique échoue parce que le
-                         * marché est fermé, l'erreur exacte
-                         * envoyée par Deriv sera affichée par
-                         * handleDerivMessage.
-                         */
                     }
 
                     if (
@@ -818,18 +826,20 @@ const R75TickMonitor = observer(() => {
                     }
 
                     /*
-                     * 2 — Flux temps réel EUR/USD
+                     * FLUX TEMPS RÉEL EUR/USD
                      */
                     api_base.api.send({
                         ticks:
                             MARKET_SYMBOL,
+
                         subscribe: 1,
+
                         req_id:
                             TICK_REQUEST_ID,
                     });
 
                     /*
-                     * 3 — Solde
+                     * SOLDE
                      */
                     requestBalance();
 
@@ -892,12 +902,14 @@ const R75TickMonitor = observer(() => {
             }
         };
     }, [
-        api_base,
         handleDerivMessage,
         initialiseApi,
         requestBalance,
     ]);
 
+    /*
+     * Démarrer Paper Trading
+     */
     const startPaperTest =
         useCallback(() => {
             paperResultRef.current = {
@@ -927,6 +939,9 @@ const R75TickMonitor = observer(() => {
             );
         }, [prediction]);
 
+    /*
+     * Arrêter Paper Trading
+     */
     const stopPaperTest =
         useCallback(() => {
             paperRunningRef.current =
@@ -939,6 +954,9 @@ const R75TickMonitor = observer(() => {
             );
         }, []);
 
+    /*
+     * Réinitialiser Paper Trading
+     */
     const resetPaperTest =
         useCallback(() => {
             paperRunningRef.current =
