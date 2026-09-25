@@ -13,10 +13,10 @@ const MARKET_NAME = 'EUR/USD';
 const HISTORY_SIZE = 500;
 const PAPER_TEST_LIMIT = 1000;
 const BLOCK_SIZE = 100;
-const ANALYSIS_WINDOW = 20;
+const ANALYSIS_WINDOW = 40;
 
-const TICK_REQUEST_ID = 4124;
-const BALANCE_REQUEST_ID = 4125;
+const TICK_REQUEST_ID = 4130;
+const BALANCE_REQUEST_ID = 4131;
 
 type Direction = 'UP' | 'DOWN' | 'FLAT';
 
@@ -175,7 +175,8 @@ function getLastDigit(
 }
 
 /* =========================================================
-   PRÉDICTION
+   PRÉDICTION V4.13
+   TRANSITIONS + MOMENTUM RÉCENT
 ========================================================= */
 
 function calculatePrediction(
@@ -184,63 +185,266 @@ function calculatePrediction(
     prediction: Direction;
     strength: number;
 } {
-    if (history.length < 3) {
+    if (history.length < 6) {
         return {
             prediction: 'FLAT',
             strength: 0,
         };
     }
 
-    const sample =
-        history.slice(
-            -ANALYSIS_WINDOW
-        );
+    /*
+     * On analyse les derniers mouvements.
+     */
+    const sample = history.slice(
+        -(ANALYSIS_WINDOW + 1)
+    );
 
-    let up = 0;
-    let down = 0;
+    const directions: Direction[] = [];
 
     for (
         let i = 1;
         i < sample.length;
         i += 1
     ) {
-        if (
-            sample[i] >
-            sample[i - 1]
-        ) {
-            up += 1;
-        } else if (
-            sample[i] <
-            sample[i - 1]
-        ) {
-            down += 1;
-        }
+        directions.push(
+            getDirection(
+                sample[i],
+                sample[i - 1]
+            )
+        );
     }
 
-    const total =
-        up + down;
+    /*
+     * Les mouvements FLAT sont retirés
+     * de la matrice de transition.
+     */
+    const cleanDirections =
+        directions.filter(
+            direction =>
+                direction === 'UP' ||
+                direction === 'DOWN'
+        );
 
-    if (total === 0) {
+    if (
+        cleanDirections.length < 5
+    ) {
         return {
             prediction: 'FLAT',
             strength: 0,
         };
     }
 
-    if (up > down) {
+    /* =====================================================
+       MATRICE DES TRANSITIONS
+    ===================================================== */
+
+    let upAfterUp = 0;
+    let downAfterUp = 0;
+
+    let upAfterDown = 0;
+    let downAfterDown = 0;
+
+    for (
+        let i = 1;
+        i < cleanDirections.length;
+        i += 1
+    ) {
+        const previous =
+            cleanDirections[i - 1];
+
+        const current =
+            cleanDirections[i];
+
+        if (
+            previous === 'UP' &&
+            current === 'UP'
+        ) {
+            upAfterUp += 1;
+        }
+
+        if (
+            previous === 'UP' &&
+            current === 'DOWN'
+        ) {
+            downAfterUp += 1;
+        }
+
+        if (
+            previous === 'DOWN' &&
+            current === 'UP'
+        ) {
+            upAfterDown += 1;
+        }
+
+        if (
+            previous === 'DOWN' &&
+            current === 'DOWN'
+        ) {
+            downAfterDown += 1;
+        }
+    }
+
+    /* =====================================================
+       DERNIÈRE DIRECTION
+    ===================================================== */
+
+    const lastDirection =
+        cleanDirections[
+            cleanDirections.length - 1
+        ];
+
+    let continuationScore = 0;
+    let reversalScore = 0;
+
+    if (
+        lastDirection === 'UP'
+    ) {
+        continuationScore =
+            upAfterUp;
+
+        reversalScore =
+            downAfterUp;
+    } else {
+        continuationScore =
+            downAfterDown;
+
+        reversalScore =
+            upAfterDown;
+    }
+
+    /* =====================================================
+       MOMENTUM RÉCENT
+    ===================================================== */
+
+    let recentUp = 0;
+    let recentDown = 0;
+
+    const recentWindow =
+        cleanDirections.slice(-8);
+
+    recentWindow.forEach(
+        (direction, index) => {
+            /*
+             * Le mouvement le plus récent
+             * reçoit le poids le plus élevé.
+             */
+            const weight =
+                index + 1;
+
+            if (
+                direction === 'UP'
+            ) {
+                recentUp += weight;
+            }
+
+            if (
+                direction === 'DOWN'
+            ) {
+                recentDown += weight;
+            }
+        }
+    );
+
+    /* =====================================================
+       SCORE GLOBAL
+    ===================================================== */
+
+    let upScore = 0;
+    let downScore = 0;
+
+    /*
+     * Transition.
+     */
+    if (
+        lastDirection === 'UP'
+    ) {
+        upScore +=
+            continuationScore * 1.4;
+
+        downScore +=
+            reversalScore * 1.4;
+    } else {
+        downScore +=
+            continuationScore * 1.4;
+
+        upScore +=
+            reversalScore * 1.4;
+    }
+
+    /*
+     * Momentum récent.
+     */
+    upScore +=
+        recentUp * 0.8;
+
+    downScore +=
+        recentDown * 0.8;
+
+    /* =====================================================
+       CONFIANCE
+    ===================================================== */
+
+    const totalScore =
+        upScore + downScore;
+
+    if (
+        totalScore <= 0 ||
+        !Number.isFinite(
+            totalScore
+        )
+    ) {
+        return {
+            prediction: 'FLAT',
+            strength: 0,
+        };
+    }
+
+    const difference =
+        Math.abs(
+            upScore - downScore
+        );
+
+    const confidence =
+        Math.round(
+            (difference /
+                totalScore) *
+                100
+        );
+
+    /*
+     * Pas de signal si l'écart
+     * entre les deux directions
+     * est trop faible.
+     */
+    if (
+        confidence < 12
+    ) {
+        return {
+            prediction: 'FLAT',
+            strength: confidence,
+        };
+    }
+
+    if (
+        upScore > downScore
+    ) {
         return {
             prediction: 'UP',
-            strength: Math.round(
-                (up / total) * 100
+            strength: Math.min(
+                95,
+                confidence
             ),
         };
     }
 
-    if (down > up) {
+    if (
+        downScore > upScore
+    ) {
         return {
             prediction: 'DOWN',
-            strength: Math.round(
-                (down / total) * 100
+            strength: Math.min(
+                95,
+                confidence
             ),
         };
     }
@@ -274,10 +478,14 @@ const R75TickMonitor: React.FC = () => {
     const [
         currentDirection,
         setCurrentDirection,
-    ] = useState<Direction>('FLAT');
+    ] = useState<Direction>(
+        'FLAT'
+    );
 
     const [prediction, setPrediction] =
-        useState<Direction>('FLAT');
+        useState<Direction>(
+            'FLAT'
+        );
 
     const [strength, setStrength] =
         useState(0);
@@ -330,12 +538,10 @@ const R75TickMonitor: React.FC = () => {
     const historyRef =
         useRef<number[]>([]);
 
-    /*
-     * C'est la prédiction produite
-     * par le tick précédent.
-     */
     const previousPredictionForPaperRef =
-        useRef<Direction>('FLAT');
+        useRef<Direction>(
+            'FLAT'
+        );
 
     const paperRunningRef =
         useRef(false);
@@ -354,7 +560,7 @@ const R75TickMonitor: React.FC = () => {
         >(null);
 
     /* =====================================================
-       INITIALISATION
+       INITIALISATION API
     ===================================================== */
 
     const initialiseApi =
@@ -427,7 +633,7 @@ const R75TickMonitor: React.FC = () => {
 
                 /*
                  * FILTRE ABSOLU :
-                 * aucun autre symbole ne passe.
+                 * seul EUR/USD est accepté.
                  */
                 if (
                     String(
@@ -454,15 +660,10 @@ const R75TickMonitor: React.FC = () => {
                 const previousPrice =
                     previousPriceRef.current;
 
-                /*
-                 * -----------------------------------------
-                 * 1. VALIDATION DU TICK PRÉCÉDENT
-                 * -----------------------------------------
-                 *
-                 * On compare le mouvement réel
-                 * du nouveau tick avec la prédiction
-                 * du tick précédent.
-                 */
+                /* =================================================
+                   1. VALIDATION DU TICK PRÉCÉDENT
+                ================================================= */
+
                 if (
                     paperRunningRef.current &&
                     previousPrice !== null
@@ -476,7 +677,8 @@ const R75TickMonitor: React.FC = () => {
                         previousPrediction ===
                             'DOWN'
                     ) {
-                        let win = false;
+                        let win =
+                            false;
 
                         if (
                             previousPrediction ===
@@ -484,7 +686,8 @@ const R75TickMonitor: React.FC = () => {
                             quote >
                                 previousPrice
                         ) {
-                            win = true;
+                            win =
+                                true;
                         }
 
                         if (
@@ -493,14 +696,16 @@ const R75TickMonitor: React.FC = () => {
                             quote <
                                 previousPrice
                         ) {
-                            win = true;
+                            win =
+                                true;
                         }
 
                         const old =
                             paperResultRef.current;
 
                         const newTotal =
-                            old.total + 1;
+                            old.total +
+                            1;
 
                         const newResult: PaperResult =
                             {
@@ -540,7 +745,7 @@ const R75TickMonitor: React.FC = () => {
                         );
 
                         /*
-                         * Arrêt EXACT à 1000.
+                         * Arrêt exact à 1000.
                          */
                         if (
                             newTotal >=
@@ -556,11 +761,9 @@ const R75TickMonitor: React.FC = () => {
                     }
                 }
 
-                /*
-                 * -----------------------------------------
-                 * 2. DIRECTION ACTUELLE
-                 * -----------------------------------------
-                 */
+                /* =================================================
+                   2. DIRECTION
+                ================================================= */
 
                 const direction =
                     getDirection(
@@ -568,11 +771,9 @@ const R75TickMonitor: React.FC = () => {
                         previousPrice
                     );
 
-                /*
-                 * -----------------------------------------
-                 * 3. HISTORIQUE
-                 * -----------------------------------------
-                 */
+                /* =================================================
+                   3. HISTORIQUE
+                ================================================= */
 
                 const newHistory = [
                     ...historyRef.current,
@@ -584,11 +785,9 @@ const R75TickMonitor: React.FC = () => {
                 historyRef.current =
                     newHistory;
 
-                /*
-                 * -----------------------------------------
-                 * 4. NOUVELLE PRÉDICTION
-                 * -----------------------------------------
-                 */
+                /* =================================================
+                   4. PRÉDICTION V4.13
+                ================================================= */
 
                 const analysis =
                     calculatePrediction(
@@ -598,11 +797,9 @@ const R75TickMonitor: React.FC = () => {
                 const newPrediction =
                     analysis.prediction;
 
-                /*
-                 * -----------------------------------------
-                 * 5. DERNIER CHIFFRE
-                 * -----------------------------------------
-                 */
+                /* =================================================
+                   5. DERNIER CHIFFRE
+                ================================================= */
 
                 const digit =
                     getLastDigit(
@@ -610,11 +807,9 @@ const R75TickMonitor: React.FC = () => {
                         tick.pip_size
                     );
 
-                /*
-                 * -----------------------------------------
-                 * 6. MISE À JOUR UI
-                 * -----------------------------------------
-                 */
+                /* =================================================
+                   6. UI
+                ================================================= */
 
                 previousPriceRef.current =
                     quote;
@@ -649,8 +844,8 @@ const R75TickMonitor: React.FC = () => {
                 );
 
                 /*
-                 * Cette prédiction sera validée
-                 * par le prochain tick.
+                 * Cette prédiction sera vérifiée
+                 * avec le prochain tick.
                  */
                 previousPredictionForPaperRef.current =
                     newPrediction;
@@ -674,9 +869,9 @@ const R75TickMonitor: React.FC = () => {
                     return;
                 }
 
-                /* -----------------------------------------
+                /* =================================================
                    ERREUR
-                ----------------------------------------- */
+                ================================================= */
 
                 if (
                     message.error
@@ -705,9 +900,9 @@ const R75TickMonitor: React.FC = () => {
                     return;
                 }
 
-                /* -----------------------------------------
+                /* =================================================
                    BALANCE
-                ----------------------------------------- */
+                ================================================= */
 
                 if (
                     message.msg_type ===
@@ -738,7 +933,7 @@ const R75TickMonitor: React.FC = () => {
 
                     if (
                         typeof account ===
-                        'string' &&
+                            'string' &&
                         account.length >
                             0
                     ) {
@@ -750,9 +945,9 @@ const R75TickMonitor: React.FC = () => {
                     return;
                 }
 
-                /* -----------------------------------------
+                /* =================================================
                    TICK
-                ----------------------------------------- */
+                ================================================= */
 
                 if (
                     message.msg_type ===
@@ -766,7 +961,7 @@ const R75TickMonitor: React.FC = () => {
                      * R_75 -> ignoré
                      * tout autre symbole -> ignoré
                      *
-                     * SEUL EUR/USD est traité.
+                     * SEUL frxEURUSD est traité.
                      */
                     if (
                         String(
@@ -842,7 +1037,7 @@ const R75TickMonitor: React.FC = () => {
                     requestBalance();
 
                     /*
-                     * On attend un VRAI tick EUR/USD.
+                     * On attend un vrai tick EUR/USD.
                      */
                     setConnection(
                         'waiting'
@@ -881,13 +1076,14 @@ const R75TickMonitor: React.FC = () => {
     ]);
 
     /* =====================================================
-       DÉMARRER PAPER
+       DÉMARRER PAPER TEST
     ===================================================== */
 
     const startPaperTest =
         useCallback(() => {
             /*
-             * Toujours repartir de zéro.
+             * Nouveau test propre :
+             * 0 -> 1000.
              */
             const reset: PaperResult =
                 {
@@ -909,11 +1105,9 @@ const R75TickMonitor: React.FC = () => {
             );
 
             /*
-             * On commence à partir
-             * de la prédiction actuellement affichée.
-             *
-             * Si elle est STABLE, le premier tick
-             * ne sera pas comptabilisé.
+             * La prédiction actuellement
+             * affichée devient la première
+             * prédiction à tester.
              */
             previousPredictionForPaperRef.current =
                 prediction;
@@ -991,18 +1185,35 @@ const R75TickMonitor: React.FC = () => {
             );
         }, [paperResult]);
 
+    /*
+     * Bloc :
+     *
+     * 0    -> 1/10 • 0/100
+     * 100  -> 1/10 • 100/100
+     * 101  -> 2/10 • 1/100
+     */
     const currentBlock =
-        Math.min(
-            10,
-            Math.floor(
-                paperResult.total /
-                    BLOCK_SIZE
-            ) + 1
-        );
+        paperResult.total ===
+        0
+            ? 1
+            : Math.min(
+                  10,
+                  Math.ceil(
+                      paperResult.total /
+                          BLOCK_SIZE
+                  )
+              );
 
     const blockProgress =
-        paperResult.total %
-        BLOCK_SIZE;
+        paperResult.total ===
+        0
+            ? 0
+            : paperResult.total %
+                  BLOCK_SIZE ===
+              0
+              ? BLOCK_SIZE
+              : paperResult.total %
+                BLOCK_SIZE;
 
     /* =====================================================
        LABELS
@@ -1018,9 +1229,11 @@ const R75TickMonitor: React.FC = () => {
               : 'STABLE';
 
     const predictionLabel =
-        prediction === 'UP'
+        prediction ===
+        'UP'
             ? 'HAUSSE'
-            : prediction === 'DOWN'
+            : prediction ===
+                'DOWN'
               ? 'BAISSE'
               : 'STABLE';
 
@@ -1052,11 +1265,14 @@ const R75TickMonitor: React.FC = () => {
                     'touch',
                 overscrollBehaviorY:
                     'auto',
-                touchAction: 'pan-y',
+                touchAction:
+                    'pan-y',
                 background:
                     '#0f172a',
-                color: '#e5e7eb',
-                padding: '16px',
+                color:
+                    '#e5e7eb',
+                padding:
+                    '16px',
                 paddingBottom:
                     '80px',
                 fontFamily:
@@ -1090,11 +1306,8 @@ const R75TickMonitor: React.FC = () => {
                                 800,
                         }}
                     >
-                        📈 Moniteur Forex
-                        {' '}
-                        {MARKET_NAME}
-                        {' '}
-                        — V4.12.4
+                        📈 Moniteur Forex{' '}
+                        {MARKET_NAME} — V4.13
                     </h1>
 
                     <div
@@ -1151,12 +1364,10 @@ const R75TickMonitor: React.FC = () => {
                                 '12px',
                         }}
                     >
-                        Flux strict :
-                        {' '}
+                        Flux strict :{' '}
                         {MARKET_SYMBOL}
                         {' • '}
-                        {tickCount}
-                        {' '}
+                        {tickCount}{' '}
                         tick(s)
                     </div>
                 </div>
@@ -1649,8 +1860,7 @@ const R75TickMonitor: React.FC = () => {
                                 'center',
                         }}
                     >
-                        Bloc actuel :
-                        {' '}
+                        Bloc actuel :{' '}
                         {currentBlock}
                         /10
                         {' • '}
@@ -1671,8 +1881,7 @@ const R75TickMonitor: React.FC = () => {
                                     '13px',
                             }}
                         >
-                            Dernier résultat :
-                            {' '}
+                            Dernier résultat :{' '}
                             {lastPaperOutcome ===
                             'WIN'
                                 ? '🟢 GAIN +1'
@@ -1813,8 +2022,7 @@ const R75TickMonitor: React.FC = () => {
                                 '12px',
                         }}
                     >
-                        Compte :
-                        {' '}
+                        Compte :{' '}
                         {loginId}
                     </div>
                 </div>
@@ -1875,8 +2083,7 @@ const R75TickMonitor: React.FC = () => {
                                 '13px',
                         }}
                     >
-                        Signal actuel :
-                        {' '}
+                        Signal actuel :{' '}
                         <strong>
                             {
                                 predictionLabel
@@ -1945,7 +2152,7 @@ const R75TickMonitor: React.FC = () => {
                             '10px 0 20px',
                     }}
                 >
-                    V4.12.4 • Analyse
+                    V4.13 • Analyse
                     EUR/USD • Paper uniquement
                     • Aucun trade réel
                 </div>
