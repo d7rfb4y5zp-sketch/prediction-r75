@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import { api_base } from '../external/bot-skeleton/services/api/api-base';
 
 const MARKET_SYMBOL = 'frxEURUSD';
@@ -9,11 +15,16 @@ const PAPER_TEST_LIMIT = 1000;
 const BLOCK_SIZE = 100;
 const ANALYSIS_WINDOW = 20;
 
-const TICK_REQUEST_ID = 4123;
-const BALANCE_REQUEST_ID = 4124;
+const TICK_REQUEST_ID = 4124;
+const BALANCE_REQUEST_ID = 4125;
 
 type Direction = 'UP' | 'DOWN' | 'FLAT';
-type ConnectionState = 'connecting' | 'connected' | 'waiting' | 'error';
+
+type ConnectionState =
+    | 'connecting'
+    | 'connected'
+    | 'waiting'
+    | 'error';
 
 type Tick = {
     quote: number;
@@ -31,17 +42,26 @@ type PaperResult = {
 
 type Message = {
     msg_type?: string;
+
     tick?: Tick;
-    balance?: number;
+
+    balance?: {
+        balance?: number;
+        currency?: string;
+        loginid?: string;
+    };
+
     error?: {
         code?: string;
         message?: string;
     };
+
     echo_req?: {
         ticks?: string;
         subscribe?: number;
         req_id?: number;
     };
+
     subscription?: {
         id?: string;
     };
@@ -52,7 +72,9 @@ type Message = {
 ========================================================= */
 
 function tryParseJson(value: unknown): unknown {
-    if (typeof value !== 'string') return value;
+    if (typeof value !== 'string') {
+        return value;
+    }
 
     try {
         return JSON.parse(value);
@@ -61,11 +83,13 @@ function tryParseJson(value: unknown): unknown {
     }
 }
 
-function normalizeDerivMessage(input: unknown): Message | null {
+function normalizeDerivMessage(
+    input: unknown
+): Message | null {
     let value: any = tryParseJson(input);
 
     /*
-     * Le flux global de api_base peut recevoir :
+     * api_base peut envoyer :
      *
      * {
      *   name: "message",
@@ -74,60 +98,85 @@ function normalizeDerivMessage(input: unknown): Message | null {
      *      tick: {...}
      *   }
      * }
-     *
-     * On déballe donc data.
      */
-    if (value && typeof value === 'object' && 'data' in value) {
+    if (
+        value &&
+        typeof value === 'object' &&
+        'data' in value
+    ) {
         value = tryParseJson(value.data);
     }
 
-    if (!value || typeof value !== 'object') {
+    if (
+        !value ||
+        typeof value !== 'object'
+    ) {
         return null;
     }
 
     return value as Message;
 }
 
+/* =========================================================
+   DIRECTION
+========================================================= */
+
 function getDirection(
     current: number,
     previous: number | null
 ): Direction {
-    if (previous === null || !Number.isFinite(current)) {
+    if (
+        previous === null ||
+        !Number.isFinite(current)
+    ) {
         return 'FLAT';
     }
 
-    if (current > previous) return 'UP';
-    if (current < previous) return 'DOWN';
+    if (current > previous) {
+        return 'UP';
+    }
+
+    if (current < previous) {
+        return 'DOWN';
+    }
 
     return 'FLAT';
 }
 
-/*
- * Deriv fournit pip_size = nombre de décimales.
- *
- * Exemple :
- * quote = 1037.79
- * pip_size = 2
- *
- * => 103779
- * => dernier chiffre = 9
- */
+/* =========================================================
+   DERNIER CHIFFRE
+========================================================= */
+
 function getLastDigit(
     quote: number,
     pipSize?: number
 ): number {
-    if (!Number.isFinite(quote)) return 0;
+    if (!Number.isFinite(quote)) {
+        return 0;
+    }
 
     const decimals =
-        Number.isFinite(pipSize) && Number(pipSize) >= 0
+        Number.isFinite(pipSize) &&
+        Number(pipSize) >= 0
             ? Number(pipSize)
             : 5;
 
-    const factor = 10 ** decimals;
-    const scaled = Math.round(quote * factor);
+    const factor =
+        10 ** decimals;
 
-    return Math.abs(scaled) % 10;
+    const scaled =
+        Math.round(
+            quote * factor
+        );
+
+    return (
+        Math.abs(scaled) % 10
+    );
 }
+
+/* =========================================================
+   PRÉDICTION
+========================================================= */
 
 function calculatePrediction(
     history: number[]
@@ -142,20 +191,34 @@ function calculatePrediction(
         };
     }
 
-    const sample = history.slice(-ANALYSIS_WINDOW);
+    const sample =
+        history.slice(
+            -ANALYSIS_WINDOW
+        );
 
     let up = 0;
     let down = 0;
 
-    for (let i = 1; i < sample.length; i += 1) {
-        if (sample[i] > sample[i - 1]) {
+    for (
+        let i = 1;
+        i < sample.length;
+        i += 1
+    ) {
+        if (
+            sample[i] >
+            sample[i - 1]
+        ) {
             up += 1;
-        } else if (sample[i] < sample[i - 1]) {
+        } else if (
+            sample[i] <
+            sample[i - 1]
+        ) {
             down += 1;
         }
     }
 
-    const total = up + down;
+    const total =
+        up + down;
 
     if (total === 0) {
         return {
@@ -167,14 +230,18 @@ function calculatePrediction(
     if (up > down) {
         return {
             prediction: 'UP',
-            strength: Math.round((up / total) * 100),
+            strength: Math.round(
+                (up / total) * 100
+            ),
         };
     }
 
     if (down > up) {
         return {
             prediction: 'DOWN',
-            strength: Math.round((down / total) * 100),
+            strength: Math.round(
+                (down / total) * 100
+            ),
         };
     }
 
@@ -190,26 +257,41 @@ function calculatePrediction(
 
 const R75TickMonitor: React.FC = () => {
     const [connection, setConnection] =
-        useState<ConnectionState>('connecting');
+        useState<ConnectionState>(
+            'connecting'
+        );
 
-    const [price, setPrice] = useState<number | null>(null);
-    const [lastDigit, setLastDigit] = useState<number | null>(null);
+    const [price, setPrice] =
+        useState<number | null>(
+            null
+        );
 
-    const [currentDirection, setCurrentDirection] =
-        useState<Direction>('FLAT');
+    const [lastDigit, setLastDigit] =
+        useState<number | null>(
+            null
+        );
+
+    const [
+        currentDirection,
+        setCurrentDirection,
+    ] = useState<Direction>('FLAT');
 
     const [prediction, setPrediction] =
         useState<Direction>('FLAT');
 
-    const [strength, setStrength] = useState(0);
+    const [strength, setStrength] =
+        useState(0);
 
-    const [tickCount, setTickCount] = useState(0);
+    const [tickCount, setTickCount] =
+        useState(0);
 
-    const [balance, setBalance] = useState<number | null>(null);
+    const [balance, setBalance] =
+        useState<number | null>(
+            null
+        );
 
-    const [loginId, setLoginId] = useState<string>('—');
-
-    const [history, setHistory] = useState<number[]>([]);
+    const [loginId, setLoginId] =
+        useState('—');
 
     const [paperRunning, setPaperRunning] =
         useState(false);
@@ -222,22 +304,37 @@ const R75TickMonitor: React.FC = () => {
             pnl: 0,
         });
 
-    const [paperBlock, setPaperBlock] =
-        useState(1);
+    const [
+        lastPaperOutcome,
+        setLastPaperOutcome,
+    ] = useState<
+        'WIN' | 'LOSS' | null
+    >(null);
 
-    const [lastPaperOutcome, setLastPaperOutcome] =
-        useState<'WIN' | 'LOSS' | null>(null);
+    const [
+        proposalStatus,
+        setProposalStatus,
+    ] = useState(
+        'Aucune proposition demandée'
+    );
 
-    const [proposalStatus, setProposalStatus] =
-        useState('Aucune proposition demandée');
+    /* =====================================================
+       REFS
+    ===================================================== */
+
+    const previousPriceRef =
+        useRef<number | null>(
+            null
+        );
+
+    const historyRef =
+        useRef<number[]>([]);
 
     /*
-     * Références pour éviter les problèmes de closure.
+     * C'est la prédiction produite
+     * par le tick précédent.
      */
-    const previousPriceRef =
-        useRef<number | null>(null);
-
-    const predictionRef =
+    const previousPredictionForPaperRef =
         useRef<Direction>('FLAT');
 
     const paperRunningRef =
@@ -251,523 +348,530 @@ const R75TickMonitor: React.FC = () => {
             pnl: 0,
         });
 
-    const historyRef =
-        useRef<number[]>([]);
-
     const unsubscribeRef =
-        useRef<(() => void) | null>(null);
+        useRef<
+            (() => void) | null
+        >(null);
 
     /* =====================================================
-       INITIALISATION API
+       INITIALISATION
     ===================================================== */
 
-    const initialiseApi = useCallback(async () => {
-        try {
-            if (!api_base.api) {
-                await api_base.init();
-            }
+    const initialiseApi =
+        useCallback(
+            async () => {
+                try {
+                    if (!api_base.api) {
+                        await api_base.init();
+                    }
 
-            if (!api_base.api) {
-                setConnection('error');
-                return false;
-            }
+                    if (!api_base.api) {
+                        setConnection(
+                            'error'
+                        );
 
-            return true;
-        } catch (error) {
-            console.error(
-                'Erreur initialisation API:',
-                error
-            );
+                        return false;
+                    }
 
-            setConnection('error');
-            return false;
-        }
-    }, []);
+                    return true;
+                } catch (error) {
+                    console.error(
+                        'Erreur initialisation API:',
+                        error
+                    );
+
+                    setConnection(
+                        'error'
+                    );
+
+                    return false;
+                }
+            },
+            []
+        );
 
     /* =====================================================
        BALANCE
     ===================================================== */
 
-    const requestBalance = useCallback(() => {
-        if (!api_base.api) return;
+    const requestBalance =
+        useCallback(() => {
+            if (!api_base.api) {
+                return;
+            }
 
-        try {
-            api_base.api.send({
-                balance: 1,
-                req_id: BALANCE_REQUEST_ID,
-            });
-        } catch (error) {
-            console.error(
-                'Erreur balance:',
-                error
-            );
-        }
-    }, []);
+            try {
+                api_base.api.send({
+                    balance: 1,
+                    req_id:
+                        BALANCE_REQUEST_ID,
+                });
+            } catch (error) {
+                console.error(
+                    'Erreur demande balance:',
+                    error
+                );
+            }
+        }, []);
 
     /* =====================================================
-       TRAITEMENT D'UN TICK EUR/USD
+       TRAITEMENT TICK
     ===================================================== */
 
-    const handleTick = useCallback((tick: Tick) => {
-        if (!tick) return;
-
-        /*
-         * SÉCURITÉ IMPORTANTE :
-         * On ne traite QUE EUR/USD.
-         *
-         * Les ticks d'autres abonnements comme
-         * 1HZ100V sont complètement ignorés.
-         */
-        if (String(tick.symbol || '') !== MARKET_SYMBOL) {
-            return;
-        }
-
-        const quote = Number(tick.quote);
-
-        if (!Number.isFinite(quote)) {
-            return;
-        }
-
-        const previousPrice =
-            previousPriceRef.current;
-
-        const direction =
-            getDirection(
-                quote,
-                previousPrice
-            );
-
-        const newHistory = [
-            ...historyRef.current,
-            quote,
-        ].slice(-HISTORY_SIZE);
-
-        historyRef.current = newHistory;
-
-        const analysis =
-            calculatePrediction(newHistory);
-
-        const digit =
-            getLastDigit(
-                quote,
-                tick.pip_size
-            );
-
-        previousPriceRef.current = quote;
-
-        setPrice(quote);
-        setLastDigit(digit);
-        setCurrentDirection(direction);
-
-        setHistory(newHistory);
-
-        setPrediction(
-            analysis.prediction
-        );
-
-        setStrength(
-            analysis.strength
-        );
-
-        predictionRef.current =
-            analysis.prediction;
-
-        setTickCount((value) => value + 1);
-
-        /*
-         * Dès qu'un vrai tick EUR/USD arrive,
-         * la connexion est considérée comme OK.
-         */
-        setConnection('connected');
-
-        /* =================================================
-           PAPER TEST
-        ================================================= */
-
-        if (
-            paperRunningRef.current &&
-            previousPrice !== null
-        ) {
-            const previousPrediction =
-                predictionRef.current;
-
-            /*
-             * Important :
-             * la prédiction utilisée pour le test
-             * doit être celle du tick précédent.
-             *
-             * Pour cela on garde une référence séparée.
-             */
-        }
-    }, []);
-
-    /*
-     * Référence séparée pour la prédiction précédente.
-     *
-     * Elle est volontairement séparée de predictionRef,
-     * qui contient la prédiction actuelle affichée.
-     */
-    const previousPredictionForPaperRef =
-        useRef<Direction>('FLAT');
-
-    /*
-     * Remplace handleTick par une version complète
-     * avec validation du paper test.
-     */
-    const processTick = useCallback((tick: Tick) => {
-        if (!tick) return;
-
-        /*
-         * FILTRE STRICT DU SYMBOLE
-         */
-        if (String(tick.symbol || '') !== MARKET_SYMBOL) {
-            return;
-        }
-
-        const quote = Number(tick.quote);
-
-        if (!Number.isFinite(quote)) {
-            return;
-        }
-
-        const previousPrice =
-            previousPriceRef.current;
-
-        const direction =
-            getDirection(
-                quote,
-                previousPrice
-            );
-
-        const newHistory = [
-            ...historyRef.current,
-            quote,
-        ].slice(-HISTORY_SIZE);
-
-        historyRef.current = newHistory;
-
-        const analysis =
-            calculatePrediction(newHistory);
-
-        const newPrediction =
-            analysis.prediction;
-
-        const digit =
-            getLastDigit(
-                quote,
-                tick.pip_size
-            );
-
-        /*
-         * ---------------------------------------------
-         * VALIDATION DE LA PRÉDICTION PRÉCÉDENTE
-         * ---------------------------------------------
-         */
-        if (
-            paperRunningRef.current &&
-            previousPrice !== null &&
-            previousPredictionForPaperRef.current !== 'FLAT'
-        ) {
-            const previousPrediction =
-                previousPredictionForPaperRef.current;
-
-            let outcome:
-                | 'WIN'
-                | 'LOSS'
-                | null = null;
-
-            if (
-                previousPrediction === 'UP' &&
-                quote > previousPrice
-            ) {
-                outcome = 'WIN';
-            } else if (
-                previousPrediction === 'DOWN' &&
-                quote < previousPrice
-            ) {
-                outcome = 'WIN';
-            } else if (
-                previousPrediction === 'UP' ||
-                previousPrediction === 'DOWN'
-            ) {
-                outcome = 'LOSS';
-            }
-
-            if (outcome) {
-                const oldResult =
-                    paperResultRef.current;
-
-                const newResult: PaperResult = {
-                    wins:
-                        oldResult.wins +
-                        (outcome === 'WIN' ? 1 : 0),
-
-                    losses:
-                        oldResult.losses +
-                        (outcome === 'LOSS' ? 1 : 0),
-
-                    total:
-                        oldResult.total + 1,
-
-                    pnl:
-                        oldResult.pnl +
-                        (outcome === 'WIN' ? 1 : -1),
-                };
-
-                paperResultRef.current =
-                    newResult;
-
-                setPaperResult(newResult);
-
-                setLastPaperOutcome(
-                    outcome
-                );
-
-                const newTotal =
-                    newResult.total;
+    const processTick =
+        useCallback(
+            (tick: Tick) => {
+                if (!tick) {
+                    return;
+                }
 
                 /*
-                 * Bloc de 100.
-                 */
-                setPaperBlock(
-                    Math.min(
-                        10,
-                        Math.floor(
-                            newTotal / BLOCK_SIZE
-                        ) + 1
-                    )
-                );
-
-                /*
-                 * Fin du test à 1000.
+                 * FILTRE ABSOLU :
+                 * aucun autre symbole ne passe.
                  */
                 if (
-                    newTotal >= PAPER_TEST_LIMIT
+                    String(
+                        tick.symbol || ''
+                    ) !==
+                    MARKET_SYMBOL
                 ) {
-                    paperRunningRef.current =
-                        false;
-
-                    setPaperRunning(false);
+                    return;
                 }
-            }
-        }
 
-        previousPriceRef.current =
-            quote;
+                const quote =
+                    Number(
+                        tick.quote
+                    );
 
-        setPrice(quote);
-        setLastDigit(digit);
+                if (
+                    !Number.isFinite(
+                        quote
+                    )
+                ) {
+                    return;
+                }
 
-        setCurrentDirection(
-            direction
+                const previousPrice =
+                    previousPriceRef.current;
+
+                /*
+                 * -----------------------------------------
+                 * 1. VALIDATION DU TICK PRÉCÉDENT
+                 * -----------------------------------------
+                 *
+                 * On compare le mouvement réel
+                 * du nouveau tick avec la prédiction
+                 * du tick précédent.
+                 */
+                if (
+                    paperRunningRef.current &&
+                    previousPrice !== null
+                ) {
+                    const previousPrediction =
+                        previousPredictionForPaperRef.current;
+
+                    if (
+                        previousPrediction ===
+                            'UP' ||
+                        previousPrediction ===
+                            'DOWN'
+                    ) {
+                        let win = false;
+
+                        if (
+                            previousPrediction ===
+                                'UP' &&
+                            quote >
+                                previousPrice
+                        ) {
+                            win = true;
+                        }
+
+                        if (
+                            previousPrediction ===
+                                'DOWN' &&
+                            quote <
+                                previousPrice
+                        ) {
+                            win = true;
+                        }
+
+                        const old =
+                            paperResultRef.current;
+
+                        const newTotal =
+                            old.total + 1;
+
+                        const newResult: PaperResult =
+                            {
+                                wins:
+                                    old.wins +
+                                    (win
+                                        ? 1
+                                        : 0),
+
+                                losses:
+                                    old.losses +
+                                    (win
+                                        ? 0
+                                        : 1),
+
+                                total:
+                                    newTotal,
+
+                                pnl:
+                                    old.pnl +
+                                    (win
+                                        ? 1
+                                        : -1),
+                            };
+
+                        paperResultRef.current =
+                            newResult;
+
+                        setPaperResult(
+                            newResult
+                        );
+
+                        setLastPaperOutcome(
+                            win
+                                ? 'WIN'
+                                : 'LOSS'
+                        );
+
+                        /*
+                         * Arrêt EXACT à 1000.
+                         */
+                        if (
+                            newTotal >=
+                            PAPER_TEST_LIMIT
+                        ) {
+                            paperRunningRef.current =
+                                false;
+
+                            setPaperRunning(
+                                false
+                            );
+                        }
+                    }
+                }
+
+                /*
+                 * -----------------------------------------
+                 * 2. DIRECTION ACTUELLE
+                 * -----------------------------------------
+                 */
+
+                const direction =
+                    getDirection(
+                        quote,
+                        previousPrice
+                    );
+
+                /*
+                 * -----------------------------------------
+                 * 3. HISTORIQUE
+                 * -----------------------------------------
+                 */
+
+                const newHistory = [
+                    ...historyRef.current,
+                    quote,
+                ].slice(
+                    -HISTORY_SIZE
+                );
+
+                historyRef.current =
+                    newHistory;
+
+                /*
+                 * -----------------------------------------
+                 * 4. NOUVELLE PRÉDICTION
+                 * -----------------------------------------
+                 */
+
+                const analysis =
+                    calculatePrediction(
+                        newHistory
+                    );
+
+                const newPrediction =
+                    analysis.prediction;
+
+                /*
+                 * -----------------------------------------
+                 * 5. DERNIER CHIFFRE
+                 * -----------------------------------------
+                 */
+
+                const digit =
+                    getLastDigit(
+                        quote,
+                        tick.pip_size
+                    );
+
+                /*
+                 * -----------------------------------------
+                 * 6. MISE À JOUR UI
+                 * -----------------------------------------
+                 */
+
+                previousPriceRef.current =
+                    quote;
+
+                setPrice(
+                    quote
+                );
+
+                setLastDigit(
+                    digit
+                );
+
+                setCurrentDirection(
+                    direction
+                );
+
+                setPrediction(
+                    newPrediction
+                );
+
+                setStrength(
+                    analysis.strength
+                );
+
+                setTickCount(
+                    value =>
+                        value + 1
+                );
+
+                setConnection(
+                    'connected'
+                );
+
+                /*
+                 * Cette prédiction sera validée
+                 * par le prochain tick.
+                 */
+                previousPredictionForPaperRef.current =
+                    newPrediction;
+            },
+            []
         );
-
-        setHistory(newHistory);
-
-        setPrediction(
-            newPrediction
-        );
-
-        setStrength(
-            analysis.strength
-        );
-
-        setTickCount(
-            (value) => value + 1
-        );
-
-        setConnection('connected');
-
-        /*
-         * Cette prédiction servira à valider
-         * le prochain tick.
-         */
-        previousPredictionForPaperRef.current =
-            newPrediction;
-    }, []);
 
     /* =====================================================
        MESSAGE DERIV
     ===================================================== */
 
-    const handleDerivMessage = useCallback(
-        (input: unknown) => {
-            const message =
-                normalizeDerivMessage(input);
-
-            if (!message) return;
-
-            /*
-             * ERREUR API
-             */
-            if (message.error) {
-                console.error(
-                    'Erreur Deriv:',
-                    message.error
-                );
-
-                /*
-                 * Une erreur d'un autre abonnement
-                 * ne doit pas casser notre écran.
-                 *
-                 * On affiche l'erreur seulement si
-                 * elle concerne notre demande EUR/USD.
-                 */
-                const requestedSymbol =
-                    String(
-                        message.echo_req?.ticks || ''
+    const handleDerivMessage =
+        useCallback(
+            (input: unknown) => {
+                const message =
+                    normalizeDerivMessage(
+                        input
                     );
 
-                if (
-                    requestedSymbol ===
-                    MARKET_SYMBOL
-                ) {
-                    setConnection('error');
+                if (!message) {
+                    return;
                 }
 
-                return;
-            }
+                /* -----------------------------------------
+                   ERREUR
+                ----------------------------------------- */
 
-            /*
-             * BALANCE
-             */
-            if (
-                message.msg_type === 'balance' &&
-                typeof message.balance === 'number'
-            ) {
-                setBalance(
-                    Number(message.balance)
+                if (
+                    message.error
+                ) {
+                    console.error(
+                        'Erreur Deriv:',
+                        message.error
+                    );
+
+                    const requestedSymbol =
+                        String(
+                            message
+                                .echo_req
+                                ?.ticks || ''
+                        );
+
+                    if (
+                        requestedSymbol ===
+                        MARKET_SYMBOL
+                    ) {
+                        setConnection(
+                            'error'
+                        );
+                    }
+
+                    return;
+                }
+
+                /* -----------------------------------------
+                   BALANCE
+                ----------------------------------------- */
+
+                if (
+                    message.msg_type ===
+                        'balance' &&
+                    message.balance
+                ) {
+                    const rawBalance =
+                        Number(
+                            message
+                                .balance
+                                .balance
+                        );
+
+                    if (
+                        Number.isFinite(
+                            rawBalance
+                        )
+                    ) {
+                        setBalance(
+                            rawBalance
+                        );
+                    }
+
+                    const account =
+                        message
+                            .balance
+                            .loginid;
+
+                    if (
+                        typeof account ===
+                        'string' &&
+                        account.length >
+                            0
+                    ) {
+                        setLoginId(
+                            account
+                        );
+                    }
+
+                    return;
+                }
+
+                /* -----------------------------------------
+                   TICK
+                ----------------------------------------- */
+
+                if (
+                    message.msg_type ===
+                        'tick' &&
+                    message.tick
+                ) {
+                    /*
+                     * IMPORTANT :
+                     *
+                     * 1HZ100V -> ignoré
+                     * R_75 -> ignoré
+                     * tout autre symbole -> ignoré
+                     *
+                     * SEUL EUR/USD est traité.
+                     */
+                    if (
+                        String(
+                            message.tick
+                                .symbol ||
+                                ''
+                        ) !==
+                        MARKET_SYMBOL
+                    ) {
+                        return;
+                    }
+
+                    processTick(
+                        message.tick
+                    );
+                }
+            },
+            [processTick]
+        );
+
+    /* =====================================================
+       CONNEXION
+    ===================================================== */
+
+    useEffect(() => {
+        let cancelled =
+            false;
+
+        const start =
+            async () => {
+                setConnection(
+                    'connecting'
                 );
 
-                /*
-                 * Selon la réponse API,
-                 * loginid peut être dans echo_req
-                 * ou dans d'autres champs.
-                 *
-                 * On évite toute supposition dangereuse.
-                 */
-                const account =
-                    (message as any).balance?.loginid;
+                const ready =
+                    await initialiseApi();
 
-                if (typeof account === 'string') {
-                    setLoginId(account);
-                }
-
-                return;
-            }
-
-            /*
-             * TICK
-             */
-            if (
-                message.msg_type === 'tick' &&
-                message.tick
-            ) {
-                /*
-                 * LE POINT LE PLUS IMPORTANT DE V4.12.3 :
-                 *
-                 * 1HZ100V -> IGNORÉ
-                 * R75 -> IGNORÉ
-                 * tout autre symbole -> IGNORÉ
-                 *
-                 * seul frxEURUSD est accepté.
-                 */
                 if (
-                    String(
-                        message.tick.symbol || ''
-                    ) !== MARKET_SYMBOL
+                    cancelled ||
+                    !ready ||
+                    !api_base.api
                 ) {
                     return;
                 }
 
-                processTick(
-                    message.tick
-                );
+                try {
+                    const messageStream =
+                        api_base.api.onMessage();
 
-                return;
-            }
-        },
-        [processTick]
-    );
+                    const subscription =
+                        messageStream.subscribe(
+                            handleDerivMessage
+                        );
 
-    /* =====================================================
-       CONNEXION + STREAM
-    ===================================================== */
+                    unsubscribeRef.current =
+                        subscription?.unsubscribe ||
+                        null;
 
-    useEffect(() => {
-        let cancelled = false;
+                    /*
+                     * Abonnement EUR/USD.
+                     */
+                    api_base.api.send({
+                        ticks:
+                            MARKET_SYMBOL,
+                        subscribe: 1,
+                        req_id:
+                            TICK_REQUEST_ID,
+                    });
 
-        const start = async () => {
-            setConnection('connecting');
+                    /*
+                     * Balance.
+                     */
+                    requestBalance();
 
-            const ready =
-                await initialiseApi();
-
-            if (
-                cancelled ||
-                !ready ||
-                !api_base.api
-            ) {
-                return;
-            }
-
-            try {
-                /*
-                 * On s'abonne au flux global de l'API.
-                 */
-                const messageStream =
-                    api_base.api.onMessage();
-
-                const subscription =
-                    messageStream.subscribe(
-                        handleDerivMessage
+                    /*
+                     * On attend un VRAI tick EUR/USD.
+                     */
+                    setConnection(
+                        'waiting'
+                    );
+                } catch (error) {
+                    console.error(
+                        'Erreur abonnement:',
+                        error
                     );
 
-                unsubscribeRef.current =
-                    subscription?.unsubscribe ||
-                    null;
-
-                /*
-                 * Demande EXPLICITE de EUR/USD.
-                 *
-                 * req_id permet de distinguer
-                 * notre demande des autres.
-                 */
-                api_base.api.send({
-                    ticks: MARKET_SYMBOL,
-                    subscribe: 1,
-                    req_id: TICK_REQUEST_ID,
-                });
-
-                /*
-                 * Balance une seule fois.
-                 */
-                requestBalance();
-
-                /*
-                 * Tant qu'aucun vrai tick EUR/USD
-                 * n'est reçu, on ne prétend pas que
-                 * EUR/USD est connecté.
-                 */
-                setConnection('waiting');
-            } catch (error) {
-                console.error(
-                    'Erreur abonnement:',
-                    error
-                );
-
-                setConnection('error');
-            }
-        };
+                    setConnection(
+                        'error'
+                    );
+                }
+            };
 
         start();
 
         return () => {
-            cancelled = true;
+            cancelled =
+                true;
 
-            if (unsubscribeRef.current) {
+            if (
+                unsubscribeRef.current
+            ) {
                 unsubscribeRef.current();
-                unsubscribeRef.current = null;
+
+                unsubscribeRef.current =
+                    null;
             }
         };
     }, [
@@ -777,95 +881,139 @@ const R75TickMonitor: React.FC = () => {
     ]);
 
     /* =====================================================
-       DÉMARRER LE PAPER TEST
+       DÉMARRER PAPER
     ===================================================== */
 
-    const startPaperTest = useCallback(() => {
-        const reset: PaperResult = {
-            wins: 0,
-            losses: 0,
-            total: 0,
-            pnl: 0,
-        };
+    const startPaperTest =
+        useCallback(() => {
+            /*
+             * Toujours repartir de zéro.
+             */
+            const reset: PaperResult =
+                {
+                    wins: 0,
+                    losses: 0,
+                    total: 0,
+                    pnl: 0,
+                };
 
-        paperResultRef.current = reset;
+            paperResultRef.current =
+                reset;
 
-        previousPredictionForPaperRef.current =
-            prediction;
-
-        paperRunningRef.current = true;
-
-        setPaperResult(reset);
-        setPaperRunning(true);
-        setPaperBlock(1);
-        setLastPaperOutcome(null);
-    }, [prediction]);
-
-    /* =====================================================
-       ARRÊTER LE PAPER TEST
-    ===================================================== */
-
-    const stopPaperTest = useCallback(() => {
-        paperRunningRef.current = false;
-
-        setPaperRunning(false);
-    }, []);
-
-    /* =====================================================
-       PROPOSITION — SANS BUY
-    ===================================================== */
-
-    const requestDemoProposal = useCallback(() => {
-        /*
-         * Aucun BUY ici.
-         * Aucun SELL ici.
-         * Aucun ordre réel.
-         *
-         * Cette fonction ne fait qu'indiquer
-         * la direction proposée.
-         */
-
-        if (
-            prediction !== 'UP' &&
-            prediction !== 'DOWN'
-        ) {
-            setProposalStatus(
-                '⚪ Pas de signal exploitable'
+            setPaperResult(
+                reset
             );
 
-            return;
-        }
+            setLastPaperOutcome(
+                null
+            );
 
-        const directionText =
-            prediction === 'UP'
-                ? 'HAUSSE'
-                : 'BAISSE';
+            /*
+             * On commence à partir
+             * de la prédiction actuellement affichée.
+             *
+             * Si elle est STABLE, le premier tick
+             * ne sera pas comptabilisé.
+             */
+            previousPredictionForPaperRef.current =
+                prediction;
 
-        setProposalStatus(
-            `🟡 Proposition ${directionText} — aucune transaction envoyée`
-        );
-    }, [prediction]);
+            paperRunningRef.current =
+                true;
+
+            setPaperRunning(
+                true
+            );
+        }, [prediction]);
 
     /* =====================================================
-       STATS
+       ARRÊTER PAPER
     ===================================================== */
 
-    const winRate = useMemo(() => {
-        if (paperResult.total === 0) {
-            return 0;
-        }
+    const stopPaperTest =
+        useCallback(() => {
+            paperRunningRef.current =
+                false;
 
-        return (
-            (paperResult.wins /
-                paperResult.total) *
-            100
+            setPaperRunning(
+                false
+            );
+        }, []);
+
+    /* =====================================================
+       PROPOSITION
+    ===================================================== */
+
+    const requestDemoProposal =
+        useCallback(() => {
+            if (
+                prediction !== 'UP' &&
+                prediction !== 'DOWN'
+            ) {
+                setProposalStatus(
+                    '⚪ Pas de signal exploitable'
+                );
+
+                return;
+            }
+
+            const directionText =
+                prediction === 'UP'
+                    ? 'HAUSSE'
+                    : 'BAISSE';
+
+            /*
+             * Aucun BUY.
+             * Aucun SELL.
+             */
+            setProposalStatus(
+                `🟡 Proposition ${directionText} — aucune transaction envoyée`
+            );
+        }, [prediction]);
+
+    /* =====================================================
+       STATISTIQUES
+    ===================================================== */
+
+    const winRate =
+        useMemo(() => {
+            if (
+                paperResult.total ===
+                0
+            ) {
+                return 0;
+            }
+
+            return (
+                (paperResult.wins /
+                    paperResult.total) *
+                100
+            );
+        }, [paperResult]);
+
+    const currentBlock =
+        Math.min(
+            10,
+            Math.floor(
+                paperResult.total /
+                    BLOCK_SIZE
+            ) + 1
         );
-    }, [paperResult]);
+
+    const blockProgress =
+        paperResult.total %
+        BLOCK_SIZE;
+
+    /* =====================================================
+       LABELS
+    ===================================================== */
 
     const directionLabel =
-        currentDirection === 'UP'
+        currentDirection ===
+        'UP'
             ? 'HAUSSE'
-            : currentDirection === 'DOWN'
+            : currentDirection ===
+                'DOWN'
               ? 'BAISSE'
               : 'STABLE';
 
@@ -877,11 +1025,14 @@ const R75TickMonitor: React.FC = () => {
               : 'STABLE';
 
     const connectionLabel =
-        connection === 'connected'
+        connection ===
+        'connected'
             ? '🟢 Connecté — EUR/USD'
-            : connection === 'waiting'
+            : connection ===
+                'waiting'
               ? '🟠 Connexion — attente EUR/USD…'
-              : connection === 'error'
+              : connection ===
+                  'error'
                 ? '🔴 Erreur EUR/USD'
                 : '🟠 Connexion à Deriv…';
 
@@ -899,46 +1050,61 @@ const R75TickMonitor: React.FC = () => {
                 overflowX: 'hidden',
                 WebkitOverflowScrolling:
                     'touch',
-                overscrollBehaviorY: 'auto',
+                overscrollBehaviorY:
+                    'auto',
                 touchAction: 'pan-y',
-                background: '#0f172a',
+                background:
+                    '#0f172a',
                 color: '#e5e7eb',
                 padding: '16px',
-                paddingBottom: '80px',
+                paddingBottom:
+                    '80px',
                 fontFamily:
                     'Arial, sans-serif',
-                boxSizing: 'border-box',
+                boxSizing:
+                    'border-box',
             }}
         >
-            {/* HEADER */}
-
             <div
                 style={{
-                    maxWidth: '900px',
-                    margin: '0 auto',
+                    maxWidth:
+                        '900px',
+                    margin:
+                        '0 auto',
                 }}
             >
+                {/* HEADER */}
+
                 <div
                     style={{
-                        marginBottom: '14px',
+                        marginBottom:
+                            '14px',
                     }}
                 >
                     <h1
                         style={{
                             margin: 0,
-                            fontSize: '22px',
-                            fontWeight: 800,
+                            fontSize:
+                                '22px',
+                            fontWeight:
+                                800,
                         }}
                     >
-                        📈 Moniteur Forex EUR/USD —
-                        V4.12.3
+                        📈 Moniteur Forex
+                        {' '}
+                        {MARKET_NAME}
+                        {' '}
+                        — V4.12.4
                     </h1>
 
                     <div
                         style={{
-                            marginTop: '6px',
-                            color: '#94a3b8',
-                            fontSize: '13px',
+                            marginTop:
+                                '6px',
+                            color:
+                                '#94a3b8',
+                            fontSize:
+                                '13px',
                         }}
                     >
                         Demo + Paper Trader +
@@ -954,30 +1120,44 @@ const R75TickMonitor: React.FC = () => {
                             '#111827',
                         border:
                             '1px solid #1f2937',
-                        borderRadius: '14px',
-                        padding: '12px 14px',
-                        marginBottom: '12px',
+                        borderRadius:
+                            '14px',
+                        padding:
+                            '12px 14px',
+                        marginBottom:
+                            '12px',
                     }}
                 >
                     <div
                         style={{
-                            fontSize: '14px',
-                            fontWeight: 700,
+                            fontSize:
+                                '14px',
+                            fontWeight:
+                                700,
                         }}
                     >
-                        {connectionLabel}
+                        {
+                            connectionLabel
+                        }
                     </div>
 
                     <div
                         style={{
-                            marginTop: '5px',
-                            color: '#64748b',
-                            fontSize: '12px',
+                            marginTop:
+                                '5px',
+                            color:
+                                '#64748b',
+                            fontSize:
+                                '12px',
                         }}
                     >
-                        Flux strict : {MARKET_SYMBOL}
+                        Flux strict :
+                        {' '}
+                        {MARKET_SYMBOL}
                         {' • '}
-                        {tickCount} tick(s)
+                        {tickCount}
+                        {' '}
+                        tick(s)
                     </div>
                 </div>
 
@@ -989,39 +1169,55 @@ const R75TickMonitor: React.FC = () => {
                             '#111827',
                         border:
                             '1px solid #1f2937',
-                        borderRadius: '14px',
-                        padding: '18px',
-                        marginBottom: '12px',
+                        borderRadius:
+                            '14px',
+                        padding:
+                            '18px',
+                        marginBottom:
+                            '12px',
                     }}
                 >
                     <div
                         style={{
-                            color: '#94a3b8',
-                            fontSize: '12px',
-                            marginBottom: '6px',
+                            color:
+                                '#94a3b8',
+                            fontSize:
+                                '12px',
+                            marginBottom:
+                                '6px',
                         }}
                     >
-                        PRIX EUR/USD
+                        PRIX {MARKET_NAME}
                     </div>
 
                     <div
                         style={{
-                            fontSize: '32px',
-                            fontWeight: 800,
-                            letterSpacing: '1px',
+                            fontSize:
+                                '32px',
+                            fontWeight:
+                                800,
+                            letterSpacing:
+                                '1px',
                         }}
                     >
-                        {price !== null
-                            ? price.toFixed(5)
+                        {price !==
+                        null
+                            ? price.toFixed(
+                                  5
+                              )
                             : '—'}
                     </div>
 
                     <div
                         style={{
-                            display: 'flex',
-                            gap: '10px',
-                            marginTop: '12px',
-                            flexWrap: 'wrap',
+                            display:
+                                'flex',
+                            gap:
+                                '10px',
+                            marginTop:
+                                '12px',
+                            flexWrap:
+                                'wrap',
                         }}
                     >
                         <div
@@ -1037,7 +1233,8 @@ const R75TickMonitor: React.FC = () => {
                             Dernier chiffre :
                             <strong>
                                 {' '}
-                                {lastDigit !== null
+                                {lastDigit !==
+                                null
                                     ? lastDigit
                                     : '—'}
                             </strong>
@@ -1056,7 +1253,9 @@ const R75TickMonitor: React.FC = () => {
                             Direction :
                             <strong>
                                 {' '}
-                                {directionLabel}
+                                {
+                                    directionLabel
+                                }
                             </strong>
                         </div>
                     </div>
@@ -1066,11 +1265,14 @@ const R75TickMonitor: React.FC = () => {
 
                 <div
                     style={{
-                        display: 'grid',
+                        display:
+                            'grid',
                         gridTemplateColumns:
                             'repeat(auto-fit, minmax(150px, 1fr))',
-                        gap: '10px',
-                        marginBottom: '12px',
+                        gap:
+                            '10px',
+                        marginBottom:
+                            '12px',
                     }}
                 >
                     <div
@@ -1154,7 +1356,7 @@ const R75TickMonitor: React.FC = () => {
                     </div>
                 </div>
 
-                {/* PAPER TEST */}
+                {/* PAPER */}
 
                 <div
                     style={{
@@ -1162,20 +1364,26 @@ const R75TickMonitor: React.FC = () => {
                             '#111827',
                         border:
                             '1px solid #1f2937',
-                        borderRadius: '14px',
-                        padding: '16px',
-                        marginBottom: '12px',
+                        borderRadius:
+                            '14px',
+                        padding:
+                            '16px',
+                        marginBottom:
+                            '12px',
                     }}
                 >
                     <div
                         style={{
-                            display: 'flex',
+                            display:
+                                'flex',
                             justifyContent:
                                 'space-between',
                             alignItems:
                                 'center',
-                            gap: '10px',
-                            flexWrap: 'wrap',
+                            gap:
+                                '10px',
+                            flexWrap:
+                                'wrap',
                         }}
                     >
                         <div>
@@ -1231,11 +1439,14 @@ const R75TickMonitor: React.FC = () => {
 
                     <div
                         style={{
-                            marginTop: '16px',
-                            display: 'grid',
+                            marginTop:
+                                '16px',
+                            display:
+                                'grid',
                             gridTemplateColumns:
                                 'repeat(2, 1fr)',
-                            gap: '10px',
+                            gap:
+                                '10px',
                         }}
                     >
                         <div
@@ -1270,7 +1481,7 @@ const R75TickMonitor: React.FC = () => {
                                 {
                                     paperResult.total
                                 }
-                                /{PAPER_TEST_LIMIT}
+                                /1000
                             </div>
                         </div>
 
@@ -1381,16 +1592,16 @@ const R75TickMonitor: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* PNL */}
-
                     <div
                         style={{
-                            marginTop: '10px',
+                            marginTop:
+                                '10px',
                             background:
                                 '#0f172a',
                             borderRadius:
                                 '10px',
-                            padding: '13px',
+                            padding:
+                                '13px',
                             textAlign:
                                 'center',
                         }}
@@ -1426,8 +1637,6 @@ const R75TickMonitor: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* BLOC */}
-
                     <div
                         style={{
                             marginTop:
@@ -1442,14 +1651,10 @@ const R75TickMonitor: React.FC = () => {
                     >
                         Bloc actuel :
                         {' '}
-                        {Math.min(
-                            paperBlock,
-                            10
-                        )}
+                        {currentBlock}
                         /10
                         {' • '}
-                        {paperResult.total %
-                            BLOCK_SIZE}
+                        {blockProgress}
                         /100
                     </div>
 
@@ -1475,13 +1680,12 @@ const R75TickMonitor: React.FC = () => {
                         </div>
                     )}
 
-                    {/* BOUTONS */}
-
                     <div
                         style={{
                             display:
                                 'flex',
-                            gap: '8px',
+                            gap:
+                                '8px',
                             marginTop:
                                 '14px',
                         }}
@@ -1496,7 +1700,8 @@ const R75TickMonitor: React.FC = () => {
                             }
                             style={{
                                 flex: 1,
-                                border: 'none',
+                                border:
+                                    'none',
                                 borderRadius:
                                     '10px',
                                 padding:
@@ -1528,7 +1733,8 @@ const R75TickMonitor: React.FC = () => {
                             }
                             style={{
                                 flex: 1,
-                                border: 'none',
+                                border:
+                                    'none',
                                 borderRadius:
                                     '10px',
                                 padding:
@@ -1560,9 +1766,12 @@ const R75TickMonitor: React.FC = () => {
                             '#111827',
                         border:
                             '1px solid #1f2937',
-                        borderRadius: '14px',
-                        padding: '16px',
-                        marginBottom: '12px',
+                        borderRadius:
+                            '14px',
+                        padding:
+                            '16px',
+                        marginBottom:
+                            '12px',
                     }}
                 >
                     <div
@@ -1586,8 +1795,11 @@ const R75TickMonitor: React.FC = () => {
                                 900,
                         }}
                     >
-                        {balance !== null
-                            ? `${balance.toFixed(2)} USD`
+                        {balance !==
+                        null
+                            ? `${balance.toFixed(
+                                  2
+                              )} USD`
                             : '—'}
                     </div>
 
@@ -1601,7 +1813,9 @@ const R75TickMonitor: React.FC = () => {
                                 '12px',
                         }}
                     >
-                        Compte : {loginId}
+                        Compte :
+                        {' '}
+                        {loginId}
                     </div>
                 </div>
 
@@ -1613,9 +1827,12 @@ const R75TickMonitor: React.FC = () => {
                             '#111827',
                         border:
                             '1px solid #1f2937',
-                        borderRadius: '14px',
-                        padding: '16px',
-                        marginBottom: '12px',
+                        borderRadius:
+                            '14px',
+                        padding:
+                            '16px',
+                        marginBottom:
+                            '12px',
                     }}
                 >
                     <div
@@ -1640,8 +1857,8 @@ const R75TickMonitor: React.FC = () => {
                         }}
                     >
                         Proposition uniquement.
-                        Aucun BUY/SELL n'est
-                        envoyé.
+                        Aucun BUY/SELL
+                        n'est envoyé.
                     </div>
 
                     <div
@@ -1661,7 +1878,9 @@ const R75TickMonitor: React.FC = () => {
                         Signal actuel :
                         {' '}
                         <strong>
-                            {predictionLabel}
+                            {
+                                predictionLabel
+                            }
                         </strong>
                     </div>
 
@@ -1671,10 +1890,12 @@ const R75TickMonitor: React.FC = () => {
                             requestDemoProposal
                         }
                         style={{
-                            width: '100%',
+                            width:
+                                '100%',
                             marginTop:
                                 '10px',
-                            border: 'none',
+                            border:
+                                'none',
                             borderRadius:
                                 '10px',
                             padding:
@@ -1704,7 +1925,9 @@ const R75TickMonitor: React.FC = () => {
                                 'center',
                         }}
                     >
-                        {proposalStatus}
+                        {
+                            proposalStatus
+                        }
                     </div>
                 </div>
 
@@ -1722,7 +1945,7 @@ const R75TickMonitor: React.FC = () => {
                             '10px 0 20px',
                     }}
                 >
-                    V4.12.3 • Analyse
+                    V4.12.4 • Analyse
                     EUR/USD • Paper uniquement
                     • Aucun trade réel
                 </div>
