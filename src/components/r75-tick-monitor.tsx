@@ -16,9 +16,9 @@ const PAPER_TEST_LIMIT = 1000;
 const BLOCK_SIZE = 100;
 const ANALYSIS_WINDOW = 20;
 
-const TICK_REQUEST_ID = 4112;
-const HISTORY_REQUEST_ID = 4113;
-const BALANCE_REQUEST_ID = 4114;
+const TICK_REQUEST_ID = 4113;
+const HISTORY_REQUEST_ID = 4114;
+const BALANCE_REQUEST_ID = 4115;
 
 type Direction = 'UP' | 'DOWN' | 'FLAT';
 
@@ -59,12 +59,17 @@ const getLastDigit = (
             ? Number(pipSize)
             : 5;
 
-    const formatted = Number(price).toFixed(digits);
+    const formatted = Number(price).toFixed(
+        digits
+    );
 
-    const clean = formatted.replace('.', '');
+    const withoutDot =
+        formatted.replace('.', '');
 
-    return clean.length > 0
-        ? clean.charAt(clean.length - 1)
+    return withoutDot.length > 0
+        ? withoutDot.charAt(
+              withoutDot.length - 1
+          )
         : '—';
 };
 
@@ -85,30 +90,63 @@ const normalizeMessage = (
     return rawMessage;
 };
 
+const getDerivErrorText = (
+    error: any
+): string => {
+    if (!error) {
+        return 'Erreur inconnue';
+    }
+
+    if (typeof error === 'string') {
+        return error;
+    }
+
+    if (
+        typeof error.message === 'string'
+    ) {
+        return error.message;
+    }
+
+    try {
+        return JSON.stringify(error);
+    } catch {
+        return 'Erreur Deriv inconnue';
+    }
+};
+
 const R75TickMonitor = () => {
     const [connection, setConnection] =
         useState<
-            'connecting' | 'waiting' | 'connected' | 'closed' | 'error'
+            | 'connecting'
+            | 'waiting'
+            | 'connected'
+            | 'closed'
+            | 'error'
         >('connecting');
 
-    const [connectionMessage, setConnectionMessage] =
-        useState('');
+    const [
+        connectionMessage,
+        setConnectionMessage,
+    ] = useState('');
 
-    const [price, setPrice] = useState<number | null>(
-        null
-    );
+    const [price, setPrice] =
+        useState<number | null>(null);
 
     const [lastDigit, setLastDigit] =
         useState('—');
 
-    const [currentDirection, setCurrentDirection] =
-        useState<Direction>('FLAT');
+    const [
+        currentDirection,
+        setCurrentDirection,
+    ] = useState<Direction>('FLAT');
 
     const [prediction, setPrediction] =
         useState<Direction>('FLAT');
 
-    const [predictionStrength, setPredictionStrength] =
-        useState(0);
+    const [
+        predictionStrength,
+        setPredictionStrength,
+    ] = useState(0);
 
     const [observations, setObservations] =
         useState(0);
@@ -116,8 +154,10 @@ const R75TickMonitor = () => {
     const [priceHistory, setPriceHistory] =
         useState<number[]>([]);
 
-    const [directionHistory, setDirectionHistory] =
-        useState<Direction[]>([]);
+    const [
+        directionHistory,
+        setDirectionHistory,
+    ] = useState<Direction[]>([]);
 
     const [paperRunning, setPaperRunning] =
         useState(false);
@@ -136,14 +176,18 @@ const R75TickMonitor = () => {
     const [loginId, setLoginId] =
         useState('');
 
-    const [proposalStatus, setProposalStatus] =
-        useState('');
+    const [
+        proposalStatus,
+        setProposalStatus,
+    ] = useState('');
 
     const [marketClosed, setMarketClosed] =
         useState(false);
 
-    const [marketOpenMessage, setMarketOpenMessage] =
-        useState('');
+    const [
+        marketOpenMessage,
+        setMarketOpenMessage,
+    ] = useState('');
 
     const [historyLoaded, setHistoryLoaded] =
         useState(false);
@@ -164,12 +208,15 @@ const R75TickMonitor = () => {
         useRef<(() => void) | null>(null);
 
     const retryTimerRef =
-        useRef<ReturnType<typeof setTimeout> | null>(
-            null
-        );
+        useRef<ReturnType<
+            typeof setTimeout
+        > | null>(null);
 
     const mountedRef =
         useRef(true);
+
+    const liveSubscriptionStartedRef =
+        useRef(false);
 
     const predictFromDirections =
         useCallback(
@@ -183,16 +230,21 @@ const R75TickMonitor = () => {
                     directions
                         .filter(
                             direction =>
-                                direction === 'UP' ||
-                                direction === 'DOWN'
+                                direction ===
+                                    'UP' ||
+                                direction ===
+                                    'DOWN'
                         )
                         .slice(
                             -ANALYSIS_WINDOW
                         );
 
-                if (usable.length < 4) {
+                if (
+                    usable.length < 4
+                ) {
                     return {
-                        prediction: 'FLAT',
+                        prediction:
+                            'FLAT',
                         strength: 0,
                     };
                 }
@@ -209,21 +261,26 @@ const R75TickMonitor = () => {
                             index + 1;
 
                         if (
-                            direction === 'UP'
+                            direction ===
+                            'UP'
                         ) {
-                            upScore += weight;
+                            upScore +=
+                                weight;
                         } else {
-                            downScore += weight;
+                            downScore +=
+                                weight;
                         }
                     }
                 );
 
                 const total =
-                    upScore + downScore;
+                    upScore +
+                    downScore;
 
                 if (total <= 0) {
                     return {
-                        prediction: 'FLAT',
+                        prediction:
+                            'FLAT',
                         strength: 0,
                     };
                 }
@@ -234,18 +291,20 @@ const R75TickMonitor = () => {
                             downScore
                     );
 
-                const strength = Math.min(
-                    95,
-                    (difference /
-                        total) *
-                        100
-                );
+                const strength =
+                    Math.min(
+                        95,
+                        (difference /
+                            total) *
+                            100
+                    );
 
                 if (
                     strength < 10
                 ) {
                     return {
-                        prediction: 'FLAT',
+                        prediction:
+                            'FLAT',
                         strength,
                     };
                 }
@@ -288,9 +347,7 @@ const R75TickMonitor = () => {
 
     const addTickToHistory =
         useCallback(
-            (
-                tick: TickData
-            ) => {
+            (tick: TickData) => {
                 const quote =
                     Number(tick.quote);
 
@@ -330,8 +387,10 @@ const R75TickMonitor = () => {
                 );
 
                 const previousPrice =
-                    priceHistoryRef.current[
-                        priceHistoryRef.current
+                    priceHistoryRef
+                        .current[
+                        priceHistoryRef
+                            .current
                             .length - 1
                     ];
 
@@ -352,25 +411,17 @@ const R75TickMonitor = () => {
                         );
                 }
 
-                if (
-                    newDirection !==
-                    'FLAT'
-                ) {
-                    setCurrentDirection(
-                        newDirection
-                    );
-                } else {
-                    setCurrentDirection(
-                        'FLAT'
-                    );
-                }
-
-                const nextPrices = [
-                    ...priceHistoryRef.current,
-                    quote,
-                ].slice(
-                    -HISTORY_SIZE
+                setCurrentDirection(
+                    newDirection
                 );
+
+                const nextPrices =
+                    [
+                        ...priceHistoryRef.current,
+                        quote,
+                    ].slice(
+                        -HISTORY_SIZE
+                    );
 
                 priceHistoryRef.current =
                     nextPrices;
@@ -402,70 +453,87 @@ const R75TickMonitor = () => {
                         nextDirections.length
                     );
 
-                    if (
-                        nextDirections.length >=
-                        4
-                    ) {
-                        applyPrediction(
-                            nextDirections
-                        );
-                    }
-                }
-
-                if (
-                    paperRunningRef.current &&
-                    newDirection !==
-                        'FLAT'
-                ) {
-                    const oldPrediction =
-                        previousPredictionRef.current;
+                    applyPrediction(
+                        nextDirections
+                    );
 
                     if (
-                        oldPrediction ===
-                            'UP' ||
-                        oldPrediction ===
-                            'DOWN'
+                        paperRunningRef.current
                     ) {
-                        const win =
+                        const oldPrediction =
+                            previousPredictionRef.current;
+
+                        if (
                             oldPrediction ===
-                            newDirection;
+                                'UP' ||
+                            oldPrediction ===
+                                'DOWN'
+                        ) {
+                            const win =
+                                oldPrediction ===
+                                newDirection;
 
-                        setPaperResult(
-                            previous => {
-                                if (
-                                    previous.total >=
-                                    PAPER_TEST_LIMIT
-                                ) {
-                                    paperRunningRef.current =
-                                        false;
-                                    setPaperRunning(
-                                        false
-                                    );
-                                    return previous;
-                                }
+                            setPaperResult(
+                                previous => {
+                                    if (
+                                        previous.total >=
+                                        PAPER_TEST_LIMIT
+                                    ) {
+                                        paperRunningRef.current =
+                                            false;
 
-                                return {
-                                    total:
+                                        setPaperRunning(
+                                            false
+                                        );
+
+                                        return previous;
+                                    }
+
+                                    const nextTotal =
                                         previous.total +
-                                        1,
-                                    wins:
-                                        previous.wins +
-                                        (win
-                                            ? 1
-                                            : 0),
-                                    losses:
-                                        previous.losses +
-                                        (win
-                                            ? 0
-                                            : 1),
-                                    pnl:
-                                        previous.pnl +
-                                        (win
-                                            ? 1
-                                            : -1),
-                                };
-                            }
-                        );
+                                        1;
+
+                                    const nextResult =
+                                        {
+                                            total:
+                                                nextTotal,
+                                            wins:
+                                                previous.wins +
+                                                (win
+                                                    ? 1
+                                                    : 0),
+                                            losses:
+                                                previous.losses +
+                                                (win
+                                                    ? 0
+                                                    : 1),
+                                            pnl:
+                                                previous.pnl +
+                                                (win
+                                                    ? 1
+                                                    : -1),
+                                        };
+
+                                    if (
+                                        nextTotal >=
+                                        PAPER_TEST_LIMIT
+                                    ) {
+                                        paperRunningRef.current =
+                                            false;
+
+                                        setPaperRunning(
+                                            false
+                                        );
+
+                                        setProposalStatus(
+                                            '🏁 Paper Test de 1000 prédictions terminé.'
+                                        );
+                                    }
+
+                                    return nextResult;
+                                }
+                            );
+                        }
                     }
                 }
             },
@@ -474,9 +542,7 @@ const R75TickMonitor = () => {
 
     const processHistory =
         useCallback(
-            (
-                message: any
-            ) => {
+            (message: any) => {
                 const history =
                     message?.history;
 
@@ -486,7 +552,7 @@ const R75TickMonitor = () => {
                         history.prices
                     )
                 ) {
-                    return;
+                    return false;
                 }
 
                 const prices =
@@ -510,7 +576,7 @@ const R75TickMonitor = () => {
                 if (
                     prices.length === 0
                 ) {
-                    return;
+                    return false;
                 }
 
                 const directions: Direction[] =
@@ -558,7 +624,8 @@ const R75TickMonitor = () => {
 
                 const lastPrice =
                     prices[
-                        prices.length - 1
+                        prices.length -
+                            1
                     ];
 
                 setPrice(lastPrice);
@@ -601,9 +668,47 @@ const R75TickMonitor = () => {
                 setHistoryLoaded(
                     true
                 );
+
+                return true;
             },
             [applyPrediction]
         );
+
+    const startLiveSubscription =
+        useCallback(() => {
+            if (
+                !api_base.api ||
+                liveSubscriptionStartedRef.current
+            ) {
+                return;
+            }
+
+            try {
+                api_base.api.send({
+                    ticks:
+                        MARKET_SYMBOL,
+                    subscribe: 1,
+                    req_id:
+                        TICK_REQUEST_ID,
+                });
+
+                liveSubscriptionStartedRef.current =
+                    true;
+
+                setProposalStatus(
+                    '🟢 Historique reçu — attente des ticks EUR/USD en direct.'
+                );
+            } catch (error) {
+                console.error(
+                    'Erreur flux live EUR/USD:',
+                    error
+                );
+
+                setProposalStatus(
+                    '🔴 Impossible de démarrer le flux EUR/USD.'
+                );
+            }
+        }, []);
 
     const handleDerivMessage =
         useCallback(
@@ -617,91 +722,111 @@ const R75TickMonitor = () => {
                     return;
                 }
 
+                /*
+                 * ERREURS DERIV
+                 *
+                 * MarketIsClosed n'est PAS
+                 * considéré comme une panne
+                 * technique.
+                 */
                 if (
                     message.error
                 ) {
-                    const code =
+                    const errorCode =
                         String(
                             message
-                                .error
-                                .code ||
+                                ?.error
+                                ?.code ||
                                 'UNKNOWN'
                         );
 
-                    const errorMessage =
-                        String(
-                            message
-                                .error
-                                .message ||
-                                'Erreur inconnue'
+                    const errorText =
+                        getDerivErrorText(
+                            message.error
                         );
 
                     const requestedSymbol =
                         String(
                             message
-                                .echo_req
+                                ?.echo_req
                                 ?.ticks ||
                                 message
-                                    .echo_req
+                                    ?.echo_req
                                     ?.ticks_history ||
                                 ''
                         );
 
                     console.error(
-                        '🚨 ERREUR DERIV COMPLETE:',
+                        '🚨 DERIV:',
                         {
-                            code,
+                            code:
+                                errorCode,
                             message:
-                                errorMessage,
+                                errorText,
                             requestedSymbol,
-                            echo_req:
-                                message.echo_req,
                         }
                     );
 
                     if (
-                        requestedSymbol ===
-                        MARKET_SYMBOL ||
-                        code ===
-                            'MarketIsClosed'
+                        errorCode ===
+                            'MarketIsClosed' ||
+                        errorText
+                            .toLowerCase()
+                            .includes(
+                                'market is presently closed'
+                            )
                     ) {
+                        setMarketClosed(
+                            true
+                        );
+
+                        setConnection(
+                            'closed'
+                        );
+
+                        setMarketOpenMessage(
+                            errorText
+                        );
+
+                        /*
+                         * Si nous avons déjà
+                         * reçu l'historique,
+                         * on le conserve.
+                         */
                         if (
-                            code ===
-                            'MarketIsClosed'
+                            historyLoaded
                         ) {
-                            setMarketClosed(
-                                true
-                            );
-
-                            setConnection(
-                                'closed'
-                            );
-
-                            setHistoryLoaded(
-                                false
-                            );
-
-                            setMarketOpenMessage(
-                                errorMessage
-                            );
-
                             setProposalStatus(
-                                `🔴 EUR/USD fermé — ${errorMessage}`
+                                `🟠 Historique EUR/USD disponible — marché fermé. ${errorText}`
                             );
                         } else {
-                            setConnection(
-                                'error'
-                            );
-
                             setProposalStatus(
-                                `🔴 Deriv ${code}: ${errorMessage}`
+                                `🟠 EUR/USD fermé — ${errorText}`
                             );
                         }
+
+                        return;
+                    }
+
+                    if (
+                        requestedSymbol ===
+                        MARKET_SYMBOL
+                    ) {
+                        setConnection(
+                            'error'
+                        );
+
+                        setProposalStatus(
+                            `🔴 Deriv ${errorCode}: ${errorText}`
+                        );
                     }
 
                     return;
                 }
 
+                /*
+                 * SOLDE
+                 */
                 if (
                     message.msg_type ===
                     'balance'
@@ -742,6 +867,9 @@ const R75TickMonitor = () => {
                     return;
                 }
 
+                /*
+                 * HISTORIQUE
+                 */
                 if (
                     message.msg_type ===
                     'history'
@@ -749,7 +877,7 @@ const R75TickMonitor = () => {
                     const requestedSymbol =
                         String(
                             message
-                                .echo_req
+                                ?.echo_req
                                 ?.ticks_history ||
                                 ''
                         );
@@ -757,33 +885,47 @@ const R75TickMonitor = () => {
                     if (
                         requestedSymbol ===
                             MARKET_SYMBOL ||
-                        message
-                            ?.history
+                        message?.history
                     ) {
-                        processHistory(
-                            message
-                        );
+                        const loaded =
+                            processHistory(
+                                message
+                            );
 
-                        setMarketClosed(
-                            false
-                        );
+                        if (
+                            loaded
+                        ) {
+                            setMarketClosed(
+                                false
+                            );
 
-                        setConnection(
-                            'connected'
-                        );
+                            setConnection(
+                                'connected'
+                            );
 
-                        setConnectionMessage(
-                            `🟢 Connecté — ${MARKET_NAME}`
-                        );
+                            setConnectionMessage(
+                                `🟢 Données EUR/USD reçues`
+                            );
 
-                        setProposalStatus(
-                            '🟢 EUR/USD ouvert — données reçues'
-                        );
+                            setProposalStatus(
+                                '🟢 Historique EUR/USD chargé.'
+                            );
+
+                            /*
+                             * L'historique fonctionne.
+                             * On essaie ensuite le
+                             * flux live.
+                             */
+                            startLiveSubscription();
+                        }
                     }
 
                     return;
                 }
 
+                /*
+                 * TICK LIVE
+                 */
                 if (
                     message.msg_type ===
                         'tick' &&
@@ -792,8 +934,8 @@ const R75TickMonitor = () => {
                     const symbol =
                         String(
                             message
-                                .tick
-                                .symbol ||
+                                ?.tick
+                                ?.symbol ||
                                 ''
                         );
 
@@ -817,7 +959,7 @@ const R75TickMonitor = () => {
                     );
 
                     setProposalStatus(
-                        '🟢 Flux EUR/USD actif — mode test uniquement'
+                        '🟢 Flux EUR/USD actif — mode test uniquement.'
                     );
 
                     addTickToHistory(
@@ -825,7 +967,12 @@ const R75TickMonitor = () => {
                     );
                 }
             },
-            [addTickToHistory, processHistory]
+            [
+                addTickToHistory,
+                historyLoaded,
+                processHistory,
+                startLiveSubscription,
+            ]
         );
 
     const requestBalance =
@@ -848,107 +995,99 @@ const R75TickMonitor = () => {
             }
         }, []);
 
-    const requestMarketData =
-        useCallback(async () => {
-            if (!api_base.api) {
-                return;
-            }
-
-            setConnection(
-                'waiting'
-            );
-
-            setConnectionMessage(
-                `🟡 Vérification du marché ${MARKET_NAME}…`
-            );
-
-            try {
-                const historyResponse =
-                    await api_base.api.send(
-                        {
-                            ticks_history:
-                                MARKET_SYMBOL,
-                            end: 'latest',
-                            count:
-                                HISTORY_SIZE,
-                            style: 'ticks',
-                            subscribe: 0,
-                            req_id:
-                                HISTORY_REQUEST_ID,
-                        }
-                    );
-
-                if (
-                    historyResponse
-                ) {
-                    handleDerivMessage(
-                        historyResponse
-                    );
-                }
-
-                if (
-                    marketClosed
-                ) {
+    const requestMarketHistory =
+        useCallback(
+            async () => {
+                if (!api_base.api) {
                     return;
                 }
 
-                api_base.api.send({
-                    ticks:
-                        MARKET_SYMBOL,
-                    subscribe: 1,
-                    req_id:
-                        TICK_REQUEST_ID,
-                });
+                try {
+                    const response =
+                        await api_base.api.send(
+                            {
+                                ticks_history:
+                                    MARKET_SYMBOL,
+                                end: 'latest',
+                                count:
+                                    HISTORY_SIZE,
+                                style: 'ticks',
+                                subscribe: 0,
+                                req_id:
+                                    HISTORY_REQUEST_ID,
+                            }
+                        );
 
-                setProposalStatus(
-                    '🟡 Connexion au flux EUR/USD…'
-                );
-            } catch (error: any) {
-                console.error(
-                    'Erreur historique EUR/USD:',
-                    error
-                );
+                    /*
+                     * Certains wrappers Deriv
+                     * retournent directement la
+                     * réponse, d'autres passent
+                     * par onMessage().
+                     */
+                    if (
+                        response
+                    ) {
+                        handleDerivMessage(
+                            response
+                        );
+                    }
+                } catch (error: any) {
+                    const errorText =
+                        getDerivErrorText(
+                            error
+                        );
 
-                const message =
-                    String(
-                        error?.message ||
-                            error ||
-                            'Erreur inconnue'
+                    console.error(
+                        'Erreur historique EUR/USD:',
+                        error
                     );
 
-                if (
-                    message.includes(
-                        'MarketIsClosed'
-                    ) ||
-                    message.includes(
-                        'market is presently closed'
-                    )
-                ) {
-                    setMarketClosed(
-                        true
-                    );
+                    /*
+                     * Ne jamais afficher
+                     * [object Object].
+                     */
+                    if (
+                        errorText
+                            .toLowerCase()
+                            .includes(
+                                'marketisclosed'
+                            ) ||
+                        errorText
+                            .toLowerCase()
+                            .includes(
+                                'market is presently closed'
+                            )
+                    ) {
+                        setMarketClosed(
+                            true
+                        );
 
-                    setConnection(
-                        'closed'
-                    );
+                        setConnection(
+                            'closed'
+                        );
 
-                    setProposalStatus(
-                        `🔴 EUR/USD fermé — ${message}`
-                    );
-                } else {
+                        setMarketOpenMessage(
+                            errorText
+                        );
+
+                        setProposalStatus(
+                            `🟠 EUR/USD fermé — ${errorText}`
+                        );
+
+                        return;
+                    }
+
                     setConnection(
                         'error'
                     );
 
                     setProposalStatus(
-                        `🔴 Erreur EUR/USD — ${message}`
+                        `🔴 Erreur EUR/USD — ${errorText}`
                     );
                 }
-            }
-        }, [
-            handleDerivMessage,
-            marketClosed,
-        ]);
+            },
+            [handleDerivMessage]
+        );
 
     const initialiseApi =
         useCallback(
@@ -966,7 +1105,7 @@ const R75TickMonitor = () => {
                         );
 
                         setProposalStatus(
-                            '🔴 api_base.api indisponible'
+                            '🔴 api_base.api indisponible.'
                         );
 
                         return false;
@@ -984,7 +1123,7 @@ const R75TickMonitor = () => {
                     );
 
                     setProposalStatus(
-                        '🔴 Erreur initialisation Deriv'
+                        '🔴 Erreur initialisation Deriv.'
                     );
 
                     return false;
@@ -993,6 +1132,9 @@ const R75TickMonitor = () => {
             []
         );
 
+    /*
+     * CONNEXION PRINCIPALE
+     */
     useEffect(() => {
         mountedRef.current =
             true;
@@ -1003,6 +1145,10 @@ const R75TickMonitor = () => {
             async () => {
                 setConnection(
                     'connecting'
+                );
+
+                setProposalStatus(
+                    '🟡 Connexion à Deriv…'
                 );
 
                 const ready =
@@ -1031,7 +1177,11 @@ const R75TickMonitor = () => {
 
                     requestBalance();
 
-                    await requestMarketData();
+                    /*
+                     * Demande de l'historique
+                     * EUR/USD.
+                     */
+                    await requestMarketHistory();
 
                     if (
                         cancelled
@@ -1039,42 +1189,30 @@ const R75TickMonitor = () => {
                         return;
                     }
 
-                    if (
-                        !marketClosed &&
-                        api_base.api
-                    ) {
-                        try {
-                            api_base.api.send(
-                                {
-                                    ticks:
-                                        MARKET_SYMBOL,
-                                    subscribe: 1,
-                                    req_id:
-                                        TICK_REQUEST_ID,
-                                }
-                            );
-                        } catch (
-                            error
-                        ) {
-                            console.error(
-                                'Erreur abonnement ticks:',
-                                error
-                            );
-                        }
-                    }
+                    /*
+                     * Le flux live sera lancé
+                     * après réception de
+                     * l'historique.
+                     */
                 } catch (error) {
                     console.error(
-                        'Erreur abonnement:',
+                        'Erreur abonnement Deriv:',
                         error
                     );
 
-                    setConnection(
-                        'error'
-                    );
+                    if (
+                        !cancelled
+                    ) {
+                        setConnection(
+                            'error'
+                        );
 
-                    setProposalStatus(
-                        '🔴 Erreur abonnement Deriv'
-                    );
+                        setProposalStatus(
+                            `🔴 Erreur abonnement — ${getDerivErrorText(
+                                error
+                            )}`
+                        );
+                    }
                 }
             };
 
@@ -1085,6 +1223,9 @@ const R75TickMonitor = () => {
                 true;
 
             mountedRef.current =
+                false;
+
+            liveSubscriptionStartedRef.current =
                 false;
 
             if (
@@ -1111,9 +1252,13 @@ const R75TickMonitor = () => {
         handleDerivMessage,
         initialiseApi,
         requestBalance,
-        requestMarketData,
+        requestMarketHistory,
     ]);
 
+    /*
+     * SI LE MARCHÉ EST FERMÉ :
+     * nouvelle vérification périodique.
+     */
     useEffect(() => {
         if (
             !marketClosed
@@ -1141,10 +1286,16 @@ const R75TickMonitor = () => {
                     }
 
                     console.log(
-                        '🔄 Nouvelle vérification EUR/USD…'
+                        '🔄 Vérification automatique EUR/USD…'
                     );
 
-                    await requestMarketData();
+                    await requestMarketHistory();
+
+                    if (
+                        mountedRef.current
+                    ) {
+                        requestBalance();
+                    }
                 },
                 60000
             );
@@ -1163,16 +1314,41 @@ const R75TickMonitor = () => {
         };
     }, [
         marketClosed,
-        requestMarketData,
+        requestBalance,
+        requestMarketHistory,
     ]);
 
+    /*
+     * PAPER TEST
+     */
     const startPaperTest =
         useCallback(() => {
+            if (
+                marketClosed
+            ) {
+                setProposalStatus(
+                    '⚠️ EUR/USD est fermé. Attends la réouverture pour recevoir de nouveaux ticks.'
+                );
+
+                return;
+            }
+
             if (
                 observations < 4
             ) {
                 setProposalStatus(
                     '⚠️ Pas assez de données pour démarrer le Paper Test.'
+                );
+
+                return;
+            }
+
+            if (
+                paperResult.total >=
+                PAPER_TEST_LIMIT
+            ) {
+                setProposalStatus(
+                    '🏁 Les 1000 tests sont déjà terminés. Utilise Réinitialiser pour recommencer.'
                 );
 
                 return;
@@ -1188,7 +1364,11 @@ const R75TickMonitor = () => {
             setProposalStatus(
                 '🟢 Paper Trading démarré — aucun ordre BUY/SELL.'
             );
-        }, [observations]);
+        }, [
+            marketClosed,
+            observations,
+            paperResult.total,
+        ]);
 
     const stopPaperTest =
         useCallback(() => {
@@ -1283,7 +1463,7 @@ const R75TickMonitor = () => {
               `🟢 Connecté — ${MARKET_NAME}`
             : connection ===
               'closed'
-            ? '🔴 Marché fermé'
+            ? '🟠 Marché EUR/USD fermé'
             : connection ===
               'error'
             ? '🔴 Erreur EUR/USD'
@@ -1314,10 +1494,13 @@ const R75TickMonitor = () => {
         <div
             style={{
                 width: '100%',
-                minHeight: '100vh',
+                minHeight:
+                    '100vh',
                 height: '100dvh',
-                overflowY: 'auto',
-                overflowX: 'hidden',
+                overflowY:
+                    'auto',
+                overflowX:
+                    'hidden',
                 WebkitOverflowScrolling:
                     'touch',
                 overscrollBehaviorY:
@@ -1326,8 +1509,10 @@ const R75TickMonitor = () => {
                     'pan-y',
                 background:
                     '#0f172a',
-                color: '#e5e7eb',
-                padding: '16px',
+                color:
+                    '#e5e7eb',
+                padding:
+                    '16px',
                 paddingBottom:
                     '70px',
                 fontFamily:
@@ -1354,7 +1539,7 @@ const R75TickMonitor = () => {
                 >
                     📈 Moniteur Forex
                     EUR/USD —
-                    V4.11.2
+                    V4.11.3
                 </h1>
 
                 <div
@@ -1370,7 +1555,7 @@ const R75TickMonitor = () => {
                     Proposition
                 </div>
 
-                <div
+                <section
                     style={{
                         background:
                             '#111827',
@@ -1383,7 +1568,9 @@ const R75TickMonitor = () => {
                     }}
                 >
                     <strong>
-                        {connectionLabel}
+                        {
+                            connectionLabel
+                        }
                     </strong>
 
                     {marketClosed && (
@@ -1396,10 +1583,11 @@ const R75TickMonitor = () => {
                                 borderRadius:
                                     '8px',
                                 background:
-                                    '#3f1d1d',
+                                    '#3f2a1d',
                             }}
                         >
-                            🔴 <strong>
+                            🟠{' '}
+                            <strong>
                                 Marché EUR/USD
                                 fermé
                             </strong>
@@ -1413,7 +1601,7 @@ const R75TickMonitor = () => {
                                 }}
                             >
                                 {marketOpenMessage ||
-                                    'Deriv indique que le marché est actuellement fermé.'}
+                                    'Le marché est actuellement fermé.'}
                             </div>
 
                             <div
@@ -1433,23 +1621,24 @@ const R75TickMonitor = () => {
                         </div>
                     )}
 
-                    {!marketClosed &&
-                        connection ===
-                            'connected' && (
-                            <div
-                                style={{
-                                    marginTop:
-                                        '6px',
-                                    fontSize:
-                                        '13px',
-                                }}
-                            >
-                                🟢 Flux
-                                EUR/USD
-                                actif.
-                            </div>
-                        )}
-                </div>
+                    {historyLoaded && (
+                        <div
+                            style={{
+                                marginTop:
+                                    '8px',
+                                fontSize:
+                                    '13px',
+                            }}
+                        >
+                            📚 Historique
+                            disponible :
+                            {
+                                priceHistory.length
+                            }{' '}
+                            tick(s)
+                        </div>
+                    )}
+                </section>
 
                 <section
                     style={{
@@ -1546,6 +1735,7 @@ const R75TickMonitor = () => {
                             Prix
                         </strong>
                         <br />
+
                         <span
                             style={{
                                 fontSize:
@@ -1569,6 +1759,7 @@ const R75TickMonitor = () => {
                             chiffre
                         </strong>
                         <br />
+
                         <span
                             style={{
                                 fontSize:
@@ -1604,12 +1795,15 @@ const R75TickMonitor = () => {
                         {
                             priceHistory.length
                         }
-                        /{HISTORY_SIZE}
+                        /
+                        {
+                            HISTORY_SIZE
+                        }
                     </p>
 
                     <p>
                         {phaseOneComplete
-                            ? '🟢 Historique suffisamment rempli'
+                            ? '🟢 Historique complet'
                             : '🧠 Collecte de données…'}
                     </p>
                 </section>
@@ -1637,7 +1831,9 @@ const R75TickMonitor = () => {
                             actuelle
                         </strong>
                         <br />
-                        {directionLabel}
+                        {
+                            directionLabel
+                        }
                     </p>
 
                     <p>
@@ -1646,7 +1842,9 @@ const R75TickMonitor = () => {
                             prédiction
                         </strong>
                         <br />
-                        {predictionLabel}
+                        {
+                            predictionLabel
+                        }
                     </p>
 
                     <p>
@@ -1665,7 +1863,9 @@ const R75TickMonitor = () => {
                             Observations
                         </strong>
                         <br />
-                        {observations}
+                        {
+                            observations
+                        }
                     </p>
 
                     <div
@@ -1811,8 +2011,9 @@ const R75TickMonitor = () => {
                                 '13px',
                         }}
                     >
-                        {proposalStatus ||
-                            '🛡️ Aucun ordre financier.'}
+                        {
+                            proposalStatus
+                        }
                     </div>
                 </section>
 
@@ -1833,7 +2034,7 @@ const R75TickMonitor = () => {
                     </h2>
 
                     <p>
-                        Cette V4.11.2
+                        Cette V4.11.3
                         n'envoie aucun
                         ordre BUY/SELL
                         à Deriv.
@@ -1992,11 +2193,11 @@ const R75TickMonitor = () => {
                     <p>
                         {paperResult.total ===
                         0
-                            ? '🧠 Collecte de données…'
+                            ? '🧪 Paper Test prêt — 0/1000'
                             : paperResult.total >=
                               PAPER_TEST_LIMIT
                             ? '🏁 Test de 1000 prédictions terminé'
-                            : '🟢 Paper Test en cours / prêt'}
+                            : '🟢 Paper Test en cours'}
                     </p>
                 </section>
 
@@ -2029,7 +2230,7 @@ const R75TickMonitor = () => {
                         « Tester sur
                         compte Demo »
                         démarre le
-                        paper test avec
+                        Paper Test avec
                         les données
                         réelles du
                         marché, mais
