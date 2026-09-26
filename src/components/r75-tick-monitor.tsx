@@ -14,7 +14,14 @@ const MARKET_NAME = 'EUR/USD';
 const HISTORY_SIZE = 500;
 const PAPER_TEST_LIMIT = 1000;
 const BLOCK_SIZE = 100;
-const ANALYSIS_WINDOW = 20;
+
+/*
+ * Fenêtre utilisée par le moteur.
+ *
+ * On analyse suffisamment de directions pour
+ * éviter de réagir uniquement au dernier tick.
+ */
+const ANALYSIS_WINDOW = 30;
 
 const TICK_REQUEST_ID = 4111;
 const HISTORY_REQUEST_ID = 4114;
@@ -36,514 +43,1305 @@ type TickData = {
     pip_size?: number;
 };
 
-const getQuote = (tick: TickData): number | null => {
-    const quote = Number(tick?.quote);
+type PredictionAnalysis = {
+    prediction: Direction;
+    strength: number;
+    upScore: number;
+    downScore: number;
+    transitionScore: number;
+    momentumScore: number;
+    continuationScore: number;
+    sampleSize: number;
+};
 
-    return Number.isFinite(quote) ? quote : null;
+/* =========================================================
+   UTILITAIRES
+========================================================= */
+
+const getQuote = (
+    tick: TickData
+): number | null => {
+    const quote = Number(
+        tick?.quote
+    );
+
+    return Number.isFinite(
+        quote
+    )
+        ? quote
+        : null;
 };
 
 const getLastDigit = (
     quote: number,
     pipSize?: number
 ): string => {
+    /*
+     * EUR/USD utilise normalement 5 décimales.
+     * Si Deriv fournit pip_size, on l'utilise.
+     */
     const digits =
-        Number.isFinite(Number(pipSize)) &&
+        Number.isFinite(
+            Number(pipSize)
+        ) &&
         Number(pipSize) >= 0
             ? Number(pipSize)
             : 5;
 
-    const fixed = quote.toFixed(digits);
-    const clean = fixed.replace('.', '');
+    const fixed =
+        quote.toFixed(digits);
 
-    return clean.length > 0
-        ? clean[clean.length - 1]
-        : '—';
+    const clean =
+        fixed.replace('.', '');
+
+    if (
+        clean.length === 0
+    ) {
+        return '—';
+    }
+
+    return clean[
+        clean.length - 1
+    ];
 };
 
 const getDirection = (
     previous: number | null,
     current: number
 ): Direction => {
-    if (previous === null) {
+    if (
+        previous === null
+    ) {
         return 'FLAT';
     }
 
-    if (current > previous) {
+    if (
+        current > previous
+    ) {
         return 'UP';
     }
 
-    if (current < previous) {
+    if (
+        current < previous
+    ) {
         return 'DOWN';
     }
 
     return 'FLAT';
 };
 
+/* =========================================================
+   MOTEUR V4.11.5
+========================================================= */
+
 const calculatePrediction = (
     directions: Direction[]
-): {
-    prediction: Direction;
-    strength: number;
-} => {
-    const usable = directions
-        .filter(
-            direction =>
-                direction === 'UP' ||
-                direction === 'DOWN'
-        )
-        .slice(-ANALYSIS_WINDOW);
+): PredictionAnalysis => {
+    const usable =
+        directions
+            .filter(
+                direction =>
+                    direction ===
+                        'UP' ||
+                    direction ===
+                        'DOWN'
+            )
+            .slice(
+                -ANALYSIS_WINDOW
+            );
 
-    if (usable.length < 5) {
+    if (
+        usable.length < 6
+    ) {
         return {
             prediction: 'FLAT',
             strength: 0,
+            upScore: 0,
+            downScore: 0,
+            transitionScore: 0,
+            momentumScore: 0,
+            continuationScore: 0,
+            sampleSize:
+                usable.length,
         };
     }
 
-    let upScore = 0;
-    let downScore = 0;
+    /*
+     * -----------------------------------------------------
+     * 1. TRANSITION MATRIX
+     *
+     * Exemple :
+     * UP -> UP
+     * UP -> DOWN
+     * DOWN -> UP
+     * DOWN -> DOWN
+     * -----------------------------------------------------
+     */
 
-    usable.forEach((direction, index) => {
-        const weight = index + 1;
+    let upAfterUp = 0;
+    let downAfterUp = 0;
+    let upAfterDown = 0;
+    let downAfterDown = 0;
 
-        if (direction === 'UP') {
-            upScore += weight;
-        } else {
-            downScore += weight;
+    for (
+        let i = 1;
+        i < usable.length;
+        i++
+    ) {
+        const previous =
+            usable[i - 1];
+
+        const current =
+            usable[i];
+
+        if (
+            previous === 'UP'
+        ) {
+            if (
+                current === 'UP'
+            ) {
+                upAfterUp++;
+            } else {
+                downAfterUp++;
+            }
         }
-    });
 
-    const total = upScore + downScore;
+        if (
+            previous === 'DOWN'
+        ) {
+            if (
+                current === 'UP'
+            ) {
+                upAfterDown++;
+            } else {
+                downAfterDown++;
+            }
+        }
+    }
 
-    if (total <= 0) {
+    const lastDirection =
+        usable[
+            usable.length - 1
+        ];
+
+    /*
+     * Probabilité empirique de la prochaine direction
+     * conditionnelle à la dernière direction.
+     */
+    let transitionUp = 0;
+    let transitionDown = 0;
+
+    if (
+        lastDirection === 'UP'
+    ) {
+        const total =
+            upAfterUp +
+            downAfterUp;
+
+        if (total > 0) {
+            transitionUp =
+                upAfterUp /
+                total;
+
+            transitionDown =
+                downAfterUp /
+                total;
+        }
+    }
+
+    if (
+        lastDirection === 'DOWN'
+    ) {
+        const total =
+            upAfterDown +
+            downAfterDown;
+
+        if (total > 0) {
+            transitionUp =
+                upAfterDown /
+                total;
+
+            transitionDown =
+                downAfterDown /
+                total;
+        }
+    }
+
+    /*
+     * -----------------------------------------------------
+     * 2. MOMENTUM RÉCENT
+     *
+     * Les derniers mouvements ont plus de poids.
+     * -----------------------------------------------------
+     */
+
+    let momentumUp = 0;
+    let momentumDown = 0;
+
+    usable.forEach(
+        (
+            direction,
+            index
+        ) => {
+            const weight =
+                index + 1;
+
+            if (
+                direction === 'UP'
+            ) {
+                momentumUp +=
+                    weight;
+            } else {
+                momentumDown +=
+                    weight;
+            }
+        }
+    );
+
+    const momentumTotal =
+        momentumUp +
+        momentumDown;
+
+    /*
+     * -----------------------------------------------------
+     * 3. CONTINUATION / RETOURNEMENT
+     *
+     * On regarde la série récente.
+     * -----------------------------------------------------
+     */
+
+    const recent =
+        usable.slice(-8);
+
+    let recentUp = 0;
+    let recentDown = 0;
+
+    recent.forEach(
+        direction => {
+            if (
+                direction === 'UP'
+            ) {
+                recentUp++;
+            } else {
+                recentDown++;
+            }
+        }
+    );
+
+    const recentTotal =
+        recentUp +
+        recentDown;
+
+    let continuationUp = 0;
+    let continuationDown = 0;
+
+    if (
+        recentTotal > 0
+    ) {
+        continuationUp =
+            recentUp /
+            recentTotal;
+
+        continuationDown =
+            recentDown /
+            recentTotal;
+    }
+
+    /*
+     * -----------------------------------------------------
+     * 4. SCORE FINAL
+     *
+     * Transition : poids important
+     * Momentum   : poids moyen
+     * Récent     : poids complémentaire
+     * -----------------------------------------------------
+     */
+
+    const transitionWeight = 0.45;
+    const momentumWeight = 0.35;
+    const recentWeight = 0.20;
+
+    const transitionScoreUp =
+        transitionUp *
+        transitionWeight;
+
+    const transitionScoreDown =
+        transitionDown *
+        transitionWeight;
+
+    const normalizedMomentumUp =
+        momentumTotal > 0
+            ? momentumUp /
+              momentumTotal
+            : 0;
+
+    const normalizedMomentumDown =
+        momentumTotal > 0
+            ? momentumDown /
+              momentumTotal
+            : 0;
+
+    const momentumScoreUp =
+        normalizedMomentumUp *
+        momentumWeight;
+
+    const momentumScoreDown =
+        normalizedMomentumDown *
+        momentumWeight;
+
+    const continuationScoreUp =
+        continuationUp *
+        recentWeight;
+
+    const continuationScoreDown =
+        continuationDown *
+        recentWeight;
+
+    const upScore =
+        transitionScoreUp +
+        momentumScoreUp +
+        continuationScoreUp;
+
+    const downScore =
+        transitionScoreDown +
+        momentumScoreDown +
+        continuationScoreDown;
+
+    const totalScore =
+        upScore +
+        downScore;
+
+    if (
+        totalScore <= 0
+    ) {
         return {
             prediction: 'FLAT',
             strength: 0,
+            upScore,
+            downScore,
+            transitionScore:
+                0,
+            momentumScore:
+                0,
+            continuationScore:
+                0,
+            sampleSize:
+                usable.length,
         };
     }
 
-    const difference = Math.abs(
-        upScore - downScore
+    const difference =
+        Math.abs(
+            upScore -
+                downScore
+        );
+
+    let strength =
+        (difference /
+            totalScore) *
+        100;
+
+    /*
+     * Évite de donner une forte prédiction
+     * avec un échantillon trop petit.
+     */
+    if (
+        usable.length < 10
+    ) {
+        strength *= 0.65;
+    }
+
+    strength = Math.min(
+        95,
+        strength
     );
 
-    const strength = Math.min(
-        100,
-        (difference / total) * 100
-    );
-
-    if (strength < 10) {
+    /*
+     * Zone neutre :
+     * si les scores sont trop proches,
+     * on préfère STABLE.
+     */
+    if (
+        strength < 12
+    ) {
         return {
             prediction: 'FLAT',
             strength,
+            upScore,
+            downScore,
+            transitionScore:
+                Math.abs(
+                    transitionUp -
+                        transitionDown
+                ) * 100,
+            momentumScore:
+                Math.abs(
+                    normalizedMomentumUp -
+                        normalizedMomentumDown
+                ) * 100,
+            continuationScore:
+                Math.abs(
+                    continuationUp -
+                        continuationDown
+                ) * 100,
+            sampleSize:
+                usable.length,
         };
     }
 
+    const prediction =
+        upScore >
+        downScore
+            ? 'UP'
+            : 'DOWN';
+
     return {
-        prediction:
-            upScore >= downScore
-                ? 'UP'
-                : 'DOWN',
+        prediction,
         strength,
+        upScore,
+        downScore,
+        transitionScore:
+            Math.abs(
+                transitionUp -
+                    transitionDown
+            ) * 100,
+        momentumScore:
+            Math.abs(
+                normalizedMomentumUp -
+                    normalizedMomentumDown
+            ) * 100,
+        continuationScore:
+            Math.abs(
+                continuationUp -
+                    continuationDown
+            ) * 100,
+        sampleSize:
+            usable.length,
     };
 };
 
-const R75TickMonitor = observer(() => {
-    const [connection, setConnection] =
-        useState<
-            'connecting' |
-            'connected' |
-            'waiting' |
-            'closed' |
-            'error'
+/* =========================================================
+   COMPOSANT
+========================================================= */
+
+const R75TickMonitor =
+    observer(() => {
+        const [
+            connection,
+            setConnection,
+        ] = useState<
+            | 'connecting'
+            | 'connected'
+            | 'waiting'
+            | 'closed'
+            | 'error'
         >('connecting');
 
-    const [price, setPrice] =
-        useState<number | null>(null);
+        const [
+            price,
+            setPrice,
+        ] = useState<
+            number | null
+        >(null);
 
-    const [lastDigit, setLastDigit] =
-        useState<string>('—');
+        const [
+            lastDigit,
+            setLastDigit,
+        ] = useState('—');
 
-    const [currentDirection, setCurrentDirection] =
-        useState<Direction>('FLAT');
+        const [
+            currentDirection,
+            setCurrentDirection,
+        ] =
+            useState<Direction>(
+                'FLAT'
+            );
 
-    const [prediction, setPrediction] =
-        useState<Direction>('FLAT');
+        const [
+            prediction,
+            setPrediction,
+        ] =
+            useState<Direction>(
+                'FLAT'
+            );
 
-    const [predictionStrength, setPredictionStrength] =
-        useState(0);
+        const [
+            predictionStrength,
+            setPredictionStrength,
+        ] = useState(0);
 
-    const [observations, setObservations] =
-        useState(0);
+        const [
+            observations,
+            setObservations,
+        ] = useState(0);
 
-    const [historyCount, setHistoryCount] =
-        useState(0);
+        const [
+            historyCount,
+            setHistoryCount,
+        ] = useState(0);
 
-    const [paperRunning, setPaperRunning] =
-        useState(false);
+        const [
+            balance,
+            setBalance,
+        ] =
+            useState<
+                number | null
+            >(null);
 
-    const [paperResult, setPaperResult] =
-        useState<PaperResult>({
-            total: 0,
-            wins: 0,
-            losses: 0,
-            pnl: 0,
-        });
+        const [
+            loginId,
+            setLoginId,
+        ] = useState('—');
 
-    const [balance, setBalance] =
-        useState<number | null>(null);
+        const [
+            paperRunning,
+            setPaperRunning,
+        ] = useState(false);
 
-    const [loginId, setLoginId] =
-        useState<string>('—');
+        const [
+            paperResult,
+            setPaperResult,
+        ] =
+            useState<PaperResult>(
+                {
+                    total: 0,
+                    wins: 0,
+                    losses: 0,
+                    pnl: 0,
+                }
+            );
 
-    const [proposalStatus, setProposalStatus] =
-        useState(
-            '⏳ Initialisation de la connexion…'
+        const [
+            proposalStatus,
+            setProposalStatus,
+        ] = useState(
+            '⏳ Initialisation…'
         );
 
-    const [marketMessage, setMarketMessage] =
-        useState<string>('');
+        const [
+            marketMessage,
+            setMarketMessage,
+        ] = useState('');
 
-    const pricesRef =
-        useRef<number[]>([]);
+        /*
+         * Statistiques supplémentaires
+         */
+        const [
+            lastResult,
+            setLastResult,
+        ] = useState<
+            'WIN' |
+            'LOSS' |
+            '—'
+        >('—');
 
-    const directionsRef =
-        useRef<Direction[]>([]);
+        const [
+            currentStreak,
+            setCurrentStreak,
+        ] = useState(0);
 
-    const previousPredictionRef =
-        useRef<Direction>('FLAT');
+        const [
+            streakType,
+            setStreakType,
+        ] = useState<
+            'WIN' |
+            'LOSS' |
+            '—'
+        >('—');
 
-    const previousPriceRef =
-        useRef<number | null>(null);
+        const [
+            blockWins,
+            setBlockWins,
+        ] = useState(0);
 
-    const paperRunningRef =
-        useRef(false);
+        const [
+            blockLosses,
+            setBlockLosses,
+        ] = useState(0);
 
-    const paperResultRef =
-        useRef<PaperResult>({
-            total: 0,
-            wins: 0,
-            losses: 0,
-            pnl: 0,
-        });
-
-    const unsubscribeRef =
-        useRef<(() => void) | null>(null);
-
-    const mountedRef =
-        useRef(true);
-
-    const processBalance = useCallback(
-        (message: any) => {
-            const rawBalance =
-                Number(
-                    message?.balance?.balance
-                );
-
-            if (
-                Number.isFinite(
-                    rawBalance
-                )
-            ) {
-                setBalance(rawBalance);
-            }
-
-            const account =
-                message?.balance?.loginid;
-
-            if (
-                typeof account === 'string' &&
-                account.length > 0
-            ) {
-                setLoginId(account);
-            }
-        },
-        []
-    );
-
-    const validatePreviousPrediction =
-        useCallback(
-            (
-                newDirection: Direction
-            ) => {
-                if (
-                    !paperRunningRef.current
-                ) {
-                    return;
-                }
-
-                const previousPrediction =
-                    previousPredictionRef.current;
-
-                if (
-                    previousPrediction !==
-                        'UP' &&
-                    previousPrediction !==
-                        'DOWN'
-                ) {
-                    return;
-                }
-
-                if (
-                    newDirection !== 'UP' &&
-                    newDirection !== 'DOWN'
-                ) {
-                    return;
-                }
-
-                const previous =
-                    paperResultRef.current;
-
-                const isWin =
-                    previousPrediction ===
-                    newDirection;
-
-                const next: PaperResult = {
-                    total:
-                        previous.total + 1,
-
-                    wins:
-                        previous.wins +
-                        (isWin ? 1 : 0),
-
-                    losses:
-                        previous.losses +
-                        (isWin ? 0 : 1),
-
-                    pnl:
-                        previous.pnl +
-                        (isWin ? 1 : -1),
-                };
-
-                paperResultRef.current =
-                    next;
-
-                setPaperResult(next);
-
-                if (
-                    next.total >=
-                    PAPER_TEST_LIMIT
-                ) {
-                    paperRunningRef.current =
-                        false;
-
-                    setPaperRunning(false);
-
-                    setProposalStatus(
-                        '🏁 Test Paper terminé : 1000/1000'
-                    );
-                }
-            },
-            []
+        const [
+            engineInfo,
+            setEngineInfo,
+        ] = useState(
+            '⏳ En attente des données'
         );
 
-    const processTick = useCallback(
-        (tick: TickData) => {
-            if (!tick) {
-                return;
-            }
+        const pricesRef =
+            useRef<number[]>(
+                []
+            );
 
-            const symbol =
-                String(
-                    tick.symbol || ''
-                );
+        const directionsRef =
+            useRef<Direction[]>(
+                []
+            );
 
-            if (
-                symbol !==
-                MARKET_SYMBOL
-            ) {
-                return;
-            }
-
-            const quote =
-                getQuote(tick);
-
-            if (quote === null) {
-                return;
-            }
-
-            const pipSize =
-                Number(tick.pip_size);
-
-            const direction =
-                getDirection(
-                    previousPriceRef.current,
-                    quote
-                );
-
-            if (
-                previousPriceRef.current !==
+        const previousPriceRef =
+            useRef<number | null>(
                 null
-            ) {
-                validatePreviousPrediction(
-                    direction
-                );
-            }
-
-            previousPriceRef.current =
-                quote;
-
-            pricesRef.current = [
-                ...pricesRef.current,
-                quote,
-            ].slice(
-                -HISTORY_SIZE
             );
 
-            directionsRef.current = [
-                ...directionsRef.current,
-                direction,
-            ].slice(
-                -HISTORY_SIZE
+        const previousPredictionRef =
+            useRef<Direction>(
+                'FLAT'
             );
 
-            const nextHistoryCount =
-                pricesRef.current.length;
+        const paperRunningRef =
+            useRef(false);
 
-            setHistoryCount(
-                nextHistoryCount
-            );
-
-            setPrice(quote);
-
-            setLastDigit(
-                getLastDigit(
-                    quote,
-                    pipSize
-                )
-            );
-
-            setCurrentDirection(
-                direction
-            );
-
-            const analysis =
-                calculatePrediction(
-                    directionsRef.current
-                );
-
-            setPrediction(
-                analysis.prediction
-            );
-
-            setPredictionStrength(
-                analysis.strength
-            );
-
-            setObservations(
-                directionsRef.current.length
-            );
-
-            if (
-                analysis.prediction === 'UP' ||
-                analysis.prediction === 'DOWN'
-            ) {
-                previousPredictionRef.current =
-                    analysis.prediction;
-            } else {
-                previousPredictionRef.current =
-                    'FLAT';
-            }
-
-            if (
-                mountedRef.current
-            ) {
-                setConnection(
-                    'connected'
-                );
-
-                setMarketMessage(
-                    ''
-                );
-            }
-
-            if (
-                paperRunningRef.current
-            ) {
-                setProposalStatus(
-                    `🧪 Paper Test actif — ${paperResultRef.current.total}/${PAPER_TEST_LIMIT}`
-                );
-            }
-        },
-        [validatePreviousPrediction]
-    );
-
-    const handleDerivMessage =
-        useCallback(
-            (payload: any) => {
-                const message =
-                    payload?.data ??
-                    payload;
-
-                if (!message) {
-                    return;
+        const paperResultRef =
+            useRef<PaperResult>(
+                {
+                    total: 0,
+                    wins: 0,
+                    losses: 0,
+                    pnl: 0,
                 }
+            );
 
-                /*
-                 * Gestion des erreurs Deriv
-                 */
-                if (message.error) {
-                    const errorCode =
-                        String(
-                            message.error.code ||
-                                'UNKNOWN'
+        const streakRef =
+            useRef<{
+                type:
+                    | 'WIN'
+                    | 'LOSS'
+                    | '—';
+                count: number;
+            }>({
+                type: '—',
+                count: 0,
+            });
+
+        const unsubscribeRef =
+            useRef<
+                (() => void) | null
+            >(null);
+
+        const mountedRef =
+            useRef(true);
+
+        /* =================================================
+           BALANCE
+        ================================================= */
+
+        const processBalance =
+            useCallback(
+                (message: any) => {
+                    const rawBalance =
+                        Number(
+                            message
+                                ?.balance
+                                ?.balance
                         );
 
-                    const errorMessage =
-                        String(
-                            message.error.message ||
-                                'Erreur inconnue'
+                    if (
+                        Number.isFinite(
+                            rawBalance
+                        )
+                    ) {
+                        setBalance(
+                            rawBalance
                         );
+                    }
 
-                    const requestedSymbol =
-                        String(
-                            message.echo_req
-                                ?.ticks ||
-                                message.echo_req
-                                    ?.ticks_history ||
-                                ''
-                        );
-
-                    console.error(
-                        '🚨 ERREUR DERIV:',
+                    const account =
                         message
+                            ?.balance
+                            ?.loginid;
+
+                    if (
+                        typeof account ===
+                            'string' &&
+                        account.length >
+                            0
+                    ) {
+                        setLoginId(
+                            account
+                        );
+                    }
+                },
+                []
+            );
+
+        /* =================================================
+           VALIDATION PAPER
+        ================================================= */
+
+        const validatePreviousPrediction =
+            useCallback(
+                (
+                    newDirection: Direction
+                ) => {
+                    if (
+                        !paperRunningRef.current
+                    ) {
+                        return;
+                    }
+
+                    const predicted =
+                        previousPredictionRef.current;
+
+                    if (
+                        predicted !==
+                            'UP' &&
+                        predicted !==
+                            'DOWN'
+                    ) {
+                        return;
+                    }
+
+                    if (
+                        newDirection !==
+                            'UP' &&
+                        newDirection !==
+                            'DOWN'
+                    ) {
+                        return;
+                    }
+
+                    const previous =
+                        paperResultRef.current;
+
+                    const isWin =
+                        predicted ===
+                        newDirection;
+
+                    const next: PaperResult =
+                        {
+                            total:
+                                previous.total +
+                                1,
+
+                            wins:
+                                previous.wins +
+                                (isWin
+                                    ? 1
+                                    : 0),
+
+                            losses:
+                                previous.losses +
+                                (isWin
+                                    ? 0
+                                    : 1),
+
+                            pnl:
+                                previous.pnl +
+                                (isWin
+                                    ? 1
+                                    : -1),
+                        };
+
+                    paperResultRef.current =
+                        next;
+
+                    setPaperResult(
+                        next
+                    );
+
+                    const resultType =
+                        isWin
+                            ? 'WIN'
+                            : 'LOSS';
+
+                    setLastResult(
+                        resultType
                     );
 
                     /*
-                     * Marché fermé :
-                     * ce n'est pas une erreur
-                     * de code.
+                     * Série actuelle
                      */
                     if (
-                        errorCode ===
-                            'MarketIsClosed'
+                        streakRef.current
+                            .type ===
+                        resultType
                     ) {
+                        streakRef.current.count++;
+                    } else {
+                        streakRef.current =
+                            {
+                                type:
+                                    resultType,
+                                count: 1,
+                            };
+                    }
+
+                    setStreakType(
+                        streakRef.current
+                            .type
+                    );
+
+                    setCurrentStreak(
+                        streakRef.current
+                            .count
+                    );
+
+                    /*
+                     * Statistiques du bloc
+                     */
+                    const blockStart =
+                        Math.floor(
+                            (next.total -
+                                1) /
+                                BLOCK_SIZE
+                        ) *
+                            BLOCK_SIZE;
+
+                    const position =
+                        next.total -
+                        blockStart;
+
+                    if (
+                        position ===
+                        1
+                    ) {
+                        setBlockWins(
+                            isWin
+                                ? 1
+                                : 0
+                        );
+
+                        setBlockLosses(
+                            isWin
+                                ? 0
+                                : 1
+                        );
+                    } else {
+                        setBlockWins(
+                            current =>
+                                current +
+                                (isWin
+                                    ? 1
+                                    : 0)
+                        );
+
+                        setBlockLosses(
+                            current =>
+                                current +
+                                (isWin
+                                    ? 0
+                                    : 1)
+                        );
+                    }
+
+                    if (
+                        next.total >=
+                        PAPER_TEST_LIMIT
+                    ) {
+                        paperRunningRef.current =
+                            false;
+
+                        setPaperRunning(
+                            false
+                        );
+
+                        setProposalStatus(
+                            '🏁 Paper Test terminé — 1000/1000'
+                        );
+                    }
+                },
+                []
+            );
+
+        /* =================================================
+           TICK
+        ================================================= */
+
+        const processTick =
+            useCallback(
+                (tick: TickData) => {
+                    if (!tick) {
+                        return;
+                    }
+
+                    const symbol =
+                        String(
+                            tick.symbol ||
+                                ''
+                        );
+
+                    /*
+                     * FILTRE STRICT
+                     */
+                    if (
+                        symbol !==
+                        MARKET_SYMBOL
+                    ) {
+                        return;
+                    }
+
+                    const quote =
+                        getQuote(tick);
+
+                    if (
+                        quote === null
+                    ) {
+                        return;
+                    }
+
+                    const direction =
+                        getDirection(
+                            previousPriceRef.current,
+                            quote
+                        );
+
+                    /*
+                     * Validation du signal
+                     * précédent sur ce nouveau tick.
+                     */
+                    if (
+                        previousPriceRef.current !==
+                        null
+                    ) {
+                        validatePreviousPrediction(
+                            direction
+                        );
+                    }
+
+                    previousPriceRef.current =
+                        quote;
+
+                    pricesRef.current =
+                        [
+                            ...pricesRef.current,
+                            quote,
+                        ].slice(
+                            -HISTORY_SIZE
+                        );
+
+                    directionsRef.current =
+                        [
+                            ...directionsRef.current,
+                            direction,
+                        ].slice(
+                            -HISTORY_SIZE
+                        );
+
+                    setPrice(
+                        quote
+                    );
+
+                    setLastDigit(
+                        getLastDigit(
+                            quote,
+                            tick.pip_size
+                        )
+                    );
+
+                    setCurrentDirection(
+                        direction
+                    );
+
+                    setHistoryCount(
+                        pricesRef.current
+                            .length
+                    );
+
+                    setObservations(
+                        directionsRef.current
+                            .length
+                    );
+
+                    /*
+                     * NOUVEAU MOTEUR
+                     */
+                    const analysis =
+                        calculatePrediction(
+                            directionsRef.current
+                        );
+
+                    setPrediction(
+                        analysis.prediction
+                    );
+
+                    setPredictionStrength(
+                        analysis.strength
+                    );
+
+                    /*
+                     * Information moteur
+                     */
+                    if (
+                        analysis.prediction ===
+                        'UP'
+                    ) {
+                        setEngineInfo(
+                            `🟢 UP ${analysis.strength.toFixed(
+                                1
+                            )}% • échantillon ${analysis.sampleSize}`
+                        );
+                    } else if (
+                        analysis.prediction ===
+                        'DOWN'
+                    ) {
+                        setEngineInfo(
+                            `🔴 DOWN ${analysis.strength.toFixed(
+                                1
+                            )}% • échantillon ${analysis.sampleSize}`
+                        );
+                    } else {
+                        setEngineInfo(
+                            `⚪ STABLE ${analysis.strength.toFixed(
+                                1
+                            )}% • échantillon ${analysis.sampleSize}`
+                        );
+                    }
+
+                    /*
+                     * Le signal actuel sera
+                     * validé sur le tick suivant.
+                     */
+                    previousPredictionRef.current =
+                        analysis.prediction;
+
+                    if (
+                        mountedRef.current
+                    ) {
+                        setConnection(
+                            'connected'
+                        );
+
+                        setMarketMessage(
+                            ''
+                        );
+
                         if (
-                            mountedRef.current
+                            !paperRunningRef.current
                         ) {
-                            setConnection(
-                                'closed'
-                            );
-
-                            setMarketMessage(
-                                errorMessage
-                            );
-
                             setProposalStatus(
-                                `🟠 Marché ${MARKET_NAME} fermé`
+                                '🟢 EUR/USD en direct — prêt pour le Paper Test'
                             );
+                        }
+                    }
+                },
+                [
+                    validatePreviousPrediction,
+                ]
+            );
+
+        /* =================================================
+           MESSAGE DERIV
+        ================================================= */
+
+        const handleDerivMessage =
+            useCallback(
+                (payload: any) => {
+                    const message =
+                        payload?.data ??
+                        payload;
+
+                    if (!message) {
+                        return;
+                    }
+
+                    /*
+                     * ERREUR DERIV
+                     */
+                    if (
+                        message.error
+                    ) {
+                        const errorCode =
+                            String(
+                                message
+                                    .error
+                                    ?.code ||
+                                    'UNKNOWN'
+                            );
+
+                        const errorMessage =
+                            String(
+                                message
+                                    .error
+                                    ?.message ||
+                                    'Erreur inconnue'
+                            );
+
+                        const requestedSymbol =
+                            String(
+                                message
+                                    .echo_req
+                                    ?.ticks ||
+                                    message
+                                        .echo_req
+                                        ?.ticks_history ||
+                                    ''
+                            );
+
+                        console.error(
+                            '🚨 ERREUR DERIV:',
+                            message
+                        );
+
+                        /*
+                         * Marché fermé :
+                         * état normal pendant
+                         * le week-end.
+                         */
+                        if (
+                            errorCode ===
+                            'MarketIsClosed'
+                        ) {
+                            if (
+                                mountedRef.current
+                            ) {
+                                setConnection(
+                                    'closed'
+                                );
+
+                                setMarketMessage(
+                                    errorMessage
+                                );
+
+                                setProposalStatus(
+                                    `🟠 Marché ${MARKET_NAME} fermé`
+                                );
+                            }
+
+                            return;
+                        }
+
+                        /*
+                         * Erreur concernant
+                         * EUR/USD.
+                         */
+                        if (
+                            requestedSymbol ===
+                            MARKET_SYMBOL
+                        ) {
+                            if (
+                                mountedRef.current
+                            ) {
+                                setConnection(
+                                    'error'
+                                );
+
+                                setProposalStatus(
+                                    `🔴 Deriv ${errorCode}: ${errorMessage}`
+                                );
+                            }
                         }
 
                         return;
                     }
 
                     /*
-                     * Autres erreurs concernant
-                     * EUR/USD
+                     * BALANCE
                      */
                     if (
-                        requestedSymbol ===
-                        MARKET_SYMBOL
+                        message.msg_type ===
+                        'balance'
                     ) {
+                        processBalance(
+                            message
+                        );
+
+                        return;
+                    }
+
+                    /*
+                     * HISTORIQUE
+                     *
+                     * L'historique est traité
+                     * dans la réponse de send().
+                     */
+                    if (
+                        message.msg_type ===
+                        'ticks_history'
+                    ) {
+                        return;
+                    }
+
+                    /*
+                     * TICK LIVE
+                     */
+                    if (
+                        message.msg_type ===
+                            'tick' &&
+                        message.tick
+                    ) {
+                        const symbol =
+                            String(
+                                message
+                                    .tick
+                                    .symbol ||
+                                    ''
+                            );
+
+                        if (
+                            symbol !==
+                            MARKET_SYMBOL
+                        ) {
+                            return;
+                        }
+
+                        processTick(
+                            message.tick
+                        );
+                    }
+                },
+                [
+                    processBalance,
+                    processTick,
+                ]
+            );
+
+        /* =================================================
+           BALANCE REQUEST
+        ================================================= */
+
+        const requestBalance =
+            useCallback(() => {
+                if (
+                    !api_base?.api
+                ) {
+                    return;
+                }
+
+                try {
+                    api_base.api.send(
+                        {
+                            balance: 1,
+                            req_id:
+                                BALANCE_REQUEST_ID,
+                        }
+                    );
+                } catch (error) {
+                    console.error(
+                        'Erreur demande balance:',
+                        error
+                    );
+                }
+            }, []);
+
+        /* =================================================
+           INITIALISATION API
+        ================================================= */
+
+        const initialiseApi =
+            useCallback(
+                async () => {
+                    try {
+                        if (
+                            !api_base?.api
+                        ) {
+                            await api_base.init();
+                        }
+
+                        if (
+                            !api_base?.api
+                        ) {
+                            throw new Error(
+                                'api_base.api indisponible après initialisation.'
+                            );
+                        }
+
+                        return true;
+                    } catch (
+                        error
+                    ) {
+                        console.error(
+                            '❌ Erreur initialisation API:',
+                            error
+                        );
+
                         if (
                             mountedRef.current
                         ) {
@@ -552,220 +1350,285 @@ const R75TickMonitor = observer(() => {
                             );
 
                             setProposalStatus(
-                                `🔴 Deriv ${errorCode}: ${errorMessage}`
+                                `🔴 Initialisation Deriv impossible : ${
+                                    error instanceof
+                                    Error
+                                        ? error.message
+                                        : 'erreur inconnue'
+                                }`
                             );
                         }
+
+                        return false;
                     }
+                },
+                []
+            );
 
-                    return;
-                }
+        /* =================================================
+           CONNEXION
+        ================================================= */
 
-                /*
-                 * Balance
-                 */
-                if (
-                    message.msg_type ===
-                    'balance'
-                ) {
-                    processBalance(
-                        message
+        useEffect(() => {
+            mountedRef.current =
+                true;
+
+            let cancelled =
+                false;
+
+            const startConnection =
+                async () => {
+                    setConnection(
+                        'connecting'
                     );
 
-                    return;
-                }
+                    setMarketMessage(
+                        ''
+                    );
 
-                /*
-                 * Historique
-                 *
-                 * On ne traite pas ici les
-                 * ticks_history comme des
-                 * ticks live.
-                 */
-                if (
-                    message.msg_type ===
-                    'ticks_history'
-                ) {
-                    return;
-                }
+                    setProposalStatus(
+                        '⏳ Connexion à Deriv…'
+                    );
 
-                /*
-                 * Tick temps réel
-                 */
-                if (
-                    message.msg_type ===
-                        'tick' &&
-                    message.tick
-                ) {
-                    const symbol =
-                        String(
-                            message.tick
-                                .symbol ||
-                                ''
-                        );
+                    const ready =
+                        await initialiseApi();
 
                     if (
-                        symbol !==
-                        MARKET_SYMBOL
+                        cancelled ||
+                        !ready ||
+                        !api_base?.api
                     ) {
                         return;
                     }
 
-                    processTick(
-                        message.tick
-                    );
-                }
-            },
-            [
-                processBalance,
-                processTick,
-            ]
-        );
-
-    const requestBalance =
-        useCallback(() => {
-            if (!api_base?.api) {
-                return;
-            }
-
-            try {
-                api_base.api.send({
-                    balance: 1,
-                    req_id:
-                        BALANCE_REQUEST_ID,
-                });
-            } catch (error) {
-                console.error(
-                    'Erreur demande balance:',
-                    error
-                );
-            }
-        }, []);
-
-    const initialiseApi =
-        useCallback(
-            async () => {
-                try {
-                    if (!api_base?.api) {
-                        await api_base.init();
-                    }
-
-                    if (!api_base?.api) {
-                        throw new Error(
-                            'api_base.api indisponible après initialisation.'
-                        );
-                    }
-
-                    return true;
-                } catch (error) {
-                    console.error(
-                        '❌ Erreur initialisation API:',
-                        error
-                    );
-
-                    if (
-                        mountedRef.current
-                    ) {
-                        setConnection(
-                            'error'
-                        );
-
-                        setProposalStatus(
-                            `🔴 Initialisation Deriv impossible : ${
-                                error instanceof
-                                Error
-                                    ? error.message
-                                    : 'erreur inconnue'
-                            }`
-                        );
-                    }
-
-                    return false;
-                }
-            },
-            []
-        );
-
-    useEffect(() => {
-        mountedRef.current = true;
-
-        let cancelled = false;
-
-        const startConnection =
-            async () => {
-                setConnection(
-                    'connecting'
-                );
-
-                setMarketMessage('');
-
-                setProposalStatus(
-                    '⏳ Connexion à Deriv…'
-                );
-
-                const ready =
-                    await initialiseApi();
-
-                if (
-                    cancelled ||
-                    !ready ||
-                    !api_base?.api
-                ) {
-                    return;
-                }
-
-                try {
-                    /*
-                     * Connexion au flux des messages
-                     */
-                    const messageStream =
-                        api_base.api.onMessage();
-
-                    const subscription =
-                        messageStream.subscribe(
-                            handleDerivMessage
-                        );
-
-                    unsubscribeRef.current =
-                        subscription?.unsubscribe ||
-                        null;
-
-                    /*
-                     * =====================================
-                     * 1 — HISTORIQUE
-                     * =====================================
-                     *
-                     * IMPORTANT :
-                     * V4.11.3 utilisait subscribe: 0.
-                     *
-                     * L'API de cette application refuse 0
-                     * et demande subscribe: 1.
-                     *
-                     * V4.11.4 utilise donc subscribe: 1.
-                     */
                     try {
-                        setProposalStatus(
-                            '📚 Chargement de 500 ticks EUR/USD…'
-                        );
+                        /*
+                         * MESSAGE STREAM
+                         */
+                        const messageStream =
+                            api_base.api.onMessage();
 
-                        const historyResponse =
-                            await api_base.api.send(
-                                {
-                                    ticks_history:
-                                        MARKET_SYMBOL,
-
-                                    end: 'latest',
-
-                                    count:
-                                        HISTORY_SIZE,
-
-                                    style: 'ticks',
-
-                                    subscribe: 1,
-
-                                    req_id:
-                                        HISTORY_REQUEST_ID,
-                                }
+                        const subscription =
+                            messageStream.subscribe(
+                                handleDerivMessage
                             );
+
+                        unsubscribeRef.current =
+                            subscription?.unsubscribe ||
+                            null;
+
+                        /*
+                         * =================================
+                         * HISTORIQUE
+                         * =================================
+                         *
+                         * IMPORTANT :
+                         * Dans ton API actuelle,
+                         * subscribe doit être 1.
+                         */
+                        try {
+                            setProposalStatus(
+                                '📚 Chargement de 500 ticks EUR/USD…'
+                            );
+
+                            const historyResponse =
+                                await api_base.api.send(
+                                    {
+                                        ticks_history:
+                                            MARKET_SYMBOL,
+
+                                        end: 'latest',
+
+                                        count:
+                                            HISTORY_SIZE,
+
+                                        style:
+                                            'ticks',
+
+                                        subscribe:
+                                            1,
+
+                                        req_id:
+                                            HISTORY_REQUEST_ID,
+                                    }
+                                );
+
+                            if (
+                                cancelled
+                            ) {
+                                return;
+                            }
+
+                            const history =
+                                historyResponse
+                                    ?.history;
+
+                            const prices =
+                                Array.isArray(
+                                    history
+                                        ?.prices
+                                )
+                                    ? history.prices
+                                          .map(
+                                              (
+                                                  value: any
+                                              ) =>
+                                                  Number(
+                                                      value
+                                                  )
+                                          )
+                                          .filter(
+                                              (
+                                                  value: number
+                                              ) =>
+                                                  Number.isFinite(
+                                                      value
+                                                  )
+                                          )
+                                    : [];
+
+                            if (
+                                prices.length >
+                                0
+                            ) {
+                                const limitedPrices =
+                                    prices.slice(
+                                        -HISTORY_SIZE
+                                    );
+
+                                pricesRef.current =
+                                    limitedPrices;
+
+                                const historyDirections: Direction[] =
+                                    [];
+
+                                for (
+                                    let i = 1;
+                                    i <
+                                    limitedPrices.length;
+                                    i++
+                                ) {
+                                    historyDirections.push(
+                                        getDirection(
+                                            limitedPrices[
+                                                i -
+                                                    1
+                                            ],
+                                            limitedPrices[
+                                                i
+                                            ]
+                                        )
+                                    );
+                                }
+
+                                directionsRef.current =
+                                    historyDirections;
+
+                                const lastPrice =
+                                    limitedPrices[
+                                        limitedPrices.length -
+                                            1
+                                    ];
+
+                                previousPriceRef.current =
+                                    lastPrice;
+
+                                setPrice(
+                                    lastPrice
+                                );
+
+                                setLastDigit(
+                                    getLastDigit(
+                                        lastPrice,
+                                        5
+                                    )
+                                );
+
+                                setHistoryCount(
+                                    limitedPrices.length
+                                );
+
+                                setObservations(
+                                    historyDirections.length
+                                );
+
+                                /*
+                                 * Analyse immédiate
+                                 * de l'historique.
+                                 */
+                                const analysis =
+                                    calculatePrediction(
+                                        historyDirections
+                                    );
+
+                                setPrediction(
+                                    analysis.prediction
+                                );
+
+                                setPredictionStrength(
+                                    analysis.strength
+                                );
+
+                                if (
+                                    historyDirections.length >
+                                    0
+                                ) {
+                                    const lastDirection =
+                                        historyDirections[
+                                            historyDirections.length -
+                                                1
+                                        ];
+
+                                    setCurrentDirection(
+                                        lastDirection
+                                    );
+                                }
+
+                                if (
+                                    analysis.prediction ===
+                                    'UP'
+                                ) {
+                                    setEngineInfo(
+                                        `🟢 UP ${analysis.strength.toFixed(
+                                            1
+                                        )}% • historique`
+                                    );
+                                } else if (
+                                    analysis.prediction ===
+                                    'DOWN'
+                                ) {
+                                    setEngineInfo(
+                                        `🔴 DOWN ${analysis.strength.toFixed(
+                                            1
+                                        )}% • historique`
+                                    );
+                                } else {
+                                    setEngineInfo(
+                                        `⚪ STABLE ${analysis.strength.toFixed(
+                                            1
+                                        )}% • historique`
+                                    );
+                                }
+
+                                setProposalStatus(
+                                    `📚 Historique disponible : ${limitedPrices.length} tick(s)`
+                                );
+                            } else {
+                                setProposalStatus(
+                                    '🟠 Aucun historique EUR/USD disponible pour le moment.'
+                                );
+                            }
+                        } catch (
+                            historyError
+                        ) {
+                            /*
+                             * Ne casse pas le flux live.
+                             */
+                            console.error(
+                                '❌ Erreur historique EUR/USD:',
+                                historyError
+                            );
+                        }
 
                         if (
                             cancelled
@@ -773,1006 +1636,1040 @@ const R75TickMonitor = observer(() => {
                             return;
                         }
 
-                        const history =
-                            historyResponse
-                                ?.history;
+                        /*
+                         * =================================
+                         * FLUX LIVE
+                         * =================================
+                         */
+                        try {
+                            api_base.api.send(
+                                {
+                                    ticks:
+                                        MARKET_SYMBOL,
 
-                        const prices =
-                            Array.isArray(
-                                history?.prices
-                            )
-                                ? history.prices
-                                      .map(
-                                          (
-                                              value: any
-                                          ) =>
-                                              Number(
-                                                  value
-                                              )
-                                      )
-                                      .filter(
-                                          (
-                                              value: number
-                                          ) =>
-                                              Number.isFinite(
-                                                  value
-                                              )
-                                      )
-                                : [];
+                                    subscribe:
+                                        1,
 
-                        if (
-                            prices.length > 0
+                                    req_id:
+                                        TICK_REQUEST_ID,
+                                }
+                            );
+                        } catch (
+                            tickError
                         ) {
-                            const limitedPrices =
-                                prices.slice(
-                                    -HISTORY_SIZE
-                                );
-
-                            pricesRef.current =
-                                limitedPrices;
-
-                            const historyDirections: Direction[] =
-                                [];
-
-                            for (
-                                let i = 1;
-                                i <
-                                limitedPrices.length;
-                                i++
-                            ) {
-                                historyDirections.push(
-                                    getDirection(
-                                        limitedPrices[
-                                            i - 1
-                                        ],
-                                        limitedPrices[
-                                            i
-                                        ]
-                                    )
-                                );
-                            }
-
-                            directionsRef.current =
-                                historyDirections;
-
-                            const lastPrice =
-                                limitedPrices[
-                                    limitedPrices.length -
-                                        1
-                                ];
-
-                            previousPriceRef.current =
-                                lastPrice;
-
-                            setPrice(
-                                lastPrice
-                            );
-
-                            setLastDigit(
-                                getLastDigit(
-                                    lastPrice,
-                                    5
-                                )
-                            );
-
-                            setHistoryCount(
-                                limitedPrices.length
-                            );
-
-                            setObservations(
-                                historyDirections.length
-                            );
-
-                            const analysis =
-                                calculatePrediction(
-                                    historyDirections
-                                );
-
-                            setPrediction(
-                                analysis.prediction
-                            );
-
-                            setPredictionStrength(
-                                analysis.strength
-                            );
-
-                            if (
-                                historyDirections.length >
-                                0
-                            ) {
-                                const lastDirection =
-                                    historyDirections[
-                                        historyDirections.length -
-                                            1
-                                    ];
-
-                                setCurrentDirection(
-                                    lastDirection
-                                );
-                            }
-
-                            setProposalStatus(
-                                `📚 Historique disponible : ${limitedPrices.length} tick(s)`
-                            );
-                        } else {
-                            setProposalStatus(
-                                '🟠 Aucun historique EUR/USD disponible pour le moment.'
+                            console.error(
+                                '❌ Erreur abonnement ticks:',
+                                tickError
                             );
                         }
-                    } catch (historyError) {
-                        console.error(
-                            '❌ Erreur historique EUR/USD:',
-                            historyError
-                        );
 
                         /*
-                         * Ne pas casser l'application
-                         * si l'historique échoue.
+                         * =================================
+                         * BALANCE
+                         * =================================
                          */
-                    }
+                        requestBalance();
 
-                    if (
-                        cancelled
-                    ) {
-                        return;
-                    }
-
-                    /*
-                     * =====================================
-                     * 2 — FLUX TEMPS RÉEL
-                     * =====================================
-                     */
-                    try {
-                        api_base.api.send({
-                            ticks:
-                                MARKET_SYMBOL,
-
-                            subscribe: 1,
-
-                            req_id:
-                                TICK_REQUEST_ID,
-                        });
-                    } catch (tickError) {
-                        console.error(
-                            '❌ Erreur abonnement ticks:',
-                            tickError
-                        );
-                    }
-
-                    /*
-                     * =====================================
-                     * 3 — BALANCE
-                     * =====================================
-                     */
-                    requestBalance();
-
-                    if (
-                        mountedRef.current
-                    ) {
-                        /*
-                         * Si le marché est fermé,
-                         * on conserve l'état fermé.
-                         * Sinon on attend les ticks.
-                         */
                         if (
-                            connection !==
-                            'closed'
+                            mountedRef.current
                         ) {
                             setConnection(
                                 'waiting'
                             );
+
+                            /*
+                             * Si le marché est fermé,
+                             * le message d'erreur Deriv
+                             * pourra ensuite remettre
+                             * l'état CLOSED.
+                             */
+                            setProposalStatus(
+                                '🟢 Connexion prête — attente des ticks EUR/USD…'
+                            );
                         }
-
-                        setProposalStatus(
-                            '🟢 Connexion prête — attente des ticks EUR/USD…'
-                        );
-                    }
-                } catch (error) {
-                    console.error(
-                        '❌ Erreur abonnement EUR/USD:',
+                    } catch (
                         error
-                    );
-
-                    if (
-                        mountedRef.current
                     ) {
-                        setConnection(
-                            'error'
+                        console.error(
+                            '❌ Erreur connexion EUR/USD:',
+                            error
                         );
 
-                        setProposalStatus(
-                            `🔴 Erreur connexion : ${
-                                error instanceof
-                                Error
-                                    ? error.message
-                                    : 'erreur inconnue'
-                            }`
+                        if (
+                            mountedRef.current
+                        ) {
+                            setConnection(
+                                'error'
+                            );
+
+                            setProposalStatus(
+                                `🔴 Erreur connexion : ${
+                                    error instanceof
+                                    Error
+                                        ? error.message
+                                        : 'erreur inconnue'
+                                }`
+                            );
+                        }
+                    }
+                };
+
+            startConnection();
+
+            return () => {
+                cancelled =
+                    true;
+
+                mountedRef.current =
+                    false;
+
+                if (
+                    unsubscribeRef.current
+                ) {
+                    try {
+                        unsubscribeRef.current();
+                    } catch (
+                        error
+                    ) {
+                        console.error(
+                            'Erreur unsubscribe:',
+                            error
                         );
                     }
+
+                    unsubscribeRef.current =
+                        null;
                 }
             };
+        }, [
+            handleDerivMessage,
+            initialiseApi,
+            requestBalance,
+        ]);
 
-        startConnection();
+        /* =================================================
+           PAPER TEST
+        ================================================= */
 
-        return () => {
-            cancelled = true;
+        const startPaperTest =
+            useCallback(() => {
+                const reset: PaperResult =
+                    {
+                        total: 0,
+                        wins: 0,
+                        losses: 0,
+                        pnl: 0,
+                    };
 
-            mountedRef.current =
-                false;
+                paperResultRef.current =
+                    reset;
 
-            if (
-                unsubscribeRef.current
-            ) {
-                try {
-                    unsubscribeRef.current();
-                } catch (error) {
-                    console.error(
-                        'Erreur unsubscribe:',
-                        error
-                    );
+                setPaperResult(
+                    reset
+                );
+
+                paperRunningRef.current =
+                    true;
+
+                setPaperRunning(
+                    true
+                );
+
+                streakRef.current =
+                    {
+                        type: '—',
+                        count: 0,
+                    };
+
+                setCurrentStreak(
+                    0
+                );
+
+                setStreakType(
+                    '—'
+                );
+
+                setLastResult(
+                    '—'
+                );
+
+                setBlockWins(
+                    0
+                );
+
+                setBlockLosses(
+                    0
+                );
+
+                /*
+                 * Le premier signal sera
+                 * validé sur le tick suivant.
+                 */
+                previousPredictionRef.current =
+                    prediction;
+
+                setProposalStatus(
+                    '🧪 Paper Test démarré — aucun ordre envoyé'
+                );
+            }, [prediction]);
+
+        const stopPaperTest =
+            useCallback(() => {
+                paperRunningRef.current =
+                    false;
+
+                setPaperRunning(
+                    false
+                );
+
+                setProposalStatus(
+                    `⏹️ Paper Test arrêté — ${paperResultRef.current.total}/${PAPER_TEST_LIMIT}`
+                );
+            }, []);
+
+        const resetPaperTest =
+            useCallback(() => {
+                paperRunningRef.current =
+                    false;
+
+                setPaperRunning(
+                    false
+                );
+
+                const reset: PaperResult =
+                    {
+                        total: 0,
+                        wins: 0,
+                        losses: 0,
+                        pnl: 0,
+                    };
+
+                paperResultRef.current =
+                    reset;
+
+                previousPredictionRef.current =
+                    'FLAT';
+
+                streakRef.current =
+                    {
+                        type: '—',
+                        count: 0,
+                    };
+
+                setPaperResult(
+                    reset
+                );
+
+                setLastResult(
+                    '—'
+                );
+
+                setCurrentStreak(
+                    0
+                );
+
+                setStreakType(
+                    '—'
+                );
+
+                setBlockWins(
+                    0
+                );
+
+                setBlockLosses(
+                    0
+                );
+
+                setProposalStatus(
+                    '🧹 Paper Test réinitialisé'
+                );
+            }, []);
+
+        /* =================================================
+           STATISTIQUES
+        ================================================= */
+
+        const winRate =
+            useMemo(() => {
+                if (
+                    paperResult.total ===
+                    0
+                ) {
+                    return 0;
                 }
 
-                unsubscribeRef.current =
-                    null;
-            }
-        };
-    }, [
-        handleDerivMessage,
-        initialiseApi,
-        requestBalance,
-    ]);
+                return (
+                    (paperResult.wins /
+                        paperResult.total) *
+                    100
+                );
+            }, [
+                paperResult,
+            ]);
 
-    const startPaperTest =
-        useCallback(() => {
-            paperResultRef.current = {
-                total: 0,
-                wins: 0,
-                losses: 0,
-                pnl: 0,
-            };
+        const lossRate =
+            useMemo(() => {
+                if (
+                    paperResult.total ===
+                    0
+                ) {
+                    return 0;
+                }
 
-            setPaperResult({
-                total: 0,
-                wins: 0,
-                losses: 0,
-                pnl: 0,
-            });
+                return (
+                    (paperResult.losses /
+                        paperResult.total) *
+                    100
+                );
+            }, [
+                paperResult,
+            ]);
 
-            paperRunningRef.current =
-                true;
-
-            setPaperRunning(true);
-
-            previousPredictionRef.current =
-                prediction;
-
-            setProposalStatus(
-                '🧪 Paper Test démarré — aucun ordre envoyé'
-            );
-        }, [prediction]);
-
-    const stopPaperTest =
-        useCallback(() => {
-            paperRunningRef.current =
-                false;
-
-            setPaperRunning(false);
-
-            setProposalStatus(
-                `⏹️ Paper Test arrêté — ${paperResultRef.current.total}/${PAPER_TEST_LIMIT}`
-            );
-        }, []);
-
-    const resetPaperTest =
-        useCallback(() => {
-            paperRunningRef.current =
-                false;
-
-            setPaperRunning(false);
-
-            paperResultRef.current = {
-                total: 0,
-                wins: 0,
-                losses: 0,
-                pnl: 0,
-            };
-
-            previousPredictionRef.current =
-                'FLAT';
-
-            setPaperResult({
-                total: 0,
-                wins: 0,
-                losses: 0,
-                pnl: 0,
-            });
-
-            setProposalStatus(
-                '🧹 Paper Test réinitialisé'
-            );
-        }, []);
-
-    const winRate = useMemo(() => {
-        if (
+        const currentBlock =
             paperResult.total ===
             0
-        ) {
-            return 0;
-        }
+                ? 0
+                : Math.min(
+                      10,
+                      Math.ceil(
+                          paperResult.total /
+                              BLOCK_SIZE
+                      )
+                  );
 
-        return (
-            (paperResult.wins /
-                paperResult.total) *
-            100
-        );
-    }, [paperResult]);
-
-    const lossRate = useMemo(() => {
-        if (
+        const blockProgress =
             paperResult.total ===
             0
-        ) {
-            return 0;
-        }
+                ? 0
+                : paperResult.total %
+                      BLOCK_SIZE ===
+                  0
+                ? BLOCK_SIZE
+                : paperResult.total %
+                  BLOCK_SIZE;
+
+        const blocksCompleted =
+            Math.floor(
+                paperResult.total /
+                    BLOCK_SIZE
+            );
+
+        const directionLabel =
+            currentDirection ===
+            'UP'
+                ? '🟢 HAUSSE'
+                : currentDirection ===
+                  'DOWN'
+                ? '🔴 BAISSE'
+                : '⚪ STABLE';
+
+        const predictionLabel =
+            prediction === 'UP'
+                ? '🟢 HAUSSE'
+                : prediction ===
+                  'DOWN'
+                ? '🔴 BAISSE'
+                : '⚪ STABLE';
+
+        const connectionLabel =
+            connection ===
+            'connected'
+                ? '🟢 Connecté à Deriv — EUR/USD'
+                : connection ===
+                  'waiting'
+                ? '🟢 Connexion établie — attente EUR/USD'
+                : connection ===
+                  'closed'
+                ? '🟠 Marché EUR/USD fermé'
+                : connection ===
+                  'error'
+                ? '🔴 Erreur EUR/USD'
+                : '🟠 Connexion à Deriv…';
+
+        /* =================================================
+           UI
+        ================================================= */
 
         return (
-            (paperResult.losses /
-                paperResult.total) *
-            100
-        );
-    }, [paperResult]);
-
-    const blocksCompleted =
-        Math.floor(
-            paperResult.total /
-                BLOCK_SIZE
-        );
-
-    const currentBlockProgress =
-        paperResult.total === 0
-            ? 0
-            : paperResult.total %
-                  BLOCK_SIZE ===
-              0
-            ? BLOCK_SIZE
-            : paperResult.total %
-              BLOCK_SIZE;
-
-    const currentBlock =
-        paperResult.total === 0
-            ? 0
-            : Math.min(
-                  10,
-                  Math.ceil(
-                      paperResult.total /
-                          BLOCK_SIZE
-                  )
-              );
-
-    const connectionLabel =
-        connection === 'connected'
-            ? '🟢 Connecté à Deriv — EUR/USD'
-            : connection === 'waiting'
-            ? '🟢 Connexion établie — attente EUR/USD'
-            : connection === 'closed'
-            ? '🟠 Marché EUR/USD fermé'
-            : connection === 'error'
-            ? '🔴 Erreur EUR/USD'
-            : '🟠 Connexion à Deriv…';
-
-    const directionLabel =
-        currentDirection === 'UP'
-            ? '🟢 HAUSSE'
-            : currentDirection ===
-              'DOWN'
-            ? '🔴 BAISSE'
-            : '⚪ STABLE';
-
-    const predictionLabel =
-        prediction === 'UP'
-            ? '🟢 HAUSSE'
-            : prediction === 'DOWN'
-            ? '🔴 BAISSE'
-            : '⚪ STABLE';
-
-    return (
-        <div
-            style={{
-                width: '100%',
-                minHeight: '100dvh',
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                WebkitOverflowScrolling:
-                    'touch',
-                background:
-                    '#0f172a',
-                color:
-                    '#e5e7eb',
-                padding: '16px',
-                paddingBottom:
-                    '70px',
-                fontFamily:
-                    'Arial, sans-serif',
-                boxSizing:
-                    'border-box',
-            }}
-        >
             <div
                 style={{
-                    maxWidth:
-                        '760px',
-                    margin:
-                        '0 auto',
+                    width:
+                        '100%',
+                    minHeight:
+                        '100dvh',
+                    overflowY:
+                        'auto',
+                    overflowX:
+                        'hidden',
+                    WebkitOverflowScrolling:
+                        'touch',
+                    overscrollBehaviorY:
+                        'auto',
+                    touchAction:
+                        'pan-y',
+                    background:
+                        '#0f172a',
+                    color:
+                        '#e5e7eb',
+                    padding:
+                        '16px',
+                    paddingBottom:
+                        '70px',
+                    fontFamily:
+                        'Arial, sans-serif',
+                    boxSizing:
+                        'border-box',
                 }}
             >
-                <h1
-                    style={{
-                        fontSize:
-                            '22px',
-                        marginBottom:
-                            '8px',
-                    }}
-                >
-                    📈 Moniteur Forex EUR/USD
-                    — V4.11.4
-                </h1>
-
                 <div
                     style={{
-                        background:
-                            '#1e293b',
-                        padding:
-                            '14px',
-                        borderRadius:
-                            '12px',
-                        marginBottom:
-                            '12px',
+                        maxWidth:
+                            '760px',
+                        margin:
+                            '0 auto',
                     }}
                 >
-                    <strong>
-                        {connectionLabel}
-                    </strong>
-
-                    {marketMessage && (
-                        <p
-                            style={{
-                                marginBottom:
-                                    '0',
-                            }}
-                        >
-                            🟠 {marketMessage}
-                        </p>
-                    )}
-
-                    {connection ===
-                        'closed' && (
-                        <p>
-                            🔄 Nouvelle
-                            vérification avec
-                            les prochains ticks
-                            disponibles.
-                        </p>
-                    )}
-                </div>
-
-                <div
-                    style={{
-                        background:
-                            '#1e293b',
-                        padding:
-                            '14px',
-                        borderRadius:
-                            '12px',
-                        marginBottom:
-                            '12px',
-                    }}
-                >
-                    <h2>
-                        💰 Compte Deriv
-                    </h2>
-
-                    <div
+                    <h1
                         style={{
                             fontSize:
                                 '22px',
-                            fontWeight:
-                                'bold',
-                        }}
-                    >
-                        {balance !== null
-                            ? `${balance.toFixed(
-                                  2
-                              )} USD`
-                            : '—'}
-                    </div>
-
-                    <div>
-                        Compte :{' '}
-                        {loginId}
-                    </div>
-
-                    <div
-                        style={{
-                            marginTop:
+                            marginBottom:
                                 '8px',
                         }}
                     >
-                        {balance !== null
-                            ? '🟢 Solde reçu depuis Deriv'
-                            : '🟠 En attente du solde'}
-                    </div>
-                </div>
-
-                <div
-                    style={{
-                        background:
-                            '#1e293b',
-                        padding:
-                            '14px',
-                        borderRadius:
-                            '12px',
-                        marginBottom:
-                            '12px',
-                    }}
-                >
-                    <h2>
-                        📊 Marché
-                    </h2>
-
-                    <p>
-                        <strong>
-                            Marché
-                        </strong>
-                        <br />
-                        {MARKET_NAME}
-                    </p>
-
-                    <p>
-                        <strong>
-                            Symbole
-                        </strong>
-                        <br />
-                        {MARKET_SYMBOL}
-                    </p>
-
-                    <p>
-                        <strong>
-                            Prix
-                        </strong>
-                        <br />
-                        {price !== null
-                            ? price.toFixed(
-                                  5
-                              )
-                            : '—'}
-                    </p>
-
-                    <p>
-                        <strong>
-                            Dernier chiffre
-                        </strong>
-                        <br />
-                        {lastDigit}
-                    </p>
-                </div>
-
-                <div
-                    style={{
-                        background:
-                            '#1e293b',
-                        padding:
-                            '14px',
-                        borderRadius:
-                            '12px',
-                        marginBottom:
-                            '12px',
-                    }}
-                >
-                    <h2>
-                        🧠 Phase 1 —
-                        Apprentissage
-                    </h2>
-
-                    <p>
-                        Historique :{' '}
-                        {historyCount}/
-                        {HISTORY_SIZE}
-                    </p>
-
-                    <p>
-                        {historyCount >=
-                        HISTORY_SIZE
-                            ? '🟢 Historique complet'
-                            : '🧠 Collecte de données…'}
-                    </p>
-                </div>
-
-                <div
-                    style={{
-                        background:
-                            '#1e293b',
-                        padding:
-                            '14px',
-                        borderRadius:
-                            '12px',
-                        marginBottom:
-                            '12px',
-                    }}
-                >
-                    <h2>
-                        🔎 Analyse en
-                        temps réel
-                    </h2>
-
-                    <p>
-                        <strong>
-                            Direction actuelle
-                        </strong>
-                        <br />
-                        {directionLabel}
-                    </p>
-
-                    <p>
-                        <strong>
-                            Prochaine
-                            prédiction
-                        </strong>
-                        <br />
-                        {predictionLabel}
-                    </p>
-
-                    <p>
-                        <strong>
-                            Force
-                        </strong>
-                        <br />
-                        {predictionStrength.toFixed(
-                            1
-                        )}
-                        %
-                    </p>
-
-                    <p>
-                        <strong>
-                            Observations
-                        </strong>
-                        <br />
-                        {observations}
-                    </p>
+                        📈 Moniteur Forex
+                        EUR/USD —
+                        V4.11.5
+                    </h1>
 
                     <div
                         style={{
                             background:
-                                '#334155',
+                                '#1e293b',
                             padding:
-                                '10px',
+                                '14px',
                             borderRadius:
-                                '8px',
-                            marginTop:
-                                '10px',
+                                '12px',
+                            marginBottom:
+                                '12px',
                         }}
                     >
-                        ℹ️ L'analyse utilise
-                        les dernières
-                        directions du marché
-                        pour produire une
-                        indication UP/DOWN.
+                        <strong>
+                            {connectionLabel}
+                        </strong>
+
+                        {marketMessage && (
+                            <p>
+                                🟠{' '}
+                                {
+                                    marketMessage
+                                }
+                            </p>
+                        )}
+
+                        {connection ===
+                            'closed' && (
+                            <p>
+                                🔄 Le
+                                moniteur
+                                attend la
+                                prochaine
+                                ouverture
+                                du marché.
+                            </p>
+                        )}
+                    </div>
+
+                    <div
+                        style={{
+                            background:
+                                '#1e293b',
+                            padding:
+                                '14px',
+                            borderRadius:
+                                '12px',
+                            marginBottom:
+                                '12px',
+                        }}
+                    >
+                        <h2>
+                            💰 Compte
+                            Deriv
+                        </h2>
+
+                        <div
+                            style={{
+                                fontSize:
+                                    '22px',
+                                fontWeight:
+                                    'bold',
+                            }}
+                        >
+                            {balance !==
+                            null
+                                ? `${balance.toFixed(
+                                      2
+                                  )} USD`
+                                : '—'}
+                        </div>
+
+                        <div>
+                            Compte :{' '}
+                            {loginId}
+                        </div>
+
+                        <p>
+                            {balance !==
+                            null
+                                ? '🟢 Solde reçu depuis Deriv'
+                                : '🟠 En attente du solde'}
+                        </p>
+                    </div>
+
+                    <div
+                        style={{
+                            background:
+                                '#1e293b',
+                            padding:
+                                '14px',
+                            borderRadius:
+                                '12px',
+                            marginBottom:
+                                '12px',
+                        }}
+                    >
+                        <h2>
+                            📊 Marché
+                        </h2>
+
+                        <p>
+                            <strong>
+                                Marché
+                            </strong>
+                            <br />
+                            {MARKET_NAME}
+                        </p>
+
+                        <p>
+                            <strong>
+                                Symbole
+                            </strong>
+                            <br />
+                            {MARKET_SYMBOL}
+                        </p>
+
+                        <p>
+                            <strong>
+                                Prix
+                            </strong>
+                            <br />
+                            {price !==
+                            null
+                                ? price.toFixed(
+                                      5
+                                  )
+                                : '—'}
+                        </p>
+
+                        <p>
+                            <strong>
+                                Dernier chiffre
+                            </strong>
+                            <br />
+                            {lastDigit}
+                        </p>
+                    </div>
+
+                    <div
+                        style={{
+                            background:
+                                '#1e293b',
+                            padding:
+                                '14px',
+                            borderRadius:
+                                '12px',
+                            marginBottom:
+                                '12px',
+                        }}
+                    >
+                        <h2>
+                            🧠 Phase 1 —
+                            Apprentissage
+                        </h2>
+
+                        <p>
+                            Historique :{' '}
+                            {historyCount}/
+                            {HISTORY_SIZE}
+                        </p>
+
+                        <p>
+                            Observations :{' '}
+                            {observations}
+                        </p>
+
+                        <p>
+                            {historyCount >=
+                            HISTORY_SIZE
+                                ? '🟢 Historique complet'
+                                : '🧠 Collecte de données…'}
+                        </p>
+                    </div>
+
+                    <div
+                        style={{
+                            background:
+                                '#1e293b',
+                            padding:
+                                '14px',
+                            borderRadius:
+                                '12px',
+                            marginBottom:
+                                '12px',
+                        }}
+                    >
+                        <h2>
+                            🧠 Moteur
+                            V4.11.5
+                        </h2>
+
+                        <p>
+                            <strong>
+                                Direction
+                                actuelle
+                            </strong>
+                            <br />
+                            {
+                                directionLabel
+                            }
+                        </p>
+
+                        <p>
+                            <strong>
+                                Prédiction
+                            </strong>
+                            <br />
+                            {
+                                predictionLabel
+                            }
+                        </p>
+
+                        <p>
+                            <strong>
+                                Force
+                            </strong>
+                            <br />
+                            {predictionStrength.toFixed(
+                                1
+                            )}
+                            %
+                        </p>
+
+                        <p>
+                            <strong>
+                                État moteur
+                            </strong>
+                            <br />
+                            {
+                                engineInfo
+                            }
+                        </p>
+
+                        <div
+                            style={{
+                                background:
+                                    '#334155',
+                                padding:
+                                    '10px',
+                                borderRadius:
+                                    '8px',
+                                marginTop:
+                                    '10px',
+                            }}
+                        >
+                            🔎 Analyse :
+                            transitions +
+                            momentum +
+                            mouvements
+                            récents.
+                        </div>
+                    </div>
+
+                    <div
+                        style={{
+                            background:
+                                '#1e293b',
+                            padding:
+                                '14px',
+                            borderRadius:
+                                '12px',
+                            marginBottom:
+                                '12px',
+                        }}
+                    >
+                        <h2>
+                            🧪 Paper Test
+                        </h2>
+
+                        <p>
+                            Aucun ordre
+                            financier n'est
+                            envoyé.
+                        </p>
+
+                        {!paperRunning ? (
+                            <button
+                                onClick={
+                                    startPaperTest
+                                }
+                                style={{
+                                    width:
+                                        '100%',
+                                    padding:
+                                        '14px',
+                                    borderRadius:
+                                        '10px',
+                                    border:
+                                        'none',
+                                    fontWeight:
+                                        'bold',
+                                    fontSize:
+                                        '16px',
+                                    cursor:
+                                        'pointer',
+                                }}
+                            >
+                                ▶️ TESTER
+                                SUR COMPTE
+                                DÉMO
+                            </button>
+                        ) : (
+                            <button
+                                onClick={
+                                    stopPaperTest
+                                }
+                                style={{
+                                    width:
+                                        '100%',
+                                    padding:
+                                        '14px',
+                                    borderRadius:
+                                        '10px',
+                                    border:
+                                        'none',
+                                    fontWeight:
+                                        'bold',
+                                    fontSize:
+                                        '16px',
+                                    cursor:
+                                        'pointer',
+                                }}
+                            >
+                                ⏹️ ARRÊTER
+                                LE TEST
+                            </button>
+                        )}
+
+                        <button
+                            onClick={
+                                resetPaperTest
+                            }
+                            style={{
+                                width:
+                                    '100%',
+                                padding:
+                                    '10px',
+                                marginTop:
+                                    '8px',
+                                borderRadius:
+                                    '10px',
+                                border:
+                                    'none',
+                                cursor:
+                                    'pointer',
+                            }}
+                        >
+                            🔄 Réinitialiser
+                        </button>
+
+                        <p>
+                            {
+                                proposalStatus
+                            }
+                        </p>
+                    </div>
+
+                    <div
+                        style={{
+                            background:
+                                '#1e293b',
+                            padding:
+                                '14px',
+                            borderRadius:
+                                '12px',
+                            marginBottom:
+                                '12px',
+                        }}
+                    >
+                        <h2>
+                            📊 Résultats
+                        </h2>
+
+                        <p>
+                            <strong>
+                                Tests
+                            </strong>
+                            <br />
+                            {
+                                paperResult.total
+                            }
+                            /
+                            {
+                                PAPER_TEST_LIMIT
+                            }
+                        </p>
+
+                        <p>
+                            <strong>
+                                Gains
+                            </strong>
+                            <br />
+                            {
+                                paperResult.wins
+                            }
+                        </p>
+
+                        <p>
+                            <strong>
+                                Pertes
+                            </strong>
+                            <br />
+                            {
+                                paperResult.losses
+                            }
+                        </p>
+
+                        <p>
+                            <strong>
+                                Taux de gain
+                            </strong>
+                            <br />
+                            {winRate.toFixed(
+                                2
+                            )}
+                            %
+                        </p>
+
+                        <p>
+                            <strong>
+                                Taux de perte
+                            </strong>
+                            <br />
+                            {lossRate.toFixed(
+                                2
+                            )}
+                            %
+                        </p>
+
+                        <p>
+                            <strong>
+                                P/L virtuel
+                            </strong>
+                            <br />
+                            {paperResult.pnl >=
+                            0
+                                ? '+'
+                                : ''}
+                            {
+                                paperResult.pnl
+                            }
+                        </p>
+
+                        <p>
+                            <strong>
+                                Dernier résultat
+                            </strong>
+                            <br />
+                            {lastResult ===
+                            'WIN'
+                                ? '🟢 GAIN'
+                                : lastResult ===
+                                  'LOSS'
+                                ? '🔴 PERTE'
+                                : '—'}
+                        </p>
+
+                        <p>
+                            <strong>
+                                Série actuelle
+                            </strong>
+                            <br />
+                            {streakType ===
+                            'WIN'
+                                ? `🟢 ${currentStreak} gain(s)`
+                                : streakType ===
+                                  'LOSS'
+                                ? `🔴 ${currentStreak} perte(s)`
+                                : '—'}
+                        </p>
+                    </div>
+
+                    <div
+                        style={{
+                            background:
+                                '#1e293b',
+                            padding:
+                                '14px',
+                            borderRadius:
+                                '12px',
+                            marginBottom:
+                                '12px',
+                        }}
+                    >
+                        <h2>
+                            📦 Blocs de
+                            100
+                        </h2>
+
+                        <p>
+                            Blocs terminés :{' '}
+                            {
+                                blocksCompleted
+                            }
+                        </p>
+
+                        <p>
+                            Bloc actuel :{' '}
+                            {currentBlock}/10
+                        </p>
+
+                        <p>
+                            Progression :{' '}
+                            {
+                                blockProgress
+                            }
+                            /100
+                        </p>
+
+                        <p>
+                            Gains du bloc :{' '}
+                            {
+                                blockWins
+                            }
+                        </p>
+
+                        <p>
+                            Pertes du bloc :{' '}
+                            {
+                                blockLosses
+                            }
+                        </p>
+                    </div>
+
+                    <div
+                        style={{
+                            background:
+                                '#172033',
+                            padding:
+                                '14px',
+                            borderRadius:
+                                '12px',
+                            marginBottom:
+                                '12px',
+                        }}
+                    >
+                        <strong>
+                            🛡️ SÉCURITÉ
+                        </strong>
+
+                        <p>
+                            Cette version
+                            fonctionne
+                            uniquement en
+                            analyse et Paper
+                            Test.
+                        </p>
+
+                        <p>
+                            ❌ Aucun
+                            <strong>
+                                {' '}
+                                BUY
+                            </strong>
+                            <br />
+                            ❌ Aucun
+                            <strong>
+                                {' '}
+                                SELL
+                            </strong>
+                            <br />
+                            ❌ Aucun trade
+                            automatique.
+                        </p>
+
+                        <p>
+                            Le P/L affiché est
+                            entièrement
+                            virtuel.
+                        </p>
+                    </div>
+
+                    <div
+                        style={{
+                            background:
+                                '#1e293b',
+                            padding:
+                                '14px',
+                            borderRadius:
+                                '12px',
+                            marginBottom:
+                                '12px',
+                        }}
+                    >
+                        <h2>
+                            ⚙️ État
+                        </h2>
+
+                        <p>
+                            Flux strict :{' '}
+                            {MARKET_SYMBOL}
+                        </p>
+
+                        <p>
+                            Ticks conservés :{' '}
+                            {pricesRef.current
+                                .length}
+                        </p>
+
+                        <p>
+                            Moteur :{' '}
+                            V4.11.5
+                        </p>
+
+                        <p>
+                            Mode :{' '}
+                            {paperRunning
+                                ? '🧪 PAPER EN COURS'
+                                : '⚪ PAPER ARRÊTÉ'}
+                        </p>
+                    </div>
+
+                    <div
+                        style={{
+                            textAlign:
+                                'center',
+                            padding:
+                                '12px',
+                        }}
+                    >
+                        ↕️ Fais glisser
+                        l'écran pour voir
+                        toutes les
+                        informations
                     </div>
                 </div>
-
-                <div
-                    style={{
-                        background:
-                            '#1e293b',
-                        padding:
-                            '14px',
-                        borderRadius:
-                            '12px',
-                        marginBottom:
-                            '12px',
-                    }}
-                >
-                    <h2>
-                        🎮 Test Demo
-                    </h2>
-
-                    <p>
-                        Le bouton démarre
-                        le test de la
-                        stratégie avec les
-                        ticks EUR/USD en
-                        mode virtuel.
-                    </p>
-
-                    {!paperRunning ? (
-                        <button
-                            onClick={
-                                startPaperTest
-                            }
-                            style={{
-                                width:
-                                    '100%',
-                                padding:
-                                    '14px',
-                                borderRadius:
-                                    '10px',
-                                border:
-                                    'none',
-                                fontWeight:
-                                    'bold',
-                                fontSize:
-                                    '16px',
-                                cursor:
-                                    'pointer',
-                            }}
-                        >
-                            ▶️ TESTER SUR
-                            COMPTE DÉMO
-                        </button>
-                    ) : (
-                        <button
-                            onClick={
-                                stopPaperTest
-                            }
-                            style={{
-                                width:
-                                    '100%',
-                                padding:
-                                    '14px',
-                                borderRadius:
-                                    '10px',
-                                border:
-                                    'none',
-                                fontWeight:
-                                    'bold',
-                                fontSize:
-                                    '16px',
-                                cursor:
-                                    'pointer',
-                            }}
-                        >
-                            ⏹️ ARRÊTER LE
-                            TEST
-                        </button>
-                    )}
-
-                    <button
-                        onClick={
-                            resetPaperTest
-                        }
-                        style={{
-                            width:
-                                '100%',
-                            padding:
-                                '10px',
-                            marginTop:
-                                '8px',
-                            borderRadius:
-                                '10px',
-                            border:
-                                'none',
-                            cursor:
-                                'pointer',
-                        }}
-                    >
-                        🔄 Réinitialiser
-                    </button>
-
-                    <p>
-                        {proposalStatus}
-                    </p>
-                </div>
-
-                <div
-                    style={{
-                        background:
-                            '#1e293b',
-                        padding:
-                            '14px',
-                        borderRadius:
-                            '12px',
-                        marginBottom:
-                            '12px',
-                    }}
-                >
-                    <h2>
-                        🛡️ SÉCURITÉ
-                    </h2>
-
-                    <p>
-                        Cette V4.11.4
-                        n'envoie aucun
-                        ordre BUY/SELL à
-                        Deriv.
-                    </p>
-
-                    <p>
-                        Les résultats
-                        restent virtuels.
-                    </p>
-                </div>
-
-                <div
-                    style={{
-                        background:
-                            '#1e293b',
-                        padding:
-                            '14px',
-                        borderRadius:
-                            '12px',
-                        marginBottom:
-                            '12px',
-                    }}
-                >
-                    <h2>
-                        🧪 Phase 2 —
-                        Paper Trading
-                    </h2>
-
-                    <p>
-                        <strong>
-                            Tests
-                        </strong>
-                        <br />
-                        {paperResult.total}/
-                        {PAPER_TEST_LIMIT}
-                    </p>
-
-                    <p>
-                        <strong>
-                            Gains
-                        </strong>
-                        <br />
-                        {paperResult.wins}
-                    </p>
-
-                    <p>
-                        <strong>
-                            Pertes
-                        </strong>
-                        <br />
-                        {paperResult.losses}
-                    </p>
-
-                    <p>
-                        <strong>
-                            Taux gain
-                        </strong>
-                        <br />
-                        {winRate.toFixed(
-                            2
-                        )}
-                        %
-                    </p>
-
-                    <p>
-                        <strong>
-                            Taux perte
-                        </strong>
-                        <br />
-                        {lossRate.toFixed(
-                            2
-                        )}
-                        %
-                    </p>
-
-                    <p>
-                        <strong>
-                            Résultat virtuel
-                        </strong>
-                        <br />
-                        {paperResult.pnl >=
-                        0
-                            ? '+'
-                            : ''}
-                        {paperResult.pnl}
-                    </p>
-
-                    <p>
-                        +1 prédiction
-                        correcte / -1
-                        prédiction
-                        incorrecte
-                    </p>
-                </div>
-
-                <div
-                    style={{
-                        background:
-                            '#1e293b',
-                        padding:
-                            '14px',
-                        borderRadius:
-                            '12px',
-                        marginBottom:
-                            '12px',
-                    }}
-                >
-                    <h2>
-                        📦 Blocs de 100
-                    </h2>
-
-                    <p>
-                        Blocs terminés :{' '}
-                        {blocksCompleted}
-                    </p>
-
-                    <p>
-                        Bloc actuel :{' '}
-                        {currentBlock}/
-                        {currentBlockProgress}
-                    </p>
-                </div>
-
-                <div
-                    style={{
-                        background:
-                            '#1e293b',
-                        padding:
-                            '14px',
-                        borderRadius:
-                            '12px',
-                        marginBottom:
-                            '12px',
-                    }}
-                >
-                    🧠{' '}
-                    {historyCount <
-                    HISTORY_SIZE
-                        ? 'Collecte de données…'
-                        : paperRunning
-                        ? 'Paper Trading en cours…'
-                        : 'Prêt pour le test Paper'}
-                </div>
-
-                <div
-                    style={{
-                        background:
-                            '#172033',
-                        padding:
-                            '14px',
-                        borderRadius:
-                            '12px',
-                        marginBottom:
-                            '12px',
-                    }}
-                >
-                    <strong>
-                        🛡️ MODE TEST UNIQUEMENT
-                    </strong>
-
-                    <p>
-                        ❌ Aucun trade
-                        automatique réel ou
-                        Demo n'est envoyé.
-                    </p>
-
-                    <p>
-                        Le bouton « Tester
-                        sur compte Demo »
-                        démarre le Paper
-                        Test avec les données
-                        réelles du marché,
-                        mais sans ordre
-                        financier.
-                    </p>
-                </div>
-
-                <div
-                    style={{
-                        textAlign:
-                            'center',
-                        padding:
-                            '12px',
-                    }}
-                >
-                    ↕️ Fais glisser
-                    l'écran pour voir
-                    toutes les informations
-                </div>
             </div>
-        </div>
-    );
-});
+        );
+    });
 
 export default R75TickMonitor;
