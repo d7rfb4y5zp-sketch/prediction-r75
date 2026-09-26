@@ -16,18 +16,11 @@ const PAPER_TEST_LIMIT = 1000;
 const BLOCK_SIZE = 100;
 const ANALYSIS_WINDOW = 20;
 
-const TICK_REQUEST_ID = 4113;
+const TICK_REQUEST_ID = 4111;
 const HISTORY_REQUEST_ID = 4114;
-const BALANCE_REQUEST_ID = 4115;
+const BALANCE_REQUEST_ID = 4113;
 
 type Direction = 'UP' | 'DOWN' | 'FLAT';
-
-type TickData = {
-    quote?: number;
-    epoch?: number;
-    symbol?: string;
-    pip_size?: number;
-};
 
 type PaperResult = {
     total: number;
@@ -36,128 +29,154 @@ type PaperResult = {
     pnl: number;
 };
 
-const getDirection = (
-    previous: number,
-    current: number
-): Direction => {
-    if (current > previous) return 'UP';
-    if (current < previous) return 'DOWN';
-    return 'FLAT';
+type TickData = {
+    symbol?: string;
+    quote?: number | string;
+    epoch?: number;
+    pip_size?: number;
+};
+
+const getQuote = (tick: TickData): number | null => {
+    const quote = Number(tick?.quote);
+
+    return Number.isFinite(quote) ? quote : null;
 };
 
 const getLastDigit = (
-    price: number,
+    quote: number,
     pipSize?: number
 ): string => {
-    if (!Number.isFinite(price)) {
-        return '—';
-    }
-
     const digits =
-        Number.isFinite(pipSize) &&
+        Number.isFinite(Number(pipSize)) &&
         Number(pipSize) >= 0
             ? Number(pipSize)
             : 5;
 
-    const formatted = Number(price).toFixed(
-        digits
-    );
+    const fixed = quote.toFixed(digits);
+    const clean = fixed.replace('.', '');
 
-    const withoutDot =
-        formatted.replace('.', '');
-
-    return withoutDot.length > 0
-        ? withoutDot.charAt(
-              withoutDot.length - 1
-          )
+    return clean.length > 0
+        ? clean[clean.length - 1]
         : '—';
 };
 
-const normalizeMessage = (
-    rawMessage: any
-): any => {
-    if (!rawMessage) {
-        return null;
+const getDirection = (
+    previous: number | null,
+    current: number
+): Direction => {
+    if (previous === null) {
+        return 'FLAT';
     }
 
-    if (
-        rawMessage.data &&
-        typeof rawMessage.data === 'object'
-    ) {
-        return rawMessage.data;
+    if (current > previous) {
+        return 'UP';
     }
 
-    return rawMessage;
+    if (current < previous) {
+        return 'DOWN';
+    }
+
+    return 'FLAT';
 };
 
-const getDerivErrorText = (
-    error: any
-): string => {
-    if (!error) {
-        return 'Erreur inconnue';
+const calculatePrediction = (
+    directions: Direction[]
+): {
+    prediction: Direction;
+    strength: number;
+} => {
+    const usable = directions
+        .filter(
+            direction =>
+                direction === 'UP' ||
+                direction === 'DOWN'
+        )
+        .slice(-ANALYSIS_WINDOW);
+
+    if (usable.length < 5) {
+        return {
+            prediction: 'FLAT',
+            strength: 0,
+        };
     }
 
-    if (typeof error === 'string') {
-        return error;
+    let upScore = 0;
+    let downScore = 0;
+
+    usable.forEach((direction, index) => {
+        const weight = index + 1;
+
+        if (direction === 'UP') {
+            upScore += weight;
+        } else {
+            downScore += weight;
+        }
+    });
+
+    const total = upScore + downScore;
+
+    if (total <= 0) {
+        return {
+            prediction: 'FLAT',
+            strength: 0,
+        };
     }
 
-    if (
-        typeof error.message === 'string'
-    ) {
-        return error.message;
+    const difference = Math.abs(
+        upScore - downScore
+    );
+
+    const strength = Math.min(
+        100,
+        (difference / total) * 100
+    );
+
+    if (strength < 10) {
+        return {
+            prediction: 'FLAT',
+            strength,
+        };
     }
 
-    try {
-        return JSON.stringify(error);
-    } catch {
-        return 'Erreur Deriv inconnue';
-    }
+    return {
+        prediction:
+            upScore >= downScore
+                ? 'UP'
+                : 'DOWN',
+        strength,
+    };
 };
 
-const R75TickMonitor = () => {
+const R75TickMonitor = observer(() => {
     const [connection, setConnection] =
         useState<
-            | 'connecting'
-            | 'waiting'
-            | 'connected'
-            | 'closed'
-            | 'error'
+            'connecting' |
+            'connected' |
+            'waiting' |
+            'closed' |
+            'error'
         >('connecting');
-
-    const [
-        connectionMessage,
-        setConnectionMessage,
-    ] = useState('');
 
     const [price, setPrice] =
         useState<number | null>(null);
 
     const [lastDigit, setLastDigit] =
-        useState('—');
+        useState<string>('—');
 
-    const [
-        currentDirection,
-        setCurrentDirection,
-    ] = useState<Direction>('FLAT');
+    const [currentDirection, setCurrentDirection] =
+        useState<Direction>('FLAT');
 
     const [prediction, setPrediction] =
         useState<Direction>('FLAT');
 
-    const [
-        predictionStrength,
-        setPredictionStrength,
-    ] = useState(0);
+    const [predictionStrength, setPredictionStrength] =
+        useState(0);
 
     const [observations, setObservations] =
         useState(0);
 
-    const [priceHistory, setPriceHistory] =
-        useState<number[]>([]);
-
-    const [
-        directionHistory,
-        setDirectionHistory,
-    ] = useState<Direction[]>([]);
+    const [historyCount, setHistoryCount] =
+        useState(0);
 
     const [paperRunning, setPaperRunning] =
         useState(false);
@@ -174,749 +193,367 @@ const R75TickMonitor = () => {
         useState<number | null>(null);
 
     const [loginId, setLoginId] =
-        useState('');
+        useState<string>('—');
 
-    const [
-        proposalStatus,
-        setProposalStatus,
-    ] = useState('');
+    const [proposalStatus, setProposalStatus] =
+        useState(
+            '⏳ Initialisation de la connexion…'
+        );
 
-    const [marketClosed, setMarketClosed] =
-        useState(false);
+    const [marketMessage, setMarketMessage] =
+        useState<string>('');
 
-    const [
-        marketOpenMessage,
-        setMarketOpenMessage,
-    ] = useState('');
+    const pricesRef =
+        useRef<number[]>([]);
 
-    const [historyLoaded, setHistoryLoaded] =
-        useState(false);
+    const directionsRef =
+        useRef<Direction[]>([]);
 
     const previousPredictionRef =
         useRef<Direction>('FLAT');
 
+    const previousPriceRef =
+        useRef<number | null>(null);
+
     const paperRunningRef =
         useRef(false);
 
-    const directionHistoryRef =
-        useRef<Direction[]>([]);
-
-    const priceHistoryRef =
-        useRef<number[]>([]);
+    const paperResultRef =
+        useRef<PaperResult>({
+            total: 0,
+            wins: 0,
+            losses: 0,
+            pnl: 0,
+        });
 
     const unsubscribeRef =
         useRef<(() => void) | null>(null);
 
-    const retryTimerRef =
-        useRef<ReturnType<
-            typeof setTimeout
-        > | null>(null);
-
     const mountedRef =
         useRef(true);
 
-    const liveSubscriptionStartedRef =
-        useRef(false);
-
-    const predictFromDirections =
-        useCallback(
-            (
-                directions: Direction[]
-            ): {
-                prediction: Direction;
-                strength: number;
-            } => {
-                const usable =
-                    directions
-                        .filter(
-                            direction =>
-                                direction ===
-                                    'UP' ||
-                                direction ===
-                                    'DOWN'
-                        )
-                        .slice(
-                            -ANALYSIS_WINDOW
-                        );
-
-                if (
-                    usable.length < 4
-                ) {
-                    return {
-                        prediction:
-                            'FLAT',
-                        strength: 0,
-                    };
-                }
-
-                let upScore = 0;
-                let downScore = 0;
-
-                usable.forEach(
-                    (
-                        direction,
-                        index
-                    ) => {
-                        const weight =
-                            index + 1;
-
-                        if (
-                            direction ===
-                            'UP'
-                        ) {
-                            upScore +=
-                                weight;
-                        } else {
-                            downScore +=
-                                weight;
-                        }
-                    }
+    const processBalance = useCallback(
+        (message: any) => {
+            const rawBalance =
+                Number(
+                    message?.balance?.balance
                 );
 
-                const total =
-                    upScore +
-                    downScore;
+            if (
+                Number.isFinite(
+                    rawBalance
+                )
+            ) {
+                setBalance(rawBalance);
+            }
 
-                if (total <= 0) {
-                    return {
-                        prediction:
-                            'FLAT',
-                        strength: 0,
-                    };
+            const account =
+                message?.balance?.loginid;
+
+            if (
+                typeof account === 'string' &&
+                account.length > 0
+            ) {
+                setLoginId(account);
+            }
+        },
+        []
+    );
+
+    const validatePreviousPrediction =
+        useCallback(
+            (
+                newDirection: Direction
+            ) => {
+                if (
+                    !paperRunningRef.current
+                ) {
+                    return;
                 }
 
-                const difference =
-                    Math.abs(
-                        upScore -
-                            downScore
-                    );
-
-                const strength =
-                    Math.min(
-                        95,
-                        (difference /
-                            total) *
-                            100
-                    );
+                const previousPrediction =
+                    previousPredictionRef.current;
 
                 if (
-                    strength < 10
+                    previousPrediction !==
+                        'UP' &&
+                    previousPrediction !==
+                        'DOWN'
                 ) {
-                    return {
-                        prediction:
-                            'FLAT',
-                        strength,
-                    };
+                    return;
                 }
 
-                return {
-                    prediction:
-                        upScore >
-                        downScore
-                            ? 'UP'
-                            : 'DOWN',
-                    strength,
+                if (
+                    newDirection !== 'UP' &&
+                    newDirection !== 'DOWN'
+                ) {
+                    return;
+                }
+
+                const previous =
+                    paperResultRef.current;
+
+                const isWin =
+                    previousPrediction ===
+                    newDirection;
+
+                const next: PaperResult = {
+                    total:
+                        previous.total + 1,
+
+                    wins:
+                        previous.wins +
+                        (isWin ? 1 : 0),
+
+                    losses:
+                        previous.losses +
+                        (isWin ? 0 : 1),
+
+                    pnl:
+                        previous.pnl +
+                        (isWin ? 1 : -1),
                 };
+
+                paperResultRef.current =
+                    next;
+
+                setPaperResult(next);
+
+                if (
+                    next.total >=
+                    PAPER_TEST_LIMIT
+                ) {
+                    paperRunningRef.current =
+                        false;
+
+                    setPaperRunning(false);
+
+                    setProposalStatus(
+                        '🏁 Test Paper terminé : 1000/1000'
+                    );
+                }
             },
             []
         );
 
-    const applyPrediction =
-        useCallback(
-            (
-                directions: Direction[]
-            ) => {
-                const result =
-                    predictFromDirections(
-                        directions
-                    );
+    const processTick = useCallback(
+        (tick: TickData) => {
+            if (!tick) {
+                return;
+            }
 
-                setPrediction(
-                    result.prediction
+            const symbol =
+                String(
+                    tick.symbol || ''
                 );
 
-                setPredictionStrength(
-                    result.strength
-                );
-
-                previousPredictionRef.current =
-                    result.prediction;
-            },
-            [predictFromDirections]
-        );
-
-    const addTickToHistory =
-        useCallback(
-            (tick: TickData) => {
-                const quote =
-                    Number(tick.quote);
-
-                if (
-                    !Number.isFinite(
-                        quote
-                    )
-                ) {
-                    return;
-                }
-
-                const symbol =
-                    String(
-                        tick.symbol ||
-                            ''
-                    );
-
-                if (
-                    symbol !==
-                    MARKET_SYMBOL
-                ) {
-                    return;
-                }
-
-                const pipSize =
-                    Number(
-                        tick.pip_size
-                    );
-
-                setPrice(quote);
-
-                setLastDigit(
-                    getLastDigit(
-                        quote,
-                        pipSize
-                    )
-                );
-
-                const previousPrice =
-                    priceHistoryRef
-                        .current[
-                        priceHistoryRef
-                            .current
-                            .length - 1
-                    ];
-
-                let newDirection: Direction =
-                    'FLAT';
-
-                if (
-                    Number.isFinite(
-                        previousPrice
-                    )
-                ) {
-                    newDirection =
-                        getDirection(
-                            Number(
-                                previousPrice
-                            ),
-                            quote
-                        );
-                }
-
-                setCurrentDirection(
-                    newDirection
-                );
-
-                const nextPrices =
-                    [
-                        ...priceHistoryRef.current,
-                        quote,
-                    ].slice(
-                        -HISTORY_SIZE
-                    );
-
-                priceHistoryRef.current =
-                    nextPrices;
-
-                setPriceHistory(
-                    nextPrices
-                );
-
-                if (
-                    newDirection !==
-                    'FLAT'
-                ) {
-                    const nextDirections =
-                        [
-                            ...directionHistoryRef.current,
-                            newDirection,
-                        ].slice(
-                            -HISTORY_SIZE
-                        );
-
-                    directionHistoryRef.current =
-                        nextDirections;
-
-                    setDirectionHistory(
-                        nextDirections
-                    );
-
-                    setObservations(
-                        nextDirections.length
-                    );
-
-                    applyPrediction(
-                        nextDirections
-                    );
-
-                    if (
-                        paperRunningRef.current
-                    ) {
-                        const oldPrediction =
-                            previousPredictionRef.current;
-
-                        if (
-                            oldPrediction ===
-                                'UP' ||
-                            oldPrediction ===
-                                'DOWN'
-                        ) {
-                            const win =
-                                oldPrediction ===
-                                newDirection;
-
-                            setPaperResult(
-                                previous => {
-                                    if (
-                                        previous.total >=
-                                        PAPER_TEST_LIMIT
-                                    ) {
-                                        paperRunningRef.current =
-                                            false;
-
-                                        setPaperRunning(
-                                            false
-                                        );
-
-                                        return previous;
-                                    }
-
-                                    const nextTotal =
-                                        previous.total +
-                                        1;
-
-                                    const nextResult =
-                                        {
-                                            total:
-                                                nextTotal,
-                                            wins:
-                                                previous.wins +
-                                                (win
-                                                    ? 1
-                                                    : 0),
-                                            losses:
-                                                previous.losses +
-                                                (win
-                                                    ? 0
-                                                    : 1),
-                                            pnl:
-                                                previous.pnl +
-                                                (win
-                                                    ? 1
-                                                    : -1),
-                                        };
-
-                                    if (
-                                        nextTotal >=
-                                        PAPER_TEST_LIMIT
-                                    ) {
-                                        paperRunningRef.current =
-                                            false;
-
-                                        setPaperRunning(
-                                            false
-                                        );
-
-                                        setProposalStatus(
-                                            '🏁 Paper Test de 1000 prédictions terminé.'
-                                        );
-                                    }
-
-                                    return nextResult;
-                                }
-                            );
-                        }
-                    }
-                }
-            },
-            [applyPrediction]
-        );
-
-    const processHistory =
-        useCallback(
-            (message: any) => {
-                const history =
-                    message?.history;
-
-                if (
-                    !history ||
-                    !Array.isArray(
-                        history.prices
-                    )
-                ) {
-                    return false;
-                }
-
-                const prices =
-                    history.prices
-                        .map(
-                            (value: any) =>
-                                Number(
-                                    value
-                                )
-                        )
-                        .filter(
-                            (value: number) =>
-                                Number.isFinite(
-                                    value
-                                )
-                        )
-                        .slice(
-                            -HISTORY_SIZE
-                        );
-
-                if (
-                    prices.length === 0
-                ) {
-                    return false;
-                }
-
-                const directions: Direction[] =
-                    [];
-
-                for (
-                    let i = 1;
-                    i <
-                    prices.length;
-                    i += 1
-                ) {
-                    const direction =
-                        getDirection(
-                            prices[
-                                i - 1
-                            ],
-                            prices[i]
-                        );
-
-                    if (
-                        direction !==
-                        'FLAT'
-                    ) {
-                        directions.push(
-                            direction
-                        );
-                    }
-                }
-
-                priceHistoryRef.current =
-                    prices;
-
-                directionHistoryRef.current =
-                    directions.slice(
-                        -HISTORY_SIZE
-                    );
-
-                setPriceHistory(
-                    prices
-                );
-
-                setDirectionHistory(
-                    directionHistoryRef.current
-                );
-
-                const lastPrice =
-                    prices[
-                        prices.length -
-                            1
-                    ];
-
-                setPrice(lastPrice);
-
-                const pipSize =
-                    Number(
-                        message?.pip_size
-                    );
-
-                setLastDigit(
-                    getLastDigit(
-                        lastPrice,
-                        pipSize
-                    )
-                );
-
-                if (
-                    directions.length >
-                    0
-                ) {
-                    const lastDirection =
-                        directions[
-                            directions.length -
-                                1
-                        ];
-
-                    setCurrentDirection(
-                        lastDirection
-                    );
-
-                    setObservations(
-                        directions.length
-                    );
-
-                    applyPrediction(
-                        directions
-                    );
-                }
-
-                setHistoryLoaded(
-                    true
-                );
-
-                return true;
-            },
-            [applyPrediction]
-        );
-
-    const startLiveSubscription =
-        useCallback(() => {
             if (
-                !api_base.api ||
-                liveSubscriptionStartedRef.current
+                symbol !==
+                MARKET_SYMBOL
             ) {
                 return;
             }
 
-            try {
-                api_base.api.send({
-                    ticks:
-                        MARKET_SYMBOL,
-                    subscribe: 1,
-                    req_id:
-                        TICK_REQUEST_ID,
-                });
+            const quote =
+                getQuote(tick);
 
-                liveSubscriptionStartedRef.current =
-                    true;
+            if (quote === null) {
+                return;
+            }
 
-                setProposalStatus(
-                    '🟢 Historique reçu — attente des ticks EUR/USD en direct.'
-                );
-            } catch (error) {
-                console.error(
-                    'Erreur flux live EUR/USD:',
-                    error
+            const pipSize =
+                Number(tick.pip_size);
+
+            const direction =
+                getDirection(
+                    previousPriceRef.current,
+                    quote
                 );
 
-                setProposalStatus(
-                    '🔴 Impossible de démarrer le flux EUR/USD.'
+            if (
+                previousPriceRef.current !==
+                null
+            ) {
+                validatePreviousPrediction(
+                    direction
                 );
             }
-        }, []);
+
+            previousPriceRef.current =
+                quote;
+
+            pricesRef.current = [
+                ...pricesRef.current,
+                quote,
+            ].slice(
+                -HISTORY_SIZE
+            );
+
+            directionsRef.current = [
+                ...directionsRef.current,
+                direction,
+            ].slice(
+                -HISTORY_SIZE
+            );
+
+            const nextHistoryCount =
+                pricesRef.current.length;
+
+            setHistoryCount(
+                nextHistoryCount
+            );
+
+            setPrice(quote);
+
+            setLastDigit(
+                getLastDigit(
+                    quote,
+                    pipSize
+                )
+            );
+
+            setCurrentDirection(
+                direction
+            );
+
+            const analysis =
+                calculatePrediction(
+                    directionsRef.current
+                );
+
+            setPrediction(
+                analysis.prediction
+            );
+
+            setPredictionStrength(
+                analysis.strength
+            );
+
+            setObservations(
+                directionsRef.current.length
+            );
+
+            if (
+                analysis.prediction === 'UP' ||
+                analysis.prediction === 'DOWN'
+            ) {
+                previousPredictionRef.current =
+                    analysis.prediction;
+            } else {
+                previousPredictionRef.current =
+                    'FLAT';
+            }
+
+            if (
+                mountedRef.current
+            ) {
+                setConnection(
+                    'connected'
+                );
+
+                setMarketMessage(
+                    ''
+                );
+            }
+
+            if (
+                paperRunningRef.current
+            ) {
+                setProposalStatus(
+                    `🧪 Paper Test actif — ${paperResultRef.current.total}/${PAPER_TEST_LIMIT}`
+                );
+            }
+        },
+        [validatePreviousPrediction]
+    );
 
     const handleDerivMessage =
         useCallback(
-            (rawMessage: any) => {
+            (payload: any) => {
                 const message =
-                    normalizeMessage(
-                        rawMessage
-                    );
+                    payload?.data ??
+                    payload;
 
                 if (!message) {
                     return;
                 }
 
                 /*
-                 * ERREURS DERIV
-                 *
-                 * MarketIsClosed n'est PAS
-                 * considéré comme une panne
-                 * technique.
+                 * Gestion des erreurs Deriv
                  */
-                if (
-                    message.error
-                ) {
+                if (message.error) {
                     const errorCode =
                         String(
-                            message
-                                ?.error
-                                ?.code ||
+                            message.error.code ||
                                 'UNKNOWN'
                         );
 
-                    const errorText =
-                        getDerivErrorText(
-                            message.error
+                    const errorMessage =
+                        String(
+                            message.error.message ||
+                                'Erreur inconnue'
                         );
 
                     const requestedSymbol =
                         String(
-                            message
-                                ?.echo_req
+                            message.echo_req
                                 ?.ticks ||
-                                message
-                                    ?.echo_req
+                                message.echo_req
                                     ?.ticks_history ||
                                 ''
                         );
 
                     console.error(
-                        '🚨 DERIV:',
-                        {
-                            code:
-                                errorCode,
-                            message:
-                                errorText,
-                            requestedSymbol,
-                        }
+                        '🚨 ERREUR DERIV:',
+                        message
                     );
 
+                    /*
+                     * Marché fermé :
+                     * ce n'est pas une erreur
+                     * de code.
+                     */
                     if (
                         errorCode ===
-                            'MarketIsClosed' ||
-                        errorText
-                            .toLowerCase()
-                            .includes(
-                                'market is presently closed'
-                            )
+                            'MarketIsClosed'
                     ) {
-                        setMarketClosed(
-                            true
-                        );
-
-                        setConnection(
-                            'closed'
-                        );
-
-                        setMarketOpenMessage(
-                            errorText
-                        );
-
-                        /*
-                         * Si nous avons déjà
-                         * reçu l'historique,
-                         * on le conserve.
-                         */
                         if (
-                            historyLoaded
+                            mountedRef.current
                         ) {
-                            setProposalStatus(
-                                `🟠 Historique EUR/USD disponible — marché fermé. ${errorText}`
+                            setConnection(
+                                'closed'
                             );
-                        } else {
+
+                            setMarketMessage(
+                                errorMessage
+                            );
+
                             setProposalStatus(
-                                `🟠 EUR/USD fermé — ${errorText}`
+                                `🟠 Marché ${MARKET_NAME} fermé`
                             );
                         }
 
                         return;
                     }
 
+                    /*
+                     * Autres erreurs concernant
+                     * EUR/USD
+                     */
                     if (
                         requestedSymbol ===
                         MARKET_SYMBOL
                     ) {
-                        setConnection(
-                            'error'
-                        );
-
-                        setProposalStatus(
-                            `🔴 Deriv ${errorCode}: ${errorText}`
-                        );
-                    }
-
-                    return;
-                }
-
-                /*
-                 * SOLDE
-                 */
-                if (
-                    message.msg_type ===
-                    'balance'
-                ) {
-                    const rawBalance =
-                        Number(
-                            message
-                                ?.balance
-                                ?.balance
-                        );
-
-                    if (
-                        Number.isFinite(
-                            rawBalance
-                        )
-                    ) {
-                        setBalance(
-                            rawBalance
-                        );
-                    }
-
-                    const account =
-                        message
-                            ?.balance
-                            ?.loginid;
-
-                    if (
-                        typeof account ===
-                            'string' &&
-                        account.length >
-                            0
-                    ) {
-                        setLoginId(
-                            account
-                        );
-                    }
-
-                    return;
-                }
-
-                /*
-                 * HISTORIQUE
-                 */
-                if (
-                    message.msg_type ===
-                    'history'
-                ) {
-                    const requestedSymbol =
-                        String(
-                            message
-                                ?.echo_req
-                                ?.ticks_history ||
-                                ''
-                        );
-
-                    if (
-                        requestedSymbol ===
-                            MARKET_SYMBOL ||
-                        message?.history
-                    ) {
-                        const loaded =
-                            processHistory(
-                                message
-                            );
-
                         if (
-                            loaded
+                            mountedRef.current
                         ) {
-                            setMarketClosed(
-                                false
-                            );
-
                             setConnection(
-                                'connected'
-                            );
-
-                            setConnectionMessage(
-                                `🟢 Données EUR/USD reçues`
+                                'error'
                             );
 
                             setProposalStatus(
-                                '🟢 Historique EUR/USD chargé.'
+                                `🔴 Deriv ${errorCode}: ${errorMessage}`
                             );
-
-                            /*
-                             * L'historique fonctionne.
-                             * On essaie ensuite le
-                             * flux live.
-                             */
-                            startLiveSubscription();
                         }
                     }
 
@@ -924,7 +561,35 @@ const R75TickMonitor = () => {
                 }
 
                 /*
-                 * TICK LIVE
+                 * Balance
+                 */
+                if (
+                    message.msg_type ===
+                    'balance'
+                ) {
+                    processBalance(
+                        message
+                    );
+
+                    return;
+                }
+
+                /*
+                 * Historique
+                 *
+                 * On ne traite pas ici les
+                 * ticks_history comme des
+                 * ticks live.
+                 */
+                if (
+                    message.msg_type ===
+                    'ticks_history'
+                ) {
+                    return;
+                }
+
+                /*
+                 * Tick temps réel
                  */
                 if (
                     message.msg_type ===
@@ -933,9 +598,8 @@ const R75TickMonitor = () => {
                 ) {
                     const symbol =
                         String(
-                            message
-                                ?.tick
-                                ?.symbol ||
+                            message.tick
+                                .symbol ||
                                 ''
                         );
 
@@ -946,38 +610,20 @@ const R75TickMonitor = () => {
                         return;
                     }
 
-                    setMarketClosed(
-                        false
-                    );
-
-                    setConnection(
-                        'connected'
-                    );
-
-                    setConnectionMessage(
-                        `🟢 Connecté — ${MARKET_NAME}`
-                    );
-
-                    setProposalStatus(
-                        '🟢 Flux EUR/USD actif — mode test uniquement.'
-                    );
-
-                    addTickToHistory(
+                    processTick(
                         message.tick
                     );
                 }
             },
             [
-                addTickToHistory,
-                historyLoaded,
-                processHistory,
-                startLiveSubscription,
+                processBalance,
+                processTick,
             ]
         );
 
     const requestBalance =
         useCallback(() => {
-            if (!api_base.api) {
+            if (!api_base?.api) {
                 return;
             }
 
@@ -995,136 +641,43 @@ const R75TickMonitor = () => {
             }
         }, []);
 
-    const requestMarketHistory =
-        useCallback(
-            async () => {
-                if (!api_base.api) {
-                    return;
-                }
-
-                try {
-                    const response =
-                        await api_base.api.send(
-                            {
-                                ticks_history:
-                                    MARKET_SYMBOL,
-                                end: 'latest',
-                                count:
-                                    HISTORY_SIZE,
-                                style: 'ticks',
-                                subscribe: 0,
-                                req_id:
-                                    HISTORY_REQUEST_ID,
-                            }
-                        );
-
-                    /*
-                     * Certains wrappers Deriv
-                     * retournent directement la
-                     * réponse, d'autres passent
-                     * par onMessage().
-                     */
-                    if (
-                        response
-                    ) {
-                        handleDerivMessage(
-                            response
-                        );
-                    }
-                } catch (error: any) {
-                    const errorText =
-                        getDerivErrorText(
-                            error
-                        );
-
-                    console.error(
-                        'Erreur historique EUR/USD:',
-                        error
-                    );
-
-                    /*
-                     * Ne jamais afficher
-                     * [object Object].
-                     */
-                    if (
-                        errorText
-                            .toLowerCase()
-                            .includes(
-                                'marketisclosed'
-                            ) ||
-                        errorText
-                            .toLowerCase()
-                            .includes(
-                                'market is presently closed'
-                            )
-                    ) {
-                        setMarketClosed(
-                            true
-                        );
-
-                        setConnection(
-                            'closed'
-                        );
-
-                        setMarketOpenMessage(
-                            errorText
-                        );
-
-                        setProposalStatus(
-                            `🟠 EUR/USD fermé — ${errorText}`
-                        );
-
-                        return;
-                    }
-
-                    setConnection(
-                        'error'
-                    );
-
-                    setProposalStatus(
-                        `🔴 Erreur EUR/USD — ${errorText}`
-                    );
-                }
-            },
-            [handleDerivMessage]
-        );
-
     const initialiseApi =
         useCallback(
             async () => {
                 try {
-                    if (!api_base.api) {
+                    if (!api_base?.api) {
                         await api_base.init();
                     }
 
+                    if (!api_base?.api) {
+                        throw new Error(
+                            'api_base.api indisponible après initialisation.'
+                        );
+                    }
+
+                    return true;
+                } catch (error) {
+                    console.error(
+                        '❌ Erreur initialisation API:',
+                        error
+                    );
+
                     if (
-                        !api_base.api
+                        mountedRef.current
                     ) {
                         setConnection(
                             'error'
                         );
 
                         setProposalStatus(
-                            '🔴 api_base.api indisponible.'
+                            `🔴 Initialisation Deriv impossible : ${
+                                error instanceof
+                                Error
+                                    ? error.message
+                                    : 'erreur inconnue'
+                            }`
                         );
-
-                        return false;
                     }
-
-                    return true;
-                } catch (error) {
-                    console.error(
-                        'Erreur initialisation API:',
-                        error
-                    );
-
-                    setConnection(
-                        'error'
-                    );
-
-                    setProposalStatus(
-                        '🔴 Erreur initialisation Deriv.'
-                    );
 
                     return false;
                 }
@@ -1132,23 +685,21 @@ const R75TickMonitor = () => {
             []
         );
 
-    /*
-     * CONNEXION PRINCIPALE
-     */
     useEffect(() => {
-        mountedRef.current =
-            true;
+        mountedRef.current = true;
 
         let cancelled = false;
 
-        const start =
+        const startConnection =
             async () => {
                 setConnection(
                     'connecting'
                 );
 
+                setMarketMessage('');
+
                 setProposalStatus(
-                    '🟡 Connexion à Deriv…'
+                    '⏳ Connexion à Deriv…'
                 );
 
                 const ready =
@@ -1157,12 +708,15 @@ const R75TickMonitor = () => {
                 if (
                     cancelled ||
                     !ready ||
-                    !api_base.api
+                    !api_base?.api
                 ) {
                     return;
                 }
 
                 try {
+                    /*
+                     * Connexion au flux des messages
+                     */
                     const messageStream =
                         api_base.api.onMessage();
 
@@ -1175,13 +729,187 @@ const R75TickMonitor = () => {
                         subscription?.unsubscribe ||
                         null;
 
-                    requestBalance();
-
                     /*
-                     * Demande de l'historique
-                     * EUR/USD.
+                     * =====================================
+                     * 1 — HISTORIQUE
+                     * =====================================
+                     *
+                     * IMPORTANT :
+                     * V4.11.3 utilisait subscribe: 0.
+                     *
+                     * L'API de cette application refuse 0
+                     * et demande subscribe: 1.
+                     *
+                     * V4.11.4 utilise donc subscribe: 1.
                      */
-                    await requestMarketHistory();
+                    try {
+                        setProposalStatus(
+                            '📚 Chargement de 500 ticks EUR/USD…'
+                        );
+
+                        const historyResponse =
+                            await api_base.api.send(
+                                {
+                                    ticks_history:
+                                        MARKET_SYMBOL,
+
+                                    end: 'latest',
+
+                                    count:
+                                        HISTORY_SIZE,
+
+                                    style: 'ticks',
+
+                                    subscribe: 1,
+
+                                    req_id:
+                                        HISTORY_REQUEST_ID,
+                                }
+                            );
+
+                        if (
+                            cancelled
+                        ) {
+                            return;
+                        }
+
+                        const history =
+                            historyResponse
+                                ?.history;
+
+                        const prices =
+                            Array.isArray(
+                                history?.prices
+                            )
+                                ? history.prices
+                                      .map(
+                                          (
+                                              value: any
+                                          ) =>
+                                              Number(
+                                                  value
+                                              )
+                                      )
+                                      .filter(
+                                          (
+                                              value: number
+                                          ) =>
+                                              Number.isFinite(
+                                                  value
+                                              )
+                                      )
+                                : [];
+
+                        if (
+                            prices.length > 0
+                        ) {
+                            const limitedPrices =
+                                prices.slice(
+                                    -HISTORY_SIZE
+                                );
+
+                            pricesRef.current =
+                                limitedPrices;
+
+                            const historyDirections: Direction[] =
+                                [];
+
+                            for (
+                                let i = 1;
+                                i <
+                                limitedPrices.length;
+                                i++
+                            ) {
+                                historyDirections.push(
+                                    getDirection(
+                                        limitedPrices[
+                                            i - 1
+                                        ],
+                                        limitedPrices[
+                                            i
+                                        ]
+                                    )
+                                );
+                            }
+
+                            directionsRef.current =
+                                historyDirections;
+
+                            const lastPrice =
+                                limitedPrices[
+                                    limitedPrices.length -
+                                        1
+                                ];
+
+                            previousPriceRef.current =
+                                lastPrice;
+
+                            setPrice(
+                                lastPrice
+                            );
+
+                            setLastDigit(
+                                getLastDigit(
+                                    lastPrice,
+                                    5
+                                )
+                            );
+
+                            setHistoryCount(
+                                limitedPrices.length
+                            );
+
+                            setObservations(
+                                historyDirections.length
+                            );
+
+                            const analysis =
+                                calculatePrediction(
+                                    historyDirections
+                                );
+
+                            setPrediction(
+                                analysis.prediction
+                            );
+
+                            setPredictionStrength(
+                                analysis.strength
+                            );
+
+                            if (
+                                historyDirections.length >
+                                0
+                            ) {
+                                const lastDirection =
+                                    historyDirections[
+                                        historyDirections.length -
+                                            1
+                                    ];
+
+                                setCurrentDirection(
+                                    lastDirection
+                                );
+                            }
+
+                            setProposalStatus(
+                                `📚 Historique disponible : ${limitedPrices.length} tick(s)`
+                            );
+                        } else {
+                            setProposalStatus(
+                                '🟠 Aucun historique EUR/USD disponible pour le moment.'
+                            );
+                        }
+                    } catch (historyError) {
+                        console.error(
+                            '❌ Erreur historique EUR/USD:',
+                            historyError
+                        );
+
+                        /*
+                         * Ne pas casser l'application
+                         * si l'historique échoue.
+                         */
+                    }
 
                     if (
                         cancelled
@@ -1190,59 +918,99 @@ const R75TickMonitor = () => {
                     }
 
                     /*
-                     * Le flux live sera lancé
-                     * après réception de
-                     * l'historique.
+                     * =====================================
+                     * 2 — FLUX TEMPS RÉEL
+                     * =====================================
                      */
+                    try {
+                        api_base.api.send({
+                            ticks:
+                                MARKET_SYMBOL,
+
+                            subscribe: 1,
+
+                            req_id:
+                                TICK_REQUEST_ID,
+                        });
+                    } catch (tickError) {
+                        console.error(
+                            '❌ Erreur abonnement ticks:',
+                            tickError
+                        );
+                    }
+
+                    /*
+                     * =====================================
+                     * 3 — BALANCE
+                     * =====================================
+                     */
+                    requestBalance();
+
+                    if (
+                        mountedRef.current
+                    ) {
+                        /*
+                         * Si le marché est fermé,
+                         * on conserve l'état fermé.
+                         * Sinon on attend les ticks.
+                         */
+                        if (
+                            connection !==
+                            'closed'
+                        ) {
+                            setConnection(
+                                'waiting'
+                            );
+                        }
+
+                        setProposalStatus(
+                            '🟢 Connexion prête — attente des ticks EUR/USD…'
+                        );
+                    }
                 } catch (error) {
                     console.error(
-                        'Erreur abonnement Deriv:',
+                        '❌ Erreur abonnement EUR/USD:',
                         error
                     );
 
                     if (
-                        !cancelled
+                        mountedRef.current
                     ) {
                         setConnection(
                             'error'
                         );
 
                         setProposalStatus(
-                            `🔴 Erreur abonnement — ${getDerivErrorText(
-                                error
-                            )}`
+                            `🔴 Erreur connexion : ${
+                                error instanceof
+                                Error
+                                    ? error.message
+                                    : 'erreur inconnue'
+                            }`
                         );
                     }
                 }
             };
 
-        start();
+        startConnection();
 
         return () => {
-            cancelled =
-                true;
+            cancelled = true;
 
             mountedRef.current =
                 false;
 
-            liveSubscriptionStartedRef.current =
-                false;
-
-            if (
-                retryTimerRef.current
-            ) {
-                clearTimeout(
-                    retryTimerRef.current
-                );
-
-                retryTimerRef.current =
-                    null;
-            }
-
             if (
                 unsubscribeRef.current
             ) {
-                unsubscribeRef.current();
+                try {
+                    unsubscribeRef.current();
+                } catch (error) {
+                    console.error(
+                        'Erreur unsubscribe:',
+                        error
+                    );
+                }
 
                 unsubscribeRef.current =
                     null;
@@ -1252,146 +1020,16 @@ const R75TickMonitor = () => {
         handleDerivMessage,
         initialiseApi,
         requestBalance,
-        requestMarketHistory,
     ]);
 
-    /*
-     * SI LE MARCHÉ EST FERMÉ :
-     * nouvelle vérification périodique.
-     */
-    useEffect(() => {
-        if (
-            !marketClosed
-        ) {
-            return;
-        }
-
-        if (
-            retryTimerRef.current
-        ) {
-            return;
-        }
-
-        retryTimerRef.current =
-            setTimeout(
-                async () => {
-                    retryTimerRef.current =
-                        null;
-
-                    if (
-                        !mountedRef.current ||
-                        !api_base.api
-                    ) {
-                        return;
-                    }
-
-                    console.log(
-                        '🔄 Vérification automatique EUR/USD…'
-                    );
-
-                    await requestMarketHistory();
-
-                    if (
-                        mountedRef.current
-                    ) {
-                        requestBalance();
-                    }
-                },
-                60000
-            );
-
-        return () => {
-            if (
-                retryTimerRef.current
-            ) {
-                clearTimeout(
-                    retryTimerRef.current
-                );
-
-                retryTimerRef.current =
-                    null;
-            }
-        };
-    }, [
-        marketClosed,
-        requestBalance,
-        requestMarketHistory,
-    ]);
-
-    /*
-     * PAPER TEST
-     */
     const startPaperTest =
         useCallback(() => {
-            if (
-                marketClosed
-            ) {
-                setProposalStatus(
-                    '⚠️ EUR/USD est fermé. Attends la réouverture pour recevoir de nouveaux ticks.'
-                );
-
-                return;
-            }
-
-            if (
-                observations < 4
-            ) {
-                setProposalStatus(
-                    '⚠️ Pas assez de données pour démarrer le Paper Test.'
-                );
-
-                return;
-            }
-
-            if (
-                paperResult.total >=
-                PAPER_TEST_LIMIT
-            ) {
-                setProposalStatus(
-                    '🏁 Les 1000 tests sont déjà terminés. Utilise Réinitialiser pour recommencer.'
-                );
-
-                return;
-            }
-
-            paperRunningRef.current =
-                true;
-
-            setPaperRunning(
-                true
-            );
-
-            setProposalStatus(
-                '🟢 Paper Trading démarré — aucun ordre BUY/SELL.'
-            );
-        }, [
-            marketClosed,
-            observations,
-            paperResult.total,
-        ]);
-
-    const stopPaperTest =
-        useCallback(() => {
-            paperRunningRef.current =
-                false;
-
-            setPaperRunning(
-                false
-            );
-
-            setProposalStatus(
-                '⏹️ Paper Trading arrêté — résultats conservés.'
-            );
-        }, []);
-
-    const resetPaperTest =
-        useCallback(() => {
-            paperRunningRef.current =
-                false;
-
-            setPaperRunning(
-                false
-            );
+            paperResultRef.current = {
+                total: 0,
+                wins: 0,
+                losses: 0,
+                pnl: 0,
+            };
 
             setPaperResult({
                 total: 0,
@@ -1400,17 +1038,64 @@ const R75TickMonitor = () => {
                 pnl: 0,
             });
 
+            paperRunningRef.current =
+                true;
+
+            setPaperRunning(true);
+
             previousPredictionRef.current =
                 prediction;
 
             setProposalStatus(
-                '🔄 Paper Trading réinitialisé.'
+                '🧪 Paper Test démarré — aucun ordre envoyé'
             );
         }, [prediction]);
 
+    const stopPaperTest =
+        useCallback(() => {
+            paperRunningRef.current =
+                false;
+
+            setPaperRunning(false);
+
+            setProposalStatus(
+                `⏹️ Paper Test arrêté — ${paperResultRef.current.total}/${PAPER_TEST_LIMIT}`
+            );
+        }, []);
+
+    const resetPaperTest =
+        useCallback(() => {
+            paperRunningRef.current =
+                false;
+
+            setPaperRunning(false);
+
+            paperResultRef.current = {
+                total: 0,
+                wins: 0,
+                losses: 0,
+                pnl: 0,
+            };
+
+            previousPredictionRef.current =
+                'FLAT';
+
+            setPaperResult({
+                total: 0,
+                wins: 0,
+                losses: 0,
+                pnl: 0,
+            });
+
+            setProposalStatus(
+                '🧹 Paper Test réinitialisé'
+            );
+        }, []);
+
     const winRate = useMemo(() => {
         if (
-            paperResult.total === 0
+            paperResult.total ===
+            0
         ) {
             return 0;
         }
@@ -1424,7 +1109,8 @@ const R75TickMonitor = () => {
 
     const lossRate = useMemo(() => {
         if (
-            paperResult.total === 0
+            paperResult.total ===
+            0
         ) {
             return 0;
         }
@@ -1452,29 +1138,30 @@ const R75TickMonitor = () => {
             : paperResult.total %
               BLOCK_SIZE;
 
-    const phaseOneComplete =
-        directionHistory.length >=
-        HISTORY_SIZE;
+    const currentBlock =
+        paperResult.total === 0
+            ? 0
+            : Math.min(
+                  10,
+                  Math.ceil(
+                      paperResult.total /
+                          BLOCK_SIZE
+                  )
+              );
 
     const connectionLabel =
-        connection ===
-        'connected'
-            ? connectionMessage ||
-              `🟢 Connecté — ${MARKET_NAME}`
-            : connection ===
-              'closed'
+        connection === 'connected'
+            ? '🟢 Connecté à Deriv — EUR/USD'
+            : connection === 'waiting'
+            ? '🟢 Connexion établie — attente EUR/USD'
+            : connection === 'closed'
             ? '🟠 Marché EUR/USD fermé'
-            : connection ===
-              'error'
+            : connection === 'error'
             ? '🔴 Erreur EUR/USD'
-            : connection ===
-              'waiting'
-            ? '🟡 Connexion EUR/USD…'
             : '🟠 Connexion à Deriv…';
 
     const directionLabel =
-        currentDirection ===
-        'UP'
+        currentDirection === 'UP'
             ? '🟢 HAUSSE'
             : currentDirection ===
               'DOWN'
@@ -1482,11 +1169,9 @@ const R75TickMonitor = () => {
             : '⚪ STABLE';
 
     const predictionLabel =
-        prediction ===
-        'UP'
+        prediction === 'UP'
             ? '🟢 HAUSSE'
-            : prediction ===
-              'DOWN'
+            : prediction === 'DOWN'
             ? '🔴 BAISSE'
             : '⚪ STABLE';
 
@@ -1494,25 +1179,16 @@ const R75TickMonitor = () => {
         <div
             style={{
                 width: '100%',
-                minHeight:
-                    '100vh',
-                height: '100dvh',
-                overflowY:
-                    'auto',
-                overflowX:
-                    'hidden',
+                minHeight: '100dvh',
+                overflowY: 'auto',
+                overflowX: 'hidden',
                 WebkitOverflowScrolling:
                     'touch',
-                overscrollBehaviorY:
-                    'auto',
-                touchAction:
-                    'pan-y',
                 background:
                     '#0f172a',
                 color:
                     '#e5e7eb',
-                padding:
-                    '16px',
+                padding: '16px',
                 paddingBottom:
                     '70px',
                 fontFamily:
@@ -1524,7 +1200,7 @@ const R75TickMonitor = () => {
             <div
                 style={{
                     maxWidth:
-                        '900px',
+                        '760px',
                     margin:
                         '0 auto',
                 }}
@@ -1537,117 +1213,56 @@ const R75TickMonitor = () => {
                             '8px',
                     }}
                 >
-                    📈 Moniteur Forex
-                    EUR/USD —
-                    V4.11.3
+                    📈 Moniteur Forex EUR/USD
+                    — V4.11.4
                 </h1>
 
                 <div
                     style={{
-                        marginBottom:
-                            '14px',
-                        fontSize:
-                            '14px',
-                    }}
-                >
-                    Demo + Paper
-                    Trader +
-                    Proposition
-                </div>
-
-                <section
-                    style={{
                         background:
-                            '#111827',
-                        borderRadius:
-                            '12px',
+                            '#1e293b',
                         padding:
                             '14px',
+                        borderRadius:
+                            '12px',
                         marginBottom:
                             '12px',
                     }}
                 >
                     <strong>
-                        {
-                            connectionLabel
-                        }
+                        {connectionLabel}
                     </strong>
 
-                    {marketClosed && (
-                        <div
+                    {marketMessage && (
+                        <p
                             style={{
-                                marginTop:
-                                    '10px',
-                                padding:
-                                    '10px',
-                                borderRadius:
-                                    '8px',
-                                background:
-                                    '#3f2a1d',
+                                marginBottom:
+                                    '0',
                             }}
                         >
-                            🟠{' '}
-                            <strong>
-                                Marché EUR/USD
-                                fermé
-                            </strong>
-
-                            <div
-                                style={{
-                                    marginTop:
-                                        '6px',
-                                    fontSize:
-                                        '13px',
-                                }}
-                            >
-                                {marketOpenMessage ||
-                                    'Le marché est actuellement fermé.'}
-                            </div>
-
-                            <div
-                                style={{
-                                    marginTop:
-                                        '8px',
-                                    fontSize:
-                                        '12px',
-                                }}
-                            >
-                                🔄 Nouvelle
-                                vérification
-                                automatique
-                                toutes les
-                                60 secondes.
-                            </div>
-                        </div>
+                            🟠 {marketMessage}
+                        </p>
                     )}
 
-                    {historyLoaded && (
-                        <div
-                            style={{
-                                marginTop:
-                                    '8px',
-                                fontSize:
-                                    '13px',
-                            }}
-                        >
-                            📚 Historique
-                            disponible :
-                            {
-                                priceHistory.length
-                            }{' '}
-                            tick(s)
-                        </div>
+                    {connection ===
+                        'closed' && (
+                        <p>
+                            🔄 Nouvelle
+                            vérification avec
+                            les prochains ticks
+                            disponibles.
+                        </p>
                     )}
-                </section>
+                </div>
 
-                <section
+                <div
                     style={{
                         background:
-                            '#111827',
+                            '#1e293b',
+                        padding:
+                            '14px',
                         borderRadius:
                             '12px',
-                        padding:
-                            '16px',
                         marginBottom:
                             '12px',
                     }}
@@ -1659,53 +1274,43 @@ const R75TickMonitor = () => {
                     <div
                         style={{
                             fontSize:
-                                '24px',
+                                '22px',
                             fontWeight:
                                 'bold',
                         }}
                     >
-                        {balance !==
-                        null
+                        {balance !== null
                             ? `${balance.toFixed(
                                   2
                               )} USD`
                             : '—'}
                     </div>
 
-                    <div
-                        style={{
-                            marginTop:
-                                '6px',
-                        }}
-                    >
+                    <div>
                         Compte :{' '}
-                        {loginId ||
-                            '—'}
+                        {loginId}
                     </div>
 
                     <div
                         style={{
                             marginTop:
                                 '8px',
-                            fontSize:
-                                '13px',
                         }}
                     >
-                        {balance !==
-                        null
+                        {balance !== null
                             ? '🟢 Solde reçu depuis Deriv'
-                            : '🟡 Solde en attente'}
+                            : '🟠 En attente du solde'}
                     </div>
-                </section>
+                </div>
 
-                <section
+                <div
                     style={{
                         background:
-                            '#111827',
+                            '#1e293b',
+                        padding:
+                            '14px',
                         borderRadius:
                             '12px',
-                        padding:
-                            '16px',
                         marginBottom:
                             '12px',
                     }}
@@ -1735,52 +1340,30 @@ const R75TickMonitor = () => {
                             Prix
                         </strong>
                         <br />
-
-                        <span
-                            style={{
-                                fontSize:
-                                    '25px',
-                                fontWeight:
-                                    'bold',
-                            }}
-                        >
-                            {price !==
-                            null
-                                ? price.toFixed(
-                                      5
-                                  )
-                                : '—'}
-                        </span>
+                        {price !== null
+                            ? price.toFixed(
+                                  5
+                              )
+                            : '—'}
                     </p>
 
                     <p>
                         <strong>
-                            Dernier
-                            chiffre
+                            Dernier chiffre
                         </strong>
                         <br />
-
-                        <span
-                            style={{
-                                fontSize:
-                                    '25px',
-                                fontWeight:
-                                    'bold',
-                            }}
-                        >
-                            {lastDigit}
-                        </span>
+                        {lastDigit}
                     </p>
-                </section>
+                </div>
 
-                <section
+                <div
                     style={{
                         background:
-                            '#111827',
+                            '#1e293b',
+                        padding:
+                            '14px',
                         borderRadius:
                             '12px',
-                        padding:
-                            '16px',
                         marginBottom:
                             '12px',
                     }}
@@ -1792,30 +1375,26 @@ const R75TickMonitor = () => {
 
                     <p>
                         Historique :{' '}
-                        {
-                            priceHistory.length
-                        }
-                        /
-                        {
-                            HISTORY_SIZE
-                        }
+                        {historyCount}/
+                        {HISTORY_SIZE}
                     </p>
 
                     <p>
-                        {phaseOneComplete
+                        {historyCount >=
+                        HISTORY_SIZE
                             ? '🟢 Historique complet'
                             : '🧠 Collecte de données…'}
                     </p>
-                </section>
+                </div>
 
-                <section
+                <div
                     style={{
                         background:
-                            '#111827',
+                            '#1e293b',
+                        padding:
+                            '14px',
                         borderRadius:
                             '12px',
-                        padding:
-                            '16px',
                         marginBottom:
                             '12px',
                     }}
@@ -1827,13 +1406,10 @@ const R75TickMonitor = () => {
 
                     <p>
                         <strong>
-                            Direction
-                            actuelle
+                            Direction actuelle
                         </strong>
                         <br />
-                        {
-                            directionLabel
-                        }
+                        {directionLabel}
                     </p>
 
                     <p>
@@ -1842,9 +1418,7 @@ const R75TickMonitor = () => {
                             prédiction
                         </strong>
                         <br />
-                        {
-                            predictionLabel
-                        }
+                        {predictionLabel}
                     </p>
 
                     <p>
@@ -1863,42 +1437,37 @@ const R75TickMonitor = () => {
                             Observations
                         </strong>
                         <br />
-                        {
-                            observations
-                        }
+                        {observations}
                     </p>
 
                     <div
                         style={{
+                            background:
+                                '#334155',
                             padding:
                                 '10px',
                             borderRadius:
                                 '8px',
-                            background:
-                                '#1e293b',
-                            fontSize:
-                                '13px',
+                            marginTop:
+                                '10px',
                         }}
                     >
-                        ℹ️ L'analyse
-                        utilise les
-                        dernières
-                        directions du
-                        marché pour
-                        produire une
-                        indication
-                        UP/DOWN.
+                        ℹ️ L'analyse utilise
+                        les dernières
+                        directions du marché
+                        pour produire une
+                        indication UP/DOWN.
                     </div>
-                </section>
+                </div>
 
-                <section
+                <div
                     style={{
                         background:
-                            '#111827',
+                            '#1e293b',
+                        padding:
+                            '14px',
                         borderRadius:
                             '12px',
-                        padding:
-                            '16px',
                         marginBottom:
                             '12px',
                     }}
@@ -1908,123 +1477,100 @@ const R75TickMonitor = () => {
                     </h2>
 
                     <p>
-                        Le bouton
-                        démarre le test
-                        de la stratégie
-                        avec les ticks
-                        EUR/USD en mode
-                        virtuel.
+                        Le bouton démarre
+                        le test de la
+                        stratégie avec les
+                        ticks EUR/USD en
+                        mode virtuel.
                     </p>
 
-                    <div
-                        style={{
-                            display:
-                                'flex',
-                            gap:
-                                '8px',
-                            flexWrap:
-                                'wrap',
-                        }}
-                    >
-                        {!paperRunning ? (
-                            <button
-                                onClick={
-                                    startPaperTest
-                                }
-                                disabled={
-                                    marketClosed ||
-                                    observations <
-                                        4 ||
-                                    paperResult.total >=
-                                        PAPER_TEST_LIMIT
-                                }
-                                style={{
-                                    padding:
-                                        '12px 16px',
-                                    border:
-                                        'none',
-                                    borderRadius:
-                                        '8px',
-                                    cursor:
-                                        'pointer',
-                                    fontWeight:
-                                        'bold',
-                                }}
-                            >
-                                ▶️ TESTER
-                                SUR
-                                COMPTE
-                                DÉMO
-                            </button>
-                        ) : (
-                            <button
-                                onClick={
-                                    stopPaperTest
-                                }
-                                style={{
-                                    padding:
-                                        '12px 16px',
-                                    border:
-                                        'none',
-                                    borderRadius:
-                                        '8px',
-                                    cursor:
-                                        'pointer',
-                                    fontWeight:
-                                        'bold',
-                                }}
-                            >
-                                ⏹️ ARRÊTER
-                            </button>
-                        )}
-
+                    {!paperRunning ? (
                         <button
                             onClick={
-                                resetPaperTest
+                                startPaperTest
                             }
                             style={{
+                                width:
+                                    '100%',
                                 padding:
-                                    '12px 16px',
+                                    '14px',
+                                borderRadius:
+                                    '10px',
                                 border:
                                     'none',
-                                borderRadius:
-                                    '8px',
+                                fontWeight:
+                                    'bold',
+                                fontSize:
+                                    '16px',
                                 cursor:
                                     'pointer',
                             }}
                         >
-                            🔄 Réinitialiser
+                            ▶️ TESTER SUR
+                            COMPTE DÉMO
                         </button>
-                    </div>
+                    ) : (
+                        <button
+                            onClick={
+                                stopPaperTest
+                            }
+                            style={{
+                                width:
+                                    '100%',
+                                padding:
+                                    '14px',
+                                borderRadius:
+                                    '10px',
+                                border:
+                                    'none',
+                                fontWeight:
+                                    'bold',
+                                fontSize:
+                                    '16px',
+                                cursor:
+                                    'pointer',
+                            }}
+                        >
+                            ⏹️ ARRÊTER LE
+                            TEST
+                        </button>
+                    )}
 
-                    <div
+                    <button
+                        onClick={
+                            resetPaperTest
+                        }
                         style={{
-                            marginTop:
-                                '12px',
+                            width:
+                                '100%',
                             padding:
                                 '10px',
-                            borderRadius:
+                            marginTop:
                                 '8px',
-                            background:
-                                '#1e293b',
-                            fontSize:
-                                '13px',
+                            borderRadius:
+                                '10px',
+                            border:
+                                'none',
+                            cursor:
+                                'pointer',
                         }}
                     >
-                        {
-                            proposalStatus
-                        }
-                    </div>
-                </section>
+                        🔄 Réinitialiser
+                    </button>
 
-                <section
+                    <p>
+                        {proposalStatus}
+                    </p>
+                </div>
+
+                <div
                     style={{
                         background:
-                            '#111827',
+                            '#1e293b',
+                        padding:
+                            '14px',
                         borderRadius:
                             '12px',
-                        padding:
-                            '16px',
                         marginBottom:
                             '12px',
                     }}
@@ -2034,27 +1580,26 @@ const R75TickMonitor = () => {
                     </h2>
 
                     <p>
-                        Cette V4.11.3
+                        Cette V4.11.4
                         n'envoie aucun
-                        ordre BUY/SELL
-                        à Deriv.
+                        ordre BUY/SELL à
+                        Deriv.
                     </p>
 
                     <p>
                         Les résultats
-                        restent
-                        virtuels.
+                        restent virtuels.
                     </p>
-                </section>
+                </div>
 
-                <section
+                <div
                     style={{
                         background:
-                            '#111827',
+                            '#1e293b',
+                        padding:
+                            '14px',
                         borderRadius:
                             '12px',
-                        padding:
-                            '16px',
                         marginBottom:
                             '12px',
                     }}
@@ -2064,109 +1609,81 @@ const R75TickMonitor = () => {
                         Paper Trading
                     </h2>
 
-                    <div
-                        style={{
-                            display:
-                                'grid',
-                            gridTemplateColumns:
-                                'repeat(auto-fit, minmax(130px, 1fr))',
-                            gap:
-                                '10px',
-                        }}
-                    >
-                        <div>
-                            <strong>
-                                Tests
-                            </strong>
-                            <br />
-                            {
-                                paperResult.total
-                            }
-                            /
-                            {
-                                PAPER_TEST_LIMIT
-                            }
-                        </div>
+                    <p>
+                        <strong>
+                            Tests
+                        </strong>
+                        <br />
+                        {paperResult.total}/
+                        {PAPER_TEST_LIMIT}
+                    </p>
 
-                        <div>
-                            <strong>
-                                Gains
-                            </strong>
-                            <br />
-                            {
-                                paperResult.wins
-                            }
-                        </div>
+                    <p>
+                        <strong>
+                            Gains
+                        </strong>
+                        <br />
+                        {paperResult.wins}
+                    </p>
 
-                        <div>
-                            <strong>
-                                Pertes
-                            </strong>
-                            <br />
-                            {
-                                paperResult.losses
-                            }
-                        </div>
+                    <p>
+                        <strong>
+                            Pertes
+                        </strong>
+                        <br />
+                        {paperResult.losses}
+                    </p>
 
-                        <div>
-                            <strong>
-                                Taux gain
-                            </strong>
-                            <br />
-                            {winRate.toFixed(
-                                2
-                            )}
-                            %
-                        </div>
+                    <p>
+                        <strong>
+                            Taux gain
+                        </strong>
+                        <br />
+                        {winRate.toFixed(
+                            2
+                        )}
+                        %
+                    </p>
 
-                        <div>
-                            <strong>
-                                Taux perte
-                            </strong>
-                            <br />
-                            {lossRate.toFixed(
-                                2
-                            )}
-                            %
-                        </div>
+                    <p>
+                        <strong>
+                            Taux perte
+                        </strong>
+                        <br />
+                        {lossRate.toFixed(
+                            2
+                        )}
+                        %
+                    </p>
 
-                        <div>
-                            <strong>
-                                Résultat
-                                virtuel
-                            </strong>
-                            <br />
-                            {paperResult.pnl >=
-                            0
-                                ? '+'
-                                : ''}
-                            {
-                                paperResult.pnl
-                            }
-                        </div>
-                    </div>
+                    <p>
+                        <strong>
+                            Résultat virtuel
+                        </strong>
+                        <br />
+                        {paperResult.pnl >=
+                        0
+                            ? '+'
+                            : ''}
+                        {paperResult.pnl}
+                    </p>
 
-                    <p
-                        style={{
-                            marginTop:
-                                '12px',
-                        }}
-                    >
+                    <p>
                         +1 prédiction
                         correcte / -1
                         prédiction
                         incorrecte
                     </p>
-                </section>
+                </div>
 
-                <section
+                <div
                     style={{
                         background:
-                            '#111827',
+                            '#1e293b',
+                        padding:
+                            '14px',
                         borderRadius:
                             '12px',
-                        padding:
-                            '16px',
                         marginBottom:
                             '12px',
                     }}
@@ -2177,67 +1694,69 @@ const R75TickMonitor = () => {
 
                     <p>
                         Blocs terminés :{' '}
-                        {
-                            blocksCompleted
-                        }
+                        {blocksCompleted}
                     </p>
 
                     <p>
                         Bloc actuel :{' '}
-                        {
-                            currentBlockProgress
-                        }
-                        /100
+                        {currentBlock}/
+                        {currentBlockProgress}
                     </p>
+                </div>
 
-                    <p>
-                        {paperResult.total ===
-                        0
-                            ? '🧪 Paper Test prêt — 0/1000'
-                            : paperResult.total >=
-                              PAPER_TEST_LIMIT
-                            ? '🏁 Test de 1000 prédictions terminé'
-                            : '🟢 Paper Test en cours'}
-                    </p>
-                </section>
-
-                <section
+                <div
                     style={{
                         background:
-                            '#172033',
+                            '#1e293b',
+                        padding:
+                            '14px',
                         borderRadius:
                             '12px',
-                        padding:
-                            '16px',
                         marginBottom:
                             '12px',
                     }}
                 >
-                    <h2>
-                        🛡️ MODE TEST
-                        UNIQUEMENT
-                    </h2>
+                    🧠{' '}
+                    {historyCount <
+                    HISTORY_SIZE
+                        ? 'Collecte de données…'
+                        : paperRunning
+                        ? 'Paper Trading en cours…'
+                        : 'Prêt pour le test Paper'}
+                </div>
+
+                <div
+                    style={{
+                        background:
+                            '#172033',
+                        padding:
+                            '14px',
+                        borderRadius:
+                            '12px',
+                        marginBottom:
+                            '12px',
+                    }}
+                >
+                    <strong>
+                        🛡️ MODE TEST UNIQUEMENT
+                    </strong>
 
                     <p>
                         ❌ Aucun trade
-                        automatique réel
-                        ou Demo n'est
-                        envoyé.
+                        automatique réel ou
+                        Demo n'est envoyé.
                     </p>
 
                     <p>
-                        Le bouton
-                        « Tester sur
-                        compte Demo »
-                        démarre le
-                        Paper Test avec
-                        les données
-                        réelles du
-                        marché, mais
-                        sans ordre
+                        Le bouton « Tester
+                        sur compte Demo »
+                        démarre le Paper
+                        Test avec les données
+                        réelles du marché,
+                        mais sans ordre
                         financier.
                     </p>
-                </section>
+                </div>
 
                 <div
                     style={{
@@ -2245,22 +1764,15 @@ const R75TickMonitor = () => {
                             'center',
                         padding:
                             '12px',
-                        fontSize:
-                            '13px',
-                        opacity:
-                            0.8,
                     }}
                 >
                     ↕️ Fais glisser
-                    l'écran pour
-                    voir toutes les
-                    informations
+                    l'écran pour voir
+                    toutes les informations
                 </div>
             </div>
         </div>
     );
-};
+});
 
-export default observer(
-    R75TickMonitor
-);
+export default R75TickMonitor;
